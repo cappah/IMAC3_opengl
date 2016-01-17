@@ -6,6 +6,7 @@
 #include <string.h>
 #include <string>
 #include <iostream>
+#include <vector>
 
 #include <cmath>
 
@@ -68,17 +69,160 @@ void camera_zoom(Camera & c, float factor);
 void camera_turn(Camera & c, float phi, float theta);
 void camera_pan(Camera & c, float x, float y);
 
-struct PointLight
+struct Light
 {
     float intensity;
-    glm::vec3 position;
     glm::vec3 color;
+
+	Light(float _intensity, glm::vec3 _color) : intensity(_intensity), color(_color)
+	{
+
+	}
 };
 
-struct DirectionalLight : PointLight
+struct PointLight : public Light
 {
-    ;
+	glm::vec3 position;
+
+	PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) :  Light(_intensity, _color), position(_position)
+	{
+
+	}
 };
+
+struct DirectionalLight : public Light
+{
+    glm::vec3 direction;
+
+	DirectionalLight(float _intensity, glm::vec3 _color, glm::vec3 _direction) : 
+		Light(_intensity, _color) , direction(_direction)
+	{
+
+	}
+};
+
+struct Material 
+{
+
+	GLuint glProgram;
+
+	GLuint textureDiffuse;
+
+	float specularPower;
+	GLuint textureSpecular;
+
+	GLuint uniform_textureDiffuse;
+	GLuint uniform_textureSpecular;
+	GLuint uniform_specularPower;
+	
+	Material(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower = 50) : 
+		glProgram(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular)
+	{
+		uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
+		uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+		uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
+	}
+
+	void use()
+	{
+		//bind shaders
+		glUseProgram(glProgram);
+
+		//bind textures into texture units
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureDiffuse);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureSpecular);
+
+		//send uniforms
+		glUniform1f(uniform_specularPower, specularPower);
+		glUniform1i(uniform_textureDiffuse, 0);
+		glUniform1i(uniform_textureSpecular, 1);
+	}
+};
+
+class LightManager
+{
+private : 
+	std::vector<PointLight> pointLights;
+	std::vector<DirectionalLight> directionalLights;
+
+	GLuint uniform_pointLight_pos[10];
+	GLuint uniform_pointLight_col[10];
+	GLuint uniform_pointLight_int[10];
+
+	GLuint uniform_directionalLight_dir[10];
+	GLuint uniform_directionalLight_col[10];
+	GLuint uniform_directionalLight_int[10];
+
+	GLuint uniform_pointLight_count;
+	GLuint uniform_directionalLight_count;
+
+public : 
+	LightManager()
+	{
+
+	}
+
+	void addPointLight(PointLight light)
+	{
+		pointLights.push_back(light);
+	}
+
+	void addDirectionalLight(DirectionalLight light)
+	{
+		directionalLights.push_back(light);
+	}
+
+	void removePointLight(int index)
+	{
+		pointLights.erase(pointLights.begin() + index);
+	}
+
+	void removeDirectionalLight(int index)
+	{
+		directionalLights.erase(directionalLights.begin() + index);
+	}
+
+	void init(GLuint glProgram)
+	{
+		uniform_pointLight_count = glGetUniformLocation(glProgram, "pointLight_count");
+		uniform_directionalLight_count = glGetUniformLocation(glProgram, "directionalLight_count");
+
+		for (int i = 0; i < 10; i++)
+		{
+			uniform_pointLight_pos[i] = glGetUniformLocation(glProgram, ("pointLights[" + std::to_string(i) + "].position").c_str() );
+			uniform_pointLight_col[i] = glGetUniformLocation(glProgram, ("pointLights[" + std::to_string(i)  + "].color").c_str() );
+			uniform_pointLight_int[i] = glGetUniformLocation(glProgram, ("pointLights[" + std::to_string(i) + "].intensity").c_str() );
+
+			uniform_directionalLight_dir[i] = glGetUniformLocation(glProgram, ("directionalLights[" + std::to_string(i) + "].direction").c_str() );
+			uniform_directionalLight_col[i] = glGetUniformLocation(glProgram, ("directionalLights[" + std::to_string(i) + "].color").c_str() );
+			uniform_directionalLight_int[i] = glGetUniformLocation(glProgram, ("directionalLights[" + std::to_string(i) + "].intensity").c_str() );
+		}
+	}
+
+	void renderLights()
+	{
+		glUniform1i(uniform_pointLight_count, pointLights.size());
+		glUniform1i(uniform_directionalLight_count, directionalLights.size());
+
+		for (int i = 0; i < pointLights.size(); i++)
+		{
+			glUniform3fv(uniform_pointLight_pos[i], 1, glm::value_ptr( pointLights[i].position ) );
+			glUniform3fv(uniform_pointLight_col[i], 1, glm::value_ptr( pointLights[i].color ) );
+			glUniform1f(uniform_pointLight_int[i], pointLights[i].intensity);
+		}
+
+		for (int i = 0; i < directionalLights.size(); i++)
+		{
+			glUniform3fv(uniform_directionalLight_dir[i], 1, glm::value_ptr(directionalLights[i].direction));
+			glUniform3fv(uniform_directionalLight_col[i], 1, glm::value_ptr(directionalLights[i].color));
+			glUniform1f(uniform_directionalLight_int[i], directionalLights[i].intensity);
+		}
+	}
+};
+
+
 
 
 struct GUIStates
@@ -199,7 +343,7 @@ int main( int argc, char **argv )
     GLuint lightPositionLocation = glGetUniformLocation(programObject, "lightPosition");
     GLuint lightColorLocation = glGetUniformLocation(programObject, "lightColor");
     GLuint lightIntensityLocation = glGetUniformLocation(programObject, "lightIntensity");
-    GLuint specPowLocation = glGetUniformLocation(programObject, "specularPower");
+    //GLuint specPowLocation = glGetUniformLocation(programObject, "specularPower");
     GLuint cameraLocation = glGetUniformLocation(programObject, "cameraPosition");
 
     if (!checkError("Uniforms"))
@@ -207,11 +351,6 @@ int main( int argc, char **argv )
 
     // Viewport 
     glViewport( 0, 0, width, height  );
-
-
-
-
-
 
 
     /******************TD OPENGL***********************/
@@ -305,12 +444,12 @@ int main( int argc, char **argv )
     int x;
     int y;
     int comp;
-    unsigned char * diffuse = stbi_load("textures/spnza_bricks_a_diff.tga", &x, &y, &comp, 3);
-    
 
-    GLuint textures[2];
-    glGenTextures(2, textures);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    unsigned char * diffuse = stbi_load("textures/spnza_bricks_a_diff.tga", &x, &y, &comp, 3);
+    GLuint diffuseTexture;
+    glGenTextures(1, &diffuseTexture);
+
+    glBindTexture(GL_TEXTURE_2D, diffuseTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, diffuse);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -319,13 +458,25 @@ int main( int argc, char **argv )
     glGenerateMipmap(GL_TEXTURE_2D);
 
     unsigned char * specular = stbi_load("textures/spnza_bricks_a_spec.tga", &x, &y, &comp, 3);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
+	GLuint specularTexture;
+	glGenTextures(1, &specularTexture);
+
+    glBindTexture(GL_TEXTURE_2D, specularTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, specular);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
+
+	Material brickMaterial(programObject, diffuseTexture, specularTexture, 50);
+
+	LightManager lightManager;
+	lightManager.init(brickMaterial.glProgram);
+
+	lightManager.addPointLight(PointLight(2, glm::vec3(1, 0, 0), glm::vec3(1, 2, 0)));
+	lightManager.addPointLight(PointLight(2, glm::vec3(0, 1, 0), glm::vec3(1, 2, 1)));
+	lightManager.addPointLight(PointLight(2, glm::vec3(0, 0, 1), glm::vec3(0, 2, 1)));
 
     do
     {
@@ -396,48 +547,29 @@ int main( int argc, char **argv )
         // Clear the front buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Get camera matrices
+        // update values
         glm::mat4 projection = glm::perspective(45.0f, widthf / heightf, 0.1f, 1000.f); 
-        glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
+		glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o , camera.up);
         glm::mat4 objectToWorld;
         glm::mat4 mvp = projection * worldToView * objectToWorld;
 
         // Select shader
-        glUseProgram(programObject);
+		brickMaterial.use();
 
         // Upload uniforms
-        glProgramUniformMatrix4fv(programObject, mvpLocation, 1, 0, glm::value_ptr(mvp));
-        // Upload value
-        glProgramUniform1f(programObject, timeLocation, t);
-        glProgramUniform1i(programObject, diffuseLocation, 0);
-        glProgramUniform1i(programObject, specularLocation, 1);
-        glm::vec3 lightColor = glm::vec3(0.98,0.99,0.95);
-        glm::vec3 lightPosition = glm::vec3(1.0,2.0,0.0);
-        glProgramUniform3fv(programObject, lightColorLocation, 1,glm::value_ptr(lightColor));
-        glProgramUniform3fv(programObject, lightPositionLocation, 1,glm::value_ptr(lightPosition));
-        glProgramUniform1f(programObject, lightIntensityLocation, intensitySlider);
-        glProgramUniform1f(programObject, specPowLocation, specularSlider);
-        glProgramUniform3fv(programObject, cameraLocation, 1,glm::value_ptr(camera.eye));
-
-
-        /***********TD******************/
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-
+        glProgramUniformMatrix4fv(programObject, mvpLocation, 1, 0, glm::value_ptr(mvp)); //for location
+        glProgramUniform1f(programObject, timeLocation, t); //for time
+		
+		//for lighting : 
+		lightManager.renderLights();
+		glProgramUniform3fv(programObject, cameraLocation, 1, glm::value_ptr(camera.eye)); //for camera location
+        
 
         // Render vaos
         glBindVertexArray(vao);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
         glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 1);
 
-
-
+		//update values
         objectToWorld = glm::scale(glm::mat4(1),glm::vec3(5,1,5));
         mvp = projection * worldToView * objectToWorld;
 
@@ -447,11 +579,6 @@ int main( int argc, char **argv )
 
          // Render vaos
         glBindVertexArray(vao2);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-
         glDrawElementsInstanced(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0,4);
 
 #if 1
@@ -479,7 +606,7 @@ int main( int argc, char **argv )
         sprintf(lineBuffer, "FPS %f", fps);
         imguiLabel(lineBuffer);
         imguiSlider("Dummy", &dummySlider, 0.0, 3.0, 0.1);
-        imguiSlider("Specular Power", &specularSlider, 0.0, 200.0, 1.0);
+        imguiSlider("Specular Power", &(brickMaterial.specularPower), 0.0, 200.0, 1.0);
         imguiSlider("Light Intensity", &intensitySlider, 0.0, 10.0, 0.1);
 
         imguiEndScrollArea();
