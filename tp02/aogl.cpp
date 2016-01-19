@@ -15,7 +15,7 @@
 #include "GLFW/glfw3.h"
 #include "stb/stb_image.h"
 #include "imgui/imgui.h"
-#include "imgui/imguiRenderGL3.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "glm/glm.hpp"
 #include "glm/vec3.hpp" // glm::vec3
@@ -54,6 +54,18 @@ GLuint compile_shader_from_file(GLenum shaderType, const char * fileName);
 
 // OpenGL utils
 bool checkError(const char* title);
+
+#include <sstream>
+
+namespace patch
+{
+    template < typename T > std::string to_string( const T& n )
+    {
+        std::ostringstream stm ;
+        stm << n ;
+        return stm.str() ;
+    }
+}
 
 struct Camera
 {
@@ -101,6 +113,19 @@ struct DirectionalLight : public Light
 	}
 };
 
+struct SpotLight : public Light
+{
+    glm::vec3 position;
+    glm::vec3 direction;
+    float angle;
+
+    SpotLight(float _intensity, glm::vec3 _color, glm::vec3 _position, glm::vec3 _direction, float _angle) :
+        Light(_intensity, _color), position(_position) , direction(_direction), angle(_angle)
+    {
+
+    }
+};
+
 struct Material 
 {
 
@@ -146,6 +171,7 @@ class LightManager
 private : 
 	std::vector<PointLight> pointLights;
 	std::vector<DirectionalLight> directionalLights;
+    std::vector<SpotLight> spotLights;
 
 	GLuint uniform_pointLight_pos[10];
 	GLuint uniform_pointLight_col[10];
@@ -155,11 +181,21 @@ private :
 	GLuint uniform_directionalLight_col[10];
 	GLuint uniform_directionalLight_int[10];
 
+    GLuint uniform_spotLight_dir[10];
+    GLuint uniform_spotLight_col[10];
+    GLuint uniform_spotLight_int[10];
+    GLuint uniform_spotLight_pos[10];
+    GLuint uniform_spotLight_angle[10];
+
 	GLuint uniform_pointLight_count;
 	GLuint uniform_directionalLight_count;
+    GLuint uniform_spotLight_count;
+
+    float globalIntensity;
+    float globalAngle;
 
 public : 
-	LightManager()
+    LightManager() : globalIntensity(0.f)
 	{
 
 	}
@@ -174,6 +210,11 @@ public :
 		directionalLights.push_back(light);
 	}
 
+    void addSpotLight(SpotLight light)
+    {
+        spotLights.push_back(light);
+    }
+
 	void removePointLight(int index)
 	{
 		pointLights.erase(pointLights.begin() + index);
@@ -184,20 +225,58 @@ public :
 		directionalLights.erase(directionalLights.begin() + index);
 	}
 
+    void removeSpotLight(int index)
+    {
+        spotLights.erase(spotLights.begin() + index);
+    }
+
+    void changeAllLightIntensities(float _intensity)
+    {
+        for(int i = 0; i < pointLights.size(); i++)
+        {
+            pointLights[i].intensity = _intensity;
+        }
+
+        for(int i = 0; i < directionalLights.size(); i++)
+        {
+            directionalLights[i].intensity = _intensity*0.1f;
+        }
+
+        for(int i = 0; i < spotLights.size(); i++)
+        {
+            spotLights[i].intensity = _intensity;
+        }
+    }
+
+    void changeAllSpotAngle(float _angle)
+    {
+        for(int i = 0; i < spotLights.size(); i++)
+        {
+            spotLights[i].angle = glm::radians(_angle);
+        }
+    }
+
 	void init(GLuint glProgram)
 	{
 		uniform_pointLight_count = glGetUniformLocation(glProgram, "pointLight_count");
 		uniform_directionalLight_count = glGetUniformLocation(glProgram, "directionalLight_count");
+        uniform_spotLight_count = glGetUniformLocation(glProgram, "spotLight_count");
 
 		for (int i = 0; i < 10; i++)
 		{
-			uniform_pointLight_pos[i] = glGetUniformLocation(glProgram, ("pointLights[" + std::to_string(i) + "].position").c_str() );
-			uniform_pointLight_col[i] = glGetUniformLocation(glProgram, ("pointLights[" + std::to_string(i)  + "].color").c_str() );
-			uniform_pointLight_int[i] = glGetUniformLocation(glProgram, ("pointLights[" + std::to_string(i) + "].intensity").c_str() );
+            uniform_pointLight_pos[i] = glGetUniformLocation(glProgram, ("pointLights[" + patch::to_string(i) + "].position").c_str() );
+            uniform_pointLight_col[i] = glGetUniformLocation(glProgram, ("pointLights[" + patch::to_string(i)  + "].color").c_str() );
+            uniform_pointLight_int[i] = glGetUniformLocation(glProgram, ("pointLights[" + patch::to_string(i) + "].intensity").c_str() );
 
-			uniform_directionalLight_dir[i] = glGetUniformLocation(glProgram, ("directionalLights[" + std::to_string(i) + "].direction").c_str() );
-			uniform_directionalLight_col[i] = glGetUniformLocation(glProgram, ("directionalLights[" + std::to_string(i) + "].color").c_str() );
-			uniform_directionalLight_int[i] = glGetUniformLocation(glProgram, ("directionalLights[" + std::to_string(i) + "].intensity").c_str() );
+            uniform_directionalLight_dir[i] = glGetUniformLocation(glProgram, ("directionalLights[" + patch::to_string(i) + "].direction").c_str() );
+            uniform_directionalLight_col[i] = glGetUniformLocation(glProgram, ("directionalLights[" + patch::to_string(i) + "].color").c_str() );
+            uniform_directionalLight_int[i] = glGetUniformLocation(glProgram, ("directionalLights[" + patch::to_string(i) + "].intensity").c_str() );
+
+            uniform_spotLight_dir[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].direction").c_str() );
+            uniform_spotLight_col[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].color").c_str() );
+            uniform_spotLight_int[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].intensity").c_str() );
+            uniform_spotLight_pos[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].position").c_str() );
+            uniform_spotLight_angle[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].angle").c_str() );
 		}
 	}
 
@@ -205,6 +284,7 @@ public :
 	{
 		glUniform1i(uniform_pointLight_count, pointLights.size());
 		glUniform1i(uniform_directionalLight_count, directionalLights.size());
+        glUniform1i(uniform_spotLight_count, spotLights.size());
 
 		for (int i = 0; i < pointLights.size(); i++)
 		{
@@ -219,7 +299,35 @@ public :
 			glUniform3fv(uniform_directionalLight_col[i], 1, glm::value_ptr(directionalLights[i].color));
 			glUniform1f(uniform_directionalLight_int[i], directionalLights[i].intensity);
 		}
+
+        for (int i = 0; i < spotLights.size(); i++)
+        {
+            glUniform3fv(uniform_spotLight_dir[i], 1, glm::value_ptr(spotLights[i].direction));
+            glUniform3fv(uniform_spotLight_col[i], 1, glm::value_ptr(spotLights[i].color));
+            glUniform1f(uniform_spotLight_int[i], spotLights[i].intensity);
+            glUniform3fv(uniform_spotLight_pos[i], 1, glm::value_ptr(spotLights[i].position));
+            glUniform1f(uniform_spotLight_angle[i], spotLights[i].angle);
+        }
 	}
+
+    void drawUI()
+    {
+        float previousIntensity = globalIntensity;
+        ImGui::SliderFloat("lights intensities", &globalIntensity, 0.0f, 100.f);
+
+        if( std::abs(globalIntensity - previousIntensity) > 0.001f )
+        {
+            changeAllLightIntensities(globalIntensity);
+        }
+
+        float previousAngle = globalAngle;
+        ImGui::SliderFloat("spots angles", &globalAngle, -180.f, 180.f);
+
+        if( std::abs(globalAngle - previousAngle) > 0.001f )
+        {
+            changeAllSpotAngle(globalAngle);
+        }
+    }
 };
 
 
@@ -305,20 +413,13 @@ int main( int argc, char **argv )
     GLenum glerr = GL_NO_ERROR;
     glerr = glGetError();
 
-    if (!imguiRenderGLInit(DroidSans_ttf, DroidSans_ttf_len))
-    {
-        fprintf(stderr, "Could not init GUI renderer.\n");
-        exit(EXIT_FAILURE);
-    }
+    ImGui_ImplGlfwGL3_Init(window, true);
 
     // Init viewer structures
     Camera camera;
     camera_defaults(camera);
     GUIStates guiStates;
     init_gui_states(guiStates);
-    float dummySlider = 0.f;
-    float specularSlider = 100.f;
-    float intensitySlider = 1.f;
 
 
     // Try to load and compile shaders
@@ -338,12 +439,6 @@ int main( int argc, char **argv )
     // Upload uniforms
     GLuint mvpLocation = glGetUniformLocation(programObject, "MVP");
     GLuint timeLocation = glGetUniformLocation(programObject,"Time");
-    GLuint diffuseLocation = glGetUniformLocation(programObject, "Diffuse");
-    GLuint specularLocation = glGetUniformLocation(programObject, "Specular");
-    GLuint lightPositionLocation = glGetUniformLocation(programObject, "lightPosition");
-    GLuint lightColorLocation = glGetUniformLocation(programObject, "lightColor");
-    GLuint lightIntensityLocation = glGetUniformLocation(programObject, "lightIntensity");
-    //GLuint specPowLocation = glGetUniformLocation(programObject, "specularPower");
     GLuint cameraLocation = glGetUniformLocation(programObject, "cameraPosition");
 
     if (!checkError("Uniforms"))
@@ -474,13 +569,18 @@ int main( int argc, char **argv )
 	LightManager lightManager;
 	lightManager.init(brickMaterial.glProgram);
 
-	lightManager.addPointLight(PointLight(2, glm::vec3(1, 0, 0), glm::vec3(1, 2, 0)));
-	lightManager.addPointLight(PointLight(2, glm::vec3(0, 1, 0), glm::vec3(1, 2, 1)));
-	lightManager.addPointLight(PointLight(2, glm::vec3(0, 0, 1), glm::vec3(0, 2, 1)));
+    //lightManager.addPointLight(PointLight(10, glm::vec3(1, 0, 0), glm::vec3(2, 2, 0)));
+    //lightManager.addPointLight(PointLight(10, glm::vec3(0, 1, 0), glm::vec3(2, 2, 2)));
+    //lightManager.addPointLight(PointLight(10, glm::vec3(0, 0, 1), glm::vec3(0, 2, 2)));
+
+    //lightManager.addDirectionalLight(DirectionalLight(10, glm::vec3(0, 0, 1), glm::vec3(0, -1, 2)));
+
+    lightManager.addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1.f, 0), glm::vec3(0, -1.f, 0), glm::radians(20.f) ));
 
     do
     {
         t = glfwGetTime();
+        ImGui_ImplGlfwGL3_NewFrame();
 
         // Mouse states
         int leftButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_LEFT );
@@ -582,44 +682,21 @@ int main( int argc, char **argv )
         glDrawElementsInstanced(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0,4);
 
 #if 1
-        // Draw UI
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glViewport(0, 0, width, height);
 
-        unsigned char mbut = 0;
-        int mscroll = 0;
-        double mousex; double mousey;
-        glfwGetCursorPos(window, &mousex, &mousey);
-        mousex*=DPI;
-        mousey*=DPI;
-        mousey = height - mousey;
+        ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+        ImGui::Begin("aogl");
+        ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
+        lightManager.drawUI();
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
 
-        if( leftButton == GLFW_PRESS )
-            mbut |= IMGUI_MBUT_LEFT;
-
-        imguiBeginFrame(mousex, mousey, mbut, mscroll);
-        int logScroll = 0;
-        char lineBuffer[512];
-        imguiBeginScrollArea("aogl", width - 210, height - 310, 200, 300, &logScroll);
-        sprintf(lineBuffer, "FPS %f", fps);
-        imguiLabel(lineBuffer);
-        imguiSlider("Dummy", &dummySlider, 0.0, 3.0, 0.1);
-        imguiSlider("Specular Power", &(brickMaterial.specularPower), 0.0, 200.0, 1.0);
-        imguiSlider("Light Intensity", &intensitySlider, 0.0, 10.0, 0.1);
-
-        imguiEndScrollArea();
-        imguiEndFrame();
-        imguiRenderGLDraw(width, height);
+        ImGui::Render();
 
 
 
         glDisable(GL_BLEND);
 #endif
 
-
-        
 
         // Check for errors
         checkError("End loop");
@@ -633,6 +710,7 @@ int main( int argc, char **argv )
     while( glfwGetKey( window, GLFW_KEY_ESCAPE ) != GLFW_PRESS );
 
     // Close OpenGL window and terminate GLFW
+    ImGui_ImplGlfwGL3_Shutdown();
     glfwTerminate();
 
     exit( EXIT_SUCCESS );

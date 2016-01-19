@@ -28,11 +28,21 @@ struct DirectionalLight{
 	float intensity; 
 };
 
+struct SpotLight{
+        vec3 direction;
+        vec3 position;
+        float angle;
+        vec3 color;
+        float intensity;
+};
+
 //light uniforms : 
 uniform int pointLight_count;
 uniform int directionalLight_count;
+uniform int spotLight_count;
 uniform PointLight pointLights[ 10 ];
 uniform DirectionalLight directionalLights[ 10 ];
+uniform SpotLight spotLights[ 10 ];
 
 
 layout(location = FRAG_COLOR, index = 0) out vec3 FragColor;
@@ -56,7 +66,7 @@ vec3 computePointLight(PointLight light)
 	float d = length(light.position - In.Position);
 
 	vec3 diffuse = texture(Diffuse, In.TexCoord).rgb;
-	diffuse *= light.color;
+        diffuse *= light.color * (ndotl);
 
 	vec3 specularColor = texture(Specular, In.TexCoord).rgb;
 	vec3 specular = specularColor * pow(ndoth, specularPower);
@@ -70,7 +80,6 @@ vec3 computePointLight(PointLight light)
 
 vec3 computeDirectionalLight(DirectionalLight light)
 {
-
 	vec3 n = In.Normal; 
 	vec3 l = normalize(-light.direction);
 	float ndotl = clamp(dot(n,l), 0.0, 1.0);
@@ -79,7 +88,7 @@ vec3 computeDirectionalLight(DirectionalLight light)
 	float ndoth = clamp(dot(n,h),0.0,1.0);
 
 	vec3 diffuse = texture(Diffuse, In.TexCoord).rgb;
-	diffuse *= light.color;
+        diffuse *= light.color * (ndotl);
 
 	vec3 specularColor = texture(Specular, In.TexCoord).rgb;
 	vec3 specular = specularColor * pow(ndoth, specularPower);
@@ -90,11 +99,43 @@ vec3 computeDirectionalLight(DirectionalLight light)
 	return intensity * (diffuse + specular) ;
 }
 
+vec3 computeSpotLight(SpotLight light)
+{
+    vec3 n = In.Normal;
+    vec3 l = normalize( light.position - In.Position);
+    float ndotl = clamp(dot(n,l), 0.0, 1.0);
+    vec3 v = normalize(cameraPosition - In.Position);
+    vec3 h = normalize(l+v);
+    float ndoth = clamp(dot(n,h),0.0,1.0);
+    float d = length(light.position - In.Position);
+
+    float spotFactor = dot( -l, normalize(light.direction));
+
+    vec3 diffuse = texture(Diffuse, In.TexCoord).rgb;
+    diffuse *= light.color * (ndotl);
+
+    vec3 specularColor = texture(Specular, In.TexCoord).rgb;
+    vec3 specular = specularColor * pow(ndoth, specularPower);
+    specular *= light.color;
+
+    float intensity = (light.intensity );/// (d*d) ;
+    //if(spotFactor > light.angle * 0.5f)
+    //    return vec3(0,0,0);
+
+    float teta = dot(-l, normalize(light.direction));
+    float phi = cos(light.angle);
+    float omega = cos(light.angle*1.3f);
+
+    float falloff = pow( ( teta - phi ) / ( phi - omega ) , 4.f );
+
+    return intensity * (diffuse + specular) * falloff;
+}
+
 void main()
 {
-	vec3 color;
+        vec3 color = vec3(0,0,0);
 
-	
+
 	for(int i = 0; i < pointLight_count; i++)
 	{
 		color += computePointLight( pointLights[i] );
@@ -104,7 +145,12 @@ void main()
 	for(int i = 0; i < directionalLight_count; i++)
 	{
 		color += computeDirectionalLight(directionalLights[i]);
-	}
+        }
+
+        for(int i = 0; i < spotLight_count; i++)
+        {
+                color += computeSpotLight(spotLights[i]);
+        }
 
 	FragColor = color;
 }
