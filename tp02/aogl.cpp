@@ -139,6 +139,9 @@ struct Material
 	GLuint uniform_textureDiffuse;
 	GLuint uniform_textureSpecular;
 	GLuint uniform_specularPower;
+
+	GLuint uniform_MVP;
+	GLuint uniform_cameraPos;
 	
 	Material(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower = 50) : 
 		glProgram(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular)
@@ -146,6 +149,23 @@ struct Material
 		uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 		uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
 		uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
+
+		uniform_MVP = glGetUniformLocation(glProgram, "MVP");
+		uniform_cameraPos = glGetUniformLocation(glProgram, "cameraPosition");
+
+		//check uniform errors : 
+		if (!checkError("Uniforms"))
+			exit(1);
+	}
+
+	void setUniform_cameraPosition(glm::vec3& cameraPos)
+	{
+		glUniform3fv(uniform_cameraPos, 1, glm::value_ptr(cameraPos) );
+	}
+
+	void setUniform_MVP(glm::mat4& mvp)
+	{
+		glUniformMatrix4fv(uniform_MVP, 1, false, glm::value_ptr(mvp));
 	}
 
 	void use()
@@ -421,7 +441,7 @@ int main( int argc, char **argv )
     GUIStates guiStates;
     init_gui_states(guiStates);
 
-
+	//////////////////// AOGL shaders ////////////////////////
     // Try to load and compile shaders
     GLuint vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
 	GLuint geomShaderId = compile_shader_from_file(GL_GEOMETRY_SHADER, "aogl.geom");
@@ -436,19 +456,87 @@ int main( int argc, char **argv )
     if (check_link_error(programObject) < 0)
         exit(1);
     
-    // Upload uniforms
-    GLuint mvpLocation = glGetUniformLocation(programObject, "MVP");
-    GLuint timeLocation = glGetUniformLocation(programObject,"Time");
-    GLuint cameraLocation = glGetUniformLocation(programObject, "cameraPosition");
 
-    if (!checkError("Uniforms"))
-        exit(1);
+	//////////////////// 3D Gpass shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_gpass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
+	GLuint fragShaderId_gpass = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl_gPass.frag");
+
+	GLuint programObject_gPass = glCreateProgram();
+	glAttachShader(programObject_gPass, vertShaderId_gpass);
+	glAttachShader(programObject_gPass, fragShaderId_gpass);
+
+	glLinkProgram(programObject_gPass);
+	if (check_link_error(programObject_gPass) < 0)
+		exit(1);
+
+	//////////////////// BLIT shaders ////////////////////////
+	GLuint vertShaderId_blit = compile_shader_from_file(GL_VERTEX_SHADER, "blit.vert");
+	GLuint fragShaderId_blit = compile_shader_from_file(GL_FRAGMENT_SHADER, "blit.frag");
+
+	GLuint programObject_blit = glCreateProgram();
+	glAttachShader(programObject_blit, vertShaderId_blit);
+	glAttachShader(programObject_blit, fragShaderId_blit);
+
+	glLinkProgram(programObject_blit);
+	if (check_link_error(programObject_blit) < 0)
+		exit(1);
+
+	// Upload uniforms
+	GLuint textureLocation_blit = glGetUniformLocation(programObject_blit, "Texture");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+
+
 
     // Viewport 
     glViewport( 0, 0, width, height  );
 
 
     /******************TD OPENGL***********************/
+
+
+	////////////////////////// LOAD GEOMETRY : 
+
+	//blit quad : 
+	int   quad_triangleCount = 2;
+	int   quad_triangleList[] = { 0, 1, 2, 2, 1, 3 };
+	float quad_vertices[] = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
+
+	// Bind vertices and upload data
+	GLuint blitVertices;
+	glGenBuffers(1, &blitVertices);
+	glBindBuffer(GL_ARRAY_BUFFER, blitVertices);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// Bind indices and upload data
+	GLuint blitIndices;
+	glGenBuffers(1, &blitIndices);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blitIndices);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_triangleList), quad_triangleList, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	//vao definition
+	GLuint blitVAO;
+	glGenVertexArrays(1, &blitVAO);
+	glBindVertexArray(blitVAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blitIndices);
+
+		glBindBuffer(GL_ARRAY_BUFFER, blitVertices);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+
+
+	// cube and plane ;
+
     int cube_triangleCount = 12;
     int cube_triangleList[] = {0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
     float cube_uvs[] = {0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f,  };
@@ -564,19 +652,76 @@ int main( int argc, char **argv )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-	Material brickMaterial(programObject, diffuseTexture, specularTexture, 50);
 
+	////////////begin deferred 
+
+	// Framebuffer object handle
+	GLuint gbufferFbo;
+	// Texture handles
+	GLuint gbufferTextures[3];
+	glGenTextures(3, gbufferTextures);
+	// 2 draw buffers for color and normal
+	GLuint gbufferDrawBuffers[2];
+
+	// Create color texture
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Create normal texture
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Create depth texture
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Create Framebuffer Object
+	glGenFramebuffers(1, &gbufferFbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
+	// Initialize DrawBuffers
+	gbufferDrawBuffers[0] = GL_COLOR_ATTACHMENT0;
+	gbufferDrawBuffers[1] = GL_COLOR_ATTACHMENT1;
+	glDrawBuffers(2, gbufferDrawBuffers);
+
+	// Attach textures to framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gbufferTextures[0], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gbufferTextures[1], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gbufferTextures[2], 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		fprintf(stderr, "Error on building framebuffer\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Back to the default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	////////////end deferred
+
+	//Create our brick material 
+	Material brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
+
+	//create and initialize our light manager
 	LightManager lightManager;
 	lightManager.init(brickMaterial.glProgram);
 
-    //lightManager.addPointLight(PointLight(10, glm::vec3(1, 0, 0), glm::vec3(2, 2, 0)));
-    //lightManager.addPointLight(PointLight(10, glm::vec3(0, 1, 0), glm::vec3(2, 2, 2)));
-    //lightManager.addPointLight(PointLight(10, glm::vec3(0, 0, 1), glm::vec3(0, 2, 2)));
-
-    //lightManager.addDirectionalLight(DirectionalLight(10, glm::vec3(0, 0, 1), glm::vec3(0, -1, 2)));
-
+	//add lights
     lightManager.addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1.f, 0), glm::vec3(0, -1.f, 0), glm::radians(20.f) ));
 
+	//main loop
     do
     {
         t = glfwGetTime();
@@ -641,45 +786,101 @@ int main( int argc, char **argv )
             guiStates.lockPositionY = mousey;
         }
 
-        // Default states
-        glEnable(GL_DEPTH_TEST);
+		////////////////////////// begin scene rendering 
 
-        // Clear the front buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Clear default buffer
+		glClearColor(0, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // update values
-        glm::mat4 projection = glm::perspective(45.0f, widthf / heightf, 0.1f, 1000.f); 
-		glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o , camera.up);
-        glm::mat4 objectToWorld;
-        glm::mat4 mvp = projection * worldToView * objectToWorld;
+		/////////////////// begin deferred
 
-        // Select shader
+		///////////// begin draw world
+
+		////// begin matrix updates
+
+		// update values
+		glm::mat4 projection = glm::perspective(45.0f, widthf / heightf, 0.1f, 1000.f);
+		glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
+		glm::mat4 objectToWorld;
+		glm::mat4 mvp = projection * worldToView * objectToWorld;
+
+		///// end matrix updates
+
+		////// begin G pass 
+
+		glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
+
+		// Default states
+		glEnable(GL_DEPTH_TEST);
+
+		// Clear the front buffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Select shader
 		brickMaterial.use();
 
-        // Upload uniforms
-        glProgramUniformMatrix4fv(programObject, mvpLocation, 1, 0, glm::value_ptr(mvp)); //for location
-        glProgramUniform1f(programObject, timeLocation, t); //for time
-		
+		// Upload uniforms
+		brickMaterial.setUniform_MVP(mvp);
+		brickMaterial.setUniform_cameraPosition(camera.eye);
+
 		//for lighting : 
 		lightManager.renderLights();
-		glProgramUniform3fv(programObject, cameraLocation, 1, glm::value_ptr(camera.eye)); //for camera location
-        
 
-        // Render vaos
-        glBindVertexArray(vao);
-        glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 1);
+		// Render vaos
+		glBindVertexArray(vao);
+		glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 1);
 
 		//update values
-        objectToWorld = glm::scale(glm::mat4(1),glm::vec3(5,1,5));
-        mvp = projection * worldToView * objectToWorld;
+		objectToWorld = glm::scale(glm::mat4(1), glm::vec3(5, 1, 5));
+		mvp = projection * worldToView * objectToWorld;
 
-        // Upload uniforms
-        glProgramUniformMatrix4fv(programObject, mvpLocation, 1, 0, glm::value_ptr(mvp));
-        glProgramUniform1f(programObject, timeLocation, 0);
+		// Upload uniforms
+		brickMaterial.setUniform_MVP(mvp);
 
-         // Render vaos
-        glBindVertexArray(vao2);
-        glDrawElementsInstanced(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0,4);
+		// Render vaos
+		glBindVertexArray(vao2);
+		glDrawElementsInstanced(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 4);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		////// end G pass
+
+		///// begin light pass
+
+
+        
+
+		///// end light pass
+
+		///////////// end draw world
+
+
+		///////////// begin draw blit quad
+		glDisable(GL_DEPTH_TEST);
+
+		glUseProgram(programObject_blit);
+
+		for (int i = 0; i < 3; i++)
+		{
+			glViewport((width * i) / 3, 0, width / 3, height / 4);
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, textureLocation_blit);
+			glUniform1i(textureLocation_blit, 0);
+
+			// Bind quad VAO
+			glBindVertexArray(blitVAO);
+			// Bind gbuffer color texture
+			glBindTexture(GL_TEXTURE_2D, gbufferTextures[i]);
+			// Draw quad
+			glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
+		}
+
+		///////////// end draw blit quad
+
+		////////////////// end deferred
+
+		//////////////////////// end scene rendering
 
 #if 1
 

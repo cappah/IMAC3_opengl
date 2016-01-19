@@ -21,15 +21,14 @@ in block
 // Outputs : 
 
 // Write in GL_COLOR_ATTACHMENT0
-layout(location = 0 ) out vec4 Color;
+layout(location = 0 ) out vec4 outColor;
 // Write in GL_COLOR_ATTACHMENT1
-layout(location = 1) out vec4 Normal;
+layout(location = 1) out vec4 outNormal;
 
 // Uniforms : 
 
 uniform sampler2D Diffuse;
 uniform sampler2D Specular;
-uniform float Time;
 uniform float specularPower;
 uniform vec3 cameraPosition;
 
@@ -145,24 +144,8 @@ vec3 computeSpotLight(SpotLight light)
 
 void main()
 {
-        vec3 color = vec3(0,0,0);
 
+	outColor = vec4( texture(Diffuse, In.TexCoord).rgb, texture(Specular, In.TexCoord).r );
 
-	for(int i = 0; i < pointLight_count; i++)
-	{
-		color += computePointLight( pointLights[i] );
-	}
-
-	
-	for(int i = 0; i < directionalLight_count; i++)
-	{
-		color += computeDirectionalLight(directionalLights[i]);
-        }
-
-        for(int i = 0; i < spotLight_count; i++)
-        {
-                color += computeSpotLight(spotLights[i]);
-        }
-
-	FragColor = color;
+	outNormal = vec4( In.Normal, specularPower);
 }
