@@ -128,7 +128,6 @@ struct SpotLight : public Light
 
 struct Material 
 {
-
 	GLuint glProgram;
 
 	GLuint textureDiffuse;
@@ -470,6 +469,28 @@ int main( int argc, char **argv )
 	if (check_link_error(programObject_gPass) < 0)
 		exit(1);
 
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// 3D lightPass shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_lightPass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl_lightPass.vert");
+	GLuint fragShaderId_lightPass = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl_lightPass.frag");
+
+	GLuint programObject_lightPass = glCreateProgram();
+	glAttachShader(programObject_lightPass, vertShaderId_lightPass);
+	glAttachShader(programObject_lightPass, fragShaderId_lightPass);
+
+	GLuint uniformTexturePosition = glGetUniformLocation(programObject_lightPass, "ColorBuffer");
+	GLuint uniformTextureNormal = glGetUniformLocation(programObject_lightPass, "NormalBuffer");
+	GLuint uniformTextureDepth = glGetUniformLocation(programObject_lightPass, "DepthBuffer");
+
+	glLinkProgram(programObject_lightPass);
+	if (check_link_error(programObject_lightPass) < 0)
+		exit(1);
+
+
 	//////////////////// BLIT shaders ////////////////////////
 	GLuint vertShaderId_blit = compile_shader_from_file(GL_VERTEX_SHADER, "blit.vert");
 	GLuint fragShaderId_blit = compile_shader_from_file(GL_FRAGMENT_SHADER, "blit.frag");
@@ -485,15 +506,6 @@ int main( int argc, char **argv )
 	// Upload uniforms
 	GLuint textureLocation_blit = glGetUniformLocation(programObject_blit, "Texture");
 
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
-
-
-
-
-    // Viewport 
-    glViewport( 0, 0, width, height  );
 
 
     /******************TD OPENGL***********************/
@@ -788,8 +800,10 @@ int main( int argc, char **argv )
 
 		////////////////////////// begin scene rendering 
 
+		// Viewport 
+		glViewport(0, 0, width, height);
+
 		// Clear default buffer
-		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		/////////////////// begin deferred
@@ -823,9 +837,6 @@ int main( int argc, char **argv )
 		brickMaterial.setUniform_MVP(mvp);
 		brickMaterial.setUniform_cameraPosition(camera.eye);
 
-		//for lighting : 
-		lightManager.renderLights();
-
 		// Render vaos
 		glBindVertexArray(vao);
 		glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 1);
@@ -847,8 +858,27 @@ int main( int argc, char **argv )
 
 		///// begin light pass
 
+		glUseProgram(programObject_lightPass);
 
+		//for lighting : 
+		lightManager.renderLights();
+		
+		//geometry informations :
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
+
+		glUniform1i(uniformTexturePosition, 0);
+		glUniform1i(uniformTextureNormal, 1);
+		glUniform1i(uniformTextureDepth, 2);
         
+		// Render quad
+		glBindVertexArray(blitVAO);
+		glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
+		glBindVertexArray(0);
 
 		///// end light pass
 
@@ -865,13 +895,13 @@ int main( int argc, char **argv )
 			glViewport((width * i) / 3, 0, width / 3, height / 4);
 
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, textureLocation_blit);
+			// Bind gbuffer color texture
+			glBindTexture(GL_TEXTURE_2D, gbufferTextures[i]);
 			glUniform1i(textureLocation_blit, 0);
 
 			// Bind quad VAO
 			glBindVertexArray(blitVAO);
-			// Bind gbuffer color texture
-			glBindTexture(GL_TEXTURE_2D, gbufferTextures[i]);
+			
 			// Draw quad
 			glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
 		}

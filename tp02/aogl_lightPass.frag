@@ -1,30 +1,17 @@
 #version 410 core
 
-#define POSITION	0
-#define NORMAL		1
-#define TEXCOORD	2
-#define FRAG_COLOR	0
-
-precision highp int;
-
-// inputs : 
-
-layout(location = FRAG_COLOR, index = 0) out vec3 FragColor;
-
 in block
 {
-        vec2 TexCoord;
-        vec3 Position;
-        vec3 Normal;
+    vec2 Texcoord;
 } In;
-
-// Outputs : 
-
-// Write in GL_COLOR_ATTACHMENT0
-layout(location = 0 ) out vec4 outColor;
-// Write in GL_COLOR_ATTACHMENT1
-layout(location = 1) out vec4 outNormal;
-
+ 
+uniform sampler2D ColorBuffer;
+uniform sampler2D NormalBuffer;
+uniform sampler2D DepthBuffer;
+ 
+out vec4 Color;
+ 
+ 
 // Uniforms : 
 
 uniform sampler2D Diffuse;
@@ -63,89 +50,18 @@ uniform PointLight pointLights[ 10 ];
 uniform DirectionalLight directionalLights[ 10 ];
 uniform SpotLight spotLights[ 10 ];
 
-
-
-
-vec3 computePointLight(PointLight light)
+void main(void)
 {
-	vec3 n = In.Normal; 
-	vec3 l = normalize(light.position - In.Position);
-	float ndotl = clamp(dot(n,l), 0.0, 1.0);
-	vec3 v = normalize(cameraPosition - In.Position);
-	vec3 h = normalize(l+v);
-	float ndoth = clamp(dot(n,h),0.0,1.0);
-	float d = length(light.position - In.Position);
+	// Read gbuffer values
+	vec4 colorBuffer = texture(ColorBuffer, In.Texcoord).rgba;
+	vec4 normalBuffer = texture(NormalBuffer, In.Texcoord).rgba;
+	float depth = texture(DepthBuffer, In.Texcoord).r;
 
-	vec3 diffuse = texture(Diffuse, In.TexCoord).rgb;
-        diffuse *= light.color * (ndotl);
+	// Unpack values stored in the gbuffer
+	vec3 diffuseColor = colorBuffer.rgb;
+	vec3 specularColor = colorBuffer.aaa;
+	float specularPower = normalBuffer.a;
+	vec3 n = normalBuffer.rgb;
 
-	vec3 specularColor = texture(Specular, In.TexCoord).rgb;
-	vec3 specular = specularColor * pow(ndoth, specularPower);
-	specular *= light.color;
-
-	float intensity = light.intensity / (d*d);
-
-	return intensity * (diffuse + specular) ; 
-}
-
-
-vec3 computeDirectionalLight(DirectionalLight light)
-{
-	vec3 n = In.Normal; 
-	vec3 l = normalize(-light.direction);
-	float ndotl = clamp(dot(n,l), 0.0, 1.0);
-	vec3 v = normalize(cameraPosition - In.Position);
-	vec3 h = normalize(l+v);
-	float ndoth = clamp(dot(n,h),0.0,1.0);
-
-	vec3 diffuse = texture(Diffuse, In.TexCoord).rgb;
-        diffuse *= light.color * (ndotl);
-
-	vec3 specularColor = texture(Specular, In.TexCoord).rgb;
-	vec3 specular = specularColor * pow(ndoth, specularPower);
-	specular *= light.color;
-
-	float intensity = light.intensity;
-
-	return intensity * (diffuse + specular) ;
-}
-
-vec3 computeSpotLight(SpotLight light)
-{
-    vec3 n = In.Normal;
-    vec3 l = normalize( light.position - In.Position);
-    float ndotl = clamp(dot(n,l), 0.0, 1.0);
-    vec3 v = normalize(cameraPosition - In.Position);
-    vec3 h = normalize(l+v);
-    float ndoth = clamp(dot(n,h),0.0,1.0);
-    float d = length(light.position - In.Position);
-
-    float spotFactor = dot( -l, normalize(light.direction));
-
-    vec3 diffuse = texture(Diffuse, In.TexCoord).rgb;
-    diffuse *= light.color * (ndotl);
-
-    vec3 specularColor = texture(Specular, In.TexCoord).rgb;
-    vec3 specular = specularColor * pow(ndoth, specularPower);
-    specular *= light.color;
-
-    float intensity = (light.intensity );/// (d*d) ;
-    //if(spotFactor > light.angle * 0.5f)
-    //    return vec3(0,0,0);
-
-    float teta = dot(-l, normalize(light.direction));
-    float phi = cos(light.angle);
-    float omega = cos(light.angle*1.3f);
-
-    float falloff = pow( ( teta - phi ) / ( phi - omega ) , 4.f );
-
-    return intensity * (diffuse + specular) * falloff;
-}
-
-void main()
-{
-
-	outColor = vec4( texture(Diffuse, In.TexCoord).rgb, texture(Specular, In.TexCoord).r );
-
-	outNormal = vec4( In.Normal, specularPower);
+    Color = vec4(diffuseColor.rgb, 1.0);
 }

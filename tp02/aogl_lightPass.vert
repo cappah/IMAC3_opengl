@@ -1,36 +1,16 @@
 #version 410 core
 
-#define POSITION	0
-#define NORMAL		1
-#define TEXCOORD	2
-#define FRAG_COLOR	0
+#define POSITION 0
 
-precision highp float;
-precision highp int;
-
-uniform mat4 MVP;
-
-layout(location = POSITION) in vec3 Position;
-layout(location = NORMAL) in vec3 Normal;
-layout(location = TEXCOORD) in vec2 TexCoord;
-
+layout(location = POSITION) in vec2 Position;
 
 out block
 {
-	vec2 TexCoord; 
-	vec3 Position;
-	vec3 Normal;
+    vec2 Texcoord;
 } Out;
 
 void main()
-{	
-	
-	vec3 pos = Position;
-
-	Out.TexCoord = TexCoord;
-	Out.Position = pos;
-	Out.Normal = Normal;
-
-	gl_Position = MVP * vec4(Position,1);
-	
+{   
+    Out.Texcoord = Position * 0.5 + 0.5;
+    gl_Position = vec4(Position.xy, 0.0, 1.0);
 }
