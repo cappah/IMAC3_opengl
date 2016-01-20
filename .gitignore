@@ -40,3 +40,6 @@
 *.vcxproj.*
 *.opendb
 
+# Old tp02
+tp02_old/*
+
