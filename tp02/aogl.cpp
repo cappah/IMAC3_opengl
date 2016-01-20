@@ -100,6 +100,18 @@ struct PointLight : public Light
 	{
 
 	}
+
+	void drawUI(int id)
+	{
+		if (ImGui::CollapsingHeader( ("point light " + patch::to_string(id)).c_str() ))
+		{
+			ImGui::PushID(("point" + patch::to_string(id)).c_str());
+			ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f);
+			ImGui::ColorEdit3("light color", &color[0]);
+			ImGui::SliderFloat3("light position", &position[0], -10.f, 10.f);
+			ImGui::PopID();
+		}
+	}
 };
 
 struct DirectionalLight : public Light
@@ -110,6 +122,18 @@ struct DirectionalLight : public Light
 		Light(_intensity, _color) , direction(_direction)
 	{
 
+	}
+
+	void drawUI(int id)
+	{
+		if (ImGui::CollapsingHeader( ("directional light "+ patch::to_string(id)).c_str()  ))
+		{
+			ImGui::PushID(("directional" + patch::to_string(id)).c_str());
+			ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f);
+			ImGui::ColorEdit3("light color", &color[0]);
+			ImGui::SliderFloat3("light direction", &direction[0], 0.f, 1.f);
+			ImGui::PopID();
+		}
 	}
 };
 
@@ -124,6 +148,20 @@ struct SpotLight : public Light
     {
 
     }
+
+	void drawUI(int id)
+	{
+		if (ImGui::CollapsingHeader( ("spot light "+patch::to_string(id)).c_str() ))
+		{
+			ImGui::PushID(("spot" + patch::to_string(id)).c_str());
+			ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f);
+			ImGui::ColorEdit3("light color", &color[0]);
+			ImGui::SliderFloat3("light position", &position[0], -10.f, 10.f);
+			ImGui::SliderFloat3("light direction", &direction[0], -1.f, 1.f);
+			ImGui::SliderFloat("light angles", &angle, 0.f, glm::pi<float>());
+			ImGui::PopID();
+		}
+	}
 };
 
 struct Material 
@@ -331,21 +369,36 @@ public :
 
     void drawUI()
     {
-        float previousIntensity = globalIntensity;
-        ImGui::SliderFloat("lights intensities", &globalIntensity, 0.0f, 100.f);
+		if (ImGui::Button("add pointLight"))
+			addPointLight(PointLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1, 0)));
 
-        if( std::abs(globalIntensity - previousIntensity) > 0.001f )
-        {
-            changeAllLightIntensities(globalIntensity);
-        }
+		ImGui::SameLine();
+		if (ImGui::Button("add DirectionalLight"))
+			addDirectionalLight(DirectionalLight(10, glm::vec3(1, 1, 1), glm::vec3(0, -1, 0)));
 
-        float previousAngle = globalAngle;
-        ImGui::SliderFloat("spots angles", &globalAngle, -180.f, 180.f);
+		ImGui::SameLine();
+		if (ImGui::Button("add spotLight"))
+			addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1, 0), glm::vec3(0,-1,0), glm::radians(30.f)));
 
-        if( std::abs(globalAngle - previousAngle) > 0.001f )
-        {
-            changeAllSpotAngle(globalAngle);
-        }
+
+		int lightCount = 0;
+		for (auto& light : spotLights)
+		{
+			light.drawUI(lightCount);
+			lightCount++;
+		}
+		lightCount = 0;
+		for (auto& light : directionalLights)
+		{
+			light.drawUI(lightCount);
+			lightCount++;
+		}
+		lightCount = 0;
+		for (auto& light : pointLights)
+		{
+			light.drawUI(lightCount);
+			lightCount++;
+		}
     }
 };
 
@@ -440,6 +493,30 @@ int main( int argc, char **argv )
     GUIStates guiStates;
     init_gui_states(guiStates);
 
+	//////////////////// 3D lightPass shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_lightPass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl_lightPass.vert");
+	GLuint fragShaderId_lightPass = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl_lightPass.frag");
+
+	GLuint programObject_lightPass = glCreateProgram();
+	glAttachShader(programObject_lightPass, vertShaderId_lightPass);
+	glAttachShader(programObject_lightPass, fragShaderId_lightPass);
+
+	glLinkProgram(programObject_lightPass);
+	if (check_link_error(programObject_lightPass) < 0)
+		exit(1);
+
+
+	GLuint uniformTexturePosition = glGetUniformLocation(programObject_lightPass, "ColorBuffer");
+	GLuint uniformTextureNormal = glGetUniformLocation(programObject_lightPass, "NormalBuffer");
+	GLuint uniformTextureDepth = glGetUniformLocation(programObject_lightPass, "DepthBuffer");
+	GLuint unformScreenToWorld = glGetUniformLocation(programObject_lightPass, "ScreenToWorld");
+	GLuint uniformCameraPosition = glGetUniformLocation(programObject_lightPass, "CameraPosition");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 	//////////////////// AOGL shaders ////////////////////////
     // Try to load and compile shaders
     GLuint vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
@@ -454,6 +531,10 @@ int main( int argc, char **argv )
     glLinkProgram(programObject);
     if (check_link_error(programObject) < 0)
         exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
     
 
 	//////////////////// 3D Gpass shaders ////////////////////////
@@ -473,24 +554,6 @@ int main( int argc, char **argv )
 	if (!checkError("Uniforms"))
 		exit(1);
 
-	//////////////////// 3D lightPass shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_lightPass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl_lightPass.vert");
-	GLuint fragShaderId_lightPass = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl_lightPass.frag");
-
-	GLuint programObject_lightPass = glCreateProgram();
-	glAttachShader(programObject_lightPass, vertShaderId_lightPass);
-	glAttachShader(programObject_lightPass, fragShaderId_lightPass);
-
-	GLuint uniformTexturePosition = glGetUniformLocation(programObject_lightPass, "ColorBuffer");
-	GLuint uniformTextureNormal = glGetUniformLocation(programObject_lightPass, "NormalBuffer");
-	GLuint uniformTextureDepth = glGetUniformLocation(programObject_lightPass, "DepthBuffer");
-
-	glLinkProgram(programObject_lightPass);
-	if (check_link_error(programObject_lightPass) < 0)
-		exit(1);
-
-
 	//////////////////// BLIT shaders ////////////////////////
 	GLuint vertShaderId_blit = compile_shader_from_file(GL_VERTEX_SHADER, "blit.vert");
 	GLuint fragShaderId_blit = compile_shader_from_file(GL_FRAGMENT_SHADER, "blit.frag");
@@ -501,6 +564,10 @@ int main( int argc, char **argv )
 
 	glLinkProgram(programObject_blit);
 	if (check_link_error(programObject_blit) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
 		exit(1);
 
 	// Upload uniforms
@@ -728,10 +795,13 @@ int main( int argc, char **argv )
 
 	//create and initialize our light manager
 	LightManager lightManager;
-	lightManager.init(brickMaterial.glProgram);
+	lightManager.init(programObject_lightPass);
 
 	//add lights
     lightManager.addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1.f, 0), glm::vec3(0, -1.f, 0), glm::radians(20.f) ));
+	lightManager.addPointLight(PointLight(10, glm::vec3(1, 0, 0), glm::vec3(6.f, 1.f, 0)));
+	lightManager.addPointLight(PointLight(10, glm::vec3(0, 1, 0), glm::vec3(0.f, 1.f, 6.f)));
+	lightManager.addDirectionalLight(DirectionalLight(10, glm::vec3(0, 0, 1), glm::vec3(0.f, -1.f, -1.f)));
 
 	//main loop
     do
@@ -817,6 +887,7 @@ int main( int argc, char **argv )
 		glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
 		glm::mat4 objectToWorld;
 		glm::mat4 mvp = projection * worldToView * objectToWorld;
+		glm::mat4 screenToWorld = glm::transpose(glm::inverse(mvp));
 
 		///// end matrix updates
 
@@ -859,6 +930,10 @@ int main( int argc, char **argv )
 		///// begin light pass
 
 		glUseProgram(programObject_lightPass);
+
+		// send screen to world matrix : 
+		glUniformMatrix4fv(unformScreenToWorld, 1, false, glm::value_ptr(screenToWorld));
+		glUniform3fv(uniformCameraPosition, 1, glm::value_ptr(camera.eye));
 
 		//for lighting : 
 		lightManager.renderLights();
