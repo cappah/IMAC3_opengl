@@ -46,9 +46,9 @@ struct SpotLight{
 uniform int pointLight_count;
 uniform int directionalLight_count;
 uniform int spotLight_count;
-uniform PointLight pointLights[ 120 ];
-uniform DirectionalLight directionalLights[ 120 ];
-uniform SpotLight spotLights[ 120 ];
+uniform PointLight pointLights[ 200 ];
+uniform DirectionalLight directionalLights[ 30 ];
+uniform SpotLight spotLights[ 30 ];
 
 
 

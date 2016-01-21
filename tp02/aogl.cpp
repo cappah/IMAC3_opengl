@@ -168,6 +168,30 @@ struct Material
 {
 	GLuint glProgram;
 
+	GLuint uniform_MVP;
+	GLuint uniform_normalMatrix;
+	
+	Material(GLuint _glProgram) : glProgram(_glProgram)
+	{
+		uniform_MVP = glGetUniformLocation(glProgram, "MVP");
+		uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
+	}
+
+	void setUniform_MVP(glm::mat4& mvp)
+	{
+		glUniformMatrix4fv(uniform_MVP, 1, false, glm::value_ptr(mvp));
+	}
+
+	void setUniform_normalMatrix(glm::mat4& normalMatrix)
+	{
+		glUniformMatrix4fv(uniform_normalMatrix, 1, false, glm::value_ptr(normalMatrix));
+	}
+
+	virtual void use() = 0;
+};
+
+struct MaterialLit : public Material
+{
 	GLuint textureDiffuse;
 
 	float specularPower;
@@ -177,18 +201,12 @@ struct Material
 	GLuint uniform_textureSpecular;
 	GLuint uniform_specularPower;
 
-	GLuint uniform_MVP;
-	GLuint uniform_normalMatrix;
-	
-	Material(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower = 50) : 
-		glProgram(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular)
+	MaterialLit(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower = 50) :
+		Material(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular)
 	{
 		uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 		uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
 		uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
-
-		uniform_MVP = glGetUniformLocation(glProgram, "MVP");
-		uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
 
 		//check uniform errors : 
 		if (!checkError("Uniforms"))
@@ -220,6 +238,32 @@ struct Material
 		glUniform1f(uniform_specularPower, specularPower);
 		glUniform1i(uniform_textureDiffuse, 0);
 		glUniform1i(uniform_textureSpecular, 1);
+	}
+};
+
+
+struct MaterialWireframe : public Material
+{
+
+	MaterialWireframe(GLuint _glProgram) : Material(_glProgram)
+	{
+
+	}
+
+	void setUniform_MVP(glm::mat4& mvp)
+	{
+		glUniformMatrix4fv(uniform_MVP, 1, false, glm::value_ptr(mvp));
+	}
+
+	void setUniform_normalMatrix(glm::mat4& normalMatrix)
+	{
+		glUniformMatrix4fv(uniform_normalMatrix, 1, false, glm::value_ptr(normalMatrix));
+	}
+
+	void use()
+	{
+		//bind shaders
+		glUseProgram(glProgram);
 	}
 };
 
@@ -566,9 +610,89 @@ struct MeshRenderer
 	}
 };
 
+
 struct Collider
 {
-	//TODO
+	glm::vec3 localTopRight;
+	glm::vec3 localBottomLeft;
+
+	glm::vec3 topRight;
+	glm::vec3 bottomLeft;
+
+	MeshRenderer* visual;
+
+	Collider(MeshRenderer* _visual = nullptr) : visual(_visual)
+	{
+		localTopRight = glm::vec3(0.5f, 0.5f, 0.5f);
+		localBottomLeft = glm::vec3(-0.5f, -0.5f, -0.5f);
+
+		topRight = localTopRight;
+		bottomLeft = localBottomLeft;
+	}
+
+	void setVisual(MeshRenderer* _visual)
+	{
+		visual = _visual;
+	}
+
+	void applyTransform(const glm::mat4& transformMatrix)
+	{
+		glm::vec3 translateVector(transformMatrix[2][0], transformMatrix[2][1], transformMatrix[2][2]);
+		glm::vec3 scaleVector(transformMatrix[0][0], transformMatrix[1][1], transformMatrix[2][2]);
+
+		topRight  = localTopRight * scaleVector + translateVector;
+		bottomLeft = localBottomLeft * scaleVector + translateVector;
+	}
+
+};
+
+
+class Ray
+{
+private:
+	glm::vec3 direction;
+	glm::vec3 origin;
+	float length;
+
+public:
+	Ray(glm::vec3 _origin, glm::vec3 _direction, float _length = 100.f) : origin(_origin), direction(_direction), length(_length)
+	{
+
+	}
+
+	inline glm::vec3 at(float t)
+	{
+		return origin + t*direction;
+	}
+
+	inline bool intersect(Collider& other)
+	{
+		glm::vec3 t;
+		int maxIndex = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			if (direction.x > 0)
+				t[i] = (other.bottomLeft[i] - origin[i]) / direction[i];
+			else
+				t[i] = (other.topRight[i] - origin[i]) / direction[i];
+
+			if (t[i] > t[maxIndex])
+			{
+				maxIndex = i;
+			}
+		}
+
+		if (t[maxIndex] >= 0 && t[maxIndex] < length)
+		{
+			glm::vec3 pt = at(t[maxIndex]);
+
+			int o1 = (maxIndex + 1) % 3;
+			int o2 = (maxIndex + 2) % 3;
+
+			return((pt[o1] > other.bottomLeft[o1] && pt[o1] < other.topRight[o1]) &&
+				(pt[o2] > other.bottomLeft[o2] && pt[o2] < other.topRight[o2]));
+		}
+	}
 };
 
 struct Entity
@@ -581,7 +705,37 @@ struct Entity
 	{
 
 	}
+
+	void applyTransform()
+	{
+		if(collider != nullptr)
+			collider->applyTransform(modelMatrix);
+	}
 };
+
+//return the point in world coordinate matching the given mouse position in screen space : 
+glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, Camera& camera)
+{
+	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 viewMatrix = glm::lookAt(camera.eye, camera.o, camera.up);
+
+	float x = (2.0f * mouse_x) / width - 1.0f;
+	float y = 1.0f - (2.0f * mouse_y) / height;
+	float z = 1.0f;
+	glm::vec3 ray_nds = glm::vec3(x, y, z);
+
+	glm::vec4 ray_clip = glm::vec4(ray_nds.x, ray_nds.y, -1.0, 1.0);
+
+	glm::vec4 ray_eye = inverse(projectionMatrix) * ray_clip;
+	ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0, 0.0);
+	ray_eye = (inverse(viewMatrix) * ray_eye);
+
+	glm::vec3 ray_wor(ray_eye.x, ray_eye.y, ray_eye.z);
+	// don't forget to normalise the vector at some point
+	ray_wor = glm::normalize(ray_wor);
+
+	return ray_wor;
+}
 
 
 class Renderer
@@ -756,9 +910,10 @@ public :
 		// Clear default buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/////////////////// begin deferred
 
 		///////////// begin draw world
+
+		//////// begin deferred
 
 		////// begin matrix updates
 
@@ -826,7 +981,39 @@ public :
 
 		///// end light pass
 
+		///////// end deferred
+
+		///////// begin forward 
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, gbufferFbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+		glBlitFramebuffer( 0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST );
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//draw collider in forward rendering pass (no lightning)
+		for (int i = 0; i < entities.size(); i++)
+		{
+			if (entities[i]->collider == nullptr)
+				continue;
+
+			glm::mat4 modelMatrix = entities[i]->modelMatrix; //get modelMatrix
+			glm::mat4 mv = worldToView * modelMatrix;
+			glm::mat4 normalMatrix = glm::transpose(glm::inverse(mv));
+			glm::mat4 mvp = projection * worldToView * modelMatrix;
+
+			entities[i]->collider->visual->material->use();
+			entities[i]->collider->visual->material->setUniform_MVP(mvp);
+			entities[i]->collider->visual->material->setUniform_normalMatrix(normalMatrix);
+
+			entities[i]->collider->visual->mesh->draw();
+		}
+
+
+		///////// end forward
+
+
 		///////////// end draw world
+
 
 		///////////// begin draw blit quad
 		glDisable(GL_DEPTH_TEST);
@@ -847,7 +1034,7 @@ public :
 
 		///////////// end draw blit quad
 
-		////////////////// end deferred
+		
 
 		//////////////////////// end scene rendering
 
@@ -968,62 +1155,23 @@ int main( int argc, char **argv )
 	if (!checkError("Uniforms"))
 		exit(1);
 
-	/*
-	//////////////////// BLIT shaders ////////////////////////
-	GLuint vertShaderId_blit = compile_shader_from_file(GL_VERTEX_SHADER, "blit.vert");
-	GLuint fragShaderId_blit = compile_shader_from_file(GL_FRAGMENT_SHADER, "blit.frag");
+	//////////////////// WIREFRAME shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_wireframe = compile_shader_from_file(GL_VERTEX_SHADER, "wireframe.vert");
+	GLuint fragShaderId_wireframe = compile_shader_from_file(GL_FRAGMENT_SHADER, "wireframe.frag");
 
-	GLuint programObject_blit = glCreateProgram();
-	glAttachShader(programObject_blit, vertShaderId_blit);
-	glAttachShader(programObject_blit, fragShaderId_blit);
+	GLuint programObject_wireframe = glCreateProgram();
+	glAttachShader(programObject_wireframe, vertShaderId_wireframe);
+	glAttachShader(programObject_wireframe, fragShaderId_wireframe);
 
-	glLinkProgram(programObject_blit);
-	if (check_link_error(programObject_blit) < 0)
+	glLinkProgram(programObject_wireframe);
+	if (check_link_error(programObject_wireframe) < 0)
 		exit(1);
 
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
-
-	// Upload uniforms
-	GLuint textureLocation_blit = glGetUniformLocation(programObject_blit, "Texture");
-
-
-	////////////////////////// LOAD GEOMETRY : 
-
-	//blit quad : 
-	int   quad_triangleCount = 2;
-	int   quad_triangleList[] = { 0, 1, 2, 2, 1, 3 };
-	float quad_vertices[] = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
-
-	// Bind vertices and upload data
-	GLuint blitVertices;
-	glGenBuffers(1, &blitVertices);
-	glBindBuffer(GL_ARRAY_BUFFER, blitVertices);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// Bind indices and upload data
-	GLuint blitIndices;
-	glGenBuffers(1, &blitIndices);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blitIndices);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_triangleList), quad_triangleList, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	//vao definition
-	GLuint blitVAO;
-	glGenVertexArrays(1, &blitVAO);
-	glBindVertexArray(blitVAO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blitIndices);
-
-		glBindBuffer(GL_ARRAY_BUFFER, blitVertices);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	*/
+	
 
 	// cube and plane ;
 
@@ -1033,6 +1181,13 @@ int main( int argc, char **argv )
 	cube.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
 	cube.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
 	cube.initGl();
+
+	Mesh cubeWireFrame(GL_LINE_STRIP, (Mesh::USE_INDEX | Mesh::USE_VERTICES));
+	cubeWireFrame.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
+	cubeWireFrame.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
+	cubeWireFrame.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
+	cubeWireFrame.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
+	cubeWireFrame.initGl();
 
 	Mesh plane;
 	plane.triangleIndex = { 0, 1, 2, 2, 1, 3 };
@@ -1070,9 +1225,6 @@ int main( int argc, char **argv )
     glGenerateMipmap(GL_TEXTURE_2D);
 
 
-	//Create our brick material 
-	Material brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
-
 	//create and initialize our light manager
 	LightManager lightManager;
 	//lightManager.init(programObject_lightPass);
@@ -1099,18 +1251,35 @@ int main( int argc, char **argv )
 	renderer.initPostProcessQuad("blit.vert", "blit.frag");
 
 	//populate world
+
+	//materials : 
+	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
+	MaterialWireframe wireframeMaterial(programObject_wireframe);
+
+	//renderers : 
 	MeshRenderer cubeRenderer;
 	cubeRenderer.mesh = &cube;
 	cubeRenderer.material = &brickMaterial;
 
 	MeshRenderer planeRenderer(&plane, &brickMaterial);
 
+	MeshRenderer cubeWireFrameRenderer;
+	cubeWireFrameRenderer.mesh = &cubeWireFrame;
+	cubeWireFrameRenderer.material = &wireframeMaterial;
+
+
+	//colliders : 
+    Collider boxCollider(&cubeWireFrameRenderer);
+
+	//entities : 
+	//cube entity
 	Entity entity_cube;
 	entity_cube.meshRenderer = &cubeRenderer;
+	entity_cube.collider = &boxCollider;
+	//plane entity
 	Entity entity_plane;
 	entity_plane.meshRenderer = &planeRenderer;
-
-	entity_plane.modelMatrix = glm::scale(glm::mat4(1), glm::vec3(30,1,30));
+	entity_plane.modelMatrix = glm::scale(glm::mat4(1), glm::vec3(30,1,30)); //scale plane
 
 	std::vector<Entity*> entities = {&entity_cube, &entity_plane};
 
@@ -1179,127 +1348,31 @@ int main( int argc, char **argv )
             guiStates.lockPositionY = mousey;
         }
 
-		/*
-		////////////////////////// begin scene rendering 
-
-		// Viewport 
-		glViewport(0, 0, width, height);
-
-		// Clear default buffer
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		/////////////////// begin deferred
-
-		///////////// begin draw world
-
-		////// begin matrix updates
-
-		// update values
-		glm::mat4 projection = glm::perspective(45.0f, widthf / heightf, 0.1f, 1000.f);
-		glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
-		glm::mat4 objectToWorld;
-		glm::mat4 mvp = projection * worldToView * objectToWorld;
-		glm::mat4 screenToWorld = glm::transpose(glm::inverse(mvp));
-
-		///// end matrix updates
-
-		////// begin G pass 
-
-		glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
-
-		// Default states
-		glEnable(GL_DEPTH_TEST);
-
-		// Clear the front buffer
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Select shader
-		brickMaterial.use();
-
-		// Upload uniforms
-		brickMaterial.setUniform_MVP(mvp);
-		brickMaterial.setUniform_cameraPosition(camera.eye);
-
-		// Render vaos
-		glBindVertexArray(vao);
-		glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 1);
-
-		//update values
-		objectToWorld = glm::scale(glm::mat4(1), glm::vec3(5, 1, 5));
-		mvp = projection * worldToView * objectToWorld;
-
-		// Upload uniforms
-		brickMaterial.setUniform_MVP(mvp);
-
-		// Render vaos
-		glBindVertexArray(vao2);
-		glDrawElementsInstanced(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 4);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		////// end G pass
-
-		///// begin light pass
-
-		glUseProgram(programObject_lightPass);
-
-		// send screen to world matrix : 
-		glUniformMatrix4fv(unformScreenToWorld, 1, false, glm::value_ptr(screenToWorld));
-		glUniform3fv(uniformCameraPosition, 1, glm::value_ptr(camera.eye));
-
-		//for lighting : 
-		lightManager.renderLights();
-		
-		//geometry informations :
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
-
-		glUniform1i(uniformTexturePosition, 0);
-		glUniform1i(uniformTextureNormal, 1);
-		glUniform1i(uniformTextureDepth, 2);
-        
-		// Render quad
-		glBindVertexArray(blitVAO);
-		glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
-		glBindVertexArray(0);
-
-		///// end light pass
-
-		///////////// end draw world
-
-
-		///////////// begin draw blit quad
-		glDisable(GL_DEPTH_TEST);
-
-		glUseProgram(programObject_blit);
-
-		for (int i = 0; i < 3; i++)
+		//object picking : 
+		if (leftButton == GLFW_PRESS)
 		{
-			glViewport((width * i) / 3, 0, width / 3, height / 4);
+			glm::vec3 origin = camera.eye;
+			double mouseX, mouseY;
+			glfwGetCursorPos(window, &mouseX, &mouseY);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, width, height, camera);
 
-			glActiveTexture(GL_TEXTURE0);
-			// Bind gbuffer color texture
-			glBindTexture(GL_TEXTURE_2D, gbufferTextures[i]);
-			glUniform1i(textureLocation_blit, 0);
+			direction = glm::normalize(direction);
 
-			// Bind quad VAO
-			glBindVertexArray(blitVAO);
-			
-			// Draw quad
-			glDrawElements(GL_TRIANGLES, quad_triangleCount * 3, GL_UNSIGNED_INT, (void*)0);
+			Ray ray(origin, direction, 1000.f);
+
+			for (int i = 0; i < entities.size(); i++)
+			{
+				if (entities[i]->collider != nullptr)
+				{
+					if (ray.intersect(*entities[i]->collider))
+					{
+						std::cout << "intersect a cube !!!" << std::endl;
+					}
+				}
+			}
 		}
-
-		///////////// end draw blit quad
-
-		////////////////// end deferred
-
-		//////////////////////// end scene rendering
-		*/
-
+		
+		//rendering : 
 		renderer.render(camera, entities);
 
 #if 1
