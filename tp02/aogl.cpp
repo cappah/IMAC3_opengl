@@ -230,19 +230,19 @@ private :
 	std::vector<DirectionalLight> directionalLights;
     std::vector<SpotLight> spotLights;
 
-	GLuint uniform_pointLight_pos[10];
-	GLuint uniform_pointLight_col[10];
-	GLuint uniform_pointLight_int[10];
+	GLuint uniform_pointLight_pos[120];
+	GLuint uniform_pointLight_col[120];
+	GLuint uniform_pointLight_int[120];
 
-	GLuint uniform_directionalLight_dir[10];
-	GLuint uniform_directionalLight_col[10];
-	GLuint uniform_directionalLight_int[10];
+	GLuint uniform_directionalLight_dir[120];
+	GLuint uniform_directionalLight_col[120];
+	GLuint uniform_directionalLight_int[120];
 
-    GLuint uniform_spotLight_dir[10];
-    GLuint uniform_spotLight_col[10];
-    GLuint uniform_spotLight_int[10];
-    GLuint uniform_spotLight_pos[10];
-    GLuint uniform_spotLight_angle[10];
+    GLuint uniform_spotLight_dir[120];
+    GLuint uniform_spotLight_col[120];
+    GLuint uniform_spotLight_int[120];
+    GLuint uniform_spotLight_pos[120];
+    GLuint uniform_spotLight_angle[120];
 
 	GLuint uniform_pointLight_count;
 	GLuint uniform_directionalLight_count;
@@ -319,7 +319,7 @@ public :
 		uniform_directionalLight_count = glGetUniformLocation(glProgram, "directionalLight_count");
         uniform_spotLight_count = glGetUniformLocation(glProgram, "spotLight_count");
 
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 120; i++)
 		{
             uniform_pointLight_pos[i] = glGetUniformLocation(glProgram, ("pointLights[" + patch::to_string(i) + "].position").c_str() );
             uniform_pointLight_col[i] = glGetUniformLocation(glProgram, ("pointLights[" + patch::to_string(i)  + "].color").c_str() );
@@ -951,54 +951,6 @@ int main( int argc, char **argv )
 	Application::get().setWindowWidth(width);
 	Application::get().setWindowHeight(height);
 
-
-	/*
-
-	//////////////////// 3D lightPass shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_lightPass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl_lightPass.vert");
-	GLuint fragShaderId_lightPass = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl_lightPass.frag");
-
-	GLuint programObject_lightPass = glCreateProgram();
-	glAttachShader(programObject_lightPass, vertShaderId_lightPass);
-	glAttachShader(programObject_lightPass, fragShaderId_lightPass);
-
-	glLinkProgram(programObject_lightPass);
-	if (check_link_error(programObject_lightPass) < 0)
-		exit(1);
-
-
-	GLuint uniformTexturePosition = glGetUniformLocation(programObject_lightPass, "ColorBuffer");
-	GLuint uniformTextureNormal = glGetUniformLocation(programObject_lightPass, "NormalBuffer");
-	GLuint uniformTextureDepth = glGetUniformLocation(programObject_lightPass, "DepthBuffer");
-	GLuint unformScreenToWorld = glGetUniformLocation(programObject_lightPass, "ScreenToWorld");
-	GLuint uniformCameraPosition = glGetUniformLocation(programObject_lightPass, "CameraPosition");
-
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
-
-	//////////////////// AOGL shaders ////////////////////////
-    // Try to load and compile shaders
-    GLuint vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
-	GLuint geomShaderId = compile_shader_from_file(GL_GEOMETRY_SHADER, "aogl.geom");
-    GLuint fragShaderId = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl.frag");
-	
-    GLuint programObject = glCreateProgram();
-    glAttachShader(programObject, vertShaderId);
-    glAttachShader(programObject, fragShaderId);
-	//glAttachShader(programObject, geomShaderId);
- 	
-    glLinkProgram(programObject);
-    if (check_link_error(programObject) < 0)
-        exit(1);
-
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
-    
-	*/
-
 	//////////////////// 3D Gpass shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_gpass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
@@ -1089,95 +1041,6 @@ int main( int argc, char **argv )
 	plane.normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
 	plane.initGl();
 
-	/*
-    int cube_triangleCount = 12;
-    int cube_triangleList[] = {0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
-    float cube_uvs[] = {0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f,  };
-    float cube_vertices[] = {-0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
-    float cube_normals[] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, }; 
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
- 
-    // Create a VBO for each array
-    GLuint vbo[4];
-    glGenBuffers(4, vbo);
- 
-    // Bind the VAO
-    glBindVertexArray(vao);
- 
-    // Bind indices and upload data
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_triangleList), cube_triangleList, GL_STATIC_DRAW);
- 
-    // Bind vertices and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glEnableVertexAttribArray(0); 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
- 
-    // Bind normals and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_normals), cube_normals, GL_STATIC_DRAW);
- 
-    // Bind uv coords and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*2, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_uvs), cube_uvs, GL_STATIC_DRAW);
- 
-    // Unbind everything
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
- 
-    
-    int plane_triangleCount = 2;
-    int plane_triangleList[] = {0, 1, 2, 2, 1, 3}; 
-    float plane_uvs[] = {0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f};
-    float plane_vertices[] = {-5.0, -0.5, 5.0, 5.0, -0.5, 5.0, -5.0, -0.5, -5.0, 5.0, -0.5, -5.0};
-    float plane_normals[] = {0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0};
-
-    GLuint vao2;
-    glGenVertexArrays(1, &vao2);
-
-    glGenBuffers(4, vbo);
-
-    // Bind the VAO
-    glBindVertexArray(vao2);
- 
-    // Bind indices and upload data
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(plane_triangleList), plane_triangleList, GL_STATIC_DRAW);
- 
-    // Bind vertices and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glEnableVertexAttribArray(0); 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(plane_vertices), plane_vertices, GL_STATIC_DRAW);
- 
-    // Bind normals and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(plane_normals), plane_normals, GL_STATIC_DRAW);
- 
-    // Bind uv coords and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*2, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(plane_uvs), plane_uvs, GL_STATIC_DRAW);
- 
-    // Unbind everything
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	*/
-
-
     int x;
     int y;
     int comp;
@@ -1207,68 +1070,6 @@ int main( int argc, char **argv )
     glGenerateMipmap(GL_TEXTURE_2D);
 
 
-	////////////begin deferred 
-
-	/*
-
-	// Framebuffer object handle
-	GLuint gbufferFbo;
-	// Texture handles
-	GLuint gbufferTextures[3];
-	glGenTextures(3, gbufferTextures);
-	// 2 draw buffers for color and normal
-	GLuint gbufferDrawBuffers[2];
-
-	// Create color texture
-	glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	// Create normal texture
-	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	// Create depth texture
-	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	// Create Framebuffer Object
-	glGenFramebuffers(1, &gbufferFbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
-	// Initialize DrawBuffers
-	gbufferDrawBuffers[0] = GL_COLOR_ATTACHMENT0;
-	gbufferDrawBuffers[1] = GL_COLOR_ATTACHMENT1;
-	glDrawBuffers(2, gbufferDrawBuffers);
-
-	// Attach textures to framebuffer
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gbufferTextures[0], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gbufferTextures[1], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gbufferTextures[2], 0);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		fprintf(stderr, "Error on building framebuffer\n");
-		exit(EXIT_FAILURE);
-	}
-
-	// Back to the default framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	*/
-
-	////////////end deferred
-
 	//Create our brick material 
 	Material brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
 
@@ -1277,10 +1078,21 @@ int main( int argc, char **argv )
 	//lightManager.init(programObject_lightPass);
 
 	//add lights
-    lightManager.addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1.f, 0), glm::vec3(0, -1.f, 0), glm::radians(20.f) ));
-	lightManager.addPointLight(PointLight(10, glm::vec3(1, 0, 0), glm::vec3(6.f, 1.f, 0)));
-	lightManager.addPointLight(PointLight(10, glm::vec3(0, 1, 0), glm::vec3(0.f, 1.f, 6.f)));
-	lightManager.addDirectionalLight(DirectionalLight(10, glm::vec3(0, 0, 1), glm::vec3(0.f, -1.f, -1.f)));
+    //lightManager.addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1.f, 0), glm::vec3(0, -1.f, 0), glm::radians(20.f) ));
+	//lightManager.addPointLight(PointLight(10, glm::vec3(1, 0, 0), glm::vec3(6.f, 1.f, 0)));
+	//lightManager.addPointLight(PointLight(10, glm::vec3(0, 1, 0), glm::vec3(0.f, 1.f, 6.f)));
+	//lightManager.addDirectionalLight(DirectionalLight(10, glm::vec3(0, 0, 1), glm::vec3(0.f, -1.f, -1.f)));
+
+	int r = 5;
+	float omega = 0;
+	for (int i = 0; i < 100; i++)
+	{
+		lightManager.addPointLight(PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3( r*std::cosf(omega), 2.f, r*std::sinf(omega))));
+		omega += 0.4f;
+
+		if(i % 10 == 0)
+			r += 5;
+	}
 
 	// renderer
 	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass.frag"); // call lightManager.init()
@@ -1298,13 +1110,9 @@ int main( int argc, char **argv )
 	Entity entity_plane;
 	entity_plane.meshRenderer = &planeRenderer;
 
-	entity_plane.modelMatrix = glm::scale(glm::mat4(1), glm::vec3(10,1,10));
+	entity_plane.modelMatrix = glm::scale(glm::mat4(1), glm::vec3(30,1,30));
 
 	std::vector<Entity*> entities = {&entity_cube, &entity_plane};
-
-	//std::vector<glm::mat4> transforms = { glm::mat4(1), glm::mat4(1) };
-	//std::vector<Mesh*> meshes = {&cube, &plane};
-	//std::vector<Material*> materials = {&brickMaterial, &brickMaterial};
 
 	//main loop
     do
