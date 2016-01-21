@@ -6,7 +6,9 @@ precision highp int;
 
 layout(location = FRAG_COLOR, index = 0) out vec3 FragColor;
 
+uniform vec3 Color;
+
 void main()
 {
-	FragColor = vec3(1,0,0);
+	FragColor = Color;
 }
