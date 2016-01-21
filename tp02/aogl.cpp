@@ -178,7 +178,7 @@ struct Material
 	GLuint uniform_specularPower;
 
 	GLuint uniform_MVP;
-	GLuint uniform_cameraPos;
+	GLuint uniform_normalMatrix;
 	
 	Material(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower = 50) : 
 		glProgram(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular)
@@ -188,21 +188,21 @@ struct Material
 		uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
 
 		uniform_MVP = glGetUniformLocation(glProgram, "MVP");
-		uniform_cameraPos = glGetUniformLocation(glProgram, "cameraPosition");
+		uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
 
 		//check uniform errors : 
 		if (!checkError("Uniforms"))
 			exit(1);
 	}
 
-	void setUniform_cameraPosition(glm::vec3& cameraPos)
-	{
-		glUniform3fv(uniform_cameraPos, 1, glm::value_ptr(cameraPos) );
-	}
-
 	void setUniform_MVP(glm::mat4& mvp)
 	{
 		glUniformMatrix4fv(uniform_MVP, 1, false, glm::value_ptr(mvp));
+	}
+
+	void setUniform_normalMatrix(glm::mat4& normalMatrix)
+	{
+		glUniformMatrix4fv(uniform_normalMatrix, 1, false, glm::value_ptr(normalMatrix));
 	}
 
 	void use()
@@ -555,6 +555,34 @@ public:
 
 };
 
+struct MeshRenderer
+{
+	Mesh* mesh;
+	Material* material;
+
+	MeshRenderer(Mesh* _mesh = nullptr, Material* _material = nullptr) : mesh(_mesh), material(_material)
+	{
+
+	}
+};
+
+struct Collider
+{
+	//TODO
+};
+
+struct Entity
+{
+	glm::mat4 modelMatrix;
+	MeshRenderer* meshRenderer;
+	Collider* collider;
+
+	Entity() : modelMatrix(glm::mat4(1)), meshRenderer(nullptr), collider(nullptr)
+	{
+
+	}
+};
+
 
 class Renderer
 {
@@ -582,7 +610,7 @@ private :
 	GLuint uniformTextureBlit;
 
 public : 
-	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path) : quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX, Mesh::USE_VERTICES), 2)
+	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path) : quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
 	{
 
 		int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
@@ -714,7 +742,7 @@ public :
 		uniformTextureBlit = glGetUniformLocation(glProgram_blit, "Texture");
 	}
 
-	void render(Camera& camera, std::vector<glm::mat4> transforms, std::vector<Mesh*> meshes, std::vector<Material*> materials)
+	void render(Camera& camera, std::vector<Entity*> entities)
 	{
 
 		int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
@@ -726,7 +754,6 @@ public :
 		glViewport(0, 0, width, height);
 
 		// Clear default buffer
-		glClearColor(1, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		/////////////////// begin deferred
@@ -738,9 +765,9 @@ public :
 		// update values
 		glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 		glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
-		glm::mat4 mv = projection * worldToView;
-		glm::mat4 screenToWorld = glm::transpose(glm::inverse(mv));
-
+		glm::mat4 vp = projection * worldToView;
+		glm::mat4 screenToWorld = glm::transpose(glm::inverse(vp));
+		
 		///// end matrix updates
 
 		////// begin G pass 
@@ -751,19 +778,20 @@ public :
 		glEnable(GL_DEPTH_TEST);
 
 		// Clear the front buffer
-		glClearColor(0, 1, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		for (int i = 0; i < glm::min<int>( meshes.size(), glm::min<int>(materials.size(), transforms.size()) ); i++)
+		for (int i = 0; i < entities.size(); i++)
 		{
-			glm::mat4 modelMatrix = transforms[i]; //get modelMatrix
+			glm::mat4 modelMatrix = entities[i]->modelMatrix; //get modelMatrix
+			glm::mat4 mv = worldToView * modelMatrix;
+			glm::mat4 normalMatrix = glm::transpose(glm::inverse(mv));
 			glm::mat4 mvp = projection * worldToView * modelMatrix;
 
-			materials[i]->use();
-			materials[i]->setUniform_MVP(mvp);
-			materials[i]->setUniform_cameraPosition(camera.eye);
+			entities[i]->meshRenderer->material->use();
+			entities[i]->meshRenderer->material->setUniform_MVP(mvp);
+			entities[i]->meshRenderer->material->setUniform_normalMatrix(normalMatrix);
 
-			meshes[i]->draw();
+			entities[i]->meshRenderer->mesh->draw();
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1259,9 +1287,24 @@ int main( int argc, char **argv )
 	renderer.initPostProcessQuad("blit.vert", "blit.frag");
 
 	//populate world
-	std::vector<glm::mat4> transforms = { glm::mat4(1), glm::mat4(1) };
-	std::vector<Mesh*> meshes = {&cube, &plane};
-	std::vector<Material*> materials = {&brickMaterial, &brickMaterial};
+	MeshRenderer cubeRenderer;
+	cubeRenderer.mesh = &cube;
+	cubeRenderer.material = &brickMaterial;
+
+	MeshRenderer planeRenderer(&plane, &brickMaterial);
+
+	Entity entity_cube;
+	entity_cube.meshRenderer = &cubeRenderer;
+	Entity entity_plane;
+	entity_plane.meshRenderer = &planeRenderer;
+
+	entity_plane.modelMatrix = glm::scale(glm::mat4(1), glm::vec3(10,1,10));
+
+	std::vector<Entity*> entities = {&entity_cube, &entity_plane};
+
+	//std::vector<glm::mat4> transforms = { glm::mat4(1), glm::mat4(1) };
+	//std::vector<Mesh*> meshes = {&cube, &plane};
+	//std::vector<Material*> materials = {&brickMaterial, &brickMaterial};
 
 	//main loop
     do
@@ -1449,7 +1492,7 @@ int main( int argc, char **argv )
 		//////////////////////// end scene rendering
 		*/
 
-		renderer.render(camera, transforms, meshes, materials);
+		renderer.render(camera, entities);
 
 #if 1
 

@@ -30,7 +30,6 @@ layout(location = 1) out vec4 outNormal;
 uniform sampler2D Diffuse;
 uniform sampler2D Specular;
 uniform float specularPower;
-uniform vec3 cameraPosition;
 
 void main()
 {

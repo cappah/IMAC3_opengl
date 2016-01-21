@@ -9,6 +9,7 @@ precision highp float;
 precision highp int;
 
 uniform mat4 MVP;
+uniform mat4 NormalMatrix;
 
 layout(location = POSITION) in vec3 Position;
 layout(location = NORMAL) in vec3 Normal;
@@ -29,7 +30,7 @@ void main()
 
 	Out.TexCoord = TexCoord;
 	Out.Position = pos;
-	Out.Normal = Normal;
+	Out.Normal = vec3(NormalMatrix * vec4(Normal, 0));
 
 	gl_Position = MVP * vec4(Position,1);
 	
