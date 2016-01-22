@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "glm/glm.hpp"
 #include "glm/vec3.hpp" // glm::vec3
 #include "glm/vec4.hpp" // glm::vec4, glm::ivec4
@@ -7,9 +9,59 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
+
 #include "MeshRenderer.h"
 
+//forward
+class Ray;
+
 struct Collider
+{
+	MeshRenderer* visual;
+
+	glm::vec3 offset;
+
+	glm::vec3 translation;
+	glm::vec3 scale;
+	glm::mat4 modelMatrix;
+
+	Collider(MeshRenderer* _visual);
+	virtual ~Collider();
+
+	void setVisual(MeshRenderer* _visual);
+
+	void applyTransform(const glm::vec3& _translation, const glm::vec3& _scale);
+
+	//keep the translation, apply only the scale
+	void applyScale(const glm::vec3& _scale);
+
+	//keep the translation, append the scale 
+	void appendScale(const glm::vec3& _scale);
+
+	//keep the scale, apply only the translation
+	void applyTranslation(const glm::vec3& _translation);
+
+	//keep the scale, append the translation 
+	void appendTranslation(const glm::vec3& _translation);
+
+	void setOffset(glm::vec3 _offset);
+
+	glm::mat4 getModelMatrix();
+
+	virtual void updateModelMatrix() = 0;
+
+	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1, 0, 0)) = 0;
+
+	virtual void debugLog() = 0;
+
+	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) = 0;
+
+	virtual void drawUI();
+};
+
+struct BoxCollider : public Collider
 {
 	glm::vec3 localTopRight;
 	glm::vec3 localBottomLeft;
@@ -17,24 +69,11 @@ struct Collider
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
 
-	MeshRenderer* visual;
+	BoxCollider(MeshRenderer* _visual = nullptr);
 
-	Collider(MeshRenderer* _visual = nullptr);
-
-	void setVisual(MeshRenderer* _visual);
-
-	void applyTransform(const glm::vec3& translation, const glm::vec3& scale);
-
-	//keep the translation, apply only the scale
-	void applyScale(const glm::vec3& scale);
-
-	//keep the translation, append the scale 
-	void appendScale(const glm::vec3& scale);
-
-	//keep the scale, apply only the translation
-	void applyTranslation(const glm::vec3& translation);
-
-	//keep the scale, append the translation 
-	void appendTranslation(const glm::vec3& translation);
-
+	virtual void updateModelMatrix() override;
+	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1,0,0)) override;
+	virtual void debugLog() override;
+	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) override;
+	virtual void drawUI();
 };

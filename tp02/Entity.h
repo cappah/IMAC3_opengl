@@ -55,6 +55,8 @@ struct Entity : public Transform
 	MeshRenderer* meshRenderer;
 	Collider* collider;
 
+	bool isSelected;
+
 	Entity();
 
 	virtual void onChangeModelMatrix() override;
@@ -62,4 +64,9 @@ struct Entity : public Transform
 	void applyTransform();
 
 	void drawUI();
+
+	bool getIsSelected();
+
+	void select();
+	void deselect();
 };

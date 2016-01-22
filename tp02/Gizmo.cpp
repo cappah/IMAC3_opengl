@@ -27,21 +27,26 @@ Gizmo::Gizmo(MaterialUnlit* _material, Editor* _editor) : target(nullptr), mater
 
 void Gizmo::setTarget(Entity* entity)
 {
+	if (target != nullptr)
+		target->deselect();
+
 	//set target : 
 	target = entity;
 
 	if (target == nullptr)
 		return;
 
+	target->select();
+
 	//update collider position : 
 	for (int i = 0; i < 3; i++)
 	{
 		collider[i].applyTranslation(target->getTranslation() );
-
-		collider[0].appendTranslation( glm::vec3(1.f, 0.f, 0.f) ); // x
-		collider[1].appendTranslation( glm::vec3(0.f, 1.f, 0.f) ); // y
-		collider[2].appendTranslation( glm::vec3(0.f, 0.f, 1.f) ); // z
 	}
+
+	collider[0].appendTranslation(glm::vec3(1.f, 0.f, 0.f)); // x
+	collider[1].appendTranslation(glm::vec3(0.f, 1.f, 0.f)); // y
+	collider[2].appendTranslation(glm::vec3(0.f, 0.f, 1.f)); // z
 }
 
 void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
@@ -59,20 +64,71 @@ void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatri
 	material->setUniform_normalMatrix(glm::mat4(1));
 
 	//x : 
-	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(1.f, 0.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(2.f, 0.2f, 0.2f));
+	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(1.f, 0.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(2.f, 0.1f, 0.1f));
 	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
 	material->setUniform_color(glm::vec3(1, 0, 0));
 	mesh.draw();
 
 	//y : 
 	material->setUniform_color(glm::vec3(0, 1, 0));
-	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 1.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(0.2f, 2.f, 0.2f));
+	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 1.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(0.1f, 2.f, 0.1f));
 	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
 	mesh.draw();
 
 	//z : 
 	material->setUniform_color(glm::vec3(0, 0, 1));
-	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 0.f, 1.f)) * glm::scale(glm::mat4(1), glm::vec3(0.2f, 0.2f, 2.f));
+	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 0.f, 1.f)) * glm::scale(glm::mat4(1), glm::vec3(0.1f, 0.1f, 2.f));
 	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
 	mesh.draw();
+}
+
+Gizmo::GizmoArrowType Gizmo::checkIntersection(const Ray & ray, glm::vec3& intersectionPoint)
+{
+	float t;
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (collider[i].isIntersectedByRay(ray, &t))
+		{
+			intersectionPoint = ray.at(t);
+			return (Gizmo::GizmoArrowType)i;
+		}
+	}
+	return GIZMO_ARROW_NONE;
+}
+
+void Gizmo::translate(const glm::vec3 & t)
+{
+	if (target == nullptr)
+		return;
+
+	target->translate(t);
+
+	//update collider position : 
+	for (int i = 0; i < 3; i++)
+	{
+		collider[i].applyTranslation(target->getTranslation());
+	}
+
+	collider[0].appendTranslation(glm::vec3(1.f, 0.f, 0.f)); // x
+	collider[1].appendTranslation(glm::vec3(0.f, 1.f, 0.f)); // y
+	collider[2].appendTranslation(glm::vec3(0.f, 0.f, 1.f)); // z
+}
+
+void Gizmo::setTranslation(const glm::vec3 & t)
+{
+	if (target == nullptr)
+		return;
+
+	target->setTranslation(t);
+
+	//update collider position : 
+	for (int i = 0; i < 3; i++)
+	{
+		collider[i].applyTranslation(target->getTranslation());
+	}
+
+	collider[0].appendTranslation(glm::vec3(1.f, 0.f, 0.f)); // x
+	collider[1].appendTranslation(glm::vec3(0.f, 1.f, 0.f)); // y
+	collider[2].appendTranslation(glm::vec3(0.f, 0.f, 1.f)); // z
 }

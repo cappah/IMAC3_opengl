@@ -76,9 +76,10 @@ void Transform::updateModelMatrix()
 
 //////////////////////////////
 
-Entity::Entity() : Transform(), meshRenderer(nullptr), collider(nullptr)
+Entity::Entity() : Transform(), meshRenderer(nullptr), collider(nullptr), isSelected(false)
 {
-
+	name.reserve(100);
+	name[0] = '\0';
 }
 
 void Entity::onChangeModelMatrix()
@@ -95,7 +96,36 @@ void Entity::applyTransform()
 void Entity::drawUI()
 {
 	ImGui::Begin("entity");
-	ImGui::InputText(name.c_str(), &name[0], name.size());
+	ImGui::InputText("name", &name[0], name.capacity());
+
+	if(collider != nullptr)
+		if (ImGui::CollapsingHeader("collider"))
+		{
+			collider->drawUI();
+		}
+
+	if (meshRenderer != nullptr)
+		if (ImGui::CollapsingHeader("mesh renderer"))
+		{
+			meshRenderer->drawUI();
+		}
+
+
 	ImGui::End();
 	//...TODO
+}
+
+bool Entity::getIsSelected()
+{
+	return isSelected;
+}
+
+void Entity::select()
+{
+	isSelected = true;
+}
+
+void Entity::deselect()
+{
+	isSelected = false;
 }

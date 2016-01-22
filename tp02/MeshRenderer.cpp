@@ -4,3 +4,8 @@ MeshRenderer::MeshRenderer(Mesh* _mesh, Material* _material) : mesh(_mesh), mate
 {
 
 }
+
+void MeshRenderer::drawUI()
+{
+	//TODO
+}

@@ -24,7 +24,7 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
-
+#include "InputHandler.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "MeshRenderer.h"
@@ -321,19 +321,11 @@ public :
 			if (entities[i]->collider == nullptr)
 				continue;
 
-			glm::mat4 modelMatrix = entities[i]->getModelMatrix(); //get modelMatrix
-			glm::mat4 mv = worldToView * modelMatrix;
-			glm::mat4 normalMatrix = glm::transpose(glm::inverse(mv));
-			glm::mat4 mvp = projection * worldToView * modelMatrix;
+			glm::vec3 colliderColor(1, 0, 0);
+			if (entities[i]->getIsSelected())
+				colliderColor = glm::vec3(1, 1, 0);
 
-			MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(entities[i]->collider->visual->material);
-
-			unlitMat->use();
-			unlitMat->setUniform_MVP(mvp);
-			unlitMat->setUniform_normalMatrix(normalMatrix);
-			unlitMat->setUniform_color(glm::vec3(1,0,0));
-
-			entities[i]->collider->visual->mesh->draw();
+			entities[i]->collider->render(projection, worldToView, colliderColor);
 		}
 
 
@@ -392,6 +384,9 @@ const float GUIStates::MOUSE_PAN_SPEED = 0.001f;
 const float GUIStates::MOUSE_ZOOM_SPEED = 0.05f;
 const float GUIStates::MOUSE_TURN_SPEED = 0.005f;
 void init_gui_states(GUIStates & guiStates);
+
+
+
 
 
 int main( int argc, char **argv )
@@ -466,6 +461,9 @@ int main( int argc, char **argv )
 	///////////////////// SET APPLICATION GLOBAL PARAMETERS /////////////////////
 	Application::get().setWindowWidth(width);
 	Application::get().setWindowHeight(height);
+
+	//////////////////// INPUT HANDLER ///////////////////////////
+	InputHandler inputHandler;
 
 	//////////////////// 3D Gpass shaders ////////////////////////
 	// Try to load and compile shaders
@@ -598,8 +596,8 @@ int main( int argc, char **argv )
 
 
 	//colliders : 
-    Collider boxCollider01(&cubeWireFrameRenderer);
-	Collider boxCollider02(&cubeWireFrameRenderer);
+    BoxCollider boxCollider01(&cubeWireFrameRenderer);
+	BoxCollider boxCollider02(&cubeWireFrameRenderer);
 
 	//entities : 
 	//cube entity 01
@@ -634,6 +632,9 @@ int main( int argc, char **argv )
         int rightButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_RIGHT );
         int middleButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_MIDDLE );
 
+		int altPressed = glfwGetKey(window, GLFW_KEY_LEFT_ALT);
+		int shiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
+
         if( leftButton == GLFW_PRESS )
             guiStates.turnLock = true;
         else
@@ -644,13 +645,13 @@ int main( int argc, char **argv )
         else
             guiStates.zoomLock = false;
 
-        if( middleButton == GLFW_PRESS )
+        if( middleButton == GLFW_PRESS || (leftButton == GLFW_PRESS && altPressed) )
             guiStates.panLock = true;
         else
             guiStates.panLock = false;
 
         // Camera movements
-        int altPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
+
         if (!altPressed && (leftButton == GLFW_PRESS || rightButton == GLFW_PRESS || middleButton == GLFW_PRESS))
         {
             double x; double y;
@@ -658,38 +659,46 @@ int main( int argc, char **argv )
             guiStates.lockPositionX = x;
             guiStates.lockPositionY = y;
         }
-        if (altPressed == GLFW_PRESS)
+        if (altPressed == GLFW_PRESS || shiftPressed == GLFW_PRESS)
         {
             double mousex; double mousey;
             glfwGetCursorPos(window, &mousex, &mousey);
             int diffLockPositionX = mousex - guiStates.lockPositionX;
             int diffLockPositionY = mousey - guiStates.lockPositionY;
-            if (guiStates.zoomLock)
-            {
-                float zoomDir = 0.0;
-                if (diffLockPositionX > 0)
-                    zoomDir = -1.f;
-                else if (diffLockPositionX < 0 )
-                    zoomDir = 1.f;
-                camera_zoom(camera, zoomDir * GUIStates::MOUSE_ZOOM_SPEED);
-            }
-            else if (guiStates.turnLock)
-            {
-                camera_turn(camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
-                            diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
 
-            }
-            else if (guiStates.panLock)
-            {
-                camera_pan(camera, diffLockPositionX * GUIStates::MOUSE_PAN_SPEED,
-                            diffLockPositionY * GUIStates::MOUSE_PAN_SPEED);
-            }
+			if (altPressed == GLFW_PRESS && shiftPressed == GLFW_RELEASE)
+			{
+				if (guiStates.zoomLock)
+				{
+					float zoomDir = 0.0;
+					if (diffLockPositionX > 0)
+						zoomDir = -1.f;
+					else if (diffLockPositionX < 0)
+						zoomDir = 1.f;
+					camera_zoom(camera, zoomDir * GUIStates::MOUSE_ZOOM_SPEED);
+				}
+				else if (guiStates.turnLock)
+				{
+					camera_turn(camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
+						diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
+
+				}
+			}
+			if (altPressed == GLFW_PRESS && shiftPressed == GLFW_PRESS)
+			{
+				if (guiStates.panLock)
+				{
+					camera_pan(camera, diffLockPositionX * GUIStates::MOUSE_PAN_SPEED,
+						diffLockPositionY * GUIStates::MOUSE_PAN_SPEED);
+				}
+			}
+
             guiStates.lockPositionX = mousex;
             guiStates.lockPositionY = mousey;
         }
 
 		//object picking : 
-		if (leftButton == GLFW_PRESS)
+		if (inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
 		{
 			glm::vec3 origin = camera.eye;
 			double mouseX, mouseY;
@@ -700,6 +709,11 @@ int main( int argc, char **argv )
 
 			Ray ray(origin, direction, 1000.f);
 
+			if (editor.testGizmoIntersection(ray))
+			{
+				editor.beginMoveGizmo();
+			}
+
 			for (int i = 0; i < entities.size(); i++)
 			{
 				if (entities[i]->collider != nullptr)
@@ -708,13 +722,34 @@ int main( int argc, char **argv )
 					{
 						editor.changeCurrentSelected(entities[i]);
 						std::cout << "intersect a cube !!!" << std::endl;
-						std::cout << "collider bottomLeft : " << entities[i]->collider->bottomLeft.x << ", " << entities[i]->collider->bottomLeft.y << ", " << entities[i]->collider->bottomLeft.z << std::endl;
-						std::cout<<"collider topRight : "<<entities[i]->collider->topRight.x<<", "<< entities[i]->collider->topRight.y<<", "<< entities[i]->collider->topRight.z<<std::endl;
+
 						ray.debugLog();
 					}
 				}
 			}
 		}
+		else if (inputHandler.getMouseButtonUp(window, GLFW_MOUSE_BUTTON_LEFT))
+		{
+			if(editor.isMovingGizmo())
+				editor.endMoveGizmo();
+		}
+		if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
+		{
+			if (editor.isMovingGizmo())
+			{
+				glm::vec3 origin = camera.eye;
+				double mouseX, mouseY;
+				glfwGetCursorPos(window, &mouseX, &mouseY);
+				glm::vec3 direction = screenToWorld(mouseX, mouseY, width, height, camera);
+				Ray ray(origin, direction, 1000.f);
+
+				editor.moveGizmo(ray);
+			}
+		}
+
+
+		//synchronize input handler : 
+		inputHandler.synchronize(window);
 		
 		//rendering : 
 		renderer.render(camera, entities);
@@ -732,7 +767,7 @@ int main( int argc, char **argv )
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
 
-		ImGui::SetNextWindowSize(ImVec2(200, 100));
+		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI();
 
         ImGui::Render();

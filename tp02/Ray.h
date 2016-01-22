@@ -20,10 +20,11 @@ private:
 
 public:
 	Ray(glm::vec3 _origin, glm::vec3 _direction, float _length = 100.f);
-
-	glm::vec3 at(float t);
-
-	bool intersect(Collider& other);
-
+	glm::vec3 at(float t) const;
+	bool intersect(Collider& other, float* t = nullptr);
+	bool intersectPlane(const glm::vec3& anchor, const glm::vec3& normal, float* t = nullptr) const;
+	glm::vec3 getDirection() const;
+	glm::vec3 getOrigin() const;
+	float getLength() const;
 	void debugLog();
 };
