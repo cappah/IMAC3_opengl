@@ -30,17 +30,18 @@ void Gizmo::setTarget(Entity* entity)
 	//set target : 
 	target = entity;
 
+	if (target == nullptr)
+		return;
+
 	//update collider position : 
 	for (int i = 0; i < 3; i++)
 	{
-		collider[i].applyTranslation( entity->getTranslation() );
+		collider[i].applyTranslation(target->getTranslation() );
 
 		collider[0].appendTranslation( glm::vec3(1.f, 0.f, 0.f) ); // x
 		collider[1].appendTranslation( glm::vec3(0.f, 1.f, 0.f) ); // y
 		collider[2].appendTranslation( glm::vec3(0.f, 0.f, 1.f) ); // z
 	}
-
-	editor->changeCurrentSelected(entity);
 }
 
 void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)

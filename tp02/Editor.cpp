@@ -8,6 +8,9 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : currentSelected(nullptr)
 void Editor::changeCurrentSelected(Entity* entity)
 {
 	currentSelected = entity;
+	
+	if(gizmo != nullptr && entity != nullptr)
+		gizmo->setTarget(currentSelected);
 }
 
 void Editor::renderGizmo(const Camera& camera)//(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)

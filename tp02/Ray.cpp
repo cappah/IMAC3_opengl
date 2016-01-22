@@ -12,6 +12,43 @@ glm::vec3 Ray::at(float t)
 
 bool Ray::intersect(Collider& other)
 {
+	// r.dir is unit direction vector of ray
+	glm::vec3 dirfrac;
+	dirfrac.x = 1.0f / direction.x;
+	dirfrac.y = 1.0f / direction.y;
+	dirfrac.z = 1.0f / direction.z;
+	// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+	// r.org is origin of ray
+	float t1 = (other.bottomLeft.x- origin.x)*dirfrac.x;
+	float t2 = (other.topRight.x - origin.x)*dirfrac.x;
+	float t3 = (other.bottomLeft.y - origin.y)*dirfrac.y;
+	float t4 = (other.topRight.y - origin.y)*dirfrac.y;
+	float t5 = (other.bottomLeft.z - origin.z)*dirfrac.z;
+	float t6 = (other.topRight.z - origin.z)*dirfrac.z;
+
+	float tmin = glm::max<float>(glm::max<float>(glm::min<float>(t1, t2), glm::min<float>(t3, t4)), glm::min<float>(t5, t6));
+	float tmax = glm::min<float>(glm::min<float>(glm::max<float>(t1, t2), glm::max<float>(t3, t4)), glm::max<float>(t5, t6));
+
+	// if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
+	if (tmax < 0)
+	{
+		//t = tmax;
+		return false;
+	}
+
+	// if tmin > tmax, ray doesn't intersect AABB
+	if (tmin > tmax)
+	{
+		//t = tmax;
+		return false;
+	}
+
+	//t = tmin;
+	return true;
+
+	/*
+
+
 	glm::vec3 t;
 	int maxIndex = 0;
 	for (int i = 0; i < 3; i++)
@@ -38,7 +75,7 @@ bool Ray::intersect(Collider& other)
 			(pt[o2] > other.bottomLeft[o2] && pt[o2] < other.topRight[o2]));
 	}
 
-	return false;
+	return false;*/
 }
 
 void Ray::debugLog()

@@ -598,18 +598,19 @@ int main( int argc, char **argv )
 
 
 	//colliders : 
-    Collider boxCollider(&cubeWireFrameRenderer);
+    Collider boxCollider01(&cubeWireFrameRenderer);
+	Collider boxCollider02(&cubeWireFrameRenderer);
 
 	//entities : 
 	//cube entity 01
 	Entity entity_cube01;
 	entity_cube01.meshRenderer = &cubeRenderer;
-	entity_cube01.collider = &boxCollider;
+	entity_cube01.collider = &boxCollider01;
 	entity_cube01.setTranslation( glm::vec3(4, 0, 0) );
 	//cube entity 02
 	Entity entity_cube02;
 	entity_cube02.meshRenderer = &cubeRenderer;
-	entity_cube02.collider = &boxCollider;
+	entity_cube02.collider = &boxCollider02;
 	entity_cube02.setTranslation( glm::vec3(0, 0, 4) );
 
 	//plane entity
