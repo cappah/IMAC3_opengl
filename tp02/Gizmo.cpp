@@ -16,13 +16,13 @@ Gizmo::Gizmo(MaterialUnlit* _material, Editor* _editor) : target(nullptr), mater
 		collider[i].setVisual(&meshRenderer);
 	}
 
-	collider[0].applyScale(glm::scale(glm::mat4(1), glm::vec3(2.f, 0.2f, 0.2f))); // x
-	collider[1].applyScale(glm::scale(glm::mat4(1), glm::vec3(0.2f, 2.f, 0.2f))); // y
-	collider[2].applyScale(glm::scale(glm::mat4(1), glm::vec3(0.2f, 0.2f, 2.f))); // z
+	collider[0].applyScale(glm::vec3(2.f, 0.2f, 0.2f)); // x
+	collider[1].applyScale(glm::vec3(0.2f, 2.f, 0.2f)); // y
+	collider[2].applyScale(glm::vec3(0.2f, 0.2f, 2.f)); // z
 
-	collider[0].applyTranslation(glm::translate(glm::mat4(1), glm::vec3(1.f, 0.f, 0.f))); // x
-	collider[1].applyTranslation(glm::translate(glm::mat4(1), glm::vec3(0.f, 1.f, 0.f))); // y
-	collider[2].applyTranslation(glm::translate(glm::mat4(1), glm::vec3(0.f, 0.f, 1.f))); // z
+	collider[0].applyTranslation(glm::vec3(1.f, 0.f, 0.f)); // x
+	collider[1].applyTranslation(glm::vec3(0.f, 1.f, 0.f)); // y
+	collider[2].applyTranslation(glm::vec3(0.f, 0.f, 1.f)); // z
 }
 
 void Gizmo::setTarget(Entity* entity)
@@ -33,11 +33,11 @@ void Gizmo::setTarget(Entity* entity)
 	//update collider position : 
 	for (int i = 0; i < 3; i++)
 	{
-		collider[i].applyTranslation(entity->modelMatrix);
+		collider[i].applyTranslation( entity->getTranslation() );
 
-		collider[0].appendTranslation(glm::translate(glm::mat4(1), glm::vec3(1.f, 0.f, 0.f))); // x
-		collider[1].appendTranslation(glm::translate(glm::mat4(1), glm::vec3(0.f, 1.f, 0.f))); // y
-		collider[2].appendTranslation(glm::translate(glm::mat4(1), glm::vec3(0.f, 0.f, 1.f))); // z
+		collider[0].appendTranslation( glm::vec3(1.f, 0.f, 0.f) ); // x
+		collider[1].appendTranslation( glm::vec3(0.f, 1.f, 0.f) ); // y
+		collider[2].appendTranslation( glm::vec3(0.f, 0.f, 1.f) ); // z
 	}
 
 	editor->changeCurrentSelected(entity);
@@ -49,7 +49,7 @@ void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatri
 	glm::mat4 translation(1);
 	if (target != nullptr)
 	{
-		translation = glm::translate(glm::mat4(1), glm::vec3(target->modelMatrix[3][0], target->modelMatrix[3][1], target->modelMatrix[3][2]));
+		translation = glm::translate(glm::mat4(1), target->getTranslation());
 	}
 
 	MaterialUnlit* material = static_cast<MaterialUnlit*>(meshRenderer.material);

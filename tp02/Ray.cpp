@@ -16,7 +16,7 @@ bool Ray::intersect(Collider& other)
 	int maxIndex = 0;
 	for (int i = 0; i < 3; i++)
 	{
-		if (direction.x > 0)
+		if (direction[i] > 0)
 			t[i] = (other.bottomLeft[i] - origin[i]) / direction[i];
 		else
 			t[i] = (other.topRight[i] - origin[i]) / direction[i];
@@ -37,4 +37,11 @@ bool Ray::intersect(Collider& other)
 		return((pt[o1] > other.bottomLeft[o1] && pt[o1] < other.topRight[o1]) &&
 			(pt[o2] > other.bottomLeft[o2] && pt[o2] < other.topRight[o2]));
 	}
+
+	return false;
+}
+
+void Ray::debugLog()
+{
+	std::cout << "ray origin : (" << origin.x <<", "<<origin.y<<", "<<origin.z << "), ray direction : (" << direction.x << ", " << direction.y << ", " << direction.z << "), ray lenght : " << length << std::endl;
 }

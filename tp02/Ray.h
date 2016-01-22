@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "glm/glm.hpp"
 #include "glm/vec3.hpp" // glm::vec3
 #include "glm/vec4.hpp" // glm::vec4, glm::ivec4
@@ -22,4 +24,6 @@ public:
 	glm::vec3 at(float t);
 
 	bool intersect(Collider& other);
+
+	void debugLog();
 };

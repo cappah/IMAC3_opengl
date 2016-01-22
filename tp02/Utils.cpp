@@ -5,8 +5,8 @@ glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, Cam
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 viewMatrix = glm::lookAt(camera.eye, camera.o, camera.up);
 
-	float x = (2.0f * mouse_x) / width - 1.0f;
-	float y = 1.0f - (2.0f * mouse_y) / height;
+	float x = (2.0f * mouse_x) / (float)width - 1.0f;
+	float y = 1.0f - (2.0f * mouse_y) / (float)height;
 	float z = 1.0f;
 	glm::vec3 ray_nds = glm::vec3(x, y, z);
 

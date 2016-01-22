@@ -14,47 +14,36 @@ void Collider::setVisual(MeshRenderer* _visual)
 	visual = _visual;
 }
 
-void Collider::applyTransform(const glm::mat4& transformMatrix)
+void Collider::applyTransform(const glm::vec3& translation, const glm::vec3& scale)
 {
-	glm::vec3 translateVector(transformMatrix[3][0], transformMatrix[3][1], transformMatrix[3][2]);
-	glm::vec3 scaleVector(transformMatrix[0][0], transformMatrix[1][1], transformMatrix[2][2]);
-
-	topRight = localTopRight * scaleVector + translateVector;
-	bottomLeft = localBottomLeft * scaleVector + translateVector;
+	topRight = localTopRight /* scale */+ translation;
+	bottomLeft = localBottomLeft /* scale*/ + translation;
 }
 
 //keep the translation, apply only the scale
-void Collider::applyScale(const glm::mat4& transformMatrix)
+void Collider::applyScale(const glm::vec3& scale)
 {
-	glm::vec3 scaleVector(transformMatrix[0][0], transformMatrix[1][1], transformMatrix[2][2]);
-
-	topRight = localTopRight * scaleVector;
-	bottomLeft = localBottomLeft * scaleVector;
+	topRight = localTopRight * scale;
+	bottomLeft = localBottomLeft * scale;
 }
 
 //keep the translation, append the scale 
-void Collider::appendScale(const glm::mat4& transformMatrix)
+void Collider::appendScale(const glm::vec3& scale)
 {
-	glm::vec3 scaleVector(transformMatrix[0][0], transformMatrix[1][1], transformMatrix[2][2]);
-
-	topRight = topRight * scaleVector;
-	bottomLeft = bottomLeft * scaleVector;
+	topRight = topRight * scale;
+	bottomLeft = bottomLeft * scale;
 }
 
 //keep the scale, apply only the translation
-void Collider::applyTranslation(const glm::mat4& transformMatrix)
+void Collider::applyTranslation(const glm::vec3& translation)
 {
-	glm::vec3 translateVector(transformMatrix[3][0], transformMatrix[3][1], transformMatrix[3][2]);
-
-	topRight = localTopRight + translateVector;
-	bottomLeft = localBottomLeft + translateVector;
+	topRight = localTopRight + translation;
+	bottomLeft = localBottomLeft + translation;
 }
 
 //keep the scale, append the translation 
-void Collider::appendTranslation(const glm::mat4& transformMatrix)
+void Collider::appendTranslation(const glm::vec3& translation)
 {
-	glm::vec3 translateVector(transformMatrix[3][0], transformMatrix[3][1], transformMatrix[3][2]);
-
-	topRight = topRight + translateVector;
-	bottomLeft = bottomLeft + translateVector;
+	topRight = topRight + translation;
+	bottomLeft = bottomLeft + translation;
 }

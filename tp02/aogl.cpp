@@ -262,7 +262,7 @@ public :
 
 		for (int i = 0; i < entities.size(); i++)
 		{
-			glm::mat4 modelMatrix = entities[i]->modelMatrix; //get modelMatrix
+			glm::mat4 modelMatrix = entities[i]->getModelMatrix(); //get modelMatrix
 			glm::mat4 mv = worldToView * modelMatrix;
 			glm::mat4 normalMatrix = glm::transpose(glm::inverse(mv));
 			glm::mat4 mvp = projection * worldToView * modelMatrix;
@@ -321,7 +321,7 @@ public :
 			if (entities[i]->collider == nullptr)
 				continue;
 
-			glm::mat4 modelMatrix = entities[i]->modelMatrix; //get modelMatrix
+			glm::mat4 modelMatrix = entities[i]->getModelMatrix(); //get modelMatrix
 			glm::mat4 mv = worldToView * modelMatrix;
 			glm::mat4 normalMatrix = glm::transpose(glm::inverse(mv));
 			glm::mat4 mvp = projection * worldToView * modelMatrix;
@@ -601,16 +601,23 @@ int main( int argc, char **argv )
     Collider boxCollider(&cubeWireFrameRenderer);
 
 	//entities : 
-	//cube entity
-	Entity entity_cube;
-	entity_cube.meshRenderer = &cubeRenderer;
-	entity_cube.collider = &boxCollider;
+	//cube entity 01
+	Entity entity_cube01;
+	entity_cube01.meshRenderer = &cubeRenderer;
+	entity_cube01.collider = &boxCollider;
+	entity_cube01.setTranslation( glm::vec3(4, 0, 0) );
+	//cube entity 02
+	Entity entity_cube02;
+	entity_cube02.meshRenderer = &cubeRenderer;
+	entity_cube02.collider = &boxCollider;
+	entity_cube02.setTranslation( glm::vec3(0, 0, 4) );
+
 	//plane entity
 	Entity entity_plane;
 	entity_plane.meshRenderer = &planeRenderer;
-	entity_plane.modelMatrix = glm::scale(glm::mat4(1), glm::vec3(30,1,30)); //scale plane
+	entity_plane.setScale( glm::vec3(30,1,30) ); //scale plane
 
-	std::vector<Entity*> entities = {&entity_cube, &entity_plane};
+	std::vector<Entity*> entities = {&entity_cube01, &entity_cube02, &entity_plane};
 
 	//editor : 
 	Editor editor(&wireframeMaterial);
@@ -687,8 +694,8 @@ int main( int argc, char **argv )
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
 			glm::vec3 direction = screenToWorld(mouseX, mouseY, width, height, camera);
-
-			direction = glm::normalize(direction);
+			//direction = direction - origin;
+			//direction = glm::normalize(direction);
 
 			Ray ray(origin, direction, 1000.f);
 
@@ -698,7 +705,11 @@ int main( int argc, char **argv )
 				{
 					if (ray.intersect(*entities[i]->collider))
 					{
+						editor.changeCurrentSelected(entities[i]);
 						std::cout << "intersect a cube !!!" << std::endl;
+						std::cout << "collider bottomLeft : " << entities[i]->collider->bottomLeft.x << ", " << entities[i]->collider->bottomLeft.y << ", " << entities[i]->collider->bottomLeft.z << std::endl;
+						std::cout<<"collider topRight : "<<entities[i]->collider->topRight.x<<", "<< entities[i]->collider->topRight.y<<", "<< entities[i]->collider->topRight.z<<std::endl;
+						ray.debugLog();
 					}
 				}
 			}

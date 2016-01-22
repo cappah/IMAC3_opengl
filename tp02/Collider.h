@@ -23,18 +23,18 @@ struct Collider
 
 	void setVisual(MeshRenderer* _visual);
 
-	void applyTransform(const glm::mat4& transformMatrix);
+	void applyTransform(const glm::vec3& translation, const glm::vec3& scale);
 
 	//keep the translation, apply only the scale
-	void applyScale(const glm::mat4& transformMatrix);
+	void applyScale(const glm::vec3& scale);
 
 	//keep the translation, append the scale 
-	void appendScale(const glm::mat4& transformMatrix);
+	void appendScale(const glm::vec3& scale);
 
 	//keep the scale, apply only the translation
-	void applyTranslation(const glm::mat4& transformMatrix);
+	void applyTranslation(const glm::vec3& translation);
 
 	//keep the scale, append the translation 
-	void appendTranslation(const glm::mat4& transformMatrix);
+	void appendTranslation(const glm::vec3& translation);
 
 };
