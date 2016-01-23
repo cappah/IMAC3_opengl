@@ -6,13 +6,16 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
-struct MeshRenderer
+#include "Component.h"
+
+struct MeshRenderer : public Component
 {
 	Mesh* mesh;
 	Material* material;
 
 	MeshRenderer(Mesh* _mesh = nullptr, Material* _material = nullptr);
 
-	void drawUI();
+	virtual void drawUI() override;
+	virtual void eraseFromScene(Scene& scene) override;
 };
 

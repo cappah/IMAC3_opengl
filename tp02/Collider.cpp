@@ -1,7 +1,8 @@
 #include "Collider.h"
 #include "Ray.h"
+#include "Scene.h"
 
-Collider::Collider(MeshRenderer* _visual) : visual(_visual)
+Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual)
 {
 
 }
@@ -14,6 +15,11 @@ Collider::~Collider()
 void Collider::setVisual(MeshRenderer* _visual)
 {
 	visual = _visual;
+}
+
+void Collider::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
+{
+	applyTransform(translation, scale);
 }
 
 void Collider::applyTransform(const glm::vec3& _translation, const glm::vec3& _scale)
@@ -66,6 +72,11 @@ void Collider::setOffset(glm::vec3 _offset)
 glm::mat4 Collider::getModelMatrix()
 {
 	return modelMatrix;
+}
+
+void Collider::eraseFromScene(Scene & scene)
+{
+	scene.erase(this);
 }
 
 void Collider::drawUI()
@@ -200,5 +211,8 @@ bool BoxCollider::isIntersectedByRay(const Ray& ray, float* t)
 
 void BoxCollider::drawUI()
 {
-	Collider::drawUI();
+	if (ImGui::CollapsingHeader("collider"))
+	{
+		Collider::drawUI();
+	}
 }

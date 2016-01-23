@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <algorithm>
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -14,9 +15,13 @@
 
 #include "MeshRenderer.h"
 #include "Collider.h"
+#include "Lights.h"
 
 #include "glm/gtc/quaternion.hpp"
 
+//forward
+class Component;
+class Scene;
 
 class Transform
 {
@@ -48,16 +53,24 @@ public :
 
 };
 
-struct Entity : public Transform
+class Entity : public Transform
 {
-	std::string name;
+private:
 
-	MeshRenderer* meshRenderer;
-	Collider* collider;
+	Scene* m_scene;
 
-	bool isSelected;
+	std::string m_name;
 
-	Entity();
+	//MeshRenderer* meshRenderer;
+	//Collider* collider;
+
+	std::vector<Component*> m_components;
+
+	bool m_isSelected;
+
+public:
+	Entity(Scene* scene);
+	~Entity();
 
 	virtual void onChangeModelMatrix() override;
 
@@ -65,8 +78,27 @@ struct Entity : public Transform
 
 	void drawUI();
 
-	bool getIsSelected();
+	bool getIsSelected() const ;
+	std::string getName() const;
 
 	void select();
 	void deselect();
+
+	// functions to add components : 
+	Entity& add(PointLight* pointLight);
+	Entity& add(DirectionalLight* directionalLight);
+	Entity& add(SpotLight* spotLight);
+	Entity& add(Collider* collider);
+	Entity& add(MeshRenderer* meshRenderer);
+
+	// functions to erase components : 
+	Entity& erase(PointLight* pointLight);
+	Entity& erase(DirectionalLight* directionalLight);
+	Entity& erase(SpotLight* spotLight);
+	Entity& erase(Collider* collider);
+	Entity& erase(MeshRenderer* meshRenderer);
+
+	// function to get component : 
+	Component* getComponent(Component::ComponentType type);
+
 };

@@ -9,10 +9,13 @@
 #include "glm/mat4x4.hpp" // glm::mat4
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
+#include "glm/gtc/quaternion.hpp"
 
 #include "Utils.h"
 
-struct Light
+#include "Component.h"
+
+struct Light : public Component
 {
 	float intensity;
 	glm::vec3 color;
@@ -26,7 +29,9 @@ struct PointLight : public Light
 
 	PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position);
 
-	void drawUI(int id);
+	virtual void drawUI() override;
+	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation  = glm::quat()) override;
+	virtual void eraseFromScene(Scene& scene) override;
 };
 
 struct DirectionalLight : public Light
@@ -35,7 +40,9 @@ struct DirectionalLight : public Light
 
 	DirectionalLight(float _intensity, glm::vec3 _color, glm::vec3 _direction);
 
-	void drawUI(int id);
+	virtual void drawUI() override;
+	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
+	virtual void eraseFromScene(Scene& scene) override;
 };
 
 struct SpotLight : public Light
@@ -46,6 +53,8 @@ struct SpotLight : public Light
 
 	SpotLight(float _intensity, glm::vec3 _color, glm::vec3 _position, glm::vec3 _direction, float _angle);
 
-	void drawUI(int id);
+	virtual void drawUI() override;
+	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
+	virtual void eraseFromScene(Scene& scene) override;
 };
 

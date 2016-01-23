@@ -14,10 +14,12 @@
 
 #include "MeshRenderer.h"
 
+#include "Component.h"
+
 //forward
 class Ray;
 
-struct Collider
+struct Collider : public Component
 {
 	MeshRenderer* visual;
 
@@ -31,6 +33,8 @@ struct Collider
 	virtual ~Collider();
 
 	void setVisual(MeshRenderer* _visual);
+
+	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale, const glm::quat& rotation) override;
 
 	void applyTransform(const glm::vec3& _translation, const glm::vec3& _scale);
 
@@ -58,7 +62,10 @@ struct Collider
 
 	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) = 0;
 
-	virtual void drawUI();
+	virtual void drawUI() override;
+
+	virtual void eraseFromScene(Scene& scene) override;
+
 };
 
 struct BoxCollider : public Collider
@@ -75,5 +82,5 @@ struct BoxCollider : public Collider
 	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1,0,0)) override;
 	virtual void debugLog() override;
 	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) override;
-	virtual void drawUI();
+	virtual void drawUI() override;
 };

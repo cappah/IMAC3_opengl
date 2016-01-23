@@ -38,6 +38,8 @@
 #include "Lights.h"
 #include "Editor.h"
 #include "Ray.h"
+#include "Renderer.h"
+#include "Scene.h"
 
 #ifndef DEBUG_PRINT
 #define DEBUG_PRINT 1
@@ -61,308 +63,6 @@
 extern const unsigned char DroidSans_ttf[];
 extern const unsigned int DroidSans_ttf_len;    
 
-
-
-class Renderer
-{
-private :
-	GLuint glProgram_gPass;
-	GLuint glProgram_lightPass;
-
-	GLuint uniformTexturePosition;
-	GLuint uniformTextureNormal;
-	GLuint uniformTextureDepth;
-	GLuint unformScreenToWorld;
-	GLuint uniformCameraPosition;
-
-	Mesh quadMesh;
-
-	//light system
-	LightManager* lightManager;
-	
-	//frame buffer for deferred lighting
-	GLuint gbufferFbo;
-	GLuint gbufferTextures[3];
-
-	//for blit pass 
-	GLuint glProgram_blit;
-	GLuint uniformTextureBlit;
-
-public : 
-	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path) : quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
-	{
-
-		int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-
-		////////////////////// INIT QUAD MESH ////////////////////////
-		quadMesh.triangleIndex = { 0, 1, 2, 2, 1, 3 };
-		quadMesh.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
-		quadMesh.initGl();
-
-
-		//////////////////// 3D lightPass shaders ////////////////////////
-		// Try to load and compile shaders
-		GLuint vertShaderId_lightPass = compile_shader_from_file(GL_VERTEX_SHADER, programLightPass_vert_path.c_str());
-		GLuint fragShaderId_lightPass = compile_shader_from_file(GL_FRAGMENT_SHADER, programLightPass_frag_path.c_str());
-
-		glProgram_lightPass = glCreateProgram();
-		glAttachShader(glProgram_lightPass, vertShaderId_lightPass);
-		glAttachShader(glProgram_lightPass, fragShaderId_lightPass);
-
-		glLinkProgram(glProgram_lightPass);
-		if (check_link_error(glProgram_lightPass) < 0)
-			exit(1);
-
-		uniformTexturePosition = glGetUniformLocation(glProgram_lightPass, "ColorBuffer");
-		uniformTextureNormal = glGetUniformLocation(glProgram_lightPass, "NormalBuffer");
-		uniformTextureDepth = glGetUniformLocation(glProgram_lightPass, "DepthBuffer");
-		unformScreenToWorld = glGetUniformLocation(glProgram_lightPass, "ScreenToWorld");
-		uniformCameraPosition = glGetUniformLocation(glProgram_lightPass, "CameraPosition");
-
-		//check uniform errors : 
-		if (!checkError("Uniforms"))
-			exit(1);
-
-		//////////////////// 3D Gpass shaders ////////////////////////
-		// Try to load and compile shaders
-		GLuint vertShaderId_gpass = compile_shader_from_file(GL_VERTEX_SHADER, programGPass_vert_path.c_str());
-		GLuint fragShaderId_gpass = compile_shader_from_file(GL_FRAGMENT_SHADER, programGPass_frag_path.c_str());
-
-		glProgram_gPass = glCreateProgram();
-		glAttachShader(glProgram_gPass, vertShaderId_gpass);
-		glAttachShader(glProgram_gPass, fragShaderId_gpass);
-
-		glLinkProgram(glProgram_gPass);
-		if (check_link_error(glProgram_gPass) < 0)
-			exit(1);
-
-		//check uniform errors : 
-		if (!checkError("Uniforms"))
-			exit(1);
-
-		//////////////////// INITIALIZE FRAME BUFFER ///////////////////
-
-		glGenTextures(3, gbufferTextures);
-		// 2 draw buffers for color and normal
-		GLuint gbufferDrawBuffers[2];
-
-		// Create color texture
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		// Create normal texture
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,width, height, 0, GL_RGBA, GL_FLOAT, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		// Create depth texture
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		// Create Framebuffer Object
-		glGenFramebuffers(1, &gbufferFbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
-		// Initialize DrawBuffers
-		gbufferDrawBuffers[0] = GL_COLOR_ATTACHMENT0;
-		gbufferDrawBuffers[1] = GL_COLOR_ATTACHMENT1;
-		glDrawBuffers(2, gbufferDrawBuffers);
-
-		// Attach textures to framebuffer
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gbufferTextures[0], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gbufferTextures[1], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gbufferTextures[2], 0);
-
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		{
-			fprintf(stderr, "Error on building framebuffer\n");
-			exit(EXIT_FAILURE);
-		}
-
-		// Back to the default framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-		////////////////////// LIGHT MANAGER /////////////////////////
-		lightManager = _lightManager;
-		lightManager->init(glProgram_lightPass);
-
-	}
-
-	void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path)
-	{
-		//////////////////// BLIT shaders ////////////////////////
-		GLuint vertShaderId_blit = compile_shader_from_file(GL_VERTEX_SHADER, programBlit_vert_path.c_str());
-		GLuint fragShaderId_blit = compile_shader_from_file(GL_FRAGMENT_SHADER, programBlit_frag_path.c_str());
-
-		glProgram_blit = glCreateProgram();
-		glAttachShader(glProgram_blit, vertShaderId_blit);
-		glAttachShader(glProgram_blit, fragShaderId_blit);
-
-		glLinkProgram(glProgram_blit);
-		if (check_link_error(glProgram_blit) < 0)
-			exit(1);
-
-		//check uniform errors : 
-		if (!checkError("Uniforms"))
-			exit(1);
-
-		// Upload uniforms
-		uniformTextureBlit = glGetUniformLocation(glProgram_blit, "Texture");
-	}
-
-	void render(Camera& camera, std::vector<Entity*> entities)
-	{
-
-		int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-
-
-		////////////////////////// begin scene rendering 
-
-		// Viewport 
-		glViewport(0, 0, width, height);
-
-		// Clear default buffer
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-		///////////// begin draw world
-
-		//////// begin deferred
-
-		////// begin matrix updates
-
-		// update values
-		glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-		glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
-		glm::mat4 vp = projection * worldToView;
-		glm::mat4 screenToWorld = glm::transpose(glm::inverse(vp));
-		
-		///// end matrix updates
-
-		////// begin G pass 
-
-		glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
-
-		// Default states
-		glEnable(GL_DEPTH_TEST);
-
-		// Clear the front buffer
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		for (int i = 0; i < entities.size(); i++)
-		{
-			glm::mat4 modelMatrix = entities[i]->getModelMatrix(); //get modelMatrix
-			glm::mat4 mv = worldToView * modelMatrix;
-			glm::mat4 normalMatrix = glm::transpose(glm::inverse(mv));
-			glm::mat4 mvp = projection * worldToView * modelMatrix;
-
-			entities[i]->meshRenderer->material->use();
-			entities[i]->meshRenderer->material->setUniform_MVP(mvp);
-			entities[i]->meshRenderer->material->setUniform_normalMatrix(normalMatrix);
-
-			entities[i]->meshRenderer->mesh->draw();
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		////// end G pass
-
-		///// begin light pass
-
-		glUseProgram(glProgram_lightPass);
-
-		// send screen to world matrix : 
-		glUniformMatrix4fv(unformScreenToWorld, 1, false, glm::value_ptr(screenToWorld));
-		glUniform3fv(uniformCameraPosition, 1, glm::value_ptr(camera.eye));
-
-		//for lighting : 
-		lightManager->renderLights();
-
-		//geometry informations :
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
-
-		glUniform1i(uniformTexturePosition, 0);
-		glUniform1i(uniformTextureNormal, 1);
-		glUniform1i(uniformTextureDepth, 2);
-
-		// Render quad
-		quadMesh.draw();
-
-		///// end light pass
-
-		///////// end deferred
-
-		///////// begin forward 
-
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, gbufferFbo);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
-		glBlitFramebuffer( 0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST );
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		//draw collider in forward rendering pass (no lightning)
-		for (int i = 0; i < entities.size(); i++)
-		{
-			if (entities[i]->collider == nullptr)
-				continue;
-
-			glm::vec3 colliderColor(1, 0, 0);
-			if (entities[i]->getIsSelected())
-				colliderColor = glm::vec3(1, 1, 0);
-
-			entities[i]->collider->render(projection, worldToView, colliderColor);
-		}
-
-
-		///////// end forward
-
-
-		///////////// end draw world
-
-
-		///////////// begin draw blit quad
-		glDisable(GL_DEPTH_TEST);
-
-		glUseProgram(glProgram_blit);
-
-		for (int i = 0; i < 3; i++)
-		{
-			glViewport((width * i) / 3, 0, width / 3, height / 4);
-
-			glActiveTexture(GL_TEXTURE0);
-			// Bind gbuffer color texture
-			glBindTexture(GL_TEXTURE_2D, gbufferTextures[i]);
-			glUniform1i(uniformTextureBlit, 0);
-
-			quadMesh.draw();
-		}
-
-		glViewport(0, 0, width, height);
-
-		///////////// end draw blit quad
-
-		
-
-		//////////////////////// end scene rendering
-
-
-	}
-};
 
 
 
@@ -554,7 +254,16 @@ int main( int argc, char **argv )
 
 	//create and initialize our light manager
 	LightManager lightManager;
-	//lightManager.init(programObject_lightPass);
+	//lightManager.init(programObject_lightPass); // done in renderer
+
+	// renderer
+	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass.frag"); // call lightManager.init()
+	renderer.initPostProcessQuad("blit.vert", "blit.frag");
+
+	//Our scene
+	Scene scene(&renderer);
+
+	//populate world
 
 	//add lights
     //lightManager.addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1.f, 0), glm::vec3(0, -1.f, 0), glm::radians(20.f) ));
@@ -562,37 +271,44 @@ int main( int argc, char **argv )
 	//lightManager.addPointLight(PointLight(10, glm::vec3(0, 1, 0), glm::vec3(0.f, 1.f, 6.f)));
 	//lightManager.addDirectionalLight(DirectionalLight(10, glm::vec3(0, 0, 1), glm::vec3(0.f, -1.f, -1.f)));
 
+	//materials : 
+	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
+	MaterialUnlit wireframeMaterial(programObject_wireframe);
+
+	MeshRenderer cubeWireFrameRenderer;
+	cubeWireFrameRenderer.mesh = &cubeWireFrame;
+	cubeWireFrameRenderer.material = &wireframeMaterial;
+
 	int r = 5;
 	float omega = 0;
 	for (int i = 0; i < 100; i++)
 	{
-		lightManager.addPointLight(PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3( r*std::cosf(omega), 2.f, r*std::sinf(omega))));
+		//lightManager.addPointLight(PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3( r*std::cosf(omega), 2.f, r*std::sinf(omega))));
+		Entity* newEntity = new Entity(&scene);
+		BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
+		PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0,0,0));
+		newEntity->add(boxColliderLight).add(pointLight);
+		newEntity->setTranslation(glm::vec3(r*std::cosf(omega), 2.f, r*std::sinf(omega)));
+		
+		scene.add(newEntity);
+
 		omega += 0.4f;
 
 		if(i % 10 == 0)
 			r += 5;
 	}
 
-	// renderer
-	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass.frag"); // call lightManager.init()
-	renderer.initPostProcessQuad("blit.vert", "blit.frag");
-
-	//populate world
-
-	//materials : 
-	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
-	MaterialUnlit wireframeMaterial(programObject_wireframe);
 
 	//renderers : 
-	MeshRenderer cubeRenderer;
-	cubeRenderer.mesh = &cube;
-	cubeRenderer.material = &brickMaterial;
+	MeshRenderer cubeRenderer01;
+	cubeRenderer01.mesh = &cube;
+	cubeRenderer01.material = &brickMaterial;
+
+	MeshRenderer cubeRenderer02;
+	cubeRenderer02.mesh = &cube;
+	cubeRenderer02.material = &brickMaterial;
 
 	MeshRenderer planeRenderer(&plane, &brickMaterial);
-
-	MeshRenderer cubeWireFrameRenderer;
-	cubeWireFrameRenderer.mesh = &cubeWireFrame;
-	cubeWireFrameRenderer.material = &wireframeMaterial;
 
 
 	//colliders : 
@@ -601,22 +317,22 @@ int main( int argc, char **argv )
 
 	//entities : 
 	//cube entity 01
-	Entity entity_cube01;
-	entity_cube01.meshRenderer = &cubeRenderer;
-	entity_cube01.collider = &boxCollider01;
-	entity_cube01.setTranslation( glm::vec3(4, 0, 0) );
+	Entity* entity_cube01 = new Entity(&scene);
+	entity_cube01->add(&cubeRenderer01);
+	entity_cube01->add(&boxCollider01);
+	entity_cube01->setTranslation( glm::vec3(4, 0, 0) );
 	//cube entity 02
-	Entity entity_cube02;
-	entity_cube02.meshRenderer = &cubeRenderer;
-	entity_cube02.collider = &boxCollider02;
-	entity_cube02.setTranslation( glm::vec3(0, 0, 4) );
+	Entity* entity_cube02 = new Entity(&scene);
+	entity_cube02->add(&cubeRenderer02);
+	entity_cube02->add(&boxCollider02);
+	entity_cube02->setTranslation( glm::vec3(0, 0, 4) );
 
 	//plane entity
-	Entity entity_plane;
-	entity_plane.meshRenderer = &planeRenderer;
-	entity_plane.setScale( glm::vec3(30,1,30) ); //scale plane
+	Entity* entity_plane = new Entity(&scene);
+	entity_plane->add(&planeRenderer);
+	entity_plane->setScale( glm::vec3(30,1,30) ); //scale plane
 
-	std::vector<Entity*> entities = {&entity_cube01, &entity_cube02, &entity_plane};
+	//std::vector<Entity*> entities = {&entity_cube01, &entity_cube02, &entity_plane};
 
 	//editor : 
 	Editor editor(&wireframeMaterial);
@@ -714,11 +430,13 @@ int main( int argc, char **argv )
 				editor.beginMoveGizmo();
 			}
 
+			auto entities = scene.getEntities();
 			for (int i = 0; i < entities.size(); i++)
 			{
-				if (entities[i]->collider != nullptr)
+				Collider* collider = static_cast<Collider*>( entities[i]->getComponent(Component::ComponentType::COLLIDER) );
+				if (entities[i]->getComponent(Component::ComponentType::COLLIDER) != nullptr)
 				{
-					if (ray.intersect(*entities[i]->collider))
+					if (ray.intersect(*collider))
 					{
 						editor.changeCurrentSelected(entities[i]);
 						std::cout << "intersect a cube !!!" << std::endl;
@@ -752,20 +470,24 @@ int main( int argc, char **argv )
 		inputHandler.synchronize(window);
 		
 		//rendering : 
-		renderer.render(camera, entities);
+		//renderer.render(camera, entities);
+		scene.render(camera);
+		scene.renderColliders(camera);
+		scene.renderDebugDeferred();
 
 		glDisable(GL_DEPTH_TEST);
 		editor.renderGizmo(camera);
 		
 
 #if 1
-
+		/*
         ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
         ImGui::Begin("aogl");
         ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
         lightManager.drawUI();
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
+		*/
 
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI();

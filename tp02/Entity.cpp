@@ -1,4 +1,6 @@
 #include "Entity.h"
+#include "Component.h"
+#include "Scene.h"
 
 Transform::Transform() : m_translation(0,0,0), m_scale(1,1,1)
 {
@@ -76,10 +78,21 @@ void Transform::updateModelMatrix()
 
 //////////////////////////////
 
-Entity::Entity() : Transform(), meshRenderer(nullptr), collider(nullptr), isSelected(false)
+Entity::Entity(Scene* scene) : Transform(), m_scene(scene), m_isSelected(false)
 {
-	name.reserve(100);
-	name[0] = '\0';
+	m_name.reserve(100);
+	m_name[0] = '\0';
+
+	scene->add(this);
+}
+
+Entity::~Entity()
+{
+	for (int i = 0; i < m_components.size(); i++)
+	{
+		m_components[i]->eraseFromScene(*m_scene);
+	}
+	m_components.clear();
 }
 
 void Entity::onChangeModelMatrix()
@@ -89,43 +102,209 @@ void Entity::onChangeModelMatrix()
 
 void Entity::applyTransform()
 {
-	if (collider != nullptr)
-		collider->applyTransform(m_translation, m_scale);
+	//if (collider != nullptr)
+	//	collider->applyTransform(m_translation, m_scale);
+
+	for (auto c : m_components)
+	{
+		c->applyTransform(m_translation, m_scale, m_rotation);
+	}
 }
 
 void Entity::drawUI()
 {
 	ImGui::Begin("entity");
-	ImGui::InputText("name", &name[0], name.capacity());
+	ImGui::InputText("name", &m_name[0], m_name.capacity());
 
-	if(collider != nullptr)
-		if (ImGui::CollapsingHeader("collider"))
-		{
-			collider->drawUI();
-		}
+	bool transformationChanged = false;
+	glm::vec3 tmpRot = glm::eulerAngles(m_rotation);
+	ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 2 * glm::pi<float>());
+	glm::vec3 tmpScale = m_scale;
+	ImGui::InputFloat3("scale", &tmpScale[0]);
 
-	if (meshRenderer != nullptr)
-		if (ImGui::CollapsingHeader("mesh renderer"))
-		{
-			meshRenderer->drawUI();
-		}
+	glm::quat tmpRotQuat(tmpRot);
+	float matching = glm::dot(tmpRotQuat, m_rotation);
+
+	if (glm::abs(matching - 1.f) < 0.0001f)
+	{
+		m_rotation = tmpRotQuat;
+		transformationChanged = true;
+	}
+
+	if (glm::distance(tmpScale, m_scale) < 0.001f)
+	{
+		m_scale = tmpScale;
+		transformationChanged = true;
+	}
+
+	if (transformationChanged)
+		applyTransform();
+
+	for (auto c : m_components)
+	{
+		c->drawUI();
+	}
+
+	//if(collider != nullptr)
+	//	if (ImGui::CollapsingHeader("collider"))
+	//	{
+	//		collider->drawUI();
+	//	}
+
+	//if (meshRenderer != nullptr)
+	//	if (ImGui::CollapsingHeader("mesh renderer"))
+	//	{
+	//		meshRenderer->drawUI();
+	//	}
 
 
 	ImGui::End();
-	//...TODO
 }
 
-bool Entity::getIsSelected()
+bool Entity::getIsSelected() const
 {
-	return isSelected;
+	return m_isSelected;
+}
+
+std::string Entity::getName() const
+{
+	return m_name;
 }
 
 void Entity::select()
 {
-	isSelected = true;
+	m_isSelected = true;
 }
 
 void Entity::deselect()
 {
-	isSelected = false;
+	m_isSelected = false;
 }
+
+Entity& Entity::add(PointLight* pointLight)
+{
+	pointLight->attachToEntity(this);
+
+	m_scene->add(pointLight);
+	m_components.push_back(pointLight);
+
+	return *this;
+}
+
+Entity& Entity::add(DirectionalLight* directionalLight)
+{
+	directionalLight->attachToEntity(this);
+
+	m_scene->add(directionalLight);
+	m_components.push_back(directionalLight);
+
+	return *this;
+}
+
+Entity& Entity::add(SpotLight* spotLight)
+{
+	spotLight->attachToEntity(this);
+
+	m_scene->add(spotLight);
+	m_components.push_back(spotLight);
+
+	return *this;
+}
+
+Entity& Entity::add(Collider * collider)
+{
+	collider->attachToEntity(this);
+
+	m_scene->add(collider);
+	m_components.push_back(collider);
+
+	return *this;
+}
+
+Entity& Entity::add(MeshRenderer * meshRenderer)
+{
+	meshRenderer->attachToEntity(this);
+
+	m_scene->add(meshRenderer);
+	m_components.push_back(meshRenderer);
+
+	return *this;
+}
+
+Entity& Entity::erase(PointLight * pointLight)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), pointLight);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(pointLight);
+	}
+
+	return *this;
+}
+
+Entity& Entity::erase(DirectionalLight * directionalLight)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), directionalLight);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(directionalLight);
+	}
+
+	return *this;
+}
+
+Entity& Entity::erase(SpotLight * spotLight)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), spotLight);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(spotLight);
+	}
+
+	return *this;
+}
+
+Entity& Entity::erase(Collider * collider)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), collider);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(collider);
+	}
+
+	return *this;
+}
+
+Entity& Entity::erase(MeshRenderer * meshRenderer)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), meshRenderer);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(meshRenderer);
+	}
+
+	return *this;
+}
+
+Component* Entity::getComponent(Component::ComponentType type)
+{
+	auto findIt = std::find_if(m_components.begin(), m_components.end(), [type](Component* c) { return c->type() == type; });
+
+	if (findIt != m_components.end())
+	{
+		return *findIt;
+	}
+
+	return nullptr;
+}
+

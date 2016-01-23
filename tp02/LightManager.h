@@ -14,9 +14,14 @@
 class LightManager
 {
 private:
+	/*
 	std::vector<PointLight> pointLights;
 	std::vector<DirectionalLight> directionalLights;
 	std::vector<SpotLight> spotLights;
+	
+	float globalIntensity;
+	float globalAngle;
+	*/
 
 	GLuint uniform_pointLight_pos[120];
 	GLuint uniform_pointLight_col[120];
@@ -36,12 +41,9 @@ private:
 	GLuint uniform_directionalLight_count;
 	GLuint uniform_spotLight_count;
 
-	float globalIntensity;
-	float globalAngle;
-
 public:
 	LightManager();
-
+	/*
 	void addPointLight(PointLight light);
 
 	void addDirectionalLight(DirectionalLight light);
@@ -58,10 +60,13 @@ public:
 
 	void changeAllSpotAngle(float _angle);
 
+	void drawUI();
+
+	void renderLights();*/
+
 	void init(GLuint glProgram);
 
-	void renderLights();
+	void renderLights(std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
 
-	void drawUI();
 };
 
