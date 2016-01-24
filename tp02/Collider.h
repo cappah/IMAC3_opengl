@@ -24,7 +24,8 @@ struct Collider : public Component
 {
 	MeshRenderer* visual;
 
-	glm::vec3 offset;
+	glm::vec3 offsetPosition;
+	glm::vec3 offsetScale;
 
 	glm::vec3 translation;
 	glm::vec3 scale;
@@ -51,7 +52,9 @@ struct Collider : public Component
 	//keep the scale, append the translation 
 	void appendTranslation(const glm::vec3& _translation);
 
-	void setOffset(glm::vec3 _offset);
+	void setOffsetPosition(glm::vec3 _offset);
+
+	void setOffsetScale(glm::vec3 _offset);
 
 	glm::mat4 getModelMatrix();
 

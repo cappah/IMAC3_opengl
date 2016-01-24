@@ -1,7 +1,7 @@
 #include "Scene.h"
 
 
-Scene::Scene(Renderer * renderer) : m_renderer(renderer)
+Scene::Scene(Renderer * renderer) : m_renderer(renderer), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
 {
 }
 
@@ -56,8 +56,8 @@ Scene & Scene::erase(Entity * entity)
 
 	if (findIt != m_entities.end())
 	{
-		m_entities.erase(findIt);
 		delete *findIt;
+		m_entities.erase(findIt);
 	}
 
 	return *this;
@@ -69,8 +69,8 @@ Scene & Scene::erase(PointLight * pointLight)
 
 	if (findIt != m_pointLights.end())
 	{
-		m_pointLights.erase(findIt);
 		delete *findIt;
+		m_pointLights.erase(findIt);
 	}
 
 	return *this;
@@ -82,8 +82,8 @@ Scene & Scene::erase(DirectionalLight * directionalLight)
 
 	if (findIt != m_directionalLights.end())
 	{
-		m_directionalLights.erase(findIt);
 		delete *findIt;
+		m_directionalLights.erase(findIt);
 	}
 
 	return *this;
@@ -95,8 +95,8 @@ Scene & Scene::erase(SpotLight * spotLight)
 
 	if (findIt != m_spotLights.end())
 	{
-		m_spotLights.erase(findIt);
 		delete *findIt;
+		m_spotLights.erase(findIt);
 	}
 
 	return *this;
@@ -108,8 +108,8 @@ Scene & Scene::erase(Collider * collider)
 
 	if (findIt != m_colliders.end())
 	{
-		m_colliders.erase(findIt);
 		delete *findIt;
+		m_colliders.erase(findIt);
 	}
 
 	return *this;
@@ -121,8 +121,8 @@ Scene & Scene::erase(MeshRenderer * meshRenderer)
 
 	if (findIt != m_meshRenderers.end())
 	{
+		delete meshRenderer;
 		m_meshRenderers.erase(findIt);
-		delete *findIt;
 	}
 
 	return *this;
@@ -135,10 +135,42 @@ void Scene::render(const Camera& camera)
 
 void Scene::renderColliders(const Camera & camera)
 {
-	m_renderer->debugDrawColliders(camera, m_entities);
+	if(m_areCollidersVisible)
+		m_renderer->debugDrawColliders(camera, m_entities);
 }
 
 void Scene::renderDebugDeferred()
 {
-	m_renderer->debugDrawDeferred();
+	if(m_isDebugDeferredVisible)
+		m_renderer->debugDrawDeferred();
+}
+
+void Scene::toggleColliderVisibility()
+{
+	m_areCollidersVisible = !m_areCollidersVisible;
+}
+
+void Scene::toggleDebugDeferredVisibility()
+{
+	m_isDebugDeferredVisible = !m_isDebugDeferredVisible;
+}
+
+bool Scene::getAreCollidersVisible() const
+{
+	return m_areCollidersVisible;
+}
+
+bool Scene::getIsDebugDeferredVisible() const
+{
+	return m_isDebugDeferredVisible;
+}
+
+void Scene::setAreCollidersVisible(bool value)
+{
+	m_areCollidersVisible = value;
+}
+
+void Scene::setIsDebugDeferredVisible(bool value)
+{
+	m_isDebugDeferredVisible = value;
 }

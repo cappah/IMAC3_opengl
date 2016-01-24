@@ -31,7 +31,7 @@ struct PointLight : public Light
 {
 	glm::vec3 position;
 
-	PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position);
+	PointLight(float _intensity = 10, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _position = glm::vec3(0, 0, 0));
 
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation  = glm::quat()) override;
@@ -44,7 +44,7 @@ struct DirectionalLight : public Light
 {
 	glm::vec3 direction;
 
-	DirectionalLight(float _intensity, glm::vec3 _color, glm::vec3 _direction);
+	DirectionalLight(float _intensity = 0.2f, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _direction = glm::vec3(0, -1, 0));
 
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
@@ -59,7 +59,7 @@ struct SpotLight : public Light
 	glm::vec3 direction;
 	float angle;
 
-	SpotLight(float _intensity, glm::vec3 _color, glm::vec3 _position, glm::vec3 _direction, float _angle);
+	SpotLight(float _intensity = 10, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _position = glm::vec3(0, 0, 0), glm::vec3 _direction = glm::vec3(0, -1, 0), float _angle = glm::radians(30.f));
 
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;

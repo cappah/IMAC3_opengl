@@ -1,20 +1,83 @@
 #include "Editor.h"
+#include "Scene.h"
 
-Editor::Editor(MaterialUnlit* _unlitMaterial) : m_currentSelected(nullptr)
+Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true)
 {
 	m_gizmo = new Gizmo(_unlitMaterial, this);
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
 {
-	m_currentSelected = entity;
-	
-	if(m_gizmo != nullptr && entity != nullptr)
-		m_gizmo->setTarget(m_currentSelected);
+	m_gizmo->setTarget(nullptr);
+	m_currentSelected.clear();
+	addCurrentSelected(entity);
+}
+
+void Editor::changeCurrentSelected(std::vector<Entity*> entities)
+{
+	m_gizmo->setTarget(nullptr);
+	m_currentSelected.clear();
+	for (auto& e : entities)
+	{
+		addCurrentSelected(e);
+	}
+}
+
+void Editor::addCurrentSelected(Entity * entity)
+{
+	if (entity == nullptr)
+		return;
+
+	m_currentSelected.push_back(entity);
+
+	if (m_gizmo != nullptr)
+	{
+		if(m_currentSelected.size() == 1)
+			m_gizmo->setTarget(m_currentSelected.front()); // set a unique target
+		else
+			m_gizmo->setTargets(m_currentSelected); //set multiple targets
+	}
+}
+
+void Editor::removeCurrentSelected(Entity * entity)
+{
+	if (entity == nullptr)
+		return;
+
+	auto findIt = std::find(m_currentSelected.begin(), m_currentSelected.end(), entity);
+
+	if (findIt != m_currentSelected.end())
+	{
+		m_currentSelected.erase(findIt);
+	}
+
+	if (m_gizmo != nullptr)
+	{
+		if (m_currentSelected.size() == 1)
+			m_gizmo->setTarget(m_currentSelected.front()); // set a unique target
+		else
+			m_gizmo->setTargets(m_currentSelected); //set multiple targets
+	}
+}
+
+void Editor::toggleCurrentSelected(Entity* entity)
+{
+	if (entity == nullptr)
+		return;
+
+	auto findIt = std::find(m_currentSelected.begin(), m_currentSelected.end(), entity);
+
+	if (findIt != m_currentSelected.end())
+		removeCurrentSelected(entity);
+	else
+		addCurrentSelected(entity);
 }
 
 void Editor::renderGizmo(const Camera& camera)//(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 {
+	if (!m_isGizmoVisible)
+		return;
+
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 viewMatrix = glm::lookAt(camera.eye, camera.o, camera.up);
@@ -22,10 +85,88 @@ void Editor::renderGizmo(const Camera& camera)//(const glm::mat4& projectionMatr
 	m_gizmo->render(projectionMatrix, viewMatrix);
 }
 
-void Editor::renderUI()
+void Editor::renderUI(Scene& scene)
 {
-	if (m_currentSelected != nullptr)
-		m_currentSelected->drawUI();
+	if (!m_isUIVisible)
+		return;
+
+	if (ImGui::RadioButton("colliders visibility", scene.getAreCollidersVisible()))
+	{
+		scene.toggleColliderVisibility();
+	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("debug deferred visibility", scene.getIsDebugDeferredVisible()))
+	{
+		scene.toggleDebugDeferredVisibility();
+	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("gizmo visibility", m_isGizmoVisible))
+	{
+		toggleGizmoVisibility();
+	}
+
+
+	int entityId = 0;
+
+	if (ImGui::Button("add empty entity"))
+	{
+		auto newEntity = new Entity(&scene);
+		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+		auto newCollider = new BoxCollider(colliderRenderer);
+		newEntity->add(newCollider);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("add pointLight"))
+	{
+		auto newEntity = new Entity(&scene);
+		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+		auto newCollider = new BoxCollider(colliderRenderer);
+		auto light = new PointLight();
+		newEntity->add(newCollider).add(light);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("add directionalLight"))
+	{
+		auto newEntity = new Entity(&scene);
+		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+		auto newCollider = new BoxCollider(colliderRenderer);
+		auto light = new DirectionalLight();
+		newEntity->add(newCollider).add(light);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("add spotLight"))
+	{
+		auto newEntity = new Entity(&scene);
+		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+		auto newCollider = new BoxCollider(colliderRenderer);
+		auto light = new SpotLight();
+		newEntity->add(newCollider).add(light);
+	}
+
+	if (ImGui::Button("add cube"))
+	{
+		auto newEntity = new Entity(&scene);
+		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+		auto newCollider = new BoxCollider(colliderRenderer);
+		auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get("brick"));
+		newEntity->add(newCollider).add(meshRenderer);
+	}
+
+	if (!m_currentSelected.empty())
+	{
+		ImGui::Begin("selected entities");
+			for(auto selected : m_currentSelected)
+			{
+				ImGui::PushID(entityId);
+				if(ImGui::CollapsingHeader( ("entity "+patch::to_string(entityId)).c_str() ))
+					selected->drawUI();
+				ImGui::PopID();
+
+				entityId++;
+			}
+		ImGui::End();
+	}
+		
 }
 
 bool Editor::testGizmoIntersection(const Ray & ray)
@@ -132,12 +273,46 @@ void Editor::moveGizmo(const Ray & ray)
 
 Entity* Editor::duplicateSelected()
 {
-	if (m_currentSelected == nullptr)
+	if (m_currentSelected.empty())
 		return nullptr;
 
-	auto newEntity = new Entity(*m_currentSelected); //copy the entity
+	std::vector<Entity*> newEntities;
 
-	changeCurrentSelected(newEntity); //change selection, to select the copy
+	for(auto selected : m_currentSelected)
+		newEntities.push_back( new Entity(*selected) ); //copy the entity
 
-	return newEntity;
+	changeCurrentSelected(newEntities); //change selection, to select the copy
+
+	return newEntities.front();
+}
+
+void Editor::deleteSelected(Scene& scene)
+{
+	if (m_currentSelected.empty())
+		return;
+
+	for (int i = 0; i < m_currentSelected.size(); i++)
+		scene.erase( m_currentSelected[i] );
+
+	changeCurrentSelected(nullptr);
+
+}
+
+void Editor::toggleUIVisibility()
+{
+	m_isUIVisible = !m_isUIVisible;
+}
+
+void Editor::toggleGizmoVisibility()
+{
+	m_isGizmoVisible = !m_isGizmoVisible;
+}
+
+void Editor::toggleDebugVisibility(Scene& scene)
+{
+	toggleUIVisibility();
+
+	scene.setAreCollidersVisible(m_isUIVisible);
+	scene.setIsDebugDeferredVisible(m_isUIVisible);
+	m_isGizmoVisible = m_isUIVisible;
 }

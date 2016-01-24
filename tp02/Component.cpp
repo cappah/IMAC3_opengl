@@ -22,6 +22,7 @@ Component& Component::operator=(const Component& other)
 
 Component::~Component()
 {
+	m_entity = nullptr;
 }
 
 void Component::attachToEntity(Entity * entity)

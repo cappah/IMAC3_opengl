@@ -61,7 +61,7 @@ void DirectionalLight::drawUI()
 {
 	if (ImGui::CollapsingHeader("directional light"))
 	{
-		ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f);
+		ImGui::SliderFloat("light intensity", &intensity, 0.f, 10.f);
 		ImGui::ColorEdit3("light color", &color[0]);
 		//ImGui::SliderFloat3("light direction", &direction[0], 0.f, 1.f);
 	}

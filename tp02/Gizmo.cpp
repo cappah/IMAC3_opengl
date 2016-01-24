@@ -1,7 +1,7 @@
 #include "Gizmo.h"
 #include "Editor.h"
 
-Gizmo::Gizmo(MaterialUnlit* _material, Editor* _editor) : target(nullptr), material(_material), mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES)), editor(_editor)
+Gizmo::Gizmo(MaterialUnlit* _material, Editor* _editor) : position(0,0,0), material(_material), mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES)), editor(_editor)
 {
 	//init mesh
 	mesh.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
@@ -27,21 +27,69 @@ Gizmo::Gizmo(MaterialUnlit* _material, Editor* _editor) : target(nullptr), mater
 
 void Gizmo::setTarget(Entity* entity)
 {
-	if (target != nullptr)
-		target->deselect();
+	if (!targets.empty())
+	{
+		for (auto t : targets)
+		{
+			if(t != nullptr)
+				t->deselect();
+		}
+	}
 
 	//set target : 
-	target = entity;
-
-	if (target == nullptr)
+	targets.clear();
+	if (entity == nullptr)
 		return;
 
-	target->select();
+	targets.push_back(entity);
+
+	for (auto t : targets)
+		t->select();
+
+	position = targets.front()->getTranslation();
 
 	//update collider position : 
 	for (int i = 0; i < 3; i++)
 	{
-		collider[i].applyTranslation(target->getTranslation() );
+		collider[i].applyTranslation(position);
+	}
+
+	collider[0].appendTranslation(glm::vec3(1.f, 0.f, 0.f)); // x
+	collider[1].appendTranslation(glm::vec3(0.f, 1.f, 0.f)); // y
+	collider[2].appendTranslation(glm::vec3(0.f, 0.f, 1.f)); // z
+}
+
+void Gizmo::setTargets(std::vector<Entity*> entity)
+{
+	if (!targets.empty())
+	{
+		for (auto t : targets)
+		{
+			if(t != nullptr)
+				t->deselect();
+		}
+	}
+
+	//set target : 
+	targets.clear();
+	if (entity.empty())
+		return;
+
+	targets.insert(targets.end(), entity.begin(), entity.end());
+
+	glm::vec3 barycentre(0, 0, 0);
+	for (auto t : targets)
+	{
+		barycentre += t->getTranslation();
+		t->select();
+	}
+	barycentre /= targets.size();
+
+	position = barycentre;
+	//update collider position : 
+	for (int i = 0; i < 3; i++)
+	{
+		collider[i].applyTranslation(position);
 	}
 
 	collider[0].appendTranslation(glm::vec3(1.f, 0.f, 0.f)); // x
@@ -51,12 +99,13 @@ void Gizmo::setTarget(Entity* entity)
 
 void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 {
+	if (targets.empty())
+		return;
+
 	glm::mat4 modelMatrix(1);
 	glm::mat4 translation(1);
-	if (target != nullptr)
-	{
-		translation = glm::translate(glm::mat4(1), target->getTranslation());
-	}
+
+	translation = glm::translate(glm::mat4(1), position);
 
 	MaterialUnlit* material = static_cast<MaterialUnlit*>(meshRenderer.material);
 
@@ -99,15 +148,18 @@ Gizmo::GizmoArrowType Gizmo::checkIntersection(const Ray & ray, glm::vec3& inter
 
 void Gizmo::translate(const glm::vec3 & t)
 {
-	if (target == nullptr)
+	if (targets.empty())
 		return;
 
-	target->translate(t);
+	for (auto target : targets)
+		target->translate(t);
+
+	position += t;
 
 	//update collider position : 
 	for (int i = 0; i < 3; i++)
 	{
-		collider[i].applyTranslation(target->getTranslation());
+		collider[i].applyTranslation(position);
 	}
 
 	collider[0].appendTranslation(glm::vec3(1.f, 0.f, 0.f)); // x
@@ -117,15 +169,18 @@ void Gizmo::translate(const glm::vec3 & t)
 
 void Gizmo::setTranslation(const glm::vec3 & t)
 {
-	if (target == nullptr)
+	if (targets.empty())
 		return;
 
-	target->setTranslation(t);
+	for (auto target : targets)
+		target->setTranslation(t);
+
+	position = t;
 
 	//update collider position : 
 	for (int i = 0; i < 3; i++)
 	{
-		collider[i].applyTranslation(target->getTranslation());
+		collider[i].applyTranslation(position);
 	}
 
 	collider[0].appendTranslation(glm::vec3(1.f, 0.f, 0.f)); // x

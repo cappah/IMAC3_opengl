@@ -29,10 +29,12 @@ protected :
 	glm::vec3 m_translation;
 	glm::vec3 m_scale;
 	glm::quat m_rotation;
+	glm::vec3 m_eulerRotation;
 
 	glm::mat4 m_modelMatrix;
 public :
 	Transform();
+	virtual ~Transform();
 
 	glm::mat4 getModelMatrix();
 
@@ -72,7 +74,7 @@ public:
 	Entity(Scene* scene);
 	Entity(const Entity& other);
 	Entity& operator=(const Entity& other);
-	~Entity();
+	virtual ~Entity();
 
 	virtual void onChangeModelMatrix() override;
 

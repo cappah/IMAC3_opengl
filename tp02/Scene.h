@@ -29,6 +29,9 @@ private:
 
 	Renderer* m_renderer;
 
+	bool m_areCollidersVisible;
+	bool m_isDebugDeferredVisible;
+
 public:
 	Scene(Renderer * renderer);
 	~Scene();
@@ -52,5 +55,12 @@ public:
 	void render(const Camera& camera);
 	void renderColliders(const Camera& camera);
 	void renderDebugDeferred();
+
+	void toggleColliderVisibility();
+	void toggleDebugDeferredVisibility();
+	bool getAreCollidersVisible() const;
+	bool getIsDebugDeferredVisible() const;
+	void setAreCollidersVisible(bool value);
+	void setIsDebugDeferredVisible(bool value);
 };
 

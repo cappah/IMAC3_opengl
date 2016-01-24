@@ -16,7 +16,8 @@ public:
 
 private:
 	Editor* editor;
-	Entity* target;
+	std::vector<Entity*> targets;
+	glm::vec3 position;
 
 	Mesh mesh;
 	MaterialUnlit* material;
@@ -27,6 +28,7 @@ public:
 	Gizmo(MaterialUnlit* _material = nullptr, Editor* _editor = nullptr);
 
 	void setTarget(Entity* entity);
+	void setTargets(std::vector<Entity*> entity);
 
 	void render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
 

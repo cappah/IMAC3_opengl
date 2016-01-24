@@ -17,6 +17,7 @@ struct MeshRenderer : public Component
 	Material* material;
 
 	MeshRenderer(Mesh* _mesh = nullptr, Material* _material = nullptr);
+	virtual ~MeshRenderer();
 
 	virtual void drawUI() override;
 	virtual void eraseFromScene(Scene& scene) override;

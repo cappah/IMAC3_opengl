@@ -40,6 +40,7 @@
 #include "Ray.h"
 #include "Renderer.h"
 #include "Scene.h"
+#include "Factories.h"
 
 #ifndef DEBUG_PRINT
 #define DEBUG_PRINT 1
@@ -265,23 +266,33 @@ int main( int argc, char **argv )
     glGenerateMipmap(GL_TEXTURE_2D);
 
 
-	//create and initialize our light manager
+	// create and initialize our light manager
 	LightManager lightManager;
 	//lightManager.init(programObject_lightPass); // done in renderer
 
-	// renderer
+	// renderer : 
 	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass.frag"); // call lightManager.init()
 	renderer.initPostProcessQuad("blit.vert", "blit.frag");
 
-	//Our scene
+	// Our scene : 
 	Scene scene(&renderer);
 
-	//populate world
+	// populate the scene :
 
-	//materials : 
+	// materials : 
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
 
+	// fill factories : 
+	MaterialFactory::get().add("brick", &brickMaterial);
+	MaterialFactory::get().add("wireframe", &wireframeMaterial);
+
+	MeshFactory::get().add("cube", &cube);
+	MeshFactory::get().add("cubeWireframe", &cubeWireFrame);
+	MeshFactory::get().add("plane", &plane);
+
+
+	// mesh renderer for colliders : 
 	MeshRenderer cubeWireFrameRenderer;
 	cubeWireFrameRenderer.mesh = &cubeWireFrame;
 	cubeWireFrameRenderer.material = &wireframeMaterial;
@@ -304,6 +315,7 @@ int main( int argc, char **argv )
 	//		r += 5;
 	//}
 
+	// an entity with a light : 
 	Entity* newEntity = new Entity(&scene);
 	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
 	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
@@ -311,36 +323,34 @@ int main( int argc, char **argv )
 
 
 	//renderers : 
-	MeshRenderer cubeRenderer01;
-	cubeRenderer01.mesh = &cube;
-	cubeRenderer01.material = &brickMaterial;
+	MeshRenderer* cubeRenderer01 = new MeshRenderer(&cube, &brickMaterial);
 
-	MeshRenderer cubeRenderer02;
-	cubeRenderer02.mesh = &cube;
-	cubeRenderer02.material = &brickMaterial;
+	//MeshRenderer cubeRenderer02;
+	//cubeRenderer02.mesh = &cube;
+	//cubeRenderer02.material = &brickMaterial;
 
-	MeshRenderer planeRenderer(&plane, &brickMaterial);
+	MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
 
 
 	//colliders : 
-    BoxCollider boxCollider01(&cubeWireFrameRenderer);
-	BoxCollider boxCollider02(&cubeWireFrameRenderer);
+    BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
+	//BoxCollider boxCollider02(&cubeWireFrameRenderer);
 
 	//entities : 
 	//cube entity 01
 	Entity* entity_cube01 = new Entity(&scene);
-	entity_cube01->add(&cubeRenderer01);
-	entity_cube01->add(&boxCollider01);
+	entity_cube01->add(cubeRenderer01);
+	entity_cube01->add(boxCollider01);
 	entity_cube01->setTranslation( glm::vec3(0, 0, 0) );
 	//cube entity 02
-	Entity* entity_cube02 = new Entity(&scene);
-	entity_cube02->add(&cubeRenderer02);
-	entity_cube02->add(&boxCollider02);
-	entity_cube02->setTranslation( glm::vec3(0, 0, 4) );
+	//Entity* entity_cube02 = new Entity(&scene);
+	//entity_cube02->add(&cubeRenderer02);
+	//entity_cube02->add(&boxCollider02);
+	//entity_cube02->setTranslation( glm::vec3(0, 0, 4) );
 
 	//plane entity
 	Entity* entity_plane = new Entity(&scene);
-	entity_plane->add(&planeRenderer);
+	entity_plane->add(planeRenderer);
 	entity_plane->setScale( glm::vec3(30,1,30) ); //scale plane
 
 	//std::vector<Entity*> entities = {&entity_cube01, &entity_cube02, &entity_plane};
@@ -425,14 +435,30 @@ int main( int argc, char **argv )
             guiStates.lockPositionY = mousey;
         }
 
+		// ui visibility : 
+		if (inputHandler.getKeyDown(window, GLFW_KEY_TAB))
+		{
+			if (ctrlPressed)
+				editor.toggleDebugVisibility(scene);
+			else
+				editor.toggleUIVisibility();
+		}
+
 		//entity copy / past : 
 		if (inputHandler.getKeyDown(window, GLFW_KEY_D) && ctrlPressed)
 		{
 			editor.duplicateSelected();
 		}
 
+		//delete selected : 
+		if (inputHandler.getKeyDown(window, GLFW_KEY_DELETE))
+		{
+			editor.deleteSelected(scene);
+		}
+
 		//object picking : 
-		if (inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
+		if ( !altPressed && !ctrlPressed 
+			&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
 		{
 			glm::vec3 origin = camera.eye;
 			double mouseX, mouseY;
@@ -443,26 +469,47 @@ int main( int argc, char **argv )
 
 			Ray ray(origin, direction, 1000.f);
 
+			// intersection with gizmo
 			if (editor.testGizmoIntersection(ray))
 			{
 				editor.beginMoveGizmo();
 			}
-
-			auto entities = scene.getEntities();
-			for (int i = 0; i < entities.size(); i++)
+			//intersection with a collider in the scene
+			else
 			{
-				Collider* collider = static_cast<Collider*>( entities[i]->getComponent(Component::ComponentType::COLLIDER) );
-				if (entities[i]->getComponent(Component::ComponentType::COLLIDER) != nullptr)
+				auto entities = scene.getEntities();
+				float distanceToIntersection = 0;
+				float minDistanceToIntersection = 0;
+				Entity* selectedEntity = nullptr;
+				for (int i = 0, intersectedCount = 0; i < entities.size(); i++)
 				{
-					if (ray.intersect(*collider))
+					Collider* collider = static_cast<Collider*>(entities[i]->getComponent(Component::ComponentType::COLLIDER));
+					if (entities[i]->getComponent(Component::ComponentType::COLLIDER) != nullptr)
 					{
-						editor.changeCurrentSelected(entities[i]);
-						std::cout << "intersect a cube !!!" << std::endl;
+						if (ray.intersect(*collider, &distanceToIntersection))
+						{
+							if (intersectedCount == 0 || distanceToIntersection < minDistanceToIntersection)
+							{
+								selectedEntity = entities[i];
+								minDistanceToIntersection = distanceToIntersection;
+							}
+							intersectedCount++;
 
-						ray.debugLog();
+							//std::cout << "intersect a cube !!!" << std::endl;
+							//ray.debugLog();
+						}
 					}
 				}
+
+				if (selectedEntity != nullptr)
+				{
+					if (!shiftPressed)
+						editor.changeCurrentSelected(selectedEntity);
+					else
+						editor.toggleCurrentSelected(selectedEntity);
+				}
 			}
+			
 		}
 		else if (inputHandler.getMouseButtonUp(window, GLFW_MOUSE_BUTTON_LEFT))
 		{
@@ -508,7 +555,7 @@ int main( int argc, char **argv )
 		*/
 
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
-		editor.renderUI();
+		editor.renderUI(scene);
 
         ImGui::Render();
 

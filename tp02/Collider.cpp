@@ -63,9 +63,16 @@ void Collider::appendTranslation(const glm::vec3& _translation)
 	updateModelMatrix();
 }
 
-void Collider::setOffset(glm::vec3 _offset)
+void Collider::setOffsetPosition(glm::vec3 _offset)
 {
-	offset = _offset;
+	offsetPosition = _offset;
+
+	updateModelMatrix();
+}
+
+void Collider::setOffsetScale(glm::vec3 _offset)
+{
+	offsetScale = _offset;
 
 	updateModelMatrix();
 }
@@ -82,9 +89,12 @@ void Collider::eraseFromScene(Scene & scene)
 
 void Collider::drawUI()
 {
-	glm::vec3 tmpOffset = offset;
-	if (ImGui::InputFloat3("offset", &tmpOffset[0]))
-		setOffset(tmpOffset);
+	glm::vec3 tmpOffset = offsetPosition;
+	if (ImGui::InputFloat3("offset position", &tmpOffset[0]))
+		setOffsetPosition(tmpOffset);
+	glm::vec3 tmpOffsetScale = offsetScale;
+	if (ImGui::InputFloat3("offset scale", &tmpOffsetScale[0]))
+		setOffsetScale(tmpOffsetScale);
 }
 
 
@@ -101,7 +111,7 @@ BoxCollider::BoxCollider(MeshRenderer* _visual) : Collider(_visual)
 
 void BoxCollider::updateModelMatrix()
 {
-	modelMatrix = glm::translate(glm::mat4(1), offset + translation) * glm::scale(glm::mat4(1), scale);
+	modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::scale(glm::mat4(1), scale + offsetScale);
 
 	topRight = glm::vec3( modelMatrix * glm::vec4(localTopRight, 1) );
 	bottomLeft = glm::vec3( modelMatrix * glm::vec4(localBottomLeft, 1) );

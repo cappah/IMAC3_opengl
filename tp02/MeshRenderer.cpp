@@ -7,6 +7,12 @@ MeshRenderer::MeshRenderer(Mesh* _mesh, Material* _material) : Component(MESH_RE
 
 }
 
+MeshRenderer::~MeshRenderer()
+{
+	mesh = nullptr;
+	material = nullptr;
+}
+
 void MeshRenderer::drawUI()
 {
 	if (ImGui::CollapsingHeader("mesh renderer"))

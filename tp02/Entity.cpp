@@ -7,6 +7,11 @@ Transform::Transform() : m_translation(0,0,0), m_scale(1,1,1)
 
 }
 
+Transform::~Transform()
+{
+
+}
+
 glm::mat4 Transform::getModelMatrix()
 {
 	return m_modelMatrix;
@@ -150,13 +155,11 @@ void Entity::applyTransform()
 
 void Entity::drawUI()
 {
-	ImGui::Begin("entity");
 	ImGui::InputText("name", &m_name[0], m_name.capacity());
 
-	glm::vec3 tmpRot = glm::eulerAngles(m_rotation);
-	if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 2 * glm::pi<float>()))
+	if (ImGui::SliderFloat3("rotation", &m_eulerRotation[0], 0, 2 * glm::pi<float>()))
 	{
-		setRotation( glm::quat(tmpRot) );
+		setRotation( glm::quat(m_eulerRotation) );
 		applyTransform();
 	}
 
@@ -184,8 +187,6 @@ void Entity::drawUI()
 	//		meshRenderer->drawUI();
 	//	}
 
-
-	ImGui::End();
 }
 
 bool Entity::getIsSelected() const
@@ -328,6 +329,7 @@ void Entity::eraseAllComponents()
 	for (int i = 0; i < m_components.size(); i++)
 	{
 		m_components[i]->eraseFromScene(*m_scene);
+		m_components[i] = nullptr;
 	}
 	m_components.clear();
 }
