@@ -129,3 +129,15 @@ void Editor::moveGizmo(const Ray & ray)
 		}
 	}
 }
+
+Entity* Editor::duplicateSelected()
+{
+	if (m_currentSelected == nullptr)
+		return nullptr;
+
+	auto newEntity = new Entity(*m_currentSelected); //copy the entity
+
+	changeCurrentSelected(newEntity); //change selection, to select the copy
+
+	return newEntity;
+}

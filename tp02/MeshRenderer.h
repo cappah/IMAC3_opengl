@@ -8,6 +8,9 @@
 
 #include "Component.h"
 
+//forward
+class Entity;
+
 struct MeshRenderer : public Component
 {
 	Mesh* mesh;
@@ -17,5 +20,7 @@ struct MeshRenderer : public Component
 
 	virtual void drawUI() override;
 	virtual void eraseFromScene(Scene& scene) override;
+	virtual Component* clone(Entity* entity) override;
+	virtual void addToScene(Scene& scene) override;
 };
 

@@ -86,13 +86,50 @@ Entity::Entity(Scene* scene) : Transform(), m_scene(scene), m_isSelected(false)
 	scene->add(this);
 }
 
+Entity::Entity(const Entity& other) : Transform(other), m_isSelected(other.m_isSelected), m_name(other.m_name), m_scene(other.m_scene)
+{
+	m_scene->add(this);
+
+	for (int i = 0; i < other.m_components.size(); i++)
+	{
+		//copy the entity
+		auto newComponent = other.m_components[i]->clone(this);
+		//add to scene
+		newComponent->addToScene(*other.m_scene); 
+		//add to entity
+		m_components.push_back(newComponent);
+	}
+
+	updateModelMatrix();
+}
+
+Entity& Entity::operator=(const Entity& other)
+{
+	Transform::operator=(other);
+
+	m_isSelected = other.m_isSelected;
+	m_name = other.m_name;
+	m_scene = other.m_scene;
+
+	m_scene->add(this);
+
+	eraseAllComponents();
+	for (int i = 0; i < other.m_components.size(); i++)
+	{
+		//copy the entity
+		auto newComponent = other.m_components[i]->clone(this);
+		//add to scene
+		newComponent->addToScene(*m_scene);
+		//add to entity
+		m_components.push_back(newComponent);
+	}
+
+	return *this;
+}
+
 Entity::~Entity()
 {
-	for (int i = 0; i < m_components.size(); i++)
-	{
-		m_components[i]->eraseFromScene(*m_scene);
-	}
-	m_components.clear();
+	eraseAllComponents();
 }
 
 void Entity::onChangeModelMatrix()
@@ -116,29 +153,19 @@ void Entity::drawUI()
 	ImGui::Begin("entity");
 	ImGui::InputText("name", &m_name[0], m_name.capacity());
 
-	bool transformationChanged = false;
 	glm::vec3 tmpRot = glm::eulerAngles(m_rotation);
-	ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 2 * glm::pi<float>());
-	glm::vec3 tmpScale = m_scale;
-	ImGui::InputFloat3("scale", &tmpScale[0]);
-
-	glm::quat tmpRotQuat(tmpRot);
-	float matching = glm::dot(tmpRotQuat, m_rotation);
-
-	if (glm::abs(matching - 1.f) < 0.0001f)
+	if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 2 * glm::pi<float>()))
 	{
-		m_rotation = tmpRotQuat;
-		transformationChanged = true;
-	}
-
-	if (glm::distance(tmpScale, m_scale) < 0.001f)
-	{
-		m_scale = tmpScale;
-		transformationChanged = true;
-	}
-
-	if (transformationChanged)
+		setRotation( glm::quat(tmpRot) );
 		applyTransform();
+	}
+
+	glm::vec3 tmpScale = m_scale;
+	if (ImGui::InputFloat3("scale", &tmpScale[0]))
+	{
+		setScale( tmpScale );
+		applyTransform();
+	}
 
 	for (auto c : m_components)
 	{
@@ -294,6 +321,15 @@ Entity& Entity::erase(MeshRenderer * meshRenderer)
 	}
 
 	return *this;
+}
+
+void Entity::eraseAllComponents()
+{
+	for (int i = 0; i < m_components.size(); i++)
+	{
+		m_components[i]->eraseFromScene(*m_scene);
+	}
+	m_components.clear();
 }
 
 Component* Entity::getComponent(Component::ComponentType type)

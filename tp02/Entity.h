@@ -70,6 +70,8 @@ private:
 
 public:
 	Entity(Scene* scene);
+	Entity(const Entity& other);
+	Entity& operator=(const Entity& other);
 	~Entity();
 
 	virtual void onChangeModelMatrix() override;
@@ -97,6 +99,8 @@ public:
 	Entity& erase(SpotLight* spotLight);
 	Entity& erase(Collider* collider);
 	Entity& erase(MeshRenderer* meshRenderer);
+
+	void eraseAllComponents();
 
 	// function to get component : 
 	Component* getComponent(Component::ComponentType type);

@@ -299,8 +299,8 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	// update values
 	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
-	glm::mat4 vp = projection * worldToView;
-	glm::mat4 screenToWorld = glm::transpose(glm::inverse(vp));
+	glm::mat4 camera_mvp = projection * worldToView;
+	glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
 
 	///// end matrix updates
 
@@ -317,8 +317,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	for (int i = 0; i < meshRenderers.size(); i++)
 	{
 		glm::mat4 modelMatrix = meshRenderers[i]->entity()->getModelMatrix(); //get modelMatrix
-		glm::mat4 mv = worldToView * modelMatrix;
-		glm::mat4 normalMatrix = glm::transpose(glm::inverse(mv));
+		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 		glm::mat4 mvp = projection * worldToView * modelMatrix;
 
 		meshRenderers[i]->material->use();

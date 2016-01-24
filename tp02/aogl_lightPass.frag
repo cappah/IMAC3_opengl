@@ -61,15 +61,14 @@ vec3 computePointLight(PointLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 spe
 	float ndoth = clamp(dot(n,h),0.0,1.0);
 	float d = length(light.position - p);
 
-    diffuse *= light.color;
-	diffuse *= (ndotl);
+	diffuse /= 3.1415f;
 
 	specular *= pow(ndoth, specularPower);
-	specular *= light.color;
+	specular /= ( (specularPower + 8) / (8*3.1415) );
 
 	float intensity = light.intensity / (d*d);
 
-	return intensity * (diffuse + specular) ; 
+	return intensity * light.color * 3.1415 * (diffuse + specular) * (ndotl) ; 
 }
 
 
@@ -81,15 +80,14 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 p, vec3 n,  vec3 diffu
 	vec3 h = normalize(l+v);
 	float ndoth = clamp(dot(n,h),0.0,1.0);
 
-    diffuse *= light.color;
-	diffuse *= (ndotl);
+	diffuse /= 3.1415f;
 
 	specular *= pow(ndoth, specularPower);
-	specular *= light.color;
+	specular /= ( (specularPower + 8) / (8*3.1415) );
 
 	float intensity = light.intensity;
 
-	return intensity * (diffuse + specular) ;
+	return intensity * light.color * 3.1415 * (diffuse + specular) * (ndotl) ; 
 }
 
 vec3 computeSpotLight(SpotLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 specular, float specularPower)
@@ -103,11 +101,10 @@ vec3 computeSpotLight(SpotLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 specu
 
     float spotFactor = dot( -l, normalize(light.direction));
 
-    diffuse *= light.color;
-	diffuse *= (ndotl);
+	diffuse /= 3.1415f;
 
     specular *= pow(ndoth, specularPower);
-    specular *= light.color;
+    specular /= ( (specularPower + 8) / (8*3.1415) );
 
     float intensity = light.intensity / (d*d) ;
     //if(spotFactor > light.angle * 0.5f)
@@ -121,7 +118,7 @@ vec3 computeSpotLight(SpotLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 specu
 
 	intensity *= clamp(falloff, 0, 1);	
 
-    return intensity * (diffuse + specular);
+    return intensity * light.color * 3.1415 * (diffuse + specular) * (ndotl) ; 
 }
 
 void main(void)

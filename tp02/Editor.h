@@ -30,6 +30,8 @@ public:
 	void endMoveGizmo();
 	void moveGizmo(const Ray& ray);
 
+	Entity* duplicateSelected();
+
 };
 
 

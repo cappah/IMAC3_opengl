@@ -7,6 +7,18 @@ Component::Component(Component::ComponentType type) : m_entity(nullptr), m_type(
 {
 }
 
+Component::Component(const Component& other) : m_entity(nullptr), m_type(other.m_type)
+{
+
+}
+
+Component& Component::operator=(const Component& other)
+{
+	m_entity = nullptr;
+	m_type = other.m_type;
+
+	return *this;
+}
 
 Component::~Component()
 {

@@ -1,6 +1,7 @@
 #include "Collider.h"
 #include "Ray.h"
 #include "Scene.h"
+#include "Entity.h"
 
 Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual)
 {
@@ -216,3 +217,18 @@ void BoxCollider::drawUI()
 		Collider::drawUI();
 	}
 }
+
+Component* BoxCollider::clone(Entity* entity)
+{
+	BoxCollider* newCollider = new BoxCollider(*this);
+
+	newCollider->attachToEntity(entity);
+
+	return newCollider;
+}
+
+void BoxCollider::addToScene(Scene& scene)
+{
+	scene.add(this);
+}
+

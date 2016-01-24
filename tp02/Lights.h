@@ -15,12 +15,16 @@
 
 #include "Component.h"
 
+//forward
+class Entity;
+
 struct Light : public Component
 {
 	float intensity;
 	glm::vec3 color;
 
 	Light(float _intensity, glm::vec3 _color);
+
 };
 
 struct PointLight : public Light
@@ -32,6 +36,8 @@ struct PointLight : public Light
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation  = glm::quat()) override;
 	virtual void eraseFromScene(Scene& scene) override;
+	virtual Component* clone(Entity* entity) override;
+	virtual void addToScene(Scene& scene) override;
 };
 
 struct DirectionalLight : public Light
@@ -43,6 +49,8 @@ struct DirectionalLight : public Light
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 	virtual void eraseFromScene(Scene& scene) override;
+	virtual Component* clone(Entity* entity) override;
+	virtual void addToScene(Scene& scene) override;
 };
 
 struct SpotLight : public Light
@@ -56,5 +64,7 @@ struct SpotLight : public Light
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 	virtual void eraseFromScene(Scene& scene) override;
+	virtual Component* clone(Entity* entity) override;
+	virtual void addToScene(Scene& scene) override;
 };
 

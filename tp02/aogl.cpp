@@ -205,9 +205,22 @@ int main( int argc, char **argv )
 	Mesh cube;
 	cube.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
 	cube.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
-	cube.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
-	cube.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
+	cube.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+					-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
+					-0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5,
+					-0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 
+					0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+					0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5,
+					-0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
+	cube.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+					0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+					0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+					0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+					1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+					1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+					-1, 0, 0, -1, 0, 0, -1, 0, 0, };
 	cube.initGl();
+
 
 	Mesh cubeWireFrame(GL_LINE_STRIP, (Mesh::USE_INDEX | Mesh::USE_VERTICES));
 	cubeWireFrame.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
@@ -265,12 +278,6 @@ int main( int argc, char **argv )
 
 	//populate world
 
-	//add lights
-    //lightManager.addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1.f, 0), glm::vec3(0, -1.f, 0), glm::radians(20.f) ));
-	//lightManager.addPointLight(PointLight(10, glm::vec3(1, 0, 0), glm::vec3(6.f, 1.f, 0)));
-	//lightManager.addPointLight(PointLight(10, glm::vec3(0, 1, 0), glm::vec3(0.f, 1.f, 6.f)));
-	//lightManager.addDirectionalLight(DirectionalLight(10, glm::vec3(0, 0, 1), glm::vec3(0.f, -1.f, -1.f)));
-
 	//materials : 
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
@@ -279,24 +286,28 @@ int main( int argc, char **argv )
 	cubeWireFrameRenderer.mesh = &cubeWireFrame;
 	cubeWireFrameRenderer.material = &wireframeMaterial;
 
-	int r = 5;
-	float omega = 0;
-	for (int i = 0; i < 100; i++)
-	{
-		//lightManager.addPointLight(PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3( r*std::cosf(omega), 2.f, r*std::sinf(omega))));
-		Entity* newEntity = new Entity(&scene);
-		BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
-		PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0,0,0));
-		newEntity->add(boxColliderLight).add(pointLight);
-		newEntity->setTranslation(glm::vec3(r*std::cosf(omega), 2.f, r*std::sinf(omega)));
-		
-		scene.add(newEntity);
+	//int r = 5;
+	//float omega = 0;
+	//for (int i = 0; i < 100; i++)
+	//{
+	//	Entity* newEntity = new Entity(&scene);
+	//	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
+	//	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0,0,0));
+	//	newEntity->add(boxColliderLight).add(pointLight);
+	//	newEntity->setTranslation(glm::vec3(r*std::cosf(omega), 2.f, r*std::sinf(omega)));
+	//	
+	//	scene.add(newEntity);
 
-		omega += 0.4f;
+	//	omega += 0.4f;
 
-		if(i % 10 == 0)
-			r += 5;
-	}
+	//	if(i % 10 == 0)
+	//		r += 5;
+	//}
+
+	Entity* newEntity = new Entity(&scene);
+	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
+	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
+	newEntity->add(boxColliderLight).add(pointLight);
 
 
 	//renderers : 
@@ -320,7 +331,7 @@ int main( int argc, char **argv )
 	Entity* entity_cube01 = new Entity(&scene);
 	entity_cube01->add(&cubeRenderer01);
 	entity_cube01->add(&boxCollider01);
-	entity_cube01->setTranslation( glm::vec3(4, 0, 0) );
+	entity_cube01->setTranslation( glm::vec3(0, 0, 0) );
 	//cube entity 02
 	Entity* entity_cube02 = new Entity(&scene);
 	entity_cube02->add(&cubeRenderer02);
@@ -350,6 +361,7 @@ int main( int argc, char **argv )
 
 		int altPressed = glfwGetKey(window, GLFW_KEY_LEFT_ALT);
 		int shiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
+		int ctrlPressed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL);
 
         if( leftButton == GLFW_PRESS )
             guiStates.turnLock = true;
@@ -412,6 +424,12 @@ int main( int argc, char **argv )
             guiStates.lockPositionX = mousex;
             guiStates.lockPositionY = mousey;
         }
+
+		//entity copy / past : 
+		if (inputHandler.getKeyDown(window, GLFW_KEY_D) && ctrlPressed)
+		{
+			editor.duplicateSelected();
+		}
 
 		//object picking : 
 		if (inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))

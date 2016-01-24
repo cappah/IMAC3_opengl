@@ -18,6 +18,7 @@
 
 //forward
 class Ray;
+class Entity;
 
 struct Collider : public Component
 {
@@ -83,4 +84,6 @@ struct BoxCollider : public Collider
 	virtual void debugLog() override;
 	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) override;
 	virtual void drawUI() override;
+	virtual Component* clone(Entity* entity) override;
+	virtual void addToScene(Scene& scene) override;
 };

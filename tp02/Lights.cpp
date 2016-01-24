@@ -33,6 +33,22 @@ void PointLight::eraseFromScene(Scene & scene)
 	scene.erase(this);
 }
 
+
+Component* PointLight::clone(Entity* entity)
+{
+	PointLight* newPointLight = new PointLight(*this);
+
+	newPointLight->attachToEntity(entity);
+
+	return newPointLight;
+}
+
+void PointLight::addToScene(Scene& scene)
+{
+	scene.add(this);
+}
+
+
 ////////////////////////////////
 
 DirectionalLight::DirectionalLight(float _intensity, glm::vec3 _color, glm::vec3 _direction) :
@@ -59,6 +75,20 @@ void DirectionalLight::applyTransform(const glm::vec3 & translation, const glm::
 void DirectionalLight::eraseFromScene(Scene & scene)
 {
 	scene.erase(this);
+}
+
+Component* DirectionalLight::clone(Entity* entity)
+{
+	DirectionalLight* newDirectionalLight = new DirectionalLight(intensity, color, direction);
+
+	newDirectionalLight->attachToEntity(entity);
+
+	return newDirectionalLight;
+}
+
+void DirectionalLight::addToScene(Scene& scene)
+{
+	scene.add(this);
 }
 
 ////////////////////////////////////
@@ -90,4 +120,18 @@ void SpotLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 void SpotLight::eraseFromScene(Scene & scene)
 {
 	scene.erase(this);
+}
+
+Component* SpotLight::clone(Entity* entity)
+{
+	SpotLight* newSpotLight = new SpotLight(intensity, color, position, direction, angle);
+
+	newSpotLight->attachToEntity(entity);
+
+	return newSpotLight;
+}
+
+void SpotLight::addToScene(Scene& scene)
+{
+	scene.add(this);
 }

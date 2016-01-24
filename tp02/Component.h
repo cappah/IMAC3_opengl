@@ -22,6 +22,10 @@ protected:
 
 public:
 	Component(ComponentType type);
+	//copying component break the link to the entity, you have to call attachToEntity to be sure to attach the new component to the good entity
+	Component(const Component& other);
+	//copying component break the link to the entity, you have to call attachToEntity to be sure to attach the new component to the good entity
+	Component& operator=(const Component& other);
 	virtual ~Component();
 
 	void attachToEntity(Entity* entity);
@@ -34,5 +38,9 @@ public:
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1,1,1), const glm::quat& rotation = glm::quat());
 
 	virtual void eraseFromScene(Scene& scene) = 0;
+	virtual void addToScene(Scene& scene) = 0;
+
+	//clone a component, and attach it to the given entity
+	virtual Component* clone(Entity* entity) = 0;
 };
 
