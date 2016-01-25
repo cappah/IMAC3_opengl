@@ -15,6 +15,8 @@
 
 #include "Component.h"
 
+#include "Collider.h"
+
 //forward
 class Entity;
 
@@ -30,14 +32,18 @@ struct Light : public Component
 struct PointLight : public Light
 {
 	glm::vec3 position;
+	BoxCollider boundingBox;
 
 	PointLight(float _intensity = 10, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _position = glm::vec3(0, 0, 0));
+
+	void updateBoundingBox();
 
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation  = glm::quat()) override;
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+
 };
 
 struct DirectionalLight : public Light
@@ -59,7 +65,11 @@ struct SpotLight : public Light
 	glm::vec3 direction;
 	float angle;
 
+	BoxCollider boundingBox;
+
 	SpotLight(float _intensity = 10, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _position = glm::vec3(0, 0, 0), glm::vec3 _direction = glm::vec3(0, -1, 0), float _angle = glm::radians(30.f));
+
+	void updateBoundingBox();
 
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;

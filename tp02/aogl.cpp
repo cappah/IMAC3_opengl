@@ -92,7 +92,8 @@ void init_gui_states(GUIStates & guiStates);
 
 int main( int argc, char **argv )
 {
-    int width = 1024, height= 768;
+    //int width = 1024, height= 768;
+	int width = 1024, height = 680;
     float widthf = (float) width, heightf = (float) height;
     double t;
     float fps = 0.f;
@@ -271,7 +272,7 @@ int main( int argc, char **argv )
 	//lightManager.init(programObject_lightPass); // done in renderer
 
 	// renderer : 
-	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass.frag"); // call lightManager.init()
+	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
 	renderer.initPostProcessQuad("blit.vert", "blit.frag");
 
 	// Our scene : 
@@ -534,6 +535,8 @@ int main( int argc, char **argv )
 		//synchronize input handler : 
 		inputHandler.synchronize(window);
 		
+		scene.culling(camera);
+
 		//rendering : 
 		//renderer.render(camera, entities);
 		scene.render(camera);

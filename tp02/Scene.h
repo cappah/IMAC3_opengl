@@ -62,5 +62,7 @@ public:
 	bool getIsDebugDeferredVisible() const;
 	void setAreCollidersVisible(bool value);
 	void setIsDebugDeferredVisible(bool value);
+
+	void culling(const Camera& camera);
 };
 

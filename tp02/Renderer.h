@@ -6,19 +6,25 @@
 #include "LightManager.h"
 #include "Application.h"
 #include "Entity.h"
+#include "Collider.h"
+
 
 
 class Renderer
 {
+	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
+
 private:
 	GLuint glProgram_gPass;
-	GLuint glProgram_lightPass;
+	GLuint glProgram_lightPass_pointLight;
+	GLuint glProgram_lightPass_directionalLight;
+	GLuint glProgram_lightPass_spotLight;
 
-	GLuint uniformTexturePosition;
-	GLuint uniformTextureNormal;
-	GLuint uniformTextureDepth;
-	GLuint unformScreenToWorld;
-	GLuint uniformCameraPosition;
+	GLuint uniformTexturePosition[3];
+	GLuint uniformTextureNormal[3];
+	GLuint uniformTextureDepth[3];
+	GLuint unformScreenToWorld[3];
+	GLuint uniformCameraPosition[3];
 
 	Mesh quadMesh;
 
@@ -33,8 +39,12 @@ private:
 	GLuint glProgram_blit;
 	GLuint uniformTextureBlit;
 
+	//light count after culling : 
+	int pointLightCount;
+	int spotLightCount;
+
 public:
-	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path);
+	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight);
 
 	void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
 
@@ -47,5 +57,10 @@ public:
 
 	//draw textures of gPass
 	void debugDrawDeferred();
+
+	//draw lights bounding box
+	void debugDrawLights();
+
+	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights);
 };
 

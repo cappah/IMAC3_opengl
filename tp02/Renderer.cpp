@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path) : quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
+Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight)  : quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
 {
 
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
@@ -11,24 +11,70 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	quadMesh.initGl();
 
 
-	//////////////////// 3D lightPass shaders ////////////////////////
+	//////////////////// 3D lightPass point light shader ////////////////////////
 	// Try to load and compile shaders
-	GLuint vertShaderId_lightPass = compile_shader_from_file(GL_VERTEX_SHADER, programLightPass_vert_path.c_str());
-	GLuint fragShaderId_lightPass = compile_shader_from_file(GL_FRAGMENT_SHADER, programLightPass_frag_path.c_str());
+	GLuint vertShaderId_lightPass_point = compile_shader_from_file(GL_VERTEX_SHADER, programLightPass_vert_path.c_str());
+	GLuint fragShaderId_lightPass_point = compile_shader_from_file(GL_FRAGMENT_SHADER, programLightPass_frag_path_pointLight.c_str());
 
-	glProgram_lightPass = glCreateProgram();
-	glAttachShader(glProgram_lightPass, vertShaderId_lightPass);
-	glAttachShader(glProgram_lightPass, fragShaderId_lightPass);
+	glProgram_lightPass_pointLight = glCreateProgram();
+	glAttachShader(glProgram_lightPass_pointLight, vertShaderId_lightPass_point);
+	glAttachShader(glProgram_lightPass_pointLight, fragShaderId_lightPass_point);
 
-	glLinkProgram(glProgram_lightPass);
-	if (check_link_error(glProgram_lightPass) < 0)
+	glLinkProgram(glProgram_lightPass_pointLight);
+	if (check_link_error(glProgram_lightPass_pointLight) < 0)
 		exit(1);
 
-	uniformTexturePosition = glGetUniformLocation(glProgram_lightPass, "ColorBuffer");
-	uniformTextureNormal = glGetUniformLocation(glProgram_lightPass, "NormalBuffer");
-	uniformTextureDepth = glGetUniformLocation(glProgram_lightPass, "DepthBuffer");
-	unformScreenToWorld = glGetUniformLocation(glProgram_lightPass, "ScreenToWorld");
-	uniformCameraPosition = glGetUniformLocation(glProgram_lightPass, "CameraPosition");
+	uniformTexturePosition[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "ColorBuffer");
+	uniformTextureNormal[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "NormalBuffer");
+	uniformTextureDepth[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "DepthBuffer");
+	unformScreenToWorld[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "ScreenToWorld");
+	uniformCameraPosition[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "CameraPosition");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// 3D lightPass directional light shader ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_lightPass_dir = compile_shader_from_file(GL_VERTEX_SHADER, programLightPass_vert_path.c_str());
+	GLuint fragShaderId_lightPass_dir = compile_shader_from_file(GL_FRAGMENT_SHADER, programLightPass_frag_path_directionalLight.c_str());
+
+	glProgram_lightPass_directionalLight = glCreateProgram();
+	glAttachShader(glProgram_lightPass_directionalLight, vertShaderId_lightPass_dir);
+	glAttachShader(glProgram_lightPass_directionalLight, fragShaderId_lightPass_dir);
+
+	glLinkProgram(glProgram_lightPass_directionalLight);
+	if (check_link_error(glProgram_lightPass_directionalLight) < 0)
+		exit(1);
+
+	uniformTexturePosition[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "ColorBuffer");
+	uniformTextureNormal[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "NormalBuffer");
+	uniformTextureDepth[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "DepthBuffer");
+	unformScreenToWorld[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "ScreenToWorld");
+	uniformCameraPosition[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "CameraPosition");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// 3D lightPass spot light shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_lightPass_spot = compile_shader_from_file(GL_VERTEX_SHADER, programLightPass_vert_path.c_str());
+	GLuint fragShaderId_lightPass_spot = compile_shader_from_file(GL_FRAGMENT_SHADER, programLightPass_frag_path_spotLight.c_str());
+
+	glProgram_lightPass_spotLight = glCreateProgram();
+	glAttachShader(glProgram_lightPass_spotLight, vertShaderId_lightPass_spot);
+	glAttachShader(glProgram_lightPass_spotLight, fragShaderId_lightPass_spot);
+
+	glLinkProgram(glProgram_lightPass_spotLight);
+	if (check_link_error(glProgram_lightPass_spotLight) < 0)
+		exit(1);
+
+	uniformTexturePosition[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "ColorBuffer");
+	uniformTextureNormal[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "NormalBuffer");
+	uniformTextureDepth[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "DepthBuffer");
+	unformScreenToWorld[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "ScreenToWorld");
+	uniformCameraPosition[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "CameraPosition");
 
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
@@ -67,7 +113,7 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 	// Create normal texture
 	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -106,7 +152,7 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 	////////////////////// LIGHT MANAGER /////////////////////////
 	lightManager = _lightManager;
-	lightManager->init(glProgram_lightPass);
+	lightManager->init(glProgram_lightPass_pointLight, glProgram_lightPass_directionalLight, glProgram_lightPass_spotLight);
 
 }
 
@@ -332,15 +378,25 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	////// end G pass
 
 	///// begin light pass
+	// Disable the depth test
+	glDisable(GL_DEPTH_TEST);
+	// Enable blending
+	glEnable(GL_BLEND);
+	// Setup additive blending
+	glBlendFunc(GL_ONE, GL_ONE);
 
-	glUseProgram(glProgram_lightPass);
+
+
+	// Render quad
+	//for lighting : 
+	//lightManager->renderLights(pointLights, directionalLights, spotLights);
+	
+	//point light : 
+	glUseProgram(glProgram_lightPass_pointLight);
 
 	// send screen to world matrix : 
-	glUniformMatrix4fv(unformScreenToWorld, 1, false, glm::value_ptr(screenToWorld));
-	glUniform3fv(uniformCameraPosition, 1, glm::value_ptr(camera.eye));
-
-	//for lighting : 
-	lightManager->renderLights(pointLights, directionalLights, spotLights);
+	glUniformMatrix4fv(unformScreenToWorld[POINT], 1, false, glm::value_ptr(screenToWorld));
+	glUniform3fv(uniformCameraPosition[POINT], 1, glm::value_ptr(camera.eye));
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
@@ -350,12 +406,66 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
 
-	glUniform1i(uniformTexturePosition, 0);
-	glUniform1i(uniformTextureNormal, 1);
-	glUniform1i(uniformTextureDepth, 2);
+	glUniform1i(uniformTexturePosition[POINT], 0);
+	glUniform1i(uniformTextureNormal[POINT], 1);
+	glUniform1i(uniformTextureDepth[POINT], 2);
+	for (int i = 0; i < pointLightCount; i++)
+	{
+		lightManager->uniformPointLight(*pointLights[i]);
+		quadMesh.draw();
+	}
 
-	// Render quad
-	quadMesh.draw();
+	//spot lights : 
+	glUseProgram(glProgram_lightPass_spotLight);
+
+	// send screen to world matrix : 
+	glUniformMatrix4fv(unformScreenToWorld[SPOT], 1, false, glm::value_ptr(screenToWorld));
+	glUniform3fv(uniformCameraPosition[SPOT], 1, glm::value_ptr(camera.eye));
+
+	//geometry informations :
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
+
+	glUniform1i(uniformTexturePosition[SPOT], 0);
+	glUniform1i(uniformTextureNormal[SPOT], 1);
+	glUniform1i(uniformTextureDepth[SPOT], 2);
+	for (auto& light : spotLights)
+	{
+		lightManager->uniformSpotLight(*light);
+		quadMesh.draw();
+	}
+
+
+	//directionals : 
+	glUseProgram(glProgram_lightPass_directionalLight);
+	// send screen to world matrix : 
+	glUniformMatrix4fv(unformScreenToWorld[DIRECTIONAL], 1, false, glm::value_ptr(screenToWorld));
+	glUniform3fv(uniformCameraPosition[DIRECTIONAL], 1, glm::value_ptr(camera.eye));
+
+	//geometry informations :
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
+
+	glUniform1i(uniformTexturePosition[DIRECTIONAL], 0);
+	glUniform1i(uniformTextureNormal[DIRECTIONAL], 1);
+	glUniform1i(uniformTextureDepth[DIRECTIONAL], 2);
+	for (auto& light : directionalLights)
+	{
+		lightManager->uniformDirectionalLight(*light);
+		quadMesh.draw();
+	}
+
+	// Disable blending
+	glDisable(GL_BLEND);	
+	glEnable(GL_DEPTH_TEST);
 
 	///// end light pass
 
@@ -423,4 +533,50 @@ void Renderer::debugDrawDeferred()
 	glViewport(0, 0, width, height);
 
 	///////////// end draw blit quad
+}
+
+void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights)
+{
+	int width = Application::get().getWindowWidth();
+	int height = Application::get().getWindowHeight();
+
+	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+
+	int lastId = pointLights.size() - 1;;
+	bool lightIsOut = false;
+
+	for (int i = 0; i < pointLights.size(); i++)
+	{
+
+		BoxCollider& collider = pointLights[i]->boundingBox;
+		glm::vec3 topRight = collider.topRight;
+		glm::vec3 bottomLeft = collider.bottomLeft;
+
+		topRight = glm::vec3( projection * view * glm::vec4(topRight, 1) );
+		bottomLeft = glm::vec3( projection * view * glm::vec4(bottomLeft, 1) );
+
+		if((topRight.x < -1 && bottomLeft.x < -1 ) || (topRight.y < -1 && bottomLeft.y < -1) //|| (topRight.z < -1 && bottomLeft.z < -1)
+			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1) )//|| (topRight.z > 1 && bottomLeft.z > 1) )
+		{
+			PointLight* tmpLight = pointLights[i];
+			pointLights[i] = pointLights[lastId];
+			pointLights[lastId] = tmpLight;
+
+			lastId--;
+			i--;
+		}
+
+		if (i >= lastId)
+		{
+			pointLightCount = i + 1;
+			std::cout << "point light visibles : " << pointLightCount << std::endl;
+			break;
+		}
+
+		//if (lightIsOut)
+		//	i--;
+		
+	}
+
 }

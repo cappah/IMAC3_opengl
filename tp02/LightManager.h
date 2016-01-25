@@ -23,23 +23,19 @@ private:
 	float globalAngle;
 	*/
 
-	GLuint uniform_pointLight_pos[120];
-	GLuint uniform_pointLight_col[120];
-	GLuint uniform_pointLight_int[120];
+	GLuint uniform_pointLight_pos;
+	GLuint uniform_pointLight_col;
+	GLuint uniform_pointLight_int;
 
-	GLuint uniform_directionalLight_dir[120];
-	GLuint uniform_directionalLight_col[120];
-	GLuint uniform_directionalLight_int[120];
+	GLuint uniform_directionalLight_dir;
+	GLuint uniform_directionalLight_col;
+	GLuint uniform_directionalLight_int;
 
-	GLuint uniform_spotLight_dir[120];
-	GLuint uniform_spotLight_col[120];
-	GLuint uniform_spotLight_int[120];
-	GLuint uniform_spotLight_pos[120];
-	GLuint uniform_spotLight_angle[120];
-
-	GLuint uniform_pointLight_count;
-	GLuint uniform_directionalLight_count;
-	GLuint uniform_spotLight_count;
+	GLuint uniform_spotLight_dir;
+	GLuint uniform_spotLight_col;
+	GLuint uniform_spotLight_int;
+	GLuint uniform_spotLight_pos;
+	GLuint uniform_spotLight_angle;
 
 public:
 	LightManager();
@@ -64,9 +60,12 @@ public:
 
 	void renderLights();*/
 
-	void init(GLuint glProgram);
+	void init(GLuint glProgram_pointLight, GLuint glProgram_directionalLight, GLuint glProgram_spotLight);
 
-	void renderLights(std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
+	//void renderLights(std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
 
+	void uniformPointLight(PointLight& light);
+	void uniformDirectionalLight(DirectionalLight& light);
+	void uniformSpotLight(SpotLight& light);
 };
 

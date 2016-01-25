@@ -128,56 +128,63 @@ void LightManager::renderLights()
 */
 
 
-void LightManager::init(GLuint glProgram)
+void LightManager::init(GLuint glProgram_pointLight, GLuint glProgram_directionalLight, GLuint glProgram_spotLight)
 {
-	uniform_pointLight_count = glGetUniformLocation(glProgram, "pointLight_count");
-	uniform_directionalLight_count = glGetUniformLocation(glProgram, "directionalLight_count");
-	uniform_spotLight_count = glGetUniformLocation(glProgram, "spotLight_count");
+	uniform_pointLight_pos = glGetUniformLocation(glProgram_pointLight, "pointLight.position");
+	uniform_pointLight_col = glGetUniformLocation(glProgram_pointLight, "pointLight.color");
+	uniform_pointLight_int = glGetUniformLocation(glProgram_pointLight, "pointLight.intensity");
 
-	for (int i = 0; i < 120; i++)
-	{
-		uniform_pointLight_pos[i] = glGetUniformLocation(glProgram, ("pointLights[" + patch::to_string(i) + "].position").c_str());
-		uniform_pointLight_col[i] = glGetUniformLocation(glProgram, ("pointLights[" + patch::to_string(i) + "].color").c_str());
-		uniform_pointLight_int[i] = glGetUniformLocation(glProgram, ("pointLights[" + patch::to_string(i) + "].intensity").c_str());
+	uniform_directionalLight_dir = glGetUniformLocation(glProgram_directionalLight, "directionalLight.direction");
+	uniform_directionalLight_col = glGetUniformLocation(glProgram_directionalLight, "directionalLight.color");
+	uniform_directionalLight_int = glGetUniformLocation(glProgram_directionalLight, "directionalLight.intensity");
 
-		uniform_directionalLight_dir[i] = glGetUniformLocation(glProgram, ("directionalLights[" + patch::to_string(i) + "].direction").c_str());
-		uniform_directionalLight_col[i] = glGetUniformLocation(glProgram, ("directionalLights[" + patch::to_string(i) + "].color").c_str());
-		uniform_directionalLight_int[i] = glGetUniformLocation(glProgram, ("directionalLights[" + patch::to_string(i) + "].intensity").c_str());
-
-		uniform_spotLight_dir[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].direction").c_str());
-		uniform_spotLight_col[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].color").c_str());
-		uniform_spotLight_int[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].intensity").c_str());
-		uniform_spotLight_pos[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].position").c_str());
-		uniform_spotLight_angle[i] = glGetUniformLocation(glProgram, ("spotLights[" + patch::to_string(i) + "].angle").c_str());
-	}
+	uniform_spotLight_dir = glGetUniformLocation(glProgram_spotLight, "spotLight.direction");
+	uniform_spotLight_col = glGetUniformLocation(glProgram_spotLight, "spotLight.color");
+	uniform_spotLight_int = glGetUniformLocation(glProgram_spotLight, "spotLight.intensity");
+	uniform_spotLight_pos = glGetUniformLocation(glProgram_spotLight, "spotLight.position");
+	uniform_spotLight_angle = glGetUniformLocation(glProgram_spotLight, "spotLight.angle");
 }
-
+/*
 void LightManager::renderLights(std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
 {
-	glUniform1i(uniform_pointLight_count, pointLights.size());
-	glUniform1i(uniform_directionalLight_count, directionalLights.size());
-	glUniform1i(uniform_spotLight_count, spotLights.size());
 
-	for (int i = 0; i < pointLights.size(); i++)
-	{
 		glUniform3fv(uniform_pointLight_pos[i], 1, glm::value_ptr(pointLights[i]->position));
 		glUniform3fv(uniform_pointLight_col[i], 1, glm::value_ptr(pointLights[i]->color));
 		glUniform1f(uniform_pointLight_int[i], pointLights[i]->intensity);
-	}
 
-	for (int i = 0; i < directionalLights.size(); i++)
-	{
+
 		glUniform3fv(uniform_directionalLight_dir[i], 1, glm::value_ptr(directionalLights[i]->direction));
 		glUniform3fv(uniform_directionalLight_col[i], 1, glm::value_ptr(directionalLights[i]->color));
 		glUniform1f(uniform_directionalLight_int[i], directionalLights[i]->intensity);
-	}
 
-	for (int i = 0; i < spotLights.size(); i++)
-	{
+
 		glUniform3fv(uniform_spotLight_dir[i], 1, glm::value_ptr(spotLights[i]->direction));
 		glUniform3fv(uniform_spotLight_col[i], 1, glm::value_ptr(spotLights[i]->color));
 		glUniform1f(uniform_spotLight_int[i], spotLights[i]->intensity);
 		glUniform3fv(uniform_spotLight_pos[i], 1, glm::value_ptr(spotLights[i]->position));
 		glUniform1f(uniform_spotLight_angle[i], spotLights[i]->angle);
-	}
+}
+*/
+
+void LightManager::uniformPointLight(PointLight & light)
+{
+	glUniform3fv(uniform_pointLight_pos, 1, glm::value_ptr(light.position));
+	glUniform3fv(uniform_pointLight_col, 1, glm::value_ptr(light.color));
+	glUniform1f(uniform_pointLight_int, light.intensity);
+}
+
+void LightManager::uniformDirectionalLight(DirectionalLight & light)
+{
+	glUniform3fv(uniform_directionalLight_dir, 1, glm::value_ptr(light.direction));
+	glUniform3fv(uniform_directionalLight_col, 1, glm::value_ptr(light.color));
+	glUniform1f(uniform_directionalLight_int, light.intensity);
+}
+
+void LightManager::uniformSpotLight(SpotLight & light)
+{
+	glUniform3fv(uniform_spotLight_dir, 1, glm::value_ptr(light.direction));
+	glUniform3fv(uniform_spotLight_col, 1, glm::value_ptr(light.color));
+	glUniform1f(uniform_spotLight_int, light.intensity);
+	glUniform3fv(uniform_spotLight_pos, 1, glm::value_ptr(light.position));
+	glUniform1f(uniform_spotLight_angle, light.angle);
 }

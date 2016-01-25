@@ -11,6 +11,16 @@ Light::Light(float _intensity, glm::vec3 _color) : Component(LIGHT), intensity(_
 PointLight::PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) : Light(_intensity, _color), position(_position)
 {
 	m_type = POINT_LIGHT;
+
+	updateBoundingBox();
+}
+
+void PointLight::updateBoundingBox()
+{
+	float lightRadius = std::sqrt(intensity / 0.01f);
+	
+	boundingBox.applyTranslation(position);
+	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
 }
 
 void PointLight::drawUI()
@@ -26,6 +36,8 @@ void PointLight::drawUI()
 void PointLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 {
 	position = translation;
+
+	updateBoundingBox();
 }
 
 void PointLight::eraseFromScene(Scene & scene)
@@ -97,6 +109,16 @@ SpotLight::SpotLight(float _intensity, glm::vec3 _color, glm::vec3 _position, gl
 	Light(_intensity, _color), position(_position), direction(_direction), angle(_angle)
 {
 	m_type = SPOT_LIGHT;
+
+	updateBoundingBox();
+}
+
+void SpotLight::updateBoundingBox()
+{
+	float lightRadius = std::sqrt(intensity / 0.001f);
+
+	boundingBox.applyTranslation(position);
+	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
 }
 
 void SpotLight::drawUI()
@@ -115,6 +137,8 @@ void SpotLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 {
 	position = translation;
 	direction = glm::normalize(glm::mat3_cast(rotation) * glm::vec3(0, -1, 0));
+
+	updateBoundingBox();
 }
 
 void SpotLight::eraseFromScene(Scene & scene)

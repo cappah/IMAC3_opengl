@@ -174,3 +174,8 @@ void Scene::setIsDebugDeferredVisible(bool value)
 {
 	m_isDebugDeferredVisible = value;
 }
+
+void Scene::culling(const Camera & camera)
+{
+	m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
+}
