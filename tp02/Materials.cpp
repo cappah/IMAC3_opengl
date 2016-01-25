@@ -1,4 +1,5 @@
 #include "Materials.h"
+#include "Factories.h"//forward
 
 Material::Material(GLuint _glProgram) : glProgram(_glProgram)
 {
@@ -18,12 +19,25 @@ void Material::setUniform_normalMatrix(glm::mat4& normalMatrix)
 
 ///////////////////////////////////////////
 
-MaterialLit::MaterialLit(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower) :
-	Material(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular)
+MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), textureDiffuse(0), specularPower(10), textureSpecular(0), textureRepetition(1, 1)
 {
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
 	uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
+	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+}
+
+MaterialLit::MaterialLit(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower) :
+	Material(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureRepetition(1, 1)
+{
+	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
+	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
+	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
 
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
@@ -55,6 +69,7 @@ void MaterialLit::use()
 	glUniform1f(uniform_specularPower, specularPower);
 	glUniform1i(uniform_textureDiffuse, 0);
 	glUniform1i(uniform_textureSpecular, 1);
+	glUniform2fv(uniform_textureRepetition, 1, glm::value_ptr(textureRepetition));
 }
 
 

@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Factories.h" //forward
 
 Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight)  : quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
 {
@@ -322,7 +323,7 @@ void Renderer::render(Camera& camera, std::vector<Entity*> entities)
 }
 */
 
-void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
+void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
@@ -372,6 +373,8 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 		meshRenderers[i]->mesh->draw();
 	}
+
+	terrain.render(projection, worldToView);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -556,6 +559,9 @@ void Renderer::debugDrawLights(const Camera& camera, const std::vector<PointLigh
 
 void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights)
 {
+	pointLightCount = 0;
+	spotLightCount = 0;
+
 	int width = Application::get().getWindowWidth();
 	int height = Application::get().getWindowHeight();
 
@@ -638,8 +644,8 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 
 		if (i >= lastId)
 		{
-			pointLightCount = i + 1;
-			std::cout << "nombre de spot light visibles : " << pointLightCount << std::endl;
+			spotLightCount = i + 1;
+			std::cout << "nombre de spot light visibles : " << spotLightCount << std::endl;
 			break;
 		}
 	}

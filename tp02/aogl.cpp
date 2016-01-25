@@ -266,6 +266,28 @@ int main( int argc, char **argv )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+	//////////////////// BEGIN RESSOURCES : 
+	// materials : 
+	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
+	MaterialUnlit wireframeMaterial(programObject_wireframe);
+
+	// fill factories : 
+	MaterialFactory::get().add("brick", &brickMaterial);
+	MaterialFactory::get().add("wireframe", &wireframeMaterial);
+
+	MeshFactory::get().add("cube", &cube);
+	MeshFactory::get().add("cubeWireframe", &cubeWireFrame);
+	MeshFactory::get().add("plane", &plane);
+
+	TextureFactory::get().add("brickDiffuse", diffuseTexture);
+	TextureFactory::get().add("brickSpecular", specularTexture);
+
+	////////// INITIALYZE DEFAULT MATERIAL IN FACTORY : 
+	ProgramFactory::get().add("defaultLit", programObject_gPass);
+	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
+
+	///////////////////// END RESSOURCES 
+
 
 	// create and initialize our light manager
 	LightManager lightManager;
@@ -279,19 +301,6 @@ int main( int argc, char **argv )
 	Scene scene(&renderer);
 
 	// populate the scene :
-
-	// materials : 
-	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
-	MaterialUnlit wireframeMaterial(programObject_wireframe);
-
-	// fill factories : 
-	MaterialFactory::get().add("brick", &brickMaterial);
-	MaterialFactory::get().add("wireframe", &wireframeMaterial);
-
-	MeshFactory::get().add("cube", &cube);
-	MeshFactory::get().add("cubeWireframe", &cubeWireFrame);
-	MeshFactory::get().add("plane", &plane);
-
 
 	// mesh renderer for colliders : 
 	MeshRenderer cubeWireFrameRenderer;
@@ -351,9 +360,9 @@ int main( int argc, char **argv )
 	//entity_cube02->setTranslation( glm::vec3(0, 0, 4) );
 
 	//plane entity
-	Entity* entity_plane = new Entity(&scene);
-	entity_plane->add(planeRenderer);
-	entity_plane->setScale( glm::vec3(30,1,30) ); //scale plane
+	//Entity* entity_plane = new Entity(&scene);
+	//entity_plane->add(planeRenderer);
+	//entity_plane->setScale( glm::vec3(30,1,30) ); //scale plane
 
 	//std::vector<Entity*> entities = {&entity_cube01, &entity_cube02, &entity_plane};
 

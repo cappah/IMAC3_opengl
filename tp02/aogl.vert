@@ -10,6 +10,7 @@ precision highp int;
 
 uniform mat4 MVP;
 uniform mat4 NormalMatrix;
+uniform vec2 TextureRepetition;
 
 layout(location = POSITION) in vec3 Position;
 layout(location = NORMAL) in vec3 Normal;
@@ -28,7 +29,7 @@ void main()
 	
 	vec3 pos = Position;
 
-	Out.TexCoord = TexCoord;
+	Out.TexCoord = TexCoord * TextureRepetition;
 	Out.Position = pos;
 	Out.Normal = vec3(NormalMatrix * vec4(Normal, 0));
 

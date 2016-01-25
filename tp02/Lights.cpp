@@ -17,7 +17,7 @@ PointLight::PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) 
 
 void PointLight::updateBoundingBox()
 {
-	float lightRadius = std::sqrt(intensity / 0.1f);
+	float lightRadius = std::sqrt(intensity / 0.01f);
 	
 	boundingBox.applyTranslation(position);
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
@@ -125,7 +125,7 @@ SpotLight::SpotLight(float _intensity, glm::vec3 _color, glm::vec3 _position, gl
 
 void SpotLight::updateBoundingBox()
 {
-	float lightRadius = std::sqrt(intensity / 0.001f);
+	float lightRadius = std::sqrt(intensity / 0.01f);
 
 	boundingBox.applyTranslation(position);
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));

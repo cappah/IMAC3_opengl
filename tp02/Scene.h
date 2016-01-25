@@ -9,6 +9,7 @@
 #include "LightManager.h"
 #include "Renderer.h"
 #include "Camera.h"
+#include "Terrain.h"
 
 class Scene
 {
@@ -32,6 +33,8 @@ private:
 	bool m_areCollidersVisible;
 	bool m_isDebugDeferredVisible;
 	bool m_areLightsBoundingBoxVisible;
+
+	Terrain m_terrain;
 
 public:
 	Scene(Renderer * renderer);
@@ -69,5 +72,7 @@ public:
 	void setAreLightsBoundingBoxVisible(bool value);
 
 	void culling(const Camera& camera);
+
+	Terrain& getTerrain();
 };
 

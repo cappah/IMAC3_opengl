@@ -130,7 +130,7 @@ Scene & Scene::erase(MeshRenderer * meshRenderer)
 
 void Scene::render(const Camera& camera)
 {
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights);
+	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain);
 }
 
 void Scene::renderColliders(const Camera & camera)
@@ -199,4 +199,9 @@ void Scene::setAreLightsBoundingBoxVisible(bool value)
 void Scene::culling(const Camera & camera)
 {
 	m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
+}
+
+Terrain& Scene::getTerrain()
+{
+	return m_terrain;
 }

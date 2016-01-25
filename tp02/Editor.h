@@ -2,8 +2,6 @@
 
 #include "Entity.h"
 #include "Gizmo.h"
-#include "Application.h"
-#include "Factories.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -24,6 +22,8 @@ private:
 
 	bool m_isUIVisible;
 	bool m_isGizmoVisible;
+
+	bool m_terrainToolVisible;
 
 public:
 	Editor(MaterialUnlit* _unlitMaterial);

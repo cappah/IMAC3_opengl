@@ -18,7 +18,7 @@ struct Material
 	GLuint uniform_MVP;
 	GLuint uniform_normalMatrix;
 
-	Material(GLuint _glProgram);
+	Material(GLuint _glProgram = 0);
 
 	void setUniform_MVP(glm::mat4& mvp);
 
@@ -34,11 +34,15 @@ struct MaterialLit : public Material
 	float specularPower;
 	GLuint textureSpecular;
 
+	glm::vec2 textureRepetition;
+
 	GLuint uniform_textureDiffuse;
 	GLuint uniform_textureSpecular;
 	GLuint uniform_specularPower;
+	GLuint uniform_textureRepetition;
 
-	MaterialLit(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower = 50);
+	MaterialLit();
+	MaterialLit(GLuint _glProgram, GLuint _textureDiffuse = 0, GLuint _textureSpecular = 0, float _specularPower = 50);
 
 	void setUniform_MVP(glm::mat4& mvp);
 

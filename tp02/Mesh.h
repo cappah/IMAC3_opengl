@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "glew\glew.h"
+#include "glew/glew.h"
 
 struct Mesh
 {

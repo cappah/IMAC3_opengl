@@ -7,6 +7,7 @@
 #include "Application.h"
 #include "Entity.h"
 #include "Collider.h"
+#include "Terrain.h"
 
 
 
@@ -50,7 +51,7 @@ public:
 
 	//void render(Camera& camera, std::vector<Entity*> entities);
 
-	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
+	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain);
 
 	//draw colliders on scene
 	void debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities);

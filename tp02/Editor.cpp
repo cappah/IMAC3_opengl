@@ -1,5 +1,7 @@
 #include "Editor.h"
 #include "Scene.h"
+#include "Application.h" //forward
+#include "Factories.h" //forward
 
 Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true)
 {
@@ -87,77 +89,106 @@ void Editor::renderGizmo(const Camera& camera)//(const glm::mat4& projectionMatr
 
 void Editor::renderUI(Scene& scene)
 {
+
 	if (!m_isUIVisible)
 		return;
 
-	if (ImGui::RadioButton("colliders visibility", scene.getAreCollidersVisible()))
+	if (ImGui::BeginMainMenuBar())
 	{
-		scene.toggleColliderVisibility();
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("debug deferred visibility", scene.getIsDebugDeferredVisible()))
-	{
-		scene.toggleDebugDeferredVisibility();
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("gizmo visibility", m_isGizmoVisible))
-	{
-		toggleGizmoVisibility();
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("light boundingBox visibility", scene.getAreLightsBoundingBoxVisible()))
-	{
-		scene.toggleLightsBoundingBoxVisibility();
-	}
+		if (ImGui::BeginMenu("toggle visibility"))
+		{
+			if (ImGui::RadioButton("colliders visibility", scene.getAreCollidersVisible()))
+			{
+				scene.toggleColliderVisibility();
+			}
+			ImGui::SameLine();
+			if (ImGui::RadioButton("debug deferred visibility", scene.getIsDebugDeferredVisible()))
+			{
+				scene.toggleDebugDeferredVisibility();
+			}
+			ImGui::SameLine();
+			if (ImGui::RadioButton("gizmo visibility", m_isGizmoVisible))
+			{
+				toggleGizmoVisibility();
+			}
+			ImGui::SameLine();
+			if (ImGui::RadioButton("light boundingBox visibility", scene.getAreLightsBoundingBoxVisible()))
+			{
+				scene.toggleLightsBoundingBoxVisibility();
+			}
 
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("tools"))
+		{
+			if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
+			{
+				m_terrainToolVisible = !m_terrainToolVisible;
+			}
+
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Add default entities"))
+		{
+			if (ImGui::Button("add empty entity"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				newEntity->add(newCollider);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("add pointLight"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto light = new PointLight();
+				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+				newEntity->add(newCollider).add(light);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("add directionalLight"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto light = new DirectionalLight();
+				newEntity->add(newCollider).add(light);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("add spotLight"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto light = new SpotLight();
+				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+				newEntity->add(newCollider).add(light);
+			}
+
+			if (ImGui::Button("add cube"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get("brick"));
+				newEntity->add(newCollider).add(meshRenderer);
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::Separator();
+
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+		ImGui::EndMainMenuBar();
+	}
 
 	int entityId = 0;
 
-	if (ImGui::Button("add empty entity"))
-	{
-		auto newEntity = new Entity(&scene);
-		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
-		auto newCollider = new BoxCollider(colliderRenderer);
-		newEntity->add(newCollider);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("add pointLight"))
-	{
-		auto newEntity = new Entity(&scene);
-		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
-		auto newCollider = new BoxCollider(colliderRenderer);
-		auto light = new PointLight();
-		light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
-		newEntity->add(newCollider).add(light);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("add directionalLight"))
-	{
-		auto newEntity = new Entity(&scene);
-		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
-		auto newCollider = new BoxCollider(colliderRenderer);
-		auto light = new DirectionalLight();
-		newEntity->add(newCollider).add(light);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("add spotLight"))
-	{
-		auto newEntity = new Entity(&scene);
-		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
-		auto newCollider = new BoxCollider(colliderRenderer);
-		auto light = new SpotLight();
-		light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
-		newEntity->add(newCollider).add(light);
-	}
-
-	if (ImGui::Button("add cube"))
-	{
-		auto newEntity = new Entity(&scene);
-		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
-		auto newCollider = new BoxCollider(colliderRenderer);
-		auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get("brick"));
-		newEntity->add(newCollider).add(meshRenderer);
-	}
+	
 
 	if (!m_currentSelected.empty())
 	{
@@ -171,6 +202,13 @@ void Editor::renderUI(Scene& scene)
 
 				entityId++;
 			}
+		ImGui::End();
+	}
+
+	if (m_terrainToolVisible)
+	{
+		ImGui::Begin("Terrain tool");
+		scene.getTerrain().drawUI();
 		ImGui::End();
 	}
 		
