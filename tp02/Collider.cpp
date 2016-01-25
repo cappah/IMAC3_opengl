@@ -3,7 +3,7 @@
 #include "Scene.h"
 #include "Entity.h"
 
-Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual)
+Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual), translation(0,0,0), scale(1,1,1)
 {
 
 }
@@ -20,6 +20,8 @@ void Collider::setVisual(MeshRenderer* _visual)
 
 void Collider::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 {
+	this->rotation = rotation;
+
 	applyTransform(translation, scale);
 }
 
@@ -59,6 +61,20 @@ void Collider::applyTranslation(const glm::vec3& _translation)
 void Collider::appendTranslation(const glm::vec3& _translation)
 {
 	translation += _translation;
+
+	updateModelMatrix();
+}
+
+void Collider::applyRotation(const glm::quat & _rotation)
+{
+	rotation = _rotation;
+
+	updateModelMatrix();
+}
+
+void Collider::appendRotation(const glm::quat & _rotation)
+{
+	rotation *= _rotation;
 
 	updateModelMatrix();
 }
@@ -111,7 +127,7 @@ BoxCollider::BoxCollider(MeshRenderer* _visual) : Collider(_visual)
 
 void BoxCollider::updateModelMatrix()
 {
-	modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::scale(glm::mat4(1), scale + offsetScale);
+	modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale + offsetScale);
 
 	topRight = glm::vec3( modelMatrix * glm::vec4(localTopRight, 1) );
 	bottomLeft = glm::vec3( modelMatrix * glm::vec4(localBottomLeft, 1) );

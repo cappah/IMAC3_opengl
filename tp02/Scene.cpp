@@ -145,6 +145,12 @@ void Scene::renderDebugDeferred()
 		m_renderer->debugDrawDeferred();
 }
 
+void Scene::renderDebugLights(const Camera & camera)
+{
+	if(m_areLightsBoundingBoxVisible)
+		m_renderer->debugDrawLights(camera, m_pointLights, m_spotLights);
+}
+
 void Scene::toggleColliderVisibility()
 {
 	m_areCollidersVisible = !m_areCollidersVisible;
@@ -153,6 +159,11 @@ void Scene::toggleColliderVisibility()
 void Scene::toggleDebugDeferredVisibility()
 {
 	m_isDebugDeferredVisible = !m_isDebugDeferredVisible;
+}
+
+void Scene::toggleLightsBoundingBoxVisibility()
+{
+	m_areLightsBoundingBoxVisible = !m_areLightsBoundingBoxVisible;
 }
 
 bool Scene::getAreCollidersVisible() const
@@ -165,6 +176,11 @@ bool Scene::getIsDebugDeferredVisible() const
 	return m_isDebugDeferredVisible;
 }
 
+bool Scene::getAreLightsBoundingBoxVisible() const
+{
+	return m_areLightsBoundingBoxVisible;
+}
+
 void Scene::setAreCollidersVisible(bool value)
 {
 	m_areCollidersVisible = value;
@@ -173,6 +189,11 @@ void Scene::setAreCollidersVisible(bool value)
 void Scene::setIsDebugDeferredVisible(bool value)
 {
 	m_isDebugDeferredVisible = value;
+}
+
+void Scene::setAreLightsBoundingBoxVisible(bool value)
+{
+	m_areLightsBoundingBoxVisible = value;
 }
 
 void Scene::culling(const Camera & camera)

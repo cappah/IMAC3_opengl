@@ -44,6 +44,9 @@ struct PointLight : public Light
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
 
+	void setBoundingBoxVisual(MeshRenderer* visual);
+	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
+
 };
 
 struct DirectionalLight : public Light
@@ -76,5 +79,8 @@ struct SpotLight : public Light
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+
+	void setBoundingBoxVisual(MeshRenderer* visual);
+	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
 };
 

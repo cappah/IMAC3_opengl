@@ -51,6 +51,7 @@ public:
 	void toggleUIVisibility();
 	void toggleGizmoVisibility();
 	void toggleDebugVisibility(Scene& scene);
+	void toggleLightsBoundingBoxVisibility(Scene& scene);
 
 };
 

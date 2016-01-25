@@ -31,6 +31,7 @@ private:
 
 	bool m_areCollidersVisible;
 	bool m_isDebugDeferredVisible;
+	bool m_areLightsBoundingBoxVisible;
 
 public:
 	Scene(Renderer * renderer);
@@ -55,13 +56,17 @@ public:
 	void render(const Camera& camera);
 	void renderColliders(const Camera& camera);
 	void renderDebugDeferred();
+	void renderDebugLights(const Camera& camera);
 
 	void toggleColliderVisibility();
 	void toggleDebugDeferredVisibility();
+	void toggleLightsBoundingBoxVisibility();
 	bool getAreCollidersVisible() const;
 	bool getIsDebugDeferredVisible() const;
+	bool getAreLightsBoundingBoxVisible() const;
 	void setAreCollidersVisible(bool value);
 	void setIsDebugDeferredVisible(bool value);
+	void setAreLightsBoundingBoxVisible(bool value);
 
 	void culling(const Camera& camera);
 };

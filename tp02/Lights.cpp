@@ -17,7 +17,7 @@ PointLight::PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) 
 
 void PointLight::updateBoundingBox()
 {
-	float lightRadius = std::sqrt(intensity / 0.01f);
+	float lightRadius = std::sqrt(intensity / 0.1f);
 	
 	boundingBox.applyTranslation(position);
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
@@ -58,6 +58,16 @@ Component* PointLight::clone(Entity* entity)
 void PointLight::addToScene(Scene& scene)
 {
 	scene.add(this);
+}
+
+void PointLight::setBoundingBoxVisual(MeshRenderer * visual)
+{
+	boundingBox.setVisual(visual);
+}
+
+void PointLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color)
+{
+	boundingBox.render(projectile, view, color);
 }
 
 
@@ -158,4 +168,14 @@ Component* SpotLight::clone(Entity* entity)
 void SpotLight::addToScene(Scene& scene)
 {
 	scene.add(this);
+}
+
+void SpotLight::setBoundingBoxVisual(MeshRenderer * visual)
+{
+	boundingBox.setVisual(visual);
+}
+
+void SpotLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color)
+{
+	boundingBox.render(projectile, view, color);
 }

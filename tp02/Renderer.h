@@ -59,7 +59,7 @@ public:
 	void debugDrawDeferred();
 
 	//draw lights bounding box
-	void debugDrawLights();
+	void debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights);
 
 	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights);
 };

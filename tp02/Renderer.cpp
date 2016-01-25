@@ -433,9 +433,9 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTexturePosition[SPOT], 0);
 	glUniform1i(uniformTextureNormal[SPOT], 1);
 	glUniform1i(uniformTextureDepth[SPOT], 2);
-	for (auto& light : spotLights)
+	for (int i = 0; i < spotLightCount; i++)
 	{
-		lightManager->uniformSpotLight(*light);
+		lightManager->uniformSpotLight(*spotLights[i]);
 		quadMesh.draw();
 	}
 
@@ -535,6 +535,25 @@ void Renderer::debugDrawDeferred()
 	///////////// end draw blit quad
 }
 
+void Renderer::debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
+{
+	int width = Application::get().getWindowWidth();
+	int height = Application::get().getWindowHeight();
+
+	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+
+	for (auto& light : pointLights)
+	{
+		light->renderBoundingBox(projection, view, glm::vec3(0, 0, 1));
+	}
+
+	for (auto& light : spotLights)
+	{
+		light->renderBoundingBox(projection, view, glm::vec3(0, 0, 1));
+	}
+}
+
 void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights)
 {
 	int width = Application::get().getWindowWidth();
@@ -544,20 +563,29 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
 
 	int lastId = pointLights.size() - 1;;
-	bool lightIsOut = false;
-
 	for (int i = 0; i < pointLights.size(); i++)
 	{
-
+		
 		BoxCollider& collider = pointLights[i]->boundingBox;
+
+		// this matrix will allow the light bounding box to allways facing the camera.
+		glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
+		glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
+
+		collider.applyRotation(glm::quat(facingCameraRotation));
+
 		glm::vec3 topRight = collider.topRight;
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
-		topRight = glm::vec3( projection * view * glm::vec4(topRight, 1) );
-		bottomLeft = glm::vec3( projection * view * glm::vec4(bottomLeft, 1) );
+		glm::vec4 tmpTopRight = projection * view  * glm::vec4(topRight, 1);
+		glm::vec4 tmpBottomLeft = projection * view  * glm::vec4(bottomLeft, 1);
 
-		if((topRight.x < -1 && bottomLeft.x < -1 ) || (topRight.y < -1 && bottomLeft.y < -1) //|| (topRight.z < -1 && bottomLeft.z < -1)
-			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1) )//|| (topRight.z > 1 && bottomLeft.z > 1) )
+		topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
+		bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
+
+		if((topRight.x < -1 && bottomLeft.x < -1 ) || (topRight.y < -1 && bottomLeft.y < -1)
+			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1) )
 		{
 			PointLight* tmpLight = pointLights[i];
 			pointLights[i] = pointLights[lastId];
@@ -570,13 +598,50 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 		if (i >= lastId)
 		{
 			pointLightCount = i + 1;
-			std::cout << "point light visibles : " << pointLightCount << std::endl;
+			std::cout << "nombre de point light visibles : " << pointLightCount << std::endl;
 			break;
+		}		
+	}
+
+	lastId = spotLights.size() - 1;
+	for (int i = 0; i < spotLights.size(); i++)
+	{
+
+		BoxCollider& collider = spotLights[i]->boundingBox;
+
+		// this matrix will allow the light bounding box to allways facing the camera.
+		glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
+		glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
+
+		collider.applyRotation(glm::quat(facingCameraRotation));
+
+		glm::vec3 topRight = collider.topRight;
+		glm::vec3 bottomLeft = collider.bottomLeft;
+
+		glm::vec4 tmpTopRight = projection * view  * glm::vec4(topRight, 1);
+		glm::vec4 tmpBottomLeft = projection * view  * glm::vec4(bottomLeft, 1);
+
+		topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
+		bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
+
+		if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
+			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
+		{
+			SpotLight* tmpLight = spotLights[i];
+			spotLights[i] = spotLights[lastId];
+			spotLights[lastId] = tmpLight;
+
+			lastId--;
+			i--;
 		}
 
-		//if (lightIsOut)
-		//	i--;
-		
+		if (i >= lastId)
+		{
+			pointLightCount = i + 1;
+			std::cout << "nombre de spot light visibles : " << pointLightCount << std::endl;
+			break;
+		}
 	}
 
 }

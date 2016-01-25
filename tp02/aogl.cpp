@@ -320,6 +320,7 @@ int main( int argc, char **argv )
 	Entity* newEntity = new Entity(&scene);
 	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
 	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
+	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
 	newEntity->add(boxColliderLight).add(pointLight);
 
 
@@ -542,6 +543,7 @@ int main( int argc, char **argv )
 		scene.render(camera);
 		scene.renderColliders(camera);
 		scene.renderDebugDeferred();
+		scene.renderDebugLights(camera);
 
 		glDisable(GL_DEPTH_TEST);
 		editor.renderGizmo(camera);

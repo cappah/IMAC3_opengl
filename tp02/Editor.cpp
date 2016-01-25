@@ -104,6 +104,11 @@ void Editor::renderUI(Scene& scene)
 	{
 		toggleGizmoVisibility();
 	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("light boundingBox visibility", scene.getAreLightsBoundingBoxVisible()))
+	{
+		scene.toggleLightsBoundingBoxVisibility();
+	}
 
 
 	int entityId = 0;
@@ -122,6 +127,7 @@ void Editor::renderUI(Scene& scene)
 		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
 		auto newCollider = new BoxCollider(colliderRenderer);
 		auto light = new PointLight();
+		light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
 		newEntity->add(newCollider).add(light);
 	}
 	ImGui::SameLine();
@@ -140,6 +146,7 @@ void Editor::renderUI(Scene& scene)
 		auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
 		auto newCollider = new BoxCollider(colliderRenderer);
 		auto light = new SpotLight();
+		light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
 		newEntity->add(newCollider).add(light);
 	}
 
@@ -314,5 +321,12 @@ void Editor::toggleDebugVisibility(Scene& scene)
 
 	scene.setAreCollidersVisible(m_isUIVisible);
 	scene.setIsDebugDeferredVisible(m_isUIVisible);
+	scene.setAreLightsBoundingBoxVisible(m_isUIVisible);
 	m_isGizmoVisible = m_isUIVisible;
+
+}
+
+void Editor::toggleLightsBoundingBoxVisibility(Scene& scene)
+{
+	scene.toggleLightsBoundingBoxVisibility();
 }

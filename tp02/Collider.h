@@ -29,6 +29,7 @@ struct Collider : public Component
 
 	glm::vec3 translation;
 	glm::vec3 scale;
+	glm::quat rotation;
 	glm::mat4 modelMatrix;
 
 	Collider(MeshRenderer* _visual);
@@ -51,6 +52,10 @@ struct Collider : public Component
 
 	//keep the scale, append the translation 
 	void appendTranslation(const glm::vec3& _translation);
+
+	void applyRotation(const glm::quat& _rotation);
+
+	void appendRotation(const glm::quat& _rotation);
 
 	void setOffsetPosition(glm::vec3 _offset);
 
