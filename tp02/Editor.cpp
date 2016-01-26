@@ -101,17 +101,17 @@ void Editor::renderUI(Scene& scene)
 			{
 				scene.toggleColliderVisibility();
 			}
-			ImGui::SameLine();
+
 			if (ImGui::RadioButton("debug deferred visibility", scene.getIsDebugDeferredVisible()))
 			{
 				scene.toggleDebugDeferredVisibility();
 			}
-			ImGui::SameLine();
+
 			if (ImGui::RadioButton("gizmo visibility", m_isGizmoVisible))
 			{
 				toggleGizmoVisibility();
 			}
-			ImGui::SameLine();
+
 			if (ImGui::RadioButton("light boundingBox visibility", scene.getAreLightsBoundingBoxVisible()))
 			{
 				scene.toggleLightsBoundingBoxVisibility();

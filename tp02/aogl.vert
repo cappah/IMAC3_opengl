@@ -31,7 +31,7 @@ void main()
 
 	Out.TexCoord = TexCoord * TextureRepetition;
 	Out.Position = pos;
-	Out.Normal = vec3(NormalMatrix * vec4(Normal, 0));
+	Out.Normal =  normalize( vec3(NormalMatrix * vec4(Normal, 0)) );
 
 	gl_Position = MVP * vec4(Position,1);
 	

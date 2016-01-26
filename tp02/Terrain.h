@@ -22,6 +22,8 @@ private:
 	std::vector<float> m_vertices;
 	std::vector<float> m_normals;
 
+	std::vector<float> m_heightMap;
+
 	GLuint vbo_index;
 	GLuint vbo_vertices;
 	GLuint vbo_uvs;
@@ -33,6 +35,7 @@ private:
 	MaterialLit m_material;
 
 	float m_width;
+	float m_depth;
 	float m_height;
 
 	glm::vec3 m_offset;
@@ -40,11 +43,11 @@ private:
 	std::string diffuseTextureName;
 	std::string specularTextureName;
 
-	Perlin2D m_terrainNoise;
+	NoiseGenerator m_terrainNoise;
 
 public:
 
-	Terrain(float width = 100, float height = 100, int subdivision = 10, glm::vec3 offset = glm::vec3(0,0,0));
+	Terrain(float width = 100, float height = 30, float depth = 100, int subdivision = 10, glm::vec3 offset = glm::vec3(0,0,0));
 	~Terrain();
 	//initialize vbos and vao, based on the informations of the mesh.
 	void initGl();
@@ -57,5 +60,7 @@ public:
 	void computeNormals();
 
 	void applyNoise(Perlin2D& perlin2D);
+	void updateTerrain();
+	void generateTerrain();
 };
 

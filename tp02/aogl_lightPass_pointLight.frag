@@ -44,7 +44,7 @@ vec3 computePointLight(PointLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 spe
 	diffuse /= 3.1415f;
 
 	specular *= pow(ndoth, specularPower);
-	specular /= ( (specularPower + 8) / (8*3.1415) );
+	specular /= ( (specularPower + 8.0) / (8.0*3.1415) );
 
 	float intensity = light.intensity / (d*d);
 
@@ -71,7 +71,7 @@ void main(void)
 	float specularPower = normalBuffer.a;
 	vec3 n = normalBuffer.rgb;
 
-	vec3 color = computePointLight( pointLight, p, n, diffuse, specular, specularPower );
+	vec3 color = computePointLight( pointLight, p, n, diffuse, specular, specularPower * 100 );
 
     Color = vec4(color, 1.0);
 }

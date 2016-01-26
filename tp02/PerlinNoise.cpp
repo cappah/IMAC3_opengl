@@ -1,12 +1,26 @@
 #include "PerlinNoise.h"
 
-Perlin2D::Perlin2D(int l, int h, int p, int n, float persistence)
+NoiseGenerator::NoiseGenerator()
+{
+	persistence = 0.5f;
+	samplingOffset = 64;
+	octaveCount = 3;
+	height = 512;
+}
+
+Perlin2D NoiseGenerator::generatePerlin2D()
+{
+	return Perlin2D(height, samplingOffset, octaveCount, persistence);
+}
+
+////////////////////////////////////////
+
+Perlin2D::Perlin2D(int l, int p, int n, float persistence)
 {
 	m_persistence = persistence;
 	m_octaveCount = n;
 	m_values.clear();
 	m_height = l;
-	m_frequency = h;
 	m_samplingOffset = p;
 
 	m_maxHeight = (int)ceil(m_height * pow(2, m_octaveCount - 1) / m_samplingOffset);
@@ -18,7 +32,11 @@ Perlin2D::Perlin2D(int l, int h, int p, int n, float persistence)
 
 float Perlin2D::getValue2D(int i, int j)
 {
-	return m_values[i * m_maxHeight + j];
+	int index = i * m_maxHeight + j;
+	if (index < 0 || index >= m_values.size())
+		return 0;
+
+	return m_values[index];
 }
 
 float Perlin2D::getNoise2D(float x, float y)

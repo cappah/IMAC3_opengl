@@ -7,19 +7,19 @@
 
 #include "Utils.h"
 
+
 struct Perlin2D
 {
 	float m_persistence;
 	int m_samplingOffset;
 	int m_octaveCount;
-	int m_frequency;
 	int m_height;
 	int m_maxHeight;
 	std::vector<double> m_values;
 
-	Perlin2D(int l, int h, int p, int n, float persistence);
+	Perlin2D(int l, int p, int n, float persistence);
 	
-	//float getNoiseValue(float x, float y);
+	float getNoiseValue(float x, float y);
 
 	//float getPersistence() const;
 	//void setPersistence(float p);
@@ -33,5 +33,16 @@ struct Perlin2D
 private :
 	float getValue2D(int i, int j);
 	float getNoise2D(float x, float y);
+};
+
+struct NoiseGenerator
+{
+	float persistence;
+	int samplingOffset;
+	int octaveCount;
+	int height;
+
+	NoiseGenerator();
+	Perlin2D generatePerlin2D();
 };
 

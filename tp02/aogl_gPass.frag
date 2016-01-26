@@ -36,5 +36,5 @@ void main()
 
 	outColor = vec4( texture(Diffuse, In.TexCoord).rgb, texture(Specular, In.TexCoord).r );
 
-	outNormal = vec4( In.Normal, specularPower);
+	outNormal = vec4( In.Normal, specularPower/100.0 );
 }
