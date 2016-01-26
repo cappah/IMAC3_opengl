@@ -9,6 +9,7 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
+#include <vector>
 #include <sstream>
 
 #include "Camera.h"
@@ -34,3 +35,9 @@ bool checkError(const char* title);
 
 //return the point in world coordinate matching the given mouse position in screen space : 
 glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, Camera& camera);
+
+double interpolation_cos2D(double a, double b, double c, double d, double x, double y);
+double interpolation_cos1D(double a, double b, double x);
+
+glm::vec3 vertexFrom3Floats(const std::vector<float>& vertices, int indice);
+

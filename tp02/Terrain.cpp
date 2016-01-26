@@ -112,6 +112,54 @@ Terrain::~Terrain()
 	glDeleteVertexArrays(1, &vao);
 }
 
+void Terrain::computeNormals()
+{
+	for (int j = 0, k = 0; j < m_subdivision; j++)
+	{
+		for (int i = 0; i < m_subdivision; i++, k++)
+		{
+			glm::vec3 u = vertexFrom3Floats(m_vertices, i + (j - 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+			glm::vec3 v = vertexFrom3Floats(m_vertices, (i - 1)+ j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+			glm::vec3 normal = glm::normalize(glm::cross(u, v));
+
+			u = vertexFrom3Floats(m_vertices, (i - 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+			v = vertexFrom3Floats(m_vertices, i + (j + 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+
+			normal += glm::normalize(glm::cross(u, v));
+
+			u = vertexFrom3Floats(m_vertices, i + (j + 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+			v = vertexFrom3Floats(m_vertices, (i + 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+
+			normal += glm::normalize(glm::cross(u, v));
+
+			u = vertexFrom3Floats(m_vertices, i + (j + 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+			v = vertexFrom3Floats(m_vertices, (i - 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+
+			normal += glm::normalize(glm::cross(u, v));
+
+			normal = glm::normalize(normal);
+		}
+	}
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
+	glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(float), &m_normals[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Terrain::applyNoise(Perlin2D& perlin2D)
+{
+	for (int j = 0, k = 0; j < m_subdivision; j++)
+	{
+		for (int i = 0; i < m_subdivision; i++, k++)
+		{
+			m_vertices[k + 1] = perlin2D.getNoiseValue(i, j);
+		}
+	}
+
+	computeNormals();
+}
+
 //initialize vbos and vao, based on the informations of the mesh.
 void Terrain::initGl()
 {
@@ -199,6 +247,39 @@ void Terrain::drawUI()
 		if (TextureFactory::get().contains(specularTextureName))
 			m_material.textureSpecular = TextureFactory::get().get(specularTextureName);
 	}
+
+
+	m_height = l;
+	m_frequency = h;
+	m_samplingOffset = p;
+
+	
+	if (ImGui::InputFloat("noise persistence", &m_terrainNoise.m_persistence))
+	{
+		applyNoise(m_terrainNoise);
+	}
+	if (ImGui::InputInt("noise octave count", &m_terrainNoise.m_octaveCount))
+	{
+		applyNoise(m_terrainNoise);
+	}
+	if (ImGui::InputInt("noise height", &m_terrainNoise.m_height))
+	{
+		applyNoise(m_terrainNoise);
+	}
+	if (ImGui::InputFloat("persistence", &m_terrainNoise.m_persistence))
+	{
+		applyNoise(m_terrainNoise);
+	}
+	if (ImGui::InputFloat("persistence", &m_terrainNoise.m_persistence))
+	{
+		applyNoise(m_terrainNoise);
+	}
+	if (ImGui::InputFloat("persistence", &m_terrainNoise.m_persistence))
+	{
+		applyNoise(m_terrainNoise);
+	}
+
+
 
 
 	//TODO

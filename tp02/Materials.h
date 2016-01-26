@@ -9,6 +9,9 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
+
 #include "Utils.h"
 
 struct Material
@@ -31,9 +34,11 @@ struct Material
 
 struct MaterialLit : public Material
 {
+	std::string diffuseTextureName;
 	GLuint textureDiffuse;
 
 	float specularPower;
+	std::string specularTextureName;
 	GLuint textureSpecular;
 
 	glm::vec2 textureRepetition;
@@ -51,6 +56,8 @@ struct MaterialLit : public Material
 	void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
 	void use();
+
+	virtual void drawUI() override;
 };
 
 
@@ -68,4 +75,6 @@ struct MaterialUnlit : public Material
 	void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
 	void use();
+
+	virtual void drawUI() override;
 };

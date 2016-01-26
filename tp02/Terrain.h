@@ -8,6 +8,7 @@
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "Materials.h"
+#include "PerlinNoise.h"
 
 class Terrain
 {
@@ -39,6 +40,8 @@ private:
 	std::string diffuseTextureName;
 	std::string specularTextureName;
 
+	Perlin2D m_terrainNoise;
+
 public:
 
 	Terrain(float width = 100, float height = 100, int subdivision = 10, glm::vec3 offset = glm::vec3(0,0,0));
@@ -50,5 +53,9 @@ public:
 	void render(const glm::mat4& projection, const glm::mat4& view);
 
 	void drawUI();
+
+	void computeNormals();
+
+	void applyNoise(Perlin2D& perlin2D);
 };
 

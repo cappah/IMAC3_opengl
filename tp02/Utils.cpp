@@ -157,3 +157,22 @@ bool checkError(const char* title)
 	}
 	return error == GL_NO_ERROR;
 }
+
+
+double interpolation_cos2D(double a, double b, double c, double d, double x, double y) 
+{
+	double y1 = interpolation_cos1D(a, b, x);
+	double y2 = interpolation_cos1D(c, d, x);
+	return  interpolation_cos1D(y1, y2, y);
+}
+
+double interpolation_cos1D(double a, double b, double x) 
+{
+	double k = (1 - cos(x * glm::pi<double>())) / 2;
+	return a * (1 - k) + b * k;
+}
+
+glm::vec3 vertexFrom3Floats(const std::vector<float>& vertices, int indice)
+{
+	return glm::vec3(vertices[indice], vertices[indice + 1], vertices[indice + 2]);
+}

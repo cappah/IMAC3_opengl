@@ -72,6 +72,38 @@ void MaterialLit::use()
 	glUniform2fv(uniform_textureRepetition, 1, glm::value_ptr(textureRepetition));
 }
 
+void MaterialLit::drawUI()
+{
+	ImGui::InputFloat("specular power", &specularPower);
+
+	ImGui::InputFloat2("texture repetition", &textureRepetition[0]);
+
+	char tmpTxt[30];
+	diffuseTextureName.copy(tmpTxt, glm::min(30, (int)diffuseTextureName.size()), 0);
+	tmpTxt[diffuseTextureName.size()] = '\0';
+
+	if (ImGui::InputText("diffuse texture name", tmpTxt, 20))
+	{
+		diffuseTextureName = tmpTxt;
+
+		if (TextureFactory::get().contains(diffuseTextureName))
+		{
+
+			textureDiffuse = TextureFactory::get().get(diffuseTextureName);
+		}
+	}
+
+	specularTextureName.copy(tmpTxt, glm::min(30, (int)specularTextureName.size()), 0);
+	tmpTxt[specularTextureName.size()] = '\0';
+	if (ImGui::InputText("specular texture name", tmpTxt, 20))
+	{
+		specularTextureName = tmpTxt;
+
+		if (TextureFactory::get().contains(specularTextureName))
+			textureSpecular = TextureFactory::get().get(specularTextureName);
+	}
+}
+
 
 //////////////////////////////////////////////////
 
@@ -99,4 +131,9 @@ void MaterialUnlit::use()
 {
 	//bind shaders
 	glUseProgram(glProgram);
+}
+
+void MaterialUnlit::drawUI()
+{
+	//nothing
 }
