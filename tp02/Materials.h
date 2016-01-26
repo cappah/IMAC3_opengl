@@ -25,6 +25,8 @@ struct Material
 	void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
 	virtual void use() = 0;
+
+	virtual void drawUI() = 0;
 };
 
 struct MaterialLit : public Material

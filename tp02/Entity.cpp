@@ -155,7 +155,13 @@ void Entity::applyTransform()
 
 void Entity::drawUI()
 {
-	ImGui::InputText("name", &m_name[0], m_name.capacity());
+	char tmpName[20];
+	m_name.copy(tmpName, m_name.size(), 0);
+	tmpName[m_name.size()] = '\0';
+	if (ImGui::InputText("name", tmpName, 20))
+	{
+		m_name = tmpName;
+	}
 
 	if (ImGui::SliderFloat3("rotation", &m_eulerRotation[0], 0, 2 * glm::pi<float>()))
 	{

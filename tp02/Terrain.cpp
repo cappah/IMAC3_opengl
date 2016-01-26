@@ -15,6 +15,11 @@ Terrain::Terrain(float width, float height, int subdivision, glm::vec3 offset) :
 	int rowCount = (m_subdivision - 1);
 	m_triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2;
 
+	m_vertices.clear();
+	m_normals.clear();
+	m_uvs.clear();
+	m_triangleIndex.clear();
+
 	for (int j = 0; j < m_subdivision; j++)
 	{
 		for (int i = 0; i < m_subdivision; i++)
@@ -27,21 +32,20 @@ Terrain::Terrain(float width, float height, int subdivision, glm::vec3 offset) :
 			m_normals.push_back(1);
 			m_normals.push_back(0);
 
-			m_uvs.push_back(i / (subdivision - 1));
-			m_uvs.push_back(j / (subdivision - 1));
+			m_uvs.push_back(i / (float)(subdivision - 1));
+			m_uvs.push_back(j / (float)(subdivision - 1));
 		}
 	}
 
-	for (int i = 0; i < m_triangleCount; i++)
+	for (int i = 0, k = 0; i < m_triangleCount; i++)
 	{
-		int line = i % lineCount;
-		int row = i / rowCount;
+
 
 		if (i % 2 == 0)
 		{
-			m_triangleIndex.push_back(3*i + 0);
-			m_triangleIndex.push_back(3*i + 1);
-			m_triangleIndex.push_back(3*i + m_subdivision);
+			m_triangleIndex.push_back(k + 0);
+			m_triangleIndex.push_back(k + 1);
+			m_triangleIndex.push_back(k + m_subdivision);
 
 
 			//m_vertices.push_back(line*paddingX);
@@ -58,9 +62,9 @@ Terrain::Terrain(float width, float height, int subdivision, glm::vec3 offset) :
 		}
 		else
 		{
-			m_triangleIndex.push_back(3 * i + 1);
-			m_triangleIndex.push_back(3 * i + m_subdivision + 1);
-			m_triangleIndex.push_back(3 * i + m_subdivision);
+			m_triangleIndex.push_back(k + 1);
+			m_triangleIndex.push_back(k + m_subdivision + 1);
+			m_triangleIndex.push_back(k + m_subdivision);
 
 			//m_vertices.push_back((line + 1)*paddingX);
 			//m_vertices.push_back(row*paddingY);
@@ -73,6 +77,14 @@ Terrain::Terrain(float width, float height, int subdivision, glm::vec3 offset) :
 			//m_vertices.push_back(line*paddingX);
 			//m_vertices.push_back((row + 1)*paddingY);
 			//m_vertices.push_back(0);
+		}
+
+		if (i % 2 == 0  && i != 0)
+			k++;
+
+		if ((k  + 1 )% (m_subdivision) == 0 && i != 0)
+		{
+			k++;
 		}
 	}
 
@@ -164,7 +176,8 @@ void Terrain::drawUI()
 	ImGui::InputFloat2("texture repetition", &m_material.textureRepetition[0]);
 
 	char tmpTxt[30];
-	diffuseTextureName.copy(tmpTxt, glm::min(30, (int)diffuseTextureName.size()));
+	diffuseTextureName.copy(tmpTxt, glm::min(30, (int)diffuseTextureName.size()), 0);
+	tmpTxt[diffuseTextureName.size()] = '\0';
 
 	if (ImGui::InputText("diffuse texture name", tmpTxt, 20))
 	{
@@ -177,7 +190,8 @@ void Terrain::drawUI()
 		}
 	}
 
-	specularTextureName.copy(tmpTxt, glm::min(30, (int)specularTextureName.size()));
+	specularTextureName.copy(tmpTxt, glm::min(30, (int)specularTextureName.size()), 0);
+	tmpTxt[specularTextureName.size()] = '\0';
 	if (ImGui::InputText("specular texture name", tmpTxt, 20))
 	{
 		specularTextureName = tmpTxt;
