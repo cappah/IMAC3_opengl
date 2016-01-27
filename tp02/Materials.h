@@ -25,7 +25,6 @@ struct Material
 	Material(GLuint _glProgram = 0);
 
 	void setUniform_MVP(glm::mat4& mvp);
-
 	void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
 	virtual void use() = 0;
@@ -45,6 +44,9 @@ private:
 
 	glm::vec2 textureRepetition;
 
+	GLuint uniform_MVP;
+	GLuint uniform_normalMatrix;
+
 	GLuint uniform_textureDiffuse;
 	GLuint uniform_textureSpecular;
 	GLuint uniform_specularPower;
@@ -54,11 +56,10 @@ public:
 	MaterialLit();
 	MaterialLit(GLuint _glProgram, Texture* _textureDiffuse = 0, Texture* _textureSpecular = 0, float _specularPower = 50);
 
-	void setUniform_MVP(glm::mat4& mvp);
+	//void setUniform_MVP(glm::mat4& mvp);
+	//void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
-	void setUniform_normalMatrix(glm::mat4& normalMatrix);
-
-	void use();
+	virtual void use() override;
 
 	virtual void drawUI() override;
 };
@@ -66,18 +67,37 @@ public:
 
 struct MaterialUnlit : public Material
 {
-	GLuint uniform_color;
+	GLuint uniform_MVP;
+	GLuint uniform_normalMatrix;
 
+	GLuint uniform_color;
 
 	MaterialUnlit(GLuint _glProgram);
 
 	void setUniform_color(glm::vec3 color);
 
-	void setUniform_MVP(glm::mat4& mvp);
+	//void setUniform_MVP(glm::mat4& mvp);
+	//void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
-	void setUniform_normalMatrix(glm::mat4& normalMatrix);
+	virtual void use() override;
 
-	void use();
+	virtual void drawUI() override;
+};
+
+class MaterialSkybox : public Material
+{
+private:
+
+	std::string diffuseTextureName;
+	CubeTexture* textureDiffuse;
+
+	GLuint uniform_textureDiffuse;
+
+public:
+	MaterialSkybox();
+	MaterialSkybox(GLuint _glProgram, CubeTexture * _textureDiffuse);
+	
+	virtual void use() override;
 
 	virtual void drawUI() override;
 };

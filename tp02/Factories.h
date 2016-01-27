@@ -77,6 +77,44 @@ public:
 	void operator=(const TextureFactory& other) = delete;
 };
 
+///////////////////////////////
+
+
+class CubeTextureFactory
+{
+
+private:
+	std::map<std::string, CubeTexture*> m_textures;
+
+	//for UI : 
+	char name[20];
+	char paths[6][50];
+
+public:
+	void add(const std::string& name, const std::vector<std::string>& paths);
+	void add(const std::string& name, CubeTexture* textureId);
+	CubeTexture* get(const std::string& name);
+	bool contains(const std::string& name);
+	void drawUI();
+
+	// singleton implementation :
+private:
+	CubeTextureFactory();
+
+public:
+	inline static CubeTextureFactory& get()
+	{
+		static CubeTextureFactory instance;
+
+		return instance;
+	}
+
+
+	CubeTextureFactory(const CubeTextureFactory& other) = delete;
+	void operator=(const CubeTextureFactory& other) = delete;
+};
+
+
 
 ///////////////////////////////
 

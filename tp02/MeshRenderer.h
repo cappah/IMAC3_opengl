@@ -18,9 +18,6 @@ struct MeshRenderer : public Component
 	std::string materialName;
 	Material* material;
 
-	std::string diffuseTextureName;
-	std::string specularTextureName;
-
 	MeshRenderer(Mesh* _mesh = nullptr, Material* _material = nullptr);
 	virtual ~MeshRenderer();
 

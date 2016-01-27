@@ -384,7 +384,7 @@ void Renderer::render(Camera& camera, std::vector<Entity*> entities)
 }
 */
 
-void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain)
+void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
@@ -409,7 +409,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
 	glm::mat4 camera_mvp = projection * worldToView;
 	glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
-
+	
 	///// end matrix updates
 
 	////// begin G pass 
@@ -547,6 +547,10 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	
+	//rander skybox : 
+	skybox.render(projection, worldToView);
 }
 
 void Renderer::debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities)
@@ -634,32 +638,37 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 	{
 		
 		BoxCollider& collider = pointLights[i]->boundingBox;
-
-		// this matrix will allow the light bounding box to allways facing the camera.
-		glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
-		glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
-
-		collider.applyRotation(glm::quat(facingCameraRotation));
-
 		glm::vec3 topRight = collider.topRight;
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
-		glm::vec4 tmpTopRight = projection * view  * glm::vec4(topRight, 1);
-		glm::vec4 tmpBottomLeft = projection * view  * glm::vec4(bottomLeft, 1);
 
-		topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
-		bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
-
-		if((topRight.x < -1 && bottomLeft.x < -1 ) || (topRight.y < -1 && bottomLeft.y < -1)
-			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1) )
+		if ( !(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
 		{
-			PointLight* tmpLight = pointLights[i];
-			pointLights[i] = pointLights[lastId];
-			pointLights[lastId] = tmpLight;
+			// permet au collider d'être toujours face à la camera. 
+			//cela permet d'éviter les erreurs du au caractère "AABB" du collider.
+			//en effet, on stock le collider avec une seule diagonale, il faut qu'une fois projeté en repère ecrant cette diagonale soit aussi celle du carré projeté.
+			glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
+			glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+			facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
 
-			lastId--;
-			i--;
+			//collider.applyRotation(glm::quat(facingCameraRotation));
+
+			glm::vec4 tmpTopRight = projection * view  /* facingCameraRotation */* glm::vec4(topRight, 1);
+			glm::vec4 tmpBottomLeft = projection * view  /* facingCameraRotation */* glm::vec4(bottomLeft, 1);
+
+			topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
+			bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
+
+			if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
+				|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
+			{
+				PointLight* tmpLight = pointLights[i];
+				pointLights[i] = pointLights[lastId];
+				pointLights[lastId] = tmpLight;
+
+				lastId--;
+				i--;
+			}
 		}
 
 		if (i >= lastId)
@@ -667,7 +676,7 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 			pointLightCount = i + 1;
 			std::cout << "nombre de point light visibles : " << pointLightCount << std::endl;
 			break;
-		}		
+		}
 	}
 
 	lastId = spotLights.size() - 1;

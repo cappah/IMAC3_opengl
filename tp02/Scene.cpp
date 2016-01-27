@@ -130,7 +130,7 @@ Scene & Scene::erase(MeshRenderer * meshRenderer)
 
 void Scene::render(const Camera& camera)
 {
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain);
+	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox);
 }
 
 void Scene::renderColliders(const Camera & camera)
@@ -204,4 +204,9 @@ void Scene::culling(const Camera & camera)
 Terrain& Scene::getTerrain()
 {
 	return m_terrain;
+}
+
+Skybox& Scene::getSkybox()
+{
+	return m_skybox;
 }

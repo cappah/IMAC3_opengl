@@ -125,9 +125,17 @@ void Editor::renderUI(Scene& scene)
 			{
 				m_terrainToolVisible = !m_terrainToolVisible;
 			}
+			if (ImGui::RadioButton("skybox tool", m_skyboxToolVisible))
+			{
+				m_skyboxToolVisible = !m_skyboxToolVisible;
+			}
 			if (ImGui::RadioButton("texture factory", m_textureFactoryVisible))
 			{
 				m_textureFactoryVisible = !m_textureFactoryVisible;
+			}
+			if (ImGui::RadioButton("cube texture factory", m_cubeTextureFactoryVisible))
+			{
+				m_cubeTextureFactoryVisible = !m_cubeTextureFactoryVisible;
 			}
 			if (ImGui::RadioButton("mesh factory", m_meshFactoryVisible))
 			{
@@ -228,10 +236,24 @@ void Editor::renderUI(Scene& scene)
 		ImGui::End();
 	}
 
+	if (m_skyboxToolVisible)
+	{
+		ImGui::Begin("Skybox tool");
+		scene.getSkybox().drawUI();
+		ImGui::End();
+	}
+
 	if (m_textureFactoryVisible)
 	{
 		ImGui::Begin("Texture factory");
 		TextureFactory::get().drawUI();
+		ImGui::End();
+	}
+
+	if (m_cubeTextureFactoryVisible)
+	{
+		ImGui::Begin("Cube Texture factory");
+		CubeTextureFactory::get().drawUI();
 		ImGui::End();
 	}
 

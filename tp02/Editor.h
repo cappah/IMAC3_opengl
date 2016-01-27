@@ -24,7 +24,9 @@ private:
 	bool m_isGizmoVisible;
 
 	bool m_terrainToolVisible;
+	bool m_skyboxToolVisible;
 	bool m_textureFactoryVisible;
+	bool m_cubeTextureFactoryVisible;
 	bool m_meshFactoryVisible;
 	bool m_programFactoryVisible;
 	bool m_materialFactoryVisible;

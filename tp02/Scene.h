@@ -10,6 +10,7 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include "Terrain.h"
+#include "Skybox.h"
 
 class Scene
 {
@@ -35,6 +36,7 @@ private:
 	bool m_areLightsBoundingBoxVisible;
 
 	Terrain m_terrain;
+	Skybox m_skybox;
 
 public:
 	Scene(Renderer * renderer);
@@ -74,5 +76,6 @@ public:
 	void culling(const Camera& camera);
 
 	Terrain& getTerrain();
+	Skybox& getSkybox();
 };
 

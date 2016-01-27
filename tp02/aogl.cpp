@@ -179,6 +179,23 @@ int main( int argc, char **argv )
 	//////////////////// INPUT HANDLER ///////////////////////////
 	InputHandler inputHandler;
 
+	//////////////////// SKYBOX shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_skybox = compile_shader_from_file(GL_VERTEX_SHADER, "skybox.vert");
+	GLuint fragShaderId_skybox = compile_shader_from_file(GL_FRAGMENT_SHADER, "skybox.frag");
+
+	GLuint programObject_skybox = glCreateProgram();
+	glAttachShader(programObject_skybox, vertShaderId_skybox);
+	glAttachShader(programObject_skybox, fragShaderId_skybox);
+
+	glLinkProgram(programObject_skybox);
+	if (check_link_error(programObject_skybox) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 	//////////////////// 3D Gpass shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_gpass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
@@ -283,6 +300,12 @@ int main( int argc, char **argv )
 	Texture* diffuseTexture = new Texture("textures/spnza_bricks_a_diff.tga");
 	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
 
+	std::vector<std::string> skyboxTexturePaths = {"textures/skyboxes/right.png", "textures/skyboxes/left.png", 
+												   "textures/skyboxes/top.png", "textures/skyboxes/top.png",
+													"textures/skyboxes/front.png","textures/skyboxes/back.png" };
+
+	CubeTexture* defaultSkybox = new CubeTexture(skyboxTexturePaths);
+
 	//force texture initialisation
 	diffuseTexture->initGL();
 	specularTexture->initGL();
@@ -303,9 +326,12 @@ int main( int argc, char **argv )
 	TextureFactory::get().add("brickDiffuse", diffuseTexture);
 	TextureFactory::get().add("brickSpecular", specularTexture);
 
+	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
+
 	////////// INITIALYZE DEFAULT MATERIAL IN FACTORY : 
 	ProgramFactory::get().add("defaultLit", programObject_gPass);
 	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
+	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
 
 	///////////////////// END RESSOURCES 
 
@@ -477,12 +503,9 @@ int main( int argc, char **argv )
         }
 
 		// ui visibility : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_TAB))
+		if (inputHandler.getKeyDown(window, GLFW_KEY_TAB) && ctrlPressed)
 		{
-			if (ctrlPressed)
-				editor.toggleDebugVisibility(scene);
-			else
-				editor.toggleUIVisibility();
+			editor.toggleDebugVisibility(scene);
 		}
 
 		//entity copy / past : 
