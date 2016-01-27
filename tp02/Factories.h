@@ -19,6 +19,7 @@ public:
 	void add(const std::string& name, GLuint programId);
 	GLuint get(const std::string& name);
 	bool contains(const std::string& name);
+	void drawUI();
 
 	// singleton implementation :
 private:
@@ -49,7 +50,7 @@ private:
 	std::map<std::string, Texture*> m_textures;
 
 	//for UI : 
-	char name[10];
+	char name[20];
 	char path[50];
 
 public:
@@ -85,10 +86,15 @@ class MeshFactory
 private:
 	std::map<std::string, Mesh*> m_meshes;
 
+	//for UI : 
+	char name[20];
+	char path[50];
+
 public:
 	void add(const std::string& name, Mesh* mesh);
 	Mesh* get(const std::string& name);
 	bool contains(const std::string& name);
+	void drawUI();
 
 	// singleton implementation :
 private:
@@ -117,10 +123,14 @@ class MaterialFactory
 private:
 	std::map<std::string, Material*> m_materials;
 
+	//for UI : 
+	char name[20];
+
 public:
 	void add(const std::string& name, Material* material);
 	Material* get(const std::string& name);
 	bool contains(const std::string& name);
+	void drawUI();
 
 	// singleton implementation :
 private:

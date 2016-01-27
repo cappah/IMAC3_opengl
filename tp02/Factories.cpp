@@ -15,6 +15,18 @@ bool ProgramFactory::contains(const std::string& name)
 	return m_programs.find(name) != m_programs.end();
 }
 
+void ProgramFactory::drawUI()
+{
+	ImGui::PushID("programFactory");
+
+	for (auto& p : m_programs)
+	{
+		ImGui::Text(p.first.c_str());
+	}
+
+	ImGui::PopID();
+}
+
 ///////////////////////////////////////
 
 TextureFactory::TextureFactory()
@@ -58,7 +70,7 @@ void TextureFactory::drawUI()
 	ImGui::PushID("textureFactory");
 
 	ImGui::PushItemWidth(70);
-	ImGui::InputText("name", name, 10);
+	ImGui::InputText("name", name, 20);
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 	ImGui::PushItemWidth(180);
@@ -98,6 +110,35 @@ bool MeshFactory::contains(const std::string& name)
 	return m_meshes.find(name) != m_meshes.end();
 }
 
+void MeshFactory::drawUI()
+{
+	ImGui::PushID("meshFactory");
+
+	ImGui::PushItemWidth(70);
+	ImGui::InputText("name", name, 20);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(180);
+	ImGui::InputText("path", path, 50);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	if (ImGui::SmallButton("add"))
+	{
+		// TODO
+		//add(name, path); 
+	}
+
+
+	for (auto& m : m_meshes)
+	{
+		ImGui::Text(m.first.c_str());
+		ImGui::SameLine();
+		ImGui::Text(m.second->path.c_str());
+	}
+
+	ImGui::PopID();
+}
+
 //////////////////////////////////////////
 
 void MaterialFactory::add(const std::string& name, Material* material)
@@ -113,4 +154,26 @@ Material* MaterialFactory::get(const std::string& name)
 bool MaterialFactory::contains(const std::string& name)
 {
 	return m_materials.find(name) != m_materials.end();
+}
+
+void MaterialFactory::drawUI()
+{
+	ImGui::PushID("materialFactory");
+
+	ImGui::PushItemWidth(70);
+	ImGui::InputText("name", name, 20);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	if (ImGui::SmallButton("add"))
+	{
+		add(name, new MaterialLit() );
+	}
+
+
+	for (auto& m : m_materials)
+	{
+		ImGui::Text(m.first.c_str());
+	}
+
+	ImGui::PopID();
 }

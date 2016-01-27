@@ -6,6 +6,8 @@
 
 struct Mesh
 {
+	std::string path;
+
 	enum Vbo_usage { USE_INDEX = 0x01, USE_VERTICES = 0x02, USE_UVS = 0x04, USE_NORMALS = 0x08 };
 	enum Vbo_types { VERTICES = 0, NORMALS, UVS };
 

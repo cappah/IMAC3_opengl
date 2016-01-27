@@ -129,6 +129,18 @@ void Editor::renderUI(Scene& scene)
 			{
 				m_textureFactoryVisible = !m_textureFactoryVisible;
 			}
+			if (ImGui::RadioButton("mesh factory", m_meshFactoryVisible))
+			{
+				m_meshFactoryVisible = !m_meshFactoryVisible;
+			}
+			if (ImGui::RadioButton("program factory", m_programFactoryVisible))
+			{
+				m_programFactoryVisible = !m_programFactoryVisible;
+			}
+			if (ImGui::RadioButton("material factory", m_materialFactoryVisible))
+			{
+				m_materialFactoryVisible = !m_materialFactoryVisible;
+			}
 
 			ImGui::EndMenu();
 		}
@@ -220,6 +232,27 @@ void Editor::renderUI(Scene& scene)
 	{
 		ImGui::Begin("Texture factory");
 		TextureFactory::get().drawUI();
+		ImGui::End();
+	}
+
+	if (m_meshFactoryVisible)
+	{
+		ImGui::Begin("Mesh factory");
+		MeshFactory::get().drawUI();
+		ImGui::End();
+	}
+
+	if (m_programFactoryVisible)
+	{
+		ImGui::Begin("Program factory");
+		ProgramFactory::get().drawUI();
+		ImGui::End();
+	}
+
+	if (m_materialFactoryVisible)
+	{
+		ImGui::Begin("Material factory");
+		MaterialFactory::get().drawUI();
 		ImGui::End();
 	}
 		

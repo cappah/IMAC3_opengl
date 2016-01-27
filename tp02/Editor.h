@@ -25,6 +25,9 @@ private:
 
 	bool m_terrainToolVisible;
 	bool m_textureFactoryVisible;
+	bool m_meshFactoryVisible;
+	bool m_programFactoryVisible;
+	bool m_materialFactoryVisible;
 
 public:
 	Editor(MaterialUnlit* _unlitMaterial);

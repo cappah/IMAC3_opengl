@@ -14,6 +14,8 @@ class Entity;
 struct MeshRenderer : public Component
 {
 	Mesh* mesh;
+
+	std::string materialName;
 	Material* material;
 
 	std::string diffuseTextureName;

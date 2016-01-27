@@ -18,6 +18,20 @@ void MeshRenderer::drawUI()
 {
 	if (ImGui::CollapsingHeader("mesh renderer"))
 	{
+		char tmpMaterialName[20];
+		materialName.copy(tmpMaterialName, materialName.size());
+		tmpMaterialName[materialName.size()] = '\0';
+
+		if (ImGui::InputText("materialName", tmpMaterialName, 20))
+		{
+			materialName = tmpMaterialName;
+
+			if (MaterialFactory::get().contains(materialName))
+			{
+				material = MaterialFactory::get().get(materialName);
+			}
+		}
+
 		material->drawUI();
 	}
 }
