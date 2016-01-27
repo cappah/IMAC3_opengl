@@ -24,6 +24,7 @@ private:
 	bool m_isGizmoVisible;
 
 	bool m_terrainToolVisible;
+	bool m_textureFactoryVisible;
 
 public:
 	Editor(MaterialUnlit* _unlitMaterial);

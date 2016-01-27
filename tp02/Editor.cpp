@@ -125,6 +125,10 @@ void Editor::renderUI(Scene& scene)
 			{
 				m_terrainToolVisible = !m_terrainToolVisible;
 			}
+			if (ImGui::RadioButton("texture factory", m_textureFactoryVisible))
+			{
+				m_textureFactoryVisible = !m_textureFactoryVisible;
+			}
 
 			ImGui::EndMenu();
 		}
@@ -209,6 +213,13 @@ void Editor::renderUI(Scene& scene)
 	{
 		ImGui::Begin("Terrain tool");
 		scene.getTerrain().drawUI();
+		ImGui::End();
+	}
+
+	if (m_textureFactoryVisible)
+	{
+		ImGui::Begin("Texture factory");
+		TextureFactory::get().drawUI();
 		ImGui::End();
 	}
 		

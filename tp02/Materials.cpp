@@ -19,7 +19,7 @@ void Material::setUniform_normalMatrix(glm::mat4& normalMatrix)
 
 ///////////////////////////////////////////
 
-MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), textureDiffuse(0), specularPower(10), textureSpecular(0), textureRepetition(1, 1)
+MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), textureDiffuse(TextureFactory::get().get("default")), specularPower(10), textureSpecular(TextureFactory::get().get("default")), textureRepetition(1, 1)
 {
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
@@ -31,7 +31,7 @@ MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), 
 		exit(1);
 }
 
-MaterialLit::MaterialLit(GLuint _glProgram, GLuint _textureDiffuse, GLuint _textureSpecular, float _specularPower) :
+MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _textureSpecular, float _specularPower) :
 	Material(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureRepetition(1, 1)
 {
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
@@ -42,6 +42,8 @@ MaterialLit::MaterialLit(GLuint _glProgram, GLuint _textureDiffuse, GLuint _text
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
+
+	textureDiffuse->initGL(); // we consider that each texture on a material will be used on the sceen and should be send to the GPU.
 }
 
 void MaterialLit::setUniform_MVP(glm::mat4& mvp)
@@ -61,9 +63,9 @@ void MaterialLit::use()
 
 	//bind textures into texture units
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureDiffuse);
+	glBindTexture(GL_TEXTURE_2D, textureDiffuse->glId);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textureSpecular);
+	glBindTexture(GL_TEXTURE_2D, textureSpecular->glId);
 
 	//send uniforms
 	glUniform1f(uniform_specularPower, specularPower);
@@ -86,10 +88,11 @@ void MaterialLit::drawUI()
 	{
 		diffuseTextureName = tmpTxt;
 
-		if (TextureFactory::get().contains(diffuseTextureName))
+		if (TextureFactory::get().contains(tmpTxt))
 		{
-
+			textureDiffuse->freeGL();
 			textureDiffuse = TextureFactory::get().get(diffuseTextureName);
+			textureDiffuse->initGL();
 		}
 	}
 
@@ -100,7 +103,11 @@ void MaterialLit::drawUI()
 		specularTextureName = tmpTxt;
 
 		if (TextureFactory::get().contains(specularTextureName))
+		{
+			textureSpecular->freeGL();
 			textureSpecular = TextureFactory::get().get(specularTextureName);
+			textureSpecular->initGL();
+		}
 	}
 }
 

@@ -88,6 +88,14 @@ void init_gui_states(GUIStates & guiStates);
 
 
 
+void window_size_callback(GLFWwindow* window, int width, int height)
+{
+	Application::get().setWindowResize(true);
+	Application::get().setWindowWidth(width);
+	Application::get().setWindowHeight(height);
+}
+
+
 
 
 int main( int argc, char **argv )
@@ -105,7 +113,7 @@ int main( int argc, char **argv )
         exit( EXIT_FAILURE );
     }
     glfwInit();
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
     glfwWindowHint(GLFW_DECORATED, GL_TRUE);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
@@ -152,6 +160,10 @@ int main( int argc, char **argv )
     glerr = glGetError();
 
     ImGui_ImplGlfwGL3_Init(window, true);
+
+	//set the resize window callback 
+	glfwSetWindowSizeCallback(window, window_size_callback);
+
 
     // Init viewer structures
     Camera camera;
@@ -238,6 +250,7 @@ int main( int argc, char **argv )
 	plane.normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
 	plane.initGl();
 
+	/*
     int x;
     int y;
     int comp;
@@ -265,6 +278,14 @@ int main( int argc, char **argv )
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
+	*/
+
+	Texture* diffuseTexture = new Texture("textures/spnza_bricks_a_diff.tga");
+	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
+
+	//force texture initialisation
+	diffuseTexture->initGL();
+	specularTexture->initGL();
 
 	//////////////////// BEGIN RESSOURCES : 
 	// materials : 
@@ -375,6 +396,15 @@ int main( int argc, char **argv )
         t = glfwGetTime();
         ImGui_ImplGlfwGL3_NewFrame();
 
+
+		//check if window has been resized by user
+		if (Application::get().getWindowResize())
+		{
+			renderer.onResizeWindow();
+
+			Application::get().setWindowResize(false);
+		}
+
         // Mouse states
         int leftButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_LEFT );
         int rightButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_RIGHT );
@@ -471,10 +501,13 @@ int main( int argc, char **argv )
 		if ( !altPressed && !ctrlPressed 
 			&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
 		{
+			float screenWidth = Application::get().getWindowWidth();
+			float screenHeight = Application::get().getWindowHeight();
+
 			glm::vec3 origin = camera.eye;
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
-			glm::vec3 direction = screenToWorld(mouseX, mouseY, width, height, camera);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, camera);
 			//direction = direction - origin;
 			//direction = glm::normalize(direction);
 
@@ -531,10 +564,13 @@ int main( int argc, char **argv )
 		{
 			if (editor.isMovingGizmo())
 			{
+				float screenWidth = Application::get().getWindowWidth();
+				float screenHeight = Application::get().getWindowHeight();
+
 				glm::vec3 origin = camera.eye;
 				double mouseX, mouseY;
 				glfwGetCursorPos(window, &mouseX, &mouseY);
-				glm::vec3 direction = screenToWorld(mouseX, mouseY, width, height, camera);
+				glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, camera);
 				Ray ray(origin, direction, 1000.f);
 
 				editor.moveGizmo(ray);

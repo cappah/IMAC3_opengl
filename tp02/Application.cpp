@@ -2,20 +2,30 @@
 
 void Application::setWindowHeight(int height)
 {
-	windowHeight = height;
+	m_windowHeight = height;
 }
 
 void Application::setWindowWidth(int width)
 {
-	windowWidth = width;
+	m_windowWidth = width;
 }
 
 int Application::getWindowHeight()
 {
-	return windowHeight;
+	return m_windowHeight;
 }
 
 int Application::getWindowWidth()
 {
-	return windowWidth;
+	return m_windowWidth;
+}
+
+bool Application::getWindowResize()
+{
+	return m_windowResize;
+}
+
+void Application::setWindowResize(bool state)
+{
+	m_windowResize = state;
 }

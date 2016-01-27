@@ -157,6 +157,67 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 }
 
+void Renderer::onResizeWindow()
+{
+	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
+
+	// unbind texture of FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, 0, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//delete old textures
+	glDeleteTextures(3, gbufferTextures);
+
+	//generate new textures
+	glGenTextures(3, gbufferTextures);
+
+	// Create color texture
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Create normal texture
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, width, height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Create depth texture
+	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Update Framebuffer Object with new textures
+	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
+
+	// Attach textures to framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gbufferTextures[0], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gbufferTextures[1], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gbufferTextures[2], 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		fprintf(stderr, "Error on building framebuffer\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Back to the default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void Renderer::initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path)
 {
 	//////////////////// BLIT shaders ////////////////////////

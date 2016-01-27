@@ -4,8 +4,10 @@
 class Application {
 
 private:
-	int windowWidth;
-	int windowHeight;
+	int m_windowWidth;
+	int m_windowHeight;
+
+	bool m_windowResize;
 
 public:
 	void setWindowHeight(int height);
@@ -15,6 +17,10 @@ public:
 	int getWindowHeight();
 
 	int getWindowWidth();
+
+	bool getWindowResize();
+
+	void setWindowResize(bool state);
 
 
 	// singleton implementation :

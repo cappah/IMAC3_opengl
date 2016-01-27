@@ -13,6 +13,7 @@
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "Utils.h"
+#include "Texture.h"
 
 struct Material
 {
@@ -32,14 +33,15 @@ struct Material
 	virtual void drawUI() = 0;
 };
 
-struct MaterialLit : public Material
+class MaterialLit : public Material
 {
+private:
 	std::string diffuseTextureName;
-	GLuint textureDiffuse;
+	Texture* textureDiffuse;
 
 	float specularPower;
 	std::string specularTextureName;
-	GLuint textureSpecular;
+	Texture* textureSpecular;
 
 	glm::vec2 textureRepetition;
 
@@ -48,8 +50,9 @@ struct MaterialLit : public Material
 	GLuint uniform_specularPower;
 	GLuint uniform_textureRepetition;
 
+public:
 	MaterialLit();
-	MaterialLit(GLuint _glProgram, GLuint _textureDiffuse = 0, GLuint _textureSpecular = 0, float _specularPower = 50);
+	MaterialLit(GLuint _glProgram, Texture* _textureDiffuse = 0, Texture* _textureSpecular = 0, float _specularPower = 50);
 
 	void setUniform_MVP(glm::mat4& mvp);
 

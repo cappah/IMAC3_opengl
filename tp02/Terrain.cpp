@@ -13,7 +13,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 
 	int lineCount = (m_subdivision - 1);
 	int rowCount = (m_subdivision - 1);
-	m_triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2;
+	m_triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
 
 	m_vertices.clear();
 	m_normals.clear();
@@ -191,12 +191,13 @@ void Terrain::generateTerrain()
 
 	int lineCount = (m_subdivision - 1);
 	int rowCount = (m_subdivision - 1);
-	m_triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2;
+	m_triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
 
 	m_vertices.clear();
 	m_normals.clear();
 	m_uvs.clear();
 	m_triangleIndex.clear();
+	m_heightMap.clear();
 
 	for (int j = 0; j < m_subdivision; j++)
 	{
@@ -344,8 +345,13 @@ void Terrain::drawUI()
 	if (ImGui::InputInt("terrain subdivision", &m_subdivision))
 	{
 		generateTerrain();
+		applyNoise(m_terrainNoise.generatePerlin2D());
 	}
 
+	ImGui::PushID("terrainMaterial");
+	m_material.drawUI();
+	ImGui::PopID();
+/*
 	ImGui::InputFloat("specular power", &m_material.specularPower);
 
 	ImGui::InputFloat2("texture repetition", &m_material.textureRepetition[0]);
@@ -374,7 +380,7 @@ void Terrain::drawUI()
 		if (TextureFactory::get().contains(specularTextureName))
 			m_material.textureSpecular = TextureFactory::get().get(specularTextureName);
 	}
-
+*/
 	
 	if (ImGui::SliderFloat("noise persistence", &m_terrainNoise.persistence, 0.f, 1.f))
 	{

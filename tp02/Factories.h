@@ -2,9 +2,11 @@
 
 #include <map>
 
+#include "stb/stb_image.h"
+
 #include "Mesh.h"
 #include "Materials.h"
-#include "stb/stb_image.h"
+#include "Texture.h"
 
 
 class ProgramFactory
@@ -44,19 +46,22 @@ class TextureFactory
 {
 
 private:
-	std::map<std::string, GLuint> m_textures;
+	std::map<std::string, Texture*> m_textures;
+
+	//for UI : 
+	char name[10];
+	char path[50];
 
 public:
 	void add(const std::string& name, const std::string& path);
-	void add(const std::string& name, GLuint textureId);
-	GLuint get(const std::string& name);
+	void add(const std::string& name, Texture* textureId);
+	Texture* get(const std::string& name);
 	bool contains(const std::string& name);
+	void drawUI();
 
 	// singleton implementation :
 private:
-	TextureFactory() {
-
-	}
+	TextureFactory();
 
 public:
 	inline static TextureFactory& get()
