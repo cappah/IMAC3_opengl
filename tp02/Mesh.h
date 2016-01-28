@@ -1,11 +1,22 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 #include "glew/glew.h"
 
+#include "glm/common.hpp"
+
+
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+
 struct Mesh
 {
+	glm::vec3 topRight;
+	glm::vec3 bottomLeft;
+
 	std::string path;
 
 	enum Vbo_usage { USE_INDEX = 0x01, USE_VERTICES = 0x02, USE_UVS = 0x04, USE_NORMALS = 0x08 , USE_TANGENTS = 0x010};
@@ -33,6 +44,7 @@ struct Mesh
 	GLenum primitiveType;
 
 	Mesh(GLenum _primitiveType = GL_TRIANGLES, unsigned int _vbo_usage = (USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS), int _coordCountByVertex = 3);
+	Mesh(const std::string& path);
 
 	~Mesh();
 
@@ -41,4 +53,8 @@ struct Mesh
 
 	// simply draw the vertices, using vao.
 	void draw();
+
+private:
+	bool initFromScene(const aiScene* pScene, const std::string& Filename);
+	void initMesh(unsigned int Index, const aiMesh* paiMesh);
 };

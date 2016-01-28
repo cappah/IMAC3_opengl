@@ -171,7 +171,18 @@ void CubeTextureFactory::drawUI()
 
 void MeshFactory::add(const std::string& name, Mesh* mesh)
 {
+	if (name == "default") //can't override default key
+		return;
+
 	m_meshes[name] = mesh;
+}
+
+void MeshFactory::add(const std::string & name, const std::string & path)
+{
+	if (name == "default") //can't override default key
+		return;
+
+	m_meshes[name] = new Mesh(path);
 }
 
 Mesh* MeshFactory::get(const std::string& name)
@@ -198,8 +209,7 @@ void MeshFactory::drawUI()
 	ImGui::SameLine();
 	if (ImGui::SmallButton("add"))
 	{
-		// TODO
-		//add(name, path); 
+		add(name, path); 
 	}
 
 

@@ -13,6 +13,7 @@ class Entity;
 
 struct MeshRenderer : public Component
 {
+	std::string meshName;
 	Mesh* mesh;
 
 	std::string materialName;

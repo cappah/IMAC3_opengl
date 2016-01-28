@@ -130,6 +130,7 @@ private:
 
 public:
 	void add(const std::string& name, Mesh* mesh);
+	void add(const std::string& name, const std::string& path);
 	Mesh* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();

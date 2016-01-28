@@ -3,7 +3,7 @@
 #include "Entity.h"
 #include "Factories.h"
 
-MeshRenderer::MeshRenderer(Mesh* _mesh, Material* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material)
+MeshRenderer::MeshRenderer(Mesh* _mesh, Material* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material), meshName(""), materialName("")
 {
 
 }
@@ -33,6 +33,20 @@ void MeshRenderer::drawUI()
 		}
 
 		material->drawUI();
+
+		char tmpMeshName[20];
+		meshName.copy(tmpMeshName, meshName.size());
+		tmpMeshName[meshName.size()] = '\0';
+
+		if (ImGui::InputText("meshName", tmpMeshName, 20))
+		{
+			meshName = tmpMeshName;
+
+			if (MeshFactory::get().contains(meshName))
+			{
+				mesh = MeshFactory::get().get(meshName);
+			}
+		}
 	}
 }
 
