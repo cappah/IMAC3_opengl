@@ -68,7 +68,7 @@ void main(void)
 	vec3 diffuse = colorBuffer.rgb;
 	vec3 specular = colorBuffer.aaa;
 	float specularPower = normalBuffer.a;
-	vec3 n = normalBuffer.rgb;
+	vec3 n = normalBuffer.rgb*2.0 -1.0;
 
 
 	vec3 color = computeDirectionalLight(directionalLight, p, n, diffuse, specular, specularPower * 100);

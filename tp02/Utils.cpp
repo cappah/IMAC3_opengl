@@ -174,5 +174,6 @@ double interpolation_cos1D(double a, double b, double x)
 
 glm::vec3 vertexFrom3Floats(const std::vector<float>& vertices, int indice)
 {
+	indice *= 3;
 	return glm::vec3(vertices[indice], vertices[indice + 1], vertices[indice + 2]);
 }

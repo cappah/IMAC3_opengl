@@ -13,7 +13,7 @@
 class Terrain
 {
 private:
-	enum Vbo_types { VERTICES = 0, NORMALS, UVS };
+	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS };
 
 	int m_triangleCount;
 
@@ -21,6 +21,7 @@ private:
 	std::vector<float> m_uvs;
 	std::vector<float> m_vertices;
 	std::vector<float> m_normals;
+	std::vector<float> m_tangents;
 
 	std::vector<float> m_heightMap;
 
@@ -28,6 +29,7 @@ private:
 	GLuint vbo_vertices;
 	GLuint vbo_uvs;
 	GLuint vbo_normals;
+	GLuint vbo_tangents;
 	GLuint vao;
 
 	int m_subdivision;
@@ -39,9 +41,6 @@ private:
 	float m_height;
 
 	glm::vec3 m_offset;
-
-	std::string diffuseTextureName;
-	std::string specularTextureName;
 
 	NoiseGenerator m_terrainNoise;
 

@@ -20,10 +20,11 @@ void Material::setUniform_normalMatrix(glm::mat4& normalMatrix)
 
 ///////////////////////////////////////////
 
-MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), textureDiffuse(TextureFactory::get().get("default")), specularPower(10), textureSpecular(TextureFactory::get().get("default")), textureRepetition(1, 1)
+MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), textureDiffuse(TextureFactory::get().get("default")), specularPower(10), textureSpecular(TextureFactory::get().get("default")), textureBump(TextureFactory::get().get("default")), textureRepetition(1, 1)
 {
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
 	uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
 	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
 
@@ -32,14 +33,15 @@ MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), 
 		exit(1);
 }
 
-MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _textureSpecular, float _specularPower) :
-	Material(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureRepetition(1, 1)
+MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _textureSpecular, Texture* _textureBump, float _specularPower) :
+	Material(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureBump(_textureBump) , textureRepetition(1, 1)
 {
 	uniform_MVP = glGetUniformLocation(glProgram, "MVP");
 	uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
 
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
 	uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
 	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
 
@@ -60,11 +62,14 @@ void MaterialLit::use()
 	glBindTexture(GL_TEXTURE_2D, textureDiffuse->glId);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textureSpecular->glId);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, textureBump->glId);
 
 	//send uniforms
 	glUniform1f(uniform_specularPower, specularPower);
 	glUniform1i(uniform_textureDiffuse, 0);
 	glUniform1i(uniform_textureSpecular, 1);
+	glUniform1i(uniform_textureBump, 2);
 	glUniform2fv(uniform_textureRepetition, 1, glm::value_ptr(textureRepetition));
 }
 
@@ -101,6 +106,20 @@ void MaterialLit::drawUI()
 			textureSpecular->freeGL();
 			textureSpecular = TextureFactory::get().get(specularTextureName);
 			textureSpecular->initGL();
+		}
+	}
+
+	bumpTextureName.copy(tmpTxt, glm::min(30, (int)bumpTextureName.size()), 0);
+	tmpTxt[bumpTextureName.size()] = '\0';
+	if (ImGui::InputText("bump texture name", tmpTxt, 20))
+	{
+		bumpTextureName = tmpTxt;
+
+		if (TextureFactory::get().contains(bumpTextureName))
+		{
+			textureBump->freeGL();
+			textureBump = TextureFactory::get().get(bumpTextureName);
+			textureBump->initGL();
 		}
 	}
 }

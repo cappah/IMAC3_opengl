@@ -233,23 +233,56 @@ int main( int argc, char **argv )
 
 	// cube and plane ;
 
-	Mesh cube;
-	cube.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
-	cube.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
-	cube.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
-					-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
-					-0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5,
-					-0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 
-					0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
-					0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5,
-					-0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
-	cube.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-					0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
-					0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
-					0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
-					1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
-					1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
-					-1, 0, 0, -1, 0, 0, -1, 0, 0, };
+	//Mesh cube;
+	//cube.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
+	//cube.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
+	//cube.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+	//				-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
+	//				-0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5,
+	//				-0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 
+	//				0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+	//				0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5,
+	//				-0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
+	//cube.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+	//				0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+	//				0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+	//				0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+	//				1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+	//				1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+	//				-1, 0, 0, -1, 0, 0, -1, 0, 0, };
+	//cube.initGl();
+
+	Mesh cube(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_TANGENTS));
+	cube.vertices = { 0.5,0.5,-0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  0.5,-0.5,-0.5,
+				-0.5,0.5,-0.5,  -0.5,0.5,0.5,  -0.5,-0.5,0.5,  -0.5,-0.5,-0.5,
+				-0.5,0.5,0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5,
+				-0.5,0.5,-0.5,  0.5,0.5,-0.5,  0.5,-0.5,-0.5,  -0.5,-0.5,-0.5,
+				0.5,0.5,0.5, -0.5,0.5,0.5, -0.5,0.5,-0.5, 0.5,0.5,-0.5,
+				-0.5,-0.5,-0.5,  0.5,-0.5,-0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5 };
+
+	cube.normals = { 1,0,0,  1,0,0,  1,0,0,  1,0,0,
+				-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0,
+				0,0,1,  0,0,1,  0,0,1,  0,0,1,
+				0,0,-1,  0,0,-1,  0,0,-1,  0,0,-1,
+				0,1,0,  0,1,0,  0,1,0,  0,1,0,
+				0,-1,0,  0,-1,0,  0,-1,0,  0,-1,0 };
+
+	cube.tangents = { 0,0,1,  0,0,1,  0,0,1,  0,0,1,
+				0,0,1,  0,0,1,  0,0,1,  0,0,1,
+				-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0,
+				1,0,0,  1,0,0,  1,0,0,  1,0,0,
+				1,0,0,  1,0,0,  1,0,0,  1,0,0,
+				-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0 };
+
+	cube.uvs = { 0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0 };
+
+	cube.triangleIndex = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20 };
+
 	cube.initGl();
 
 
@@ -299,6 +332,7 @@ int main( int argc, char **argv )
 
 	Texture* diffuseTexture = new Texture("textures/spnza_bricks_a_diff.tga");
 	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
+	Texture* bumpTexture = new Texture("textures/spnza_bricks_a_normal.png");
 
 	std::vector<std::string> skyboxTexturePaths = {"textures/skyboxes/right.png", "textures/skyboxes/left.png", 
 												   "textures/skyboxes/top.png", "textures/skyboxes/top.png",
@@ -309,10 +343,11 @@ int main( int argc, char **argv )
 	//force texture initialisation
 	diffuseTexture->initGL();
 	specularTexture->initGL();
+	bumpTexture->initGL();
 
 	//////////////////// BEGIN RESSOURCES : 
 	// materials : 
-	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, 50);
+	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
 
 	// fill factories : 
@@ -325,6 +360,7 @@ int main( int argc, char **argv )
 
 	TextureFactory::get().add("brickDiffuse", diffuseTexture);
 	TextureFactory::get().add("brickSpecular", specularTexture);
+	TextureFactory::get().add("brickBump", bumpTexture);
 
 	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
 

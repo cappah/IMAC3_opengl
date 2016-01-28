@@ -3,10 +3,6 @@
 
 Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset)
 {
-	diffuseTextureName.reserve(20);
-	diffuseTextureName[0] = '\0';
-	specularTextureName.reserve(20);
-	specularTextureName[0] = '\0';
 
 	float paddingZ = m_depth / (float)m_subdivision;
 	float paddingX = m_width / (float)m_subdivision;
@@ -19,6 +15,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_normals.clear();
 	m_uvs.clear();
 	m_triangleIndex.clear();
+	m_tangents.clear();
 
 	for (int j = 0; j < m_subdivision; j++)
 	{
@@ -33,6 +30,10 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 			m_normals.push_back(0);
 			m_normals.push_back(1);
 			m_normals.push_back(0);
+
+			m_tangents.push_back(0);
+			m_tangents.push_back(0);
+			m_tangents.push_back(1);
 
 			m_uvs.push_back(i / (float)(subdivision - 1));
 			m_uvs.push_back(j / (float)(subdivision - 1));
@@ -118,50 +119,71 @@ Terrain::~Terrain()
 
 void Terrain::computeNormals()
 {
-	glm::vec3 u(0,0,0);
-	glm::vec3 v(0, 0, 0);
+	glm::vec3 u(1, 0, 0);
+	glm::vec3 v(0, 0, 1);
 	glm::vec3 normal(0, 0, 0);
+	glm::vec3 tangent(0, 0, 0);
 
 	for (int j = 0, k = 0; j < m_subdivision; j++)
 	{
-		for (int i = 0; i < m_subdivision; i++, k++)
+		for (int i = 0; i < m_subdivision; i++, k+=3)
 		{
-			if (j - 1 >= 0 && i - 1 >= 0)
+			if (i > 0 && i < m_subdivision - 1 && j > 0 && j < m_subdivision - 1)
 			{
-				u = vertexFrom3Floats(m_vertices, i + (j - 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
-				v = vertexFrom3Floats(m_vertices, (i - 1)+ j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
-				normal += glm::normalize(glm::cross(u, v));
+				if (j - 1 >= 0 && i - 1 >= 0)
+				{
+					u = vertexFrom3Floats(m_vertices, i + (j - 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+					v = vertexFrom3Floats(m_vertices, (i - 1)+ j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+					normal += glm::normalize(glm::cross(u, v));
+				}
+
+				if (i - 1 >= 0 && j + 1 < (m_subdivision ))
+				{
+					u = vertexFrom3Floats(m_vertices, (i - 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+					v = vertexFrom3Floats(m_vertices, i + (j + 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+					normal += glm::normalize(glm::cross(u, v));
+				}
+
+				if (j + 1 < (m_subdivision ) && i+1 < (m_subdivision ))
+				{
+					u = vertexFrom3Floats(m_vertices, i + (j + 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+					v = vertexFrom3Floats(m_vertices, (i + 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+					normal += glm::normalize(glm::cross(u, v));
+				}
+
+				if (i + 1 < (m_subdivision ) && j - 1 >= 0)
+				{
+					u = vertexFrom3Floats(m_vertices, (i + 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+					v = vertexFrom3Floats(m_vertices, i + (j - 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+
+					normal += glm::normalize(glm::cross(u, v));
+				}
+
+				normal = glm::normalize(normal);
 			}
+			else
+				normal = glm::vec3(0, 1, 0);
 
-			if (i - 1 >= 0 && j + 1 < (m_subdivision - 1))
-			{
-				u = vertexFrom3Floats(m_vertices, (i - 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
-				v = vertexFrom3Floats(m_vertices, i + (j + 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
-				normal += glm::normalize(glm::cross(u, v));
-			}
 
-			if (j + 1 < (m_subdivision - 1) && i+1 < (m_subdivision - 1))
-			{
-				u = vertexFrom3Floats(m_vertices, i + (j + 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
-				v = vertexFrom3Floats(m_vertices, (i + 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
-				normal += glm::normalize(glm::cross(u, v));
-			}
+			m_normals[k] = normal.x;
+			m_normals[k+1] = normal.y;
+			m_normals[k+2] = normal.z;
 
-			if (i + 1 < (m_subdivision - 1) && j - 1 >= 0)
-			{
-				u = vertexFrom3Floats(m_vertices, (i + 1) + j * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision); 
-				v = vertexFrom3Floats(m_vertices, i + (j - 1) * m_subdivision) - vertexFrom3Floats(m_vertices, i + j * m_subdivision);
+			tangent = glm::normalize(glm::cross(normal, u));
 
-				normal += glm::normalize(glm::cross(u, v));
-			}
-
-			normal = glm::normalize(normal);
+			m_tangents[k] = tangent.x;
+			m_tangents[k+1] = tangent.y;
+			m_tangents[k+2] = tangent.z;
 		}
 	}
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
 	glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(float), &m_normals[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_tangents);
+	glBufferData(GL_ARRAY_BUFFER, m_tangents.size()*sizeof(float), &m_tangents[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -198,6 +220,7 @@ void Terrain::generateTerrain()
 	m_uvs.clear();
 	m_triangleIndex.clear();
 	m_heightMap.clear();
+	m_tangents.clear();
 
 	for (int j = 0; j < m_subdivision; j++)
 	{
@@ -212,6 +235,10 @@ void Terrain::generateTerrain()
 			m_normals.push_back(0);
 			m_normals.push_back(1);
 			m_normals.push_back(0);
+
+			m_tangents.push_back(1);
+			m_tangents.push_back(0);
+			m_tangents.push_back(0);
 
 			m_uvs.push_back(i / (float)(m_subdivision - 1));
 			m_uvs.push_back(j / (float)(m_subdivision - 1));
@@ -294,12 +321,18 @@ void Terrain::initGl()
 	glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(float), &m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(NORMALS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
+	glGenBuffers(1, &vbo_tangents);
+	glEnableVertexAttribArray(TANGENTS);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_tangents);
+	glBufferData(GL_ARRAY_BUFFER, m_tangents.size()*sizeof(float), &m_tangents[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(TANGENTS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+
 
 	glGenBuffers(1, &vbo_uvs);
 	glEnableVertexAttribArray(UVS);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_uvs);
 	glBufferData(GL_ARRAY_BUFFER, m_uvs.size()*sizeof(float), &m_uvs[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(UVS, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
+	glVertexAttribPointer(UVS, 2, GL_FLOAT , GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
 
 
 	glBindVertexArray(0);

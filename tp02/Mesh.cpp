@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0)
+Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0)
 {
 
 }
@@ -18,6 +18,9 @@ Mesh::~Mesh()
 
 	if (vbo_normals != 0)
 		glDeleteBuffers(1, &vbo_normals);
+
+	if (vbo_tangents != 0)
+		glDeleteBuffers(1, &vbo_tangents);
 
 	glDeleteVertexArrays(1, &vao);
 }
@@ -53,6 +56,15 @@ void Mesh::initGl()
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
 		glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float), &normals[0], GL_STATIC_DRAW);
 		glVertexAttribPointer(NORMALS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+	}
+
+	if (USE_TANGENTS & vbo_usage)
+	{
+		glGenBuffers(1, &vbo_tangents);
+		glEnableVertexAttribArray(TANGENTS);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_tangents);
+		glBufferData(GL_ARRAY_BUFFER, tangents.size()*sizeof(float), &tangents[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(TANGENTS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 	}
 
 	if (USE_UVS & vbo_usage)

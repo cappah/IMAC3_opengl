@@ -3,6 +3,7 @@
 #define POSITION	0
 #define NORMAL		1
 #define TEXCOORD	2
+#define TANGENT		3
 #define FRAG_COLOR	0
 
 precision highp int;
@@ -15,7 +16,8 @@ in block
 {
         vec2 TexCoord;
         vec3 Position;
-        vec3 Normal;
+        //vec3 Normal;
+		mat3 TBN;
 } In;
 
 // Outputs : 
@@ -29,6 +31,7 @@ layout(location = 1) out vec4 outNormal;
 
 uniform sampler2D Diffuse;
 uniform sampler2D Specular;
+uniform sampler2D Bump;
 uniform float specularPower;
 
 void main()
@@ -36,5 +39,8 @@ void main()
 
 	outColor = vec4( texture(Diffuse, In.TexCoord).rgb, texture(Specular, In.TexCoord).r );
 
-	outNormal = vec4( In.Normal, specularPower/100.0 );
+	vec3 bumpNormal = texture(Bump, In.TexCoord).rgb;
+	bumpNormal = normalize(bumpNormal * 2.0 - 1.0);
+	bumpNormal = normalize(In.TBN * bumpNormal);
+	outNormal = vec4( bumpNormal*0.5+0.5, specularPower/100.0 );
 }

@@ -42,6 +42,9 @@ private:
 	std::string specularTextureName;
 	Texture* textureSpecular;
 
+	std::string bumpTextureName;
+	Texture* textureBump;
+
 	glm::vec2 textureRepetition;
 
 	GLuint uniform_MVP;
@@ -49,12 +52,13 @@ private:
 
 	GLuint uniform_textureDiffuse;
 	GLuint uniform_textureSpecular;
+	GLuint uniform_textureBump;
 	GLuint uniform_specularPower;
 	GLuint uniform_textureRepetition;
 
 public:
 	MaterialLit();
-	MaterialLit(GLuint _glProgram, Texture* _textureDiffuse = 0, Texture* _textureSpecular = 0, float _specularPower = 50);
+	MaterialLit(GLuint _glProgram, Texture* _textureDiffuse = nullptr, Texture* _textureSpecular = nullptr, Texture* _textureBump = nullptr, float _specularPower = 50);
 
 	//void setUniform_MVP(glm::mat4& mvp);
 	//void setUniform_normalMatrix(glm::mat4& normalMatrix);
