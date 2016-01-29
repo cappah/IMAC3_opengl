@@ -11,14 +11,16 @@
 //forward
 class Entity;
 
-struct MeshRenderer : public Component
+class MeshRenderer : public Component
 {
+private:
 	std::string meshName;
 	Mesh* mesh;
 
 	std::string materialName;
 	Material* material;
 
+public:
 	MeshRenderer(Mesh* _mesh = nullptr, Material* _material = nullptr);
 	virtual ~MeshRenderer();
 
@@ -26,5 +28,11 @@ struct MeshRenderer : public Component
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+
+	void setMesh(Mesh* _mesh);
+	void setMaterial(Material* _material);
+
+	Material* getMaterial() const;
+	Mesh* getMesh() const;
 };
 

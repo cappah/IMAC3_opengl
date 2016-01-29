@@ -155,6 +155,7 @@ void Entity::applyTransform()
 
 void Entity::drawUI()
 {
+
 	char tmpName[20];
 	m_name.copy(tmpName, m_name.size(), 0);
 	tmpName[m_name.size()] = '\0';

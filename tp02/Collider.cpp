@@ -140,14 +140,14 @@ void BoxCollider::render(const glm::mat4& projection, const glm::mat4& view, con
 
 	glm::mat4 mvp = projection * view * modelMatrix;
 
-	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visual->material);
+	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visual->getMaterial());
 
 	unlitMat->use();
 	unlitMat->setUniform_MVP(mvp);
 	unlitMat->setUniform_normalMatrix(glm::mat4(1)); //no need normals
 	unlitMat->setUniform_color(color);
 
-	visual->mesh->draw();
+	visual->getMesh()->draw();
 }
 
 void BoxCollider::debugLog()

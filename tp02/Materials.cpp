@@ -22,6 +22,10 @@ void Material::setUniform_normalMatrix(glm::mat4& normalMatrix)
 
 MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), textureDiffuse(TextureFactory::get().get("default")), specularPower(10), textureSpecular(TextureFactory::get().get("default")), textureBump(TextureFactory::get().get("default")), textureRepetition(1, 1)
 {
+	diffuseTextureName = textureDiffuse->name;
+	specularTextureName = textureSpecular->name;
+	bumpTextureName = textureBump->name;
+
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
 	uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
@@ -36,6 +40,10 @@ MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), 
 MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _textureSpecular, Texture* _textureBump, float _specularPower) :
 	Material(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureBump(_textureBump) , textureRepetition(1, 1)
 {
+	diffuseTextureName = textureDiffuse->name;
+	specularTextureName = textureSpecular->name;
+	bumpTextureName = textureBump->name;
+
 	uniform_MVP = glGetUniformLocation(glProgram, "MVP");
 	uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
 
@@ -79,15 +87,14 @@ void MaterialLit::drawUI()
 
 	ImGui::InputFloat2("texture repetition", &textureRepetition[0]);
 
-	char tmpTxt[30];
-	diffuseTextureName.copy(tmpTxt, glm::min(30, (int)diffuseTextureName.size()), 0);
-	tmpTxt[diffuseTextureName.size()] = '\0';
-
-	if (ImGui::InputText("diffuse texture name", tmpTxt, 20))
+	char tmpTxt01[30];
+	diffuseTextureName.copy(tmpTxt01, glm::min(30, (int)diffuseTextureName.size()), 0);
+	tmpTxt01[diffuseTextureName.size()] = '\0';
+	if (ImGui::InputText("diffuse texture name", tmpTxt01, 20))
 	{
-		diffuseTextureName = tmpTxt;
+		diffuseTextureName = tmpTxt01;
 
-		if (TextureFactory::get().contains(tmpTxt))
+		if (TextureFactory::get().contains(tmpTxt01))
 		{
 			textureDiffuse->freeGL();
 			textureDiffuse = TextureFactory::get().get(diffuseTextureName);
@@ -95,11 +102,12 @@ void MaterialLit::drawUI()
 		}
 	}
 
-	specularTextureName.copy(tmpTxt, glm::min(30, (int)specularTextureName.size()), 0);
-	tmpTxt[specularTextureName.size()] = '\0';
-	if (ImGui::InputText("specular texture name", tmpTxt, 20))
+	char tmpTxt02[30];
+	specularTextureName.copy(tmpTxt02, glm::min(30, (int)specularTextureName.size()), 0);
+	tmpTxt02[specularTextureName.size()] = '\0';
+	if (ImGui::InputText("specular texture name", tmpTxt02, 20))
 	{
-		specularTextureName = tmpTxt;
+		specularTextureName = tmpTxt02;
 
 		if (TextureFactory::get().contains(specularTextureName))
 		{
@@ -109,11 +117,12 @@ void MaterialLit::drawUI()
 		}
 	}
 
-	bumpTextureName.copy(tmpTxt, glm::min(30, (int)bumpTextureName.size()), 0);
-	tmpTxt[bumpTextureName.size()] = '\0';
-	if (ImGui::InputText("bump texture name", tmpTxt, 20))
+	char tmpTxt03[30];
+	bumpTextureName.copy(tmpTxt03, glm::min(30, (int)bumpTextureName.size()), 0);
+	tmpTxt03[bumpTextureName.size()] = '\0';
+	if (ImGui::InputText("bump texture name", tmpTxt03, 20))
 	{
-		bumpTextureName = tmpTxt;
+		bumpTextureName = tmpTxt03;
 
 		if (TextureFactory::get().contains(bumpTextureName))
 		{
@@ -152,6 +161,8 @@ void MaterialUnlit::drawUI()
 
 MaterialSkybox::MaterialSkybox() : Material(ProgramFactory::get().get("defaultSkybox")), textureDiffuse(CubeTextureFactory::get().get("default"))
 {
+	diffuseTextureName = textureDiffuse->name;
+
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 
 	//check uniform errors : 
@@ -161,6 +172,8 @@ MaterialSkybox::MaterialSkybox() : Material(ProgramFactory::get().get("defaultSk
 
 MaterialSkybox::MaterialSkybox(GLuint _glProgram, CubeTexture * _textureDiffuse) : Material(_glProgram), textureDiffuse(_textureDiffuse)
 {
+	diffuseTextureName = textureDiffuse->name;
+
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 
 	//check uniform errors : 

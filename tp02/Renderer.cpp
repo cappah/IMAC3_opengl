@@ -428,11 +428,11 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 		glm::mat4 mvp = projection * worldToView * modelMatrix;
 
-		meshRenderers[i]->material->use();
-		meshRenderers[i]->material->setUniform_MVP(mvp);
-		meshRenderers[i]->material->setUniform_normalMatrix(normalMatrix);
+		meshRenderers[i]->getMaterial()->use();
+		meshRenderers[i]->getMaterial()->setUniform_MVP(mvp);
+		meshRenderers[i]->getMaterial()->setUniform_normalMatrix(normalMatrix);
 
-		meshRenderers[i]->mesh->draw();
+		meshRenderers[i]->getMesh()->draw();
 	}
 
 	terrain.render(projection, worldToView);

@@ -34,6 +34,7 @@ TextureFactory::TextureFactory()
 	auto newTex = new Texture(255, 255, 255);
 	newTex->initGL();
 	
+	newTex->name = "default";
 	m_textures["default"] = newTex;
 }
 
@@ -44,15 +45,17 @@ void TextureFactory::add(const std::string& name, const std::string& path)
 
 	auto newTexture = new Texture(path);
 
+	newTexture->name = name;
 	m_textures[name] = newTexture;
 }
 
-void TextureFactory::add(const std::string& name, Texture* textureId)
+void TextureFactory::add(const std::string& name, Texture* texture)
 {
 	if (name == "default") //can't override default key
 		return;
 
-	m_textures[name] = textureId;
+	texture->name = name;
+	m_textures[name] = texture;
 }
 
 Texture* TextureFactory::get(const std::string& name)
@@ -101,6 +104,7 @@ CubeTextureFactory::CubeTextureFactory()
 	auto newTex = new CubeTexture(255, 255, 255);
 	newTex->initGL();
 
+	newTex->name = "default";
 	m_textures["default"] = newTex;
 }
 
@@ -111,6 +115,7 @@ void CubeTextureFactory::add(const std::string& name, const std::vector<std::str
 
 	auto newTexture = new CubeTexture(paths);
 
+	newTexture->name = "default";
 	m_textures[name] = newTexture;
 }
 
@@ -119,6 +124,7 @@ void CubeTextureFactory::add(const std::string& name, CubeTexture* textureId)
 	if (name == "default") //can't override default key
 		return;
 
+	textureId->name = "default";
 	m_textures[name] = textureId;
 }
 
@@ -174,6 +180,7 @@ void MeshFactory::add(const std::string& name, Mesh* mesh)
 	if (name == "default") //can't override default key
 		return;
 
+	mesh->name = name;
 	m_meshes[name] = mesh;
 }
 
@@ -182,7 +189,10 @@ void MeshFactory::add(const std::string & name, const std::string & path)
 	if (name == "default") //can't override default key
 		return;
 
-	m_meshes[name] = new Mesh(path);
+	Mesh* newMesh = new Mesh(path);
+
+	newMesh->name = name;
+	m_meshes[name] = newMesh;
 }
 
 Mesh* MeshFactory::get(const std::string& name)
@@ -227,6 +237,7 @@ void MeshFactory::drawUI()
 
 void MaterialFactory::add(const std::string& name, Material* material)
 {
+	material->name = name;
 	m_materials[name] = material;
 }
 

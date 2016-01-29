@@ -5,7 +5,11 @@
 
 MeshRenderer::MeshRenderer(Mesh* _mesh, Material* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material), meshName(""), materialName("")
 {
+	if (_mesh != nullptr)
+		meshName = _mesh->name;
 
+	if (_material != nullptr)
+		materialName = _mesh->name;
 }
 
 MeshRenderer::~MeshRenderer()
@@ -67,4 +71,30 @@ Component* MeshRenderer::clone(Entity* entity)
 void MeshRenderer::addToScene(Scene& scene)
 {
 	scene.add(this);
+}
+
+void MeshRenderer::setMesh(Mesh * _mesh)
+{
+	if(_mesh != nullptr)
+		meshName = _mesh->name;
+
+	mesh = _mesh;
+}
+
+void MeshRenderer::setMaterial(Material * _material)
+{
+	if (_material != nullptr)
+		materialName = _material->name;
+
+	material = _material;
+}
+
+Material * MeshRenderer::getMaterial() const
+{
+	return material;
+}
+
+Mesh * MeshRenderer::getMesh() const
+{
+	return mesh;
 }

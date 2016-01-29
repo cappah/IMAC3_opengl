@@ -63,11 +63,9 @@ private:
 
 	std::string m_name;
 
-	//MeshRenderer* meshRenderer;
-	//Collider* collider;
-
 	std::vector<Component*> m_components;
 
+	//for editing : 
 	bool m_isSelected;
 
 public:

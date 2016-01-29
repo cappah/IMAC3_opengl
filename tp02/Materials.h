@@ -17,6 +17,8 @@
 
 struct Material
 {
+	std::string name;
+
 	GLuint glProgram;
 
 	GLuint uniform_MVP;

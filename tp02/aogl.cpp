@@ -346,21 +346,26 @@ int main( int argc, char **argv )
 	bumpTexture->initGL();
 
 	//////////////////// BEGIN RESSOURCES : 
+	//the order between resource initialization and factories initialisation is important, indeed it's the factory which set set name of the different ressources when they are added to the factories.
+	// So initialyzing materials before TextureFectory initialysation will create materials with wrong texture and mesh names. 
+
+	//texture factories : 
+	TextureFactory::get().add("brickDiffuse", diffuseTexture);
+	TextureFactory::get().add("brickSpecular", specularTexture);
+	TextureFactory::get().add("brickBump", bumpTexture);
+
 	// materials : 
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
 
-	// fill factories : 
+	//material factories : 
 	MaterialFactory::get().add("brick", &brickMaterial);
 	MaterialFactory::get().add("wireframe", &wireframeMaterial);
 
+	//mesh factories : 
 	MeshFactory::get().add("cube", &cube);
 	MeshFactory::get().add("cubeWireframe", &cubeWireFrame);
 	MeshFactory::get().add("plane", &plane);
-
-	TextureFactory::get().add("brickDiffuse", diffuseTexture);
-	TextureFactory::get().add("brickSpecular", specularTexture);
-	TextureFactory::get().add("brickBump", bumpTexture);
 
 	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
 
@@ -387,8 +392,8 @@ int main( int argc, char **argv )
 
 	// mesh renderer for colliders : 
 	MeshRenderer cubeWireFrameRenderer;
-	cubeWireFrameRenderer.mesh = &cubeWireFrame;
-	cubeWireFrameRenderer.material = &wireframeMaterial;
+	cubeWireFrameRenderer.setMesh( &cubeWireFrame );
+	cubeWireFrameRenderer.setMaterial( &wireframeMaterial );
 
 	//int r = 5;
 	//float omega = 0;
@@ -425,10 +430,8 @@ int main( int argc, char **argv )
 
 	MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
 
-
 	//colliders : 
     BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
-	//BoxCollider boxCollider02(&cubeWireFrameRenderer);
 
 	//entities : 
 	//cube entity 01
@@ -436,18 +439,8 @@ int main( int argc, char **argv )
 	entity_cube01->add(cubeRenderer01);
 	entity_cube01->add(boxCollider01);
 	entity_cube01->setTranslation( glm::vec3(0, 0, 0) );
-	//cube entity 02
-	//Entity* entity_cube02 = new Entity(&scene);
-	//entity_cube02->add(&cubeRenderer02);
-	//entity_cube02->add(&boxCollider02);
-	//entity_cube02->setTranslation( glm::vec3(0, 0, 4) );
 
-	//plane entity
-	//Entity* entity_plane = new Entity(&scene);
-	//entity_plane->add(planeRenderer);
-	//entity_plane->setScale( glm::vec3(30,1,30) ); //scale plane
 
-	//std::vector<Entity*> entities = {&entity_cube01, &entity_cube02, &entity_plane};
 
 	//editor : 
 	Editor editor(&wireframeMaterial);
@@ -635,6 +628,9 @@ int main( int argc, char **argv )
 				editor.moveGizmo(ray);
 			}
 		}
+
+		//update editor : 
+		editor.update(camera);
 
 
 		//synchronize input handler : 

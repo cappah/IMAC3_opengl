@@ -55,7 +55,7 @@ private:
 
 public:
 	void add(const std::string& name, const std::string& path);
-	void add(const std::string& name, Texture* textureId);
+	void add(const std::string& name, Texture* texture);
 	Texture* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();

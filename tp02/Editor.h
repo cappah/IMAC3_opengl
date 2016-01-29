@@ -31,6 +31,8 @@ private:
 	bool m_programFactoryVisible;
 	bool m_materialFactoryVisible;
 
+	bool m_multipleEditing;
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 
@@ -59,6 +61,7 @@ public:
 	void toggleDebugVisibility(Scene& scene);
 	void toggleLightsBoundingBoxVisibility(Scene& scene);
 
+	void update(Camera& camera);
 };
 
 

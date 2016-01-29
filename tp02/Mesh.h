@@ -14,6 +14,8 @@
 
 struct Mesh
 {
+	std::string name;
+
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
 

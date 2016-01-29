@@ -10,6 +10,8 @@
 
 struct Texture
 {
+	std::string name;
+
 	std::string path;
 
 	int w;
@@ -39,6 +41,8 @@ struct Texture
 
 struct CubeTexture
 {
+	std::string name;
+
 	std::vector<std::string> paths;
 
 	int w;

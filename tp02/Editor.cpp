@@ -203,28 +203,29 @@ void Editor::renderUI(Scene& scene)
 			ImGui::EndMenu();
 		}
 
-		ImGui::Separator();
-
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Text("                                 Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 		ImGui::EndMainMenuBar();
 	}
 
 	int entityId = 0;
 
-	
-
 	if (!m_currentSelected.empty())
 	{
 		ImGui::Begin("selected entities");
+
+		if (ImGui::RadioButton("multiple editing", m_multipleEditing))
+			m_multipleEditing = !m_multipleEditing;
+
 			for(auto selected : m_currentSelected)
 			{
 				ImGui::PushID(entityId);
+
 				if(ImGui::CollapsingHeader( ("entity "+patch::to_string(entityId)).c_str() ))
 					selected->drawUI();
 				ImGui::PopID();
-
-				entityId++;
+				
+					entityId++;
 			}
 		ImGui::End();
 	}
@@ -433,4 +434,11 @@ void Editor::toggleDebugVisibility(Scene& scene)
 void Editor::toggleLightsBoundingBoxVisibility(Scene& scene)
 {
 	scene.toggleLightsBoundingBoxVisibility();
+}
+
+void Editor::update(Camera & camera)
+{
+	//update gizmo
+	float distanceToCamera = glm::length(camera.eye - m_gizmo->getPosition());
+	m_gizmo->setScale(distanceToCamera*0.1f);
 }

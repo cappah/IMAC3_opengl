@@ -8,8 +8,8 @@ Gizmo::Gizmo(MaterialUnlit* _material, Editor* _editor) : position(0,0,0), mater
 	mesh.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
 	mesh.initGl();
 
-	meshRenderer.mesh = &mesh;
-	meshRenderer.material = material;
+	meshRenderer.setMesh( &mesh );
+	meshRenderer.setMaterial( material );
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -107,26 +107,26 @@ void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatri
 
 	translation = glm::translate(glm::mat4(1), position);
 
-	MaterialUnlit* material = static_cast<MaterialUnlit*>(meshRenderer.material);
+	MaterialUnlit* material = static_cast<MaterialUnlit*>(meshRenderer.getMaterial());
 
 	material->use();
 	material->setUniform_normalMatrix(glm::mat4(1));
 
 	//x : 
-	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(1.f, 0.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(2.f, 0.1f, 0.1f));
+	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(scale, 0.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(scale*2.f, scale*0.1f, scale*0.1f));
 	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
 	material->setUniform_color(glm::vec3(1, 0, 0));
 	mesh.draw();
 
 	//y : 
 	material->setUniform_color(glm::vec3(0, 1, 0));
-	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 1.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(0.1f, 2.f, 0.1f));
+	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, scale, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(scale*0.1f, scale*2.f, scale*0.1f));
 	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
 	mesh.draw();
 
 	//z : 
 	material->setUniform_color(glm::vec3(0, 0, 1));
-	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 0.f, 1.f)) * glm::scale(glm::mat4(1), glm::vec3(0.1f, 0.1f, 2.f));
+	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 0.f, scale)) * glm::scale(glm::mat4(1), glm::vec3(scale*0.1f, scale*0.1f, scale*2.f));
 	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
 	mesh.draw();
 }
@@ -186,4 +186,34 @@ void Gizmo::setTranslation(const glm::vec3 & t)
 	collider[0].appendTranslation(glm::vec3(1.f, 0.f, 0.f)); // x
 	collider[1].appendTranslation(glm::vec3(0.f, 1.f, 0.f)); // y
 	collider[2].appendTranslation(glm::vec3(0.f, 0.f, 1.f)); // z
+}
+
+void Gizmo::setScale(float s)
+{
+	scale = s;
+
+
+	collider[0].applyScale(glm::vec3(scale*2.f, scale*0.1f, scale*0.1f)); // x
+	collider[1].applyScale(glm::vec3(scale*0.1f, scale*2.f, scale*0.1f)); // y
+	collider[2].applyScale(glm::vec3(scale*0.1f, scale*0.1f, scale*2.f)); // z
+
+	//update collider position : 
+	for (int i = 0; i < 3; i++)
+	{
+		collider[i].applyTranslation(position);
+	}
+
+	collider[0].appendTranslation(glm::vec3(scale, 0.f, 0.f)); // x
+	collider[1].appendTranslation(glm::vec3(0.f, scale, 0.f)); // y
+	collider[2].appendTranslation(glm::vec3(0.f, 0.f, scale)); // z
+}
+
+glm::vec3 Gizmo::getPosition() const
+{
+	return position;
+}
+
+float Gizmo::getScale() const
+{
+	return scale;
 }

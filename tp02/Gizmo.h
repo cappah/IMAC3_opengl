@@ -18,6 +18,7 @@ private:
 	Editor* editor;
 	std::vector<Entity*> targets;
 	glm::vec3 position;
+	float scale;
 
 	Mesh mesh;
 	MaterialUnlit* material;
@@ -36,5 +37,10 @@ public:
 
 	void translate(const glm::vec3& t);
 	void setTranslation(const glm::vec3& t);
+
+	void setScale(float s);
+
+	glm::vec3 getPosition() const;
+	float getScale() const;
 
 };
