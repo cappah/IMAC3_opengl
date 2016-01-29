@@ -5,7 +5,8 @@ Voici le repo sur lequel je suis les cours d'Adrien Herubel, à l'IMAC (adrien.i
 J'ai décidé de partir de ces cours pour me faire un véritable éditeurde scènes.
 
 Quelques captures d'écran : 
-![alt tag](https://github.com/florianLequertier/IMAC3_opengl/tree/td2-assimp/example_01.jpg?raw=true "example 01")
+![alt tag](/../td2-assimp/example_01.jpg?raw=true "example 01")
+![alt tag](/../td2-assimp/example_01.jpg?raw=true "example 02")
 
 
 TODO : 
