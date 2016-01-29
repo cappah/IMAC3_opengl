@@ -6,7 +6,7 @@ J'ai décidé de partir de ces cours pour me faire un véritable éditeurde scè
 
 Quelques captures d'écran : 
 ![alt tag](https://github.com/florianLequertier/IMAC3_opengl/tree/td2-assimp/example_01.jpg?raw=true "example 01")
-![alt tag](https://github.com/florianLequertier/IMAC3_opengl/tree/td2-assimp/example_02.jpg?raw=true "example 02")
+
 
 TODO : 
 Faire en sorte que les nouveaux objets créé dans la scène soient créés face à la caméra et non en 0,0,0. 
