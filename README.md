@@ -10,11 +10,19 @@ Quelques captures d'écran :
 
 
 TODO : 
-Faire en sorte que les nouveaux objets créé dans la scène soient créés face à la caméra et non en 0,0,0. 
-Pouvoir rapidement centrer la vue sur un objet.
-Redimensionner les colliders lors du chargement d'un objet 3D avec assimp, pour que le collider englobe l'objet.
-Implementer les ombres (cf : tp03).
-Ajouter un système de sérialisation pour sauvegarder et charger une scène. 
-Ajouter de la physique (particule et drapeau, cf : cours d'animation et physique).
-Pouvoir peindre des textures sur le terrain.
-Effets opengl avancés (cf : tp04)
+
+- Faire en sorte que les nouveaux objets créé dans la scène soient créés face à la caméra et non en 0,0,0. 
+
+- Pouvoir rapidement centrer la vue sur un objet.
+
+- Redimensionner les colliders lors du chargement d'un objet 3D avec assimp, pour que le collider englobe l'objet.
+
+- Implementer les ombres (cf : tp03).
+
+- Ajouter un système de sérialisation pour sauvegarder et charger une scène. 
+
+- Ajouter de la physique (particule et drapeau, cf : cours d'animation et physique).
+
+- Pouvoir peindre des textures sur le terrain.
+
+- Effets opengl avancés (cf : tp04)
