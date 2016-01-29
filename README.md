@@ -6,7 +6,7 @@ J'ai décidé de partir de ces cours pour me faire un véritable éditeurde scè
 
 Quelques captures d'écran : 
 ![alt tag](/../td2-assimp/example_01.jpg?raw=true "example 01")
-![alt tag](/../td2-assimp/example_01.jpg?raw=true "example 02")
+![alt tag](/../td2-assimp/example_02.jpg?raw=true "example 02")
 
 
 TODO : 
