@@ -32,6 +32,11 @@ glm::quat Transform::getRotation()
 	return m_rotation;
 }
 
+glm::vec3 Transform::getEulerRotation()
+{
+	return m_eulerRotation;
+}
+
 void Transform::translate(glm::vec3 const& t)
 {
 	m_translation += t;
@@ -70,6 +75,14 @@ void Transform::rotate(glm::quat const& q)
 void Transform::setRotation(glm::quat const& q)
 {
 	m_rotation = q;
+
+	updateModelMatrix();
+}
+
+void Transform::setEulerRotation(glm::vec3 const & q)
+{
+	m_eulerRotation = q;
+	m_rotation = glm::quat(q);
 
 	updateModelMatrix();
 }
@@ -204,6 +217,11 @@ bool Entity::getIsSelected() const
 std::string Entity::getName() const
 {
 	return m_name;
+}
+
+void Entity::setName(const std::string & name)
+{
+	m_name = name;
 }
 
 void Entity::select()

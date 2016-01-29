@@ -98,3 +98,13 @@ Mesh * MeshRenderer::getMesh() const
 {
 	return mesh;
 }
+
+std::string MeshRenderer::getMaterialName() const
+{
+	return materialName;
+}
+
+std::string MeshRenderer::getMeshName() const
+{
+	return meshName;
+}

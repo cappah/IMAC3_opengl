@@ -34,5 +34,8 @@ public:
 
 	Material* getMaterial() const;
 	Mesh* getMesh() const;
+
+	std::string getMaterialName() const;
+	std::string getMeshName() const;
 };
 

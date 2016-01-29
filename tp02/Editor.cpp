@@ -3,13 +3,219 @@
 #include "Application.h" //forward
 #include "Factories.h" //forward
 
-Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true)
+
+
+///////////////////////////////// INSPECTOR
+
+Inspector::Inspector()
+{
+
+}
+
+Inspector::~Inspector()
+{
+
+}
+
+void Inspector::drawUI(const std::vector<PointLight*>& pointLights)
+{
+	if (pointLights.size() == 0)
+		return;
+
+	if (ImGui::CollapsingHeader("point light"))
+	{
+		floatValue = pointLights[0]->intensity;
+		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
+		{
+			for (auto& light : pointLights)
+			{
+				light->intensity = floatValue;
+			}
+		}
+		vector3Value = pointLights[0]->color;
+		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
+		{
+			for (auto& light : pointLights)
+			{
+				light->color = vector3Value;
+			}
+		}
+	}
+}
+
+void Inspector::drawUI(const std::vector<DirectionalLight*>& directionalLights)
+{
+	if (directionalLights.size() == 0)
+		return;
+
+	if (ImGui::CollapsingHeader("directional light"))
+	{
+		floatValue = directionalLights[0]->intensity;
+		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 10.f))
+		{
+			for (auto& light : directionalLights)
+			{
+				light->intensity = floatValue;
+			}
+		}
+		vector3Value = directionalLights[0]->color;
+		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
+		{
+			for (auto& light : directionalLights)
+			{
+				light->color = vector3Value;
+			}
+		}
+	}
+}
+
+void Inspector::drawUI(const std::vector<SpotLight*>& spotLights)
+{
+	if (spotLights.size() == 0)
+		return;
+
+	if (ImGui::CollapsingHeader("spot light"))
+	{
+		floatValue = spotLights[0]->intensity;
+		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
+		{
+			for (auto& light : spotLights)
+			{
+				light->intensity = floatValue;
+			}
+		}
+		vector3Value = spotLights[0]->color;
+		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
+		{
+			for (auto& light : spotLights)
+			{
+				light->color = vector3Value;
+			}
+		}
+		floatValue = spotLights[0]->angle;
+		if (ImGui::SliderFloat("light angles", &floatValue, 0.f, glm::pi<float>()))
+		{
+			for (auto& light : spotLights)
+			{
+				light->angle = floatValue;
+			}
+		}
+	}
+}
+
+void Inspector::drawUI(const std::vector<Entity*>& entities)
+{
+	if (entities.size() == 0)
+		return;
+
+	std::string tmpName = entities[0]->getName();
+	tmpName.copy(textValue, tmpName.size(), 0);
+	textValue[tmpName.size()] = '\0';
+
+	if (ImGui::InputText("name", textValue, 20))
+	{
+		for (auto& entity : entities)
+		{
+			entity->setName(textValue);
+		}
+	}
+
+	vector3Value = entities[0]->getEulerRotation();
+	if (ImGui::SliderFloat3("rotation", &vector3Value[0], 0, 2 * glm::pi<float>()))
+	{
+		for (auto& entity : entities)
+		{
+			entity->setEulerRotation(vector3Value);
+			//entity->setRotation(glm::quat(vector3Value));
+			entity->applyTransform();
+		}
+	}
+
+	vector3Value = entities[0]->getScale();
+	if (ImGui::InputFloat3("scale", &vector3Value[0]))
+	{
+		for (auto& entity : entities)
+		{
+			entity->setScale(vector3Value);
+			entity->applyTransform();
+		}
+	}
+}
+
+void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
+{
+	if (meshRenderers.size() == 0)
+		return;
+
+	std::string tmpName = meshRenderers[0]->getMaterialName();
+	tmpName.copy(textValue, tmpName.size(), 0);
+	textValue[tmpName.size()] = '\0';
+
+	if (ImGui::InputText("materialName", textValue, 20))
+	{
+		for (auto& meshRenderer : meshRenderers)
+		{
+			if (MaterialFactory::get().contains(textValue))
+			{
+				meshRenderer->setMaterial( MaterialFactory::get().get(textValue) );
+			}
+		}
+	}
+
+	meshRenderers[0]->getMaterial()->drawUI();
+
+	tmpName = meshRenderers[0]->getMeshName();
+	tmpName.copy(textValue, tmpName.size(), 0);
+	textValue[tmpName.size()] = '\0';
+
+	if (ImGui::InputText("meshName", textValue, 20))
+	{
+		for (auto& meshRenderer : meshRenderers)
+		{
+			if (MeshFactory::get().contains(textValue))
+			{
+				meshRenderer->setMesh( MeshFactory::get().get(textValue) );
+			}
+		}
+	}
+}
+
+void Inspector::drawUI(const std::vector<Collider*>& colliders)
+{
+	if (colliders.size() == 0)
+		return;
+
+	vector3Value = colliders[0]->offsetPosition;
+	if (ImGui::InputFloat3("offset position", &vector3Value[0]))
+	{
+		for (auto& collider : colliders)
+		{
+			collider->setOffsetPosition(vector3Value);
+		}
+	}
+	vector3Value = colliders[0]->offsetScale;
+	if (ImGui::InputFloat3("offset scale", &vector3Value[0]))
+	{
+		for (auto& collider : colliders)
+		{
+			collider->setOffsetScale(vector3Value);
+		}
+	}
+}
+
+
+
+/////////////////////////////////// EDITOR
+
+Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false)
 {
 	m_gizmo = new Gizmo(_unlitMaterial, this);
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
 {
+	clearSelectedComponents();
+
 	m_gizmo->setTarget(nullptr);
 	m_currentSelected.clear();
 	addCurrentSelected(entity);
@@ -17,6 +223,8 @@ void Editor::changeCurrentSelected(Entity* entity)
 
 void Editor::changeCurrentSelected(std::vector<Entity*> entities)
 {
+	clearSelectedComponents();
+
 	m_gizmo->setTarget(nullptr);
 	m_currentSelected.clear();
 	for (auto& e : entities)
@@ -39,6 +247,8 @@ void Editor::addCurrentSelected(Entity * entity)
 		else
 			m_gizmo->setTargets(m_currentSelected); //set multiple targets
 	}
+
+	refreshSelectedComponents(false);
 }
 
 void Editor::removeCurrentSelected(Entity * entity)
@@ -60,6 +270,8 @@ void Editor::removeCurrentSelected(Entity * entity)
 		else
 			m_gizmo->setTargets(m_currentSelected); //set multiple targets
 	}
+
+	refreshSelectedComponents(true);
 }
 
 void Editor::toggleCurrentSelected(Entity* entity)
@@ -85,6 +297,57 @@ void Editor::renderGizmo(const Camera& camera)//(const glm::mat4& projectionMatr
 	glm::mat4 viewMatrix = glm::lookAt(camera.eye, camera.o, camera.up);
 
 	m_gizmo->render(projectionMatrix, viewMatrix);
+}
+
+void Editor::clearSelectedComponents()
+{
+	m_pointLights.clear();
+	m_directionlLights.clear();
+	m_spotLights.clear();
+	m_meshRenderers.clear();
+	m_colliders.clear();
+}
+
+void Editor::refreshSelectedComponents(bool clearComponentLists)
+{
+	if (clearComponentLists)
+	{
+		m_pointLights.clear();
+		m_directionlLights.clear();
+		m_spotLights.clear();
+		m_meshRenderers.clear();
+		m_colliders.clear();
+	}
+
+	for (auto& selected : m_currentSelected)
+	{
+		PointLight* pointLight = static_cast<PointLight*>(selected->getComponent(Component::POINT_LIGHT));
+		DirectionalLight* directionalLight = static_cast<DirectionalLight*>(selected->getComponent(Component::DIRECTIONAL_LIGHT));
+		SpotLight* spotLight = static_cast<SpotLight*>(selected->getComponent(Component::SPOT_LIGHT));
+		MeshRenderer* meshRenderer = static_cast<MeshRenderer*>(selected->getComponent(Component::MESH_RENDERER));
+		Collider* collider = static_cast<Collider*>(selected->getComponent(Component::COLLIDER));
+
+		if (pointLight != nullptr)
+		{
+			m_pointLights.push_back(pointLight);
+		}
+		if (directionalLight != nullptr)
+		{
+			m_directionlLights.push_back(directionalLight);
+		}
+		if (spotLight != nullptr)
+		{
+			m_spotLights.push_back(spotLight);
+		}
+		if (meshRenderer != nullptr)
+		{
+			m_meshRenderers.push_back(meshRenderer);
+		}
+		if (collider != nullptr)
+		{
+			m_colliders.push_back(collider);
+		}
+	}
 }
 
 void Editor::renderUI(Scene& scene)
@@ -212,12 +475,23 @@ void Editor::renderUI(Scene& scene)
 
 	if (!m_currentSelected.empty())
 	{
+		//can't add or remove components in multiple editing, only change components parameters
+
 		ImGui::Begin("selected entities");
 
 		if (ImGui::RadioButton("multiple editing", m_multipleEditing))
+		{
 			m_multipleEditing = !m_multipleEditing;
 
-			for(auto selected : m_currentSelected)
+			if (m_multipleEditing)
+			{
+				refreshSelectedComponents(true);
+			}
+		}
+
+		if (!m_multipleEditing)
+		{
+			for(auto& selected : m_currentSelected)
 			{
 				ImGui::PushID(entityId);
 
@@ -227,6 +501,17 @@ void Editor::renderUI(Scene& scene)
 				
 					entityId++;
 			}
+		}
+		else
+		{
+			m_inspector.drawUI(m_currentSelected);
+			m_inspector.drawUI(m_pointLights);
+			m_inspector.drawUI(m_directionlLights);
+			m_inspector.drawUI(m_spotLights);
+			m_inspector.drawUI(m_meshRenderers);
+		}
+
+
 		ImGui::End();
 	}
 

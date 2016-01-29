@@ -9,11 +9,42 @@
 //forward
 class Scene;
 
+
+class Inspector
+{
+private:
+	char textValue[30];
+	int intValue;
+	float floatValue;
+	glm::vec3 vector3Value;
+
+public:
+	Inspector();
+	~Inspector();
+
+	void drawUI(const std::vector<PointLight*>& pointLights);
+	void drawUI(const std::vector<DirectionalLight*>& directionalLights);
+	void drawUI(const std::vector<SpotLight*>& spotLights);
+	void drawUI(const std::vector<Entity*>& entities);
+	void drawUI(const std::vector<MeshRenderer*>& meshRenderers);
+	void drawUI(const std::vector<Collider*>& colliders);
+};
+
+/////////////////////////////////////////
+
 class Editor
 {
 
 private:
+	//current entity selected
 	std::vector<Entity*> m_currentSelected;
+	//current components selected, for multiple editing
+	std::vector<PointLight*> m_pointLights;
+	std::vector<DirectionalLight*> m_directionlLights;
+	std::vector<SpotLight*> m_spotLights;
+	std::vector<MeshRenderer*> m_meshRenderers;
+	std::vector<Collider*> m_colliders;
+
 	Gizmo* m_gizmo;
 
 	Gizmo::GizmoArrowType m_gizmoTranslationDirection;
@@ -32,6 +63,8 @@ private:
 	bool m_materialFactoryVisible;
 
 	bool m_multipleEditing;
+
+	Inspector m_inspector;
 
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
@@ -62,6 +95,9 @@ public:
 	void toggleLightsBoundingBoxVisibility(Scene& scene);
 
 	void update(Camera& camera);
-};
 
+	//for multiple editing : 
+	void clearSelectedComponents();
+	void refreshSelectedComponents(bool clearComponentLists = true);
+};
 

@@ -41,6 +41,7 @@ public :
 	glm::vec3 getTranslation();
 	glm::vec3 getScale();
 	glm::quat getRotation();
+	glm::vec3 getEulerRotation();
 
 	void translate(glm::vec3 const& t);
 	void setTranslation(glm::vec3 const& t);
@@ -48,6 +49,7 @@ public :
 	void setScale(glm::vec3 const& s);
 	void rotate(glm::quat const& q);
 	void setRotation(glm::quat const& q);
+	void setEulerRotation(glm::vec3 const& q);
 
 	void updateModelMatrix();
 
@@ -82,6 +84,8 @@ public:
 
 	bool getIsSelected() const ;
 	std::string getName() const;
+	void setName(const std::string& name);
+
 
 	void select();
 	void deselect();
