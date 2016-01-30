@@ -886,14 +886,22 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 
 		glfwSetCursorPos(window, m_guiStates.lockPositionX, m_guiStates.lockPositionY);
 	}
+
+	if (m_guiStates.altPressed || m_guiStates.ctrlPressed)
+		return;
+
+	float cameraSpeed = 0.01f;
+	if (m_guiStates.shiftPressed)
+		cameraSpeed = 0.04f;
+
 	if (m_guiStates.leftPressed)
-		camera_translate(*m_camera, -0.01f, 0, 0);
+		camera_translate(*m_camera, -cameraSpeed, 0, 0);
 	if (m_guiStates.rightPressed)
-		camera_translate(*m_camera, 0.01f, 0, 0);
+		camera_translate(*m_camera, cameraSpeed, 0, 0);
 	if (m_guiStates.forwardPressed)
-		camera_translate(*m_camera, 0, 0, 0.01f);
+		camera_translate(*m_camera, 0, 0, cameraSpeed);
 	if (m_guiStates.backwardPressed)
-		camera_translate(*m_camera, 0, 0, -0.01f);
+		camera_translate(*m_camera, 0, 0, -cameraSpeed);
 }
 
 
