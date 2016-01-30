@@ -26,6 +26,14 @@ struct Light : public Component
 	glm::vec3 color;
 
 	Light(float _intensity, glm::vec3 _color);
+	virtual ~Light();
+
+	float getIntensity() const;
+	glm::vec3 getColor() const;
+	void setIntensity(float i);
+	void setColor(const glm::vec3& c);
+
+	virtual void updateBoundingBox();
 
 };
 
@@ -35,8 +43,9 @@ struct PointLight : public Light
 	BoxCollider boundingBox;
 
 	PointLight(float _intensity = 10, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _position = glm::vec3(0, 0, 0));
+	virtual ~PointLight();
 
-	void updateBoundingBox();
+	virtual void updateBoundingBox() override;
 
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation  = glm::quat()) override;
@@ -54,6 +63,7 @@ struct DirectionalLight : public Light
 	glm::vec3 direction;
 
 	DirectionalLight(float _intensity = 0.2f, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _direction = glm::vec3(0, -1, 0));
+	virtual ~DirectionalLight();
 
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
@@ -71,8 +81,9 @@ struct SpotLight : public Light
 	BoxCollider boundingBox;
 
 	SpotLight(float _intensity = 10, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _position = glm::vec3(0, 0, 0), glm::vec3 _direction = glm::vec3(0, -1, 0), float _angle = glm::radians(30.f));
+	virtual ~SpotLight();
 
-	void updateBoundingBox();
+	virtual void updateBoundingBox() override;
 
 	virtual void drawUI() override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;

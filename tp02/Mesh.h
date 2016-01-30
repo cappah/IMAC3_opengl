@@ -56,6 +56,8 @@ struct Mesh
 	// simply draw the vertices, using vao.
 	void draw();
 
+	void computeBoundingBox();
+
 private:
 	bool initFromScene(const aiScene* pScene, const std::string& Filename);
 	void initMesh(unsigned int Index, const aiMesh* paiMesh);

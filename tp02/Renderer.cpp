@@ -473,10 +473,13 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTexturePosition[POINT], 0);
 	glUniform1i(uniformTextureNormal[POINT], 1);
 	glUniform1i(uniformTextureDepth[POINT], 2);
-	for (int i = 0; i < pointLightCount; i++)
+	for (int i = 0; i < pointLights.size(); i++)
 	{
-		lightManager->uniformPointLight(*pointLights[i]);
-		quadMesh.draw();
+		if (passCullingTest(projection, worldToView, camera.eye, pointLights[i]->boundingBox)) // optimisation test
+		{
+			lightManager->uniformPointLight(*pointLights[i]);
+			quadMesh.draw();
+		}
 	}
 
 	//spot lights : 
@@ -497,12 +500,21 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTexturePosition[SPOT], 0);
 	glUniform1i(uniformTextureNormal[SPOT], 1);
 	glUniform1i(uniformTextureDepth[SPOT], 2);
-	for (int i = 0; i < spotLightCount; i++)
+	for (int i = 0; i < spotLights.size(); i++)
 	{
-		lightManager->uniformSpotLight(*spotLights[i]);
-		quadMesh.draw();
+		if (passCullingTest(projection, worldToView, camera.eye, spotLights[i]->boundingBox)) // optimisation test
+		{
+			lightManager->uniformSpotLight(*spotLights[i]);
+			quadMesh.draw();
+		}
 	}
 
+	//make sure that the blit quat cover all the screen : 
+	quadMesh.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
+	// update in CG : 
+	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.vbo_vertices);
+	glBufferData(GL_ARRAY_BUFFER, quadMesh.vertices.size() * sizeof(float), &(quadMesh.vertices)[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	//directionals : 
 	glUseProgram(glProgram_lightPass_directionalLight);
@@ -720,4 +732,116 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 		}
 	}
 
+}
+
+
+bool Renderer::passCullingTest(const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider)
+{
+	glm::vec3 topRight = collider.topRight;
+	glm::vec3 bottomLeft = collider.bottomLeft;
+
+	bool insideFrustum = false;
+
+	float maxX = 1;
+	float maxY = 1;
+	float minX = -1;
+	float minY = -1;
+
+	//first optimisation : test if the light is inside camera frustum 
+
+	//is camera outside light bounding box ? 
+	if (!(cameraPosition.x > bottomLeft.x && cameraPosition.x < topRight.x &&
+		cameraPosition.y > bottomLeft.y && cameraPosition.y < topRight.y &&
+		cameraPosition.z > bottomLeft.z && cameraPosition.z < topRight.z))
+	{
+		// ce code semble plus optimisé que celui retenu, mais je n'ai pas réussi à le faire marcher convenablement pour deux raisons : 
+		// le carré généré est trop petit, il n'englobe pas tout le champs d'action de la lumière
+		// il y a des bugs lorsqu'on place la camera au dessus ou en dessous de la lumière, la rotation s'effectue mal et le collider se deforme.
+		/*
+		// permet au collider d'être toujours face à la camera. 
+		//cela permet d'éviter les erreurs du au caractère "AABB" du collider.
+		//en effet, on stock le collider avec une seule diagonale (deux points), il faut qu'une fois projeté en repère ecrant cette diagonale soit aussi celle du carré projeté.
+		glm::vec3 camToCollider = glm::normalize(collider.translation - cameraPosition);
+		glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
+
+		collider.applyRotation(glm::quat(facingCameraRotation));
+
+		glm::vec4 tmpTopRight = projection * view  * glm::vec4(topRight, 1);
+		glm::vec4 tmpBottomLeft = projection * view  * glm::vec4(bottomLeft, 1);
+
+		topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
+		bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
+		//now, topRight and bottom left are in screen space, and their coordinates are between -1 and 1 on all axis.
+
+		//is light outside the camera frustum ? 
+		if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
+			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
+		{
+			//we don't have to draw the light if its bounding box is outside the camera frustum
+			insideFrustum = false;
+		}
+		*/
+
+		//compute 8 points of 3D collider : 
+
+		float colliderWidth = glm::abs(topRight.x - bottomLeft.x);
+		float colliderDepth = glm::abs(topRight.z - bottomLeft.z);
+
+		glm::vec3 colliderPoints[8] = { bottomLeft, glm::vec3(bottomLeft.x, bottomLeft.y, bottomLeft.z + colliderDepth), glm::vec3(bottomLeft.x + colliderWidth, bottomLeft.y, bottomLeft.z), glm::vec3(bottomLeft.x + colliderWidth, bottomLeft.y, bottomLeft.z + colliderDepth),
+										topRight, glm::vec3(topRight.x, topRight.y, topRight.z - colliderDepth), glm::vec3(topRight.x - colliderWidth, topRight.y, topRight.z), glm::vec3(topRight.x - colliderWidth, topRight.y, topRight.z - colliderDepth) };
+
+		glm::mat4 vp = projection * view;
+		glm::vec4 tmpColliderPoint;
+		maxX = -1;
+		maxY = -1;
+		minX = 1;
+		minY = 1;
+		for (int i = 0; i < 8; i++)
+		{
+			tmpColliderPoint = projection * view * glm::vec4(colliderPoints[i], 1);
+			colliderPoints[i] = glm::vec3(tmpColliderPoint.x / tmpColliderPoint.w, tmpColliderPoint.y / tmpColliderPoint.w, tmpColliderPoint.z / tmpColliderPoint.w);
+		
+			if (colliderPoints[i].x > maxX)
+				maxX = colliderPoints[i].x;
+			if(colliderPoints[i].x < minX)
+				minX = colliderPoints[i].x;
+
+			if (colliderPoints[i].y > maxY)
+				maxY = colliderPoints[i].y;
+			if (colliderPoints[i].y < minY)
+				minY = colliderPoints[i].y;
+		}
+
+		//is light outside the camera frustum ? 
+		if ((maxX < -1 && minX < -1) || (maxY < -1 && minY < -1)
+			|| (maxX > 1 && minX > 1) || (maxY > 1 && minY > 1))
+		{
+			//we don't have to draw the light if its bounding box is outside the camera frustum
+			insideFrustum = false;
+		}
+
+
+		//we have to draw the light if its boudning box is inside/intersect the camera frustum
+		insideFrustum = true;
+	}
+	//we draw the light if we are inside its bounding box
+	insideFrustum = true;
+
+
+
+
+	//second optimisation : we modify the quad verticies such that it is reduce to the area of the light
+	if (insideFrustum)
+	{
+		float width = maxX - minX;
+		float height = maxY - minY;
+		quadMesh.vertices = { minX, minY, minX + width, minY, minX, minY + height, minX + width , minY + height };
+		// update in CG : 
+		glBindBuffer(GL_ARRAY_BUFFER, quadMesh.vbo_vertices);
+		glBufferData(GL_ARRAY_BUFFER, quadMesh.vertices.size() * sizeof(float), &(quadMesh.vertices)[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	return insideFrustum;
 }

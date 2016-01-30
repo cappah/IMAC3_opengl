@@ -2,9 +2,11 @@
 
 #include "Entity.h"
 #include "Gizmo.h"
+#include "InputHandler.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
+#include "GLFW/glfw3.h"
 
 //forward
 class Scene;
@@ -29,6 +31,38 @@ public:
 	void drawUI(const std::vector<MeshRenderer*>& meshRenderers);
 	void drawUI(const std::vector<Collider*>& colliders);
 };
+
+/////////////////////////////////////////
+
+struct GUIStates
+{
+	bool panLock;
+	bool turnLock;
+	bool zoomLock;
+	int lockPositionX;
+	int lockPositionY;
+	int camera;
+	double time;
+	bool playing;
+	static const float MOUSE_PAN_SPEED;
+	static const float MOUSE_ZOOM_SPEED;
+	static const float MOUSE_TURN_SPEED;
+
+	int leftButton;
+	int rightButton;
+	int middleButton;
+
+	int altPressed;
+	int shiftPressed;
+	int ctrlPressed;
+
+	bool leftPressed;
+	bool rightPressed;
+	bool forwardPressed;
+	bool backwardPressed;
+};
+
+void init_gui_states(GUIStates & guiStates);
 
 /////////////////////////////////////////
 
@@ -66,6 +100,13 @@ private:
 
 	Inspector m_inspector;
 
+	GUIStates m_guiStates;
+
+	Camera* m_camera;
+	bool m_cameraFPS;
+
+	bool m_hideCursorWhenMovingCamera;
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 
@@ -75,7 +116,7 @@ public:
 	void removeCurrentSelected(Entity* entity);
 	void toggleCurrentSelected(Entity* entity);
 
-	void renderGizmo(const Camera& camera);//(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+	void renderGizmo();
 
 	void renderUI(Scene& scene);
 
@@ -94,7 +135,13 @@ public:
 	void toggleDebugVisibility(Scene& scene);
 	void toggleLightsBoundingBoxVisibility(Scene& scene);
 
-	void update(Camera& camera);
+	void update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler);
+
+	Camera& getCamera();
+
+	void updateGuiStates(GLFWwindow* window);
+	void updateCameraMovement_editor(GLFWwindow* window);
+	void updateCameraMovement_fps(GLFWwindow* window);
 
 	//for multiple editing : 
 	void clearSelectedComponents();

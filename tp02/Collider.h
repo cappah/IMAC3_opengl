@@ -75,6 +75,8 @@ struct Collider : public Component
 
 	virtual void eraseFromScene(Scene& scene) override;
 
+	virtual void coverMesh(Mesh& mesh) = 0;
+
 };
 
 struct BoxCollider : public Collider
@@ -94,4 +96,5 @@ struct BoxCollider : public Collider
 	virtual void drawUI() override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+	virtual void coverMesh(Mesh& mesh) override;
 };

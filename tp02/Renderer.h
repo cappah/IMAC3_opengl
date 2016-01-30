@@ -66,5 +66,6 @@ public:
 	void debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights);
 
 	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights);
+	bool passCullingTest(const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider);
 };
 

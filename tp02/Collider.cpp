@@ -3,7 +3,7 @@
 #include "Scene.h"
 #include "Entity.h"
 
-Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual), translation(0,0,0), scale(1,1,1)
+Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1)
 {
 
 }
@@ -127,7 +127,7 @@ BoxCollider::BoxCollider(MeshRenderer* _visual) : Collider(_visual)
 
 void BoxCollider::updateModelMatrix()
 {
-	modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale + offsetScale);
+	modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale * offsetScale);
 
 	topRight = glm::vec3( modelMatrix * glm::vec4(localTopRight, 1) );
 	bottomLeft = glm::vec3( modelMatrix * glm::vec4(localBottomLeft, 1) );
@@ -256,5 +256,15 @@ Component* BoxCollider::clone(Entity* entity)
 void BoxCollider::addToScene(Scene& scene)
 {
 	scene.add(this);
+}
+
+void BoxCollider::coverMesh(Mesh & mesh)
+{
+	glm::vec3 dimensions = mesh.topRight - mesh.bottomLeft;
+
+	offsetPosition = dimensions * 0.5f + mesh.bottomLeft;
+	offsetScale = dimensions;
+
+	updateModelMatrix();
 }
 

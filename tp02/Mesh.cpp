@@ -107,6 +107,38 @@ void Mesh::draw()
 	glBindVertexArray(0);
 }
 
+void Mesh::computeBoundingBox()
+{
+	//initialization : 
+	//bottom left
+		bottomLeft.x = vertices[0];
+		bottomLeft.y = vertices[1];
+		bottomLeft.z = vertices[2];
+	//top right
+		topRight.x = vertices[0];
+		topRight.y = vertices[1];
+		topRight.z = vertices[2];
+
+	for (int i = 3; i < vertices.size(); i+=3)
+	{
+		//bottom left
+		if (vertices[i] < bottomLeft.x)
+			bottomLeft.x = vertices[i];
+		if (vertices[i+1] < bottomLeft.y)
+			bottomLeft.y = vertices[i+1];
+		if (vertices[i+2] < bottomLeft.z)
+			bottomLeft.z = vertices[i+2];
+
+		//top right
+		if (vertices[i] > topRight.x)
+			topRight.x = vertices[i];
+		if (vertices[i + 1] > topRight.y)
+			topRight.y = vertices[i + 1];
+		if (vertices[i + 2] > topRight.z)
+			topRight.z = vertices[i + 2];
+	}
+}
+
 
 bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 {
@@ -137,6 +169,7 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 	{
 		const aiVector3D* pPos00 = &(paiMesh->mVertices[0]);
 		topRight = glm::vec3(pPos00->x, pPos00->y, pPos00->z);
+		bottomLeft = glm::vec3(pPos00->x, pPos00->y, pPos00->z);
 	}
 
 	for (unsigned int i = 0; i < paiMesh->mNumVertices; i++) 

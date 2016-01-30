@@ -20,3 +20,6 @@ void camera_defaults(Camera & c);
 void camera_zoom(Camera & c, float factor);
 void camera_turn(Camera & c, float phi, float theta);
 void camera_pan(Camera & c, float x, float y);
+void camera_rotate(Camera& c, float phi, float theta);
+void camera_translate(Camera& c, float x, float y, float z);
+void toogleCamera(Camera& c);

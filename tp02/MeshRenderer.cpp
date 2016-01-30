@@ -9,7 +9,7 @@ MeshRenderer::MeshRenderer(Mesh* _mesh, Material* _material) : Component(MESH_RE
 		meshName = _mesh->name;
 
 	if (_material != nullptr)
-		materialName = _mesh->name;
+		materialName = _material->name;
 }
 
 MeshRenderer::~MeshRenderer()
@@ -49,6 +49,12 @@ void MeshRenderer::drawUI()
 			if (MeshFactory::get().contains(meshName))
 			{
 				mesh = MeshFactory::get().get(meshName);
+				if (m_entity != nullptr)
+				{
+					auto collider = static_cast<Collider*>( m_entity->getComponent(Component::COLLIDER) );
+					if (collider != nullptr)
+						collider->coverMesh(*mesh);
+				}
 			}
 		}
 	}

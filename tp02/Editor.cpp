@@ -24,20 +24,20 @@ void Inspector::drawUI(const std::vector<PointLight*>& pointLights)
 
 	if (ImGui::CollapsingHeader("point light"))
 	{
-		floatValue = pointLights[0]->intensity;
+		floatValue = pointLights[0]->getIntensity();
 		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
 		{
 			for (auto& light : pointLights)
 			{
-				light->intensity = floatValue;
+				light->setIntensity( floatValue );
 			}
 		}
-		vector3Value = pointLights[0]->color;
+		vector3Value = pointLights[0]->getColor();
 		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
 		{
 			for (auto& light : pointLights)
 			{
-				light->color = vector3Value;
+				light->setColor( vector3Value );
 			}
 		}
 	}
@@ -50,20 +50,20 @@ void Inspector::drawUI(const std::vector<DirectionalLight*>& directionalLights)
 
 	if (ImGui::CollapsingHeader("directional light"))
 	{
-		floatValue = directionalLights[0]->intensity;
+		floatValue = directionalLights[0]->getIntensity();
 		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 10.f))
 		{
 			for (auto& light : directionalLights)
 			{
-				light->intensity = floatValue;
+				light->setIntensity( floatValue );
 			}
 		}
-		vector3Value = directionalLights[0]->color;
+		vector3Value = directionalLights[0]->getColor();
 		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
 		{
 			for (auto& light : directionalLights)
 			{
-				light->color = vector3Value;
+				light->setColor( vector3Value );
 			}
 		}
 	}
@@ -76,20 +76,20 @@ void Inspector::drawUI(const std::vector<SpotLight*>& spotLights)
 
 	if (ImGui::CollapsingHeader("spot light"))
 	{
-		floatValue = spotLights[0]->intensity;
+		floatValue = spotLights[0]->getIntensity();
 		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
 		{
 			for (auto& light : spotLights)
 			{
-				light->intensity = floatValue;
+				light->setIntensity( floatValue );
 			}
 		}
-		vector3Value = spotLights[0]->color;
+		vector3Value = spotLights[0]->getColor();
 		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
 		{
 			for (auto& light : spotLights)
 			{
-				light->color = vector3Value;
+				light->setColor( vector3Value );
 			}
 		}
 		floatValue = spotLights[0]->angle;
@@ -205,11 +205,37 @@ void Inspector::drawUI(const std::vector<Collider*>& colliders)
 
 
 
+////////////////////////////////////////// GUI STATES
+
+const float GUIStates::MOUSE_PAN_SPEED = 0.001f;
+const float GUIStates::MOUSE_ZOOM_SPEED = 0.05f;
+const float GUIStates::MOUSE_TURN_SPEED = 0.005f;
+
+void init_gui_states(GUIStates & guiStates)
+{
+	guiStates.panLock = false;
+	guiStates.turnLock = false;
+	guiStates.zoomLock = false;
+	guiStates.lockPositionX = 0;
+	guiStates.lockPositionY = 0;
+	guiStates.camera = 0;
+	guiStates.time = 0.0;
+	guiStates.playing = false;
+}
+
+
+
+
 /////////////////////////////////// EDITOR
 
-Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false)
+Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(false)
 {
 	m_gizmo = new Gizmo(_unlitMaterial, this);
+
+	m_camera = new Camera();
+	camera_defaults(*m_camera);
+
+	init_gui_states(m_guiStates);
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -287,14 +313,14 @@ void Editor::toggleCurrentSelected(Entity* entity)
 		addCurrentSelected(entity);
 }
 
-void Editor::renderGizmo(const Camera& camera)//(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
+void Editor::renderGizmo()
 {
 	if (!m_isGizmoVisible)
 		return;
 
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 viewMatrix = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 viewMatrix = glm::lookAt(m_camera->eye, m_camera->o, m_camera->up);
 
 	m_gizmo->render(projectionMatrix, viewMatrix);
 }
@@ -461,6 +487,31 @@ void Editor::renderUI(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get("brick"));
 				newEntity->add(newCollider).add(meshRenderer);
+			}
+
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("camera mode"))
+		{
+			if (ImGui::RadioButton("editor camera", !m_cameraFPS))
+			{
+				if (m_cameraFPS)
+				{
+					toogleCamera(*m_camera);
+					m_cameraFPS = false;
+				}
+			}
+			if (ImGui::RadioButton("FPS camera", m_cameraFPS))
+			{
+				if (!m_cameraFPS)
+				{
+					toogleCamera(*m_camera);
+					m_cameraFPS = true;
+				}
+			}
+			if (ImGui::RadioButton("hide cursor", m_hideCursorWhenMovingCamera))
+			{
+				m_hideCursorWhenMovingCamera = !m_hideCursorWhenMovingCamera;
 			}
 
 			ImGui::EndMenu();
@@ -721,9 +772,245 @@ void Editor::toggleLightsBoundingBoxVisibility(Scene& scene)
 	scene.toggleLightsBoundingBoxVisibility();
 }
 
-void Editor::update(Camera & camera)
+void Editor::updateGuiStates(GLFWwindow* window)
+{
+
+	// Mouse states
+	m_guiStates.leftButton = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	m_guiStates.rightButton = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+	m_guiStates.middleButton = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
+
+	m_guiStates.altPressed = glfwGetKey(window, GLFW_KEY_LEFT_ALT);
+	m_guiStates.shiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
+	m_guiStates.ctrlPressed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL);
+
+	m_guiStates.leftPressed = (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS);
+	m_guiStates.rightPressed = (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
+	m_guiStates.forwardPressed = (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS);
+	m_guiStates.backwardPressed = (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS);
+
+	if (m_guiStates.leftButton == GLFW_PRESS)
+		m_guiStates.turnLock = true;
+	else
+		m_guiStates.turnLock = false;
+
+	if (m_guiStates.rightButton == GLFW_PRESS)
+		m_guiStates.zoomLock = true;
+	else
+		m_guiStates.zoomLock = false;
+
+	if (m_guiStates.middleButton == GLFW_PRESS || (m_guiStates.leftButton == GLFW_PRESS && m_guiStates.altPressed))
+		m_guiStates.panLock = true;
+	else
+		m_guiStates.panLock = false;
+}
+
+void Editor::updateCameraMovement_editor(GLFWwindow* window)
+{
+	// Camera movements
+	if(glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_NORMAL && !m_hideCursorWhenMovingCamera)
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+	if (!m_guiStates.altPressed && (m_guiStates.leftButton == GLFW_PRESS || m_guiStates.rightButton == GLFW_PRESS || m_guiStates.middleButton == GLFW_PRESS))
+	{
+		double x; double y;
+		glfwGetCursorPos(window, &x, &y);
+		m_guiStates.lockPositionX = x;
+		m_guiStates.lockPositionY = y;
+	}
+	if (m_guiStates.altPressed == GLFW_PRESS || m_guiStates.shiftPressed == GLFW_PRESS)
+	{
+		if(m_hideCursorWhenMovingCamera)
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+		double mousex; double mousey;
+		glfwGetCursorPos(window, &mousex, &mousey);
+		int diffLockPositionX = mousex - m_guiStates.lockPositionX;
+		int diffLockPositionY = mousey - m_guiStates.lockPositionY;
+
+		if (m_guiStates.altPressed == GLFW_PRESS && m_guiStates.shiftPressed == GLFW_RELEASE)
+		{
+			if (m_guiStates.zoomLock)
+			{
+				float zoomDir = 0.0;
+				if (diffLockPositionX > 0)
+					zoomDir = -1.f;
+				else if (diffLockPositionX < 0)
+					zoomDir = 1.f;
+				camera_zoom(*m_camera, zoomDir * GUIStates::MOUSE_ZOOM_SPEED);
+			}
+			else if (m_guiStates.turnLock)
+			{
+				camera_turn(*m_camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
+					diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
+
+			}
+		}
+		if (m_guiStates.altPressed == GLFW_PRESS && m_guiStates.shiftPressed == GLFW_PRESS)
+		{
+			if (m_guiStates.panLock)
+			{
+				camera_pan(*m_camera, diffLockPositionX * GUIStates::MOUSE_PAN_SPEED,
+					diffLockPositionY * GUIStates::MOUSE_PAN_SPEED);
+			}
+		}
+
+		m_guiStates.lockPositionX = mousex;
+		m_guiStates.lockPositionY = mousey;
+	}
+}
+
+void Editor::updateCameraMovement_fps(GLFWwindow* window)
+{
+	if (!m_guiStates.rightButton)
+	{
+		double x; double y;
+		glfwGetCursorPos(window, &x, &y);
+		m_guiStates.lockPositionX = x;
+		m_guiStates.lockPositionY = y;
+	}
+	else
+	{
+		if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_NORMAL && !m_hideCursorWhenMovingCamera)
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		else
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+		double mousex; double mousey;
+		glfwGetCursorPos(window, &mousex, &mousey);
+		int diffLockPositionX = mousex - m_guiStates.lockPositionX;
+		int diffLockPositionY = mousey - m_guiStates.lockPositionY;
+
+		camera_rotate(*m_camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
+			diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
+
+		glfwSetCursorPos(window, m_guiStates.lockPositionX, m_guiStates.lockPositionY);
+	}
+	if (m_guiStates.leftPressed)
+		camera_translate(*m_camera, -0.01f, 0, 0);
+	if (m_guiStates.rightPressed)
+		camera_translate(*m_camera, 0.01f, 0, 0);
+	if (m_guiStates.forwardPressed)
+		camera_translate(*m_camera, 0, 0, 0.01f);
+	if (m_guiStates.backwardPressed)
+		camera_translate(*m_camera, 0, 0, -0.01f);
+}
+
+
+void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler )
 {
 	//update gizmo
-	float distanceToCamera = glm::length(camera.eye - m_gizmo->getPosition());
+	float distanceToCamera = glm::length(m_camera->eye - m_gizmo->getPosition());
 	m_gizmo->setScale(distanceToCamera*0.1f);
+
+	updateGuiStates(window);
+	if (!m_cameraFPS)
+		updateCameraMovement_editor(window);
+	else
+		updateCameraMovement_fps(window);
+
+
+	// ui visibility : 
+	if (inputHandler.getKeyDown(window, GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
+	{
+		this->toggleDebugVisibility(scene);
+	}
+
+	//entity copy / past : 
+	if (inputHandler.getKeyDown(window, GLFW_KEY_D) && m_guiStates.ctrlPressed)
+	{
+		this->duplicateSelected();
+	}
+
+	//delete selected : 
+	if (inputHandler.getKeyDown(window, GLFW_KEY_DELETE))
+	{
+		this->deleteSelected(scene);
+	}
+
+	//object picking : 
+	if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
+		&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
+	{
+		float screenWidth = Application::get().getWindowWidth();
+		float screenHeight = Application::get().getWindowHeight();
+
+		glm::vec3 origin = m_camera->eye;
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+		glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
+		//direction = direction - origin;
+		//direction = glm::normalize(direction);
+
+		Ray ray(origin, direction, 1000.f);
+
+		// intersection with gizmo
+		if (this->testGizmoIntersection(ray))
+		{
+			this->beginMoveGizmo();
+		}
+		//intersection with a collider in the scene
+		else
+		{
+			auto entities = scene.getEntities();
+			float distanceToIntersection = 0;
+			float minDistanceToIntersection = 0;
+			Entity* selectedEntity = nullptr;
+			for (int i = 0, intersectedCount = 0; i < entities.size(); i++)
+			{
+				Collider* collider = static_cast<Collider*>(entities[i]->getComponent(Component::ComponentType::COLLIDER));
+				if (entities[i]->getComponent(Component::ComponentType::COLLIDER) != nullptr)
+				{
+					if (ray.intersect(*collider, &distanceToIntersection))
+					{
+						if (intersectedCount == 0 || distanceToIntersection < minDistanceToIntersection)
+						{
+							selectedEntity = entities[i];
+							minDistanceToIntersection = distanceToIntersection;
+						}
+						intersectedCount++;
+
+						//std::cout << "intersect a cube !!!" << std::endl;
+						//ray.debugLog();
+					}
+				}
+			}
+
+			if (selectedEntity != nullptr)
+			{
+				if (!m_guiStates.shiftPressed)
+					this->changeCurrentSelected(selectedEntity);
+				else
+					this->toggleCurrentSelected(selectedEntity);
+			}
+		}
+
+	}
+	else if (inputHandler.getMouseButtonUp(window, GLFW_MOUSE_BUTTON_LEFT))
+	{
+		if (this->isMovingGizmo())
+			this->endMoveGizmo();
+	}
+	if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
+	{
+		if (this->isMovingGizmo())
+		{
+			float screenWidth = Application::get().getWindowWidth();
+			float screenHeight = Application::get().getWindowHeight();
+
+			glm::vec3 origin = m_camera->eye;
+			double mouseX, mouseY;
+			glfwGetCursorPos(window, &mouseX, &mouseY);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
+			Ray ray(origin, direction, 1000.f);
+
+			this->moveGizmo(ray);
+		}
+	}
 }
+
+Camera& Editor::getCamera()
+{
+	return *m_camera;
+}
+

@@ -6,6 +6,41 @@ Light::Light(float _intensity, glm::vec3 _color) : Component(LIGHT), intensity(_
 
 }
 
+Light::~Light()
+{
+}
+
+float Light::getIntensity() const
+{
+	return intensity;
+}
+
+glm::vec3 Light::getColor() const
+{
+	return color;
+}
+
+void Light::setIntensity(float i)
+{
+	intensity = i;
+
+	//light bounding box is based on the intensity, so we have to update it when we change the light intensity
+	updateBoundingBox();
+}
+
+void Light::setColor(const glm::vec3 & c)
+{
+	color = c;
+
+	//light bounding box is based on the colot, so we have to update it when we change the light color
+	updateBoundingBox();
+}
+
+void Light::updateBoundingBox()
+{
+	//nothing by default
+}
+
 ///////////////////////////////
 
 PointLight::PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) : Light(_intensity, _color), position(_position)
@@ -15,9 +50,13 @@ PointLight::PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) 
 	updateBoundingBox();
 }
 
+PointLight::~PointLight()
+{
+}
+
 void PointLight::updateBoundingBox()
 {
-	float lightRadius = std::sqrt(intensity / 0.01f);
+	float lightRadius = std::sqrt(intensity * (0.3*color.r + 0.6*color.g + 0.1*color.b) / 0.003f); // radius based on light intensity and light luminance
 	
 	boundingBox.applyTranslation(position);
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
@@ -27,9 +66,10 @@ void PointLight::drawUI()
 {
 	if (ImGui::CollapsingHeader("point light"))
 	{
-		ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f);
-		ImGui::ColorEdit3("light color", &color[0]);
-		//ImGui::SliderFloat3("light position", &position[0], -10.f, 10.f);
+		if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
+			updateBoundingBox();
+		if (ImGui::ColorEdit3("light color", &color[0]))
+			updateBoundingBox();
 	}
 }
 
@@ -79,13 +119,16 @@ DirectionalLight::DirectionalLight(float _intensity, glm::vec3 _color, glm::vec3
 	m_type = DIRECTIONAL_LIGHT;
 }
 
+DirectionalLight::~DirectionalLight()
+{
+}
+
 void DirectionalLight::drawUI()
 {
 	if (ImGui::CollapsingHeader("directional light"))
 	{
 		ImGui::SliderFloat("light intensity", &intensity, 0.f, 10.f);
 		ImGui::ColorEdit3("light color", &color[0]);
-		//ImGui::SliderFloat3("light direction", &direction[0], 0.f, 1.f);
 	}
 }
 
@@ -123,9 +166,13 @@ SpotLight::SpotLight(float _intensity, glm::vec3 _color, glm::vec3 _position, gl
 	updateBoundingBox();
 }
 
+SpotLight::~SpotLight()
+{
+}
+
 void SpotLight::updateBoundingBox()
 {
-	float lightRadius = std::sqrt(intensity / 0.01f);
+	float lightRadius = std::sqrt(intensity * (0.3*color.r + 0.6*color.g + 0.1*color.b) / 0.003f); //radius based on light intensity and light luminance
 
 	boundingBox.applyTranslation(position);
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
@@ -135,10 +182,11 @@ void SpotLight::drawUI()
 {
 	if (ImGui::CollapsingHeader("spot light"))
 	{
-		ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f);
-		ImGui::ColorEdit3("light color", &color[0]);
-		//ImGui::SliderFloat3("light position", &position[0], -10.f, 10.f);
-		//ImGui::SliderFloat3("light direction", &direction[0], -1.f, 1.f);
+		if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
+			updateBoundingBox();
+		if (ImGui::ColorEdit3("light color", &color[0]))
+			updateBoundingBox();
+
 		ImGui::SliderFloat("light angles", &angle, 0.f, glm::pi<float>());
 	}
 }

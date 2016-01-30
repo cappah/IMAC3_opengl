@@ -370,4 +370,3 @@ Component* Entity::getComponent(Component::ComponentType type)
 
 	return nullptr;
 }
-

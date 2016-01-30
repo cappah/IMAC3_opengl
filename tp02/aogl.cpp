@@ -67,27 +67,6 @@ extern const unsigned int DroidSans_ttf_len;
 
 
 
-struct GUIStates
-{
-    bool panLock;
-    bool turnLock;
-    bool zoomLock;
-    int lockPositionX;
-    int lockPositionY;
-    int camera;
-    double time;
-    bool playing;
-    static const float MOUSE_PAN_SPEED;
-    static const float MOUSE_ZOOM_SPEED;
-    static const float MOUSE_TURN_SPEED;
-};
-const float GUIStates::MOUSE_PAN_SPEED = 0.001f;
-const float GUIStates::MOUSE_ZOOM_SPEED = 0.05f;
-const float GUIStates::MOUSE_TURN_SPEED = 0.005f;
-void init_gui_states(GUIStates & guiStates);
-
-
-
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
 	Application::get().setWindowResize(true);
@@ -166,10 +145,10 @@ int main( int argc, char **argv )
 
 
     // Init viewer structures
-    Camera camera;
-    camera_defaults(camera);
-    GUIStates guiStates;
-    init_gui_states(guiStates);
+    //Camera camera;
+    //camera_defaults(camera);
+    //GUIStates guiStates;
+    //init_gui_states(guiStates);
 
 
 	///////////////////// SET APPLICATION GLOBAL PARAMETERS /////////////////////
@@ -456,197 +435,34 @@ int main( int argc, char **argv )
 		if (Application::get().getWindowResize())
 		{
 			renderer.onResizeWindow();
+			//TODO : 
+			//editor.onResizeWindow();
 
 			Application::get().setWindowResize(false);
 		}
 
-        // Mouse states
-        int leftButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_LEFT );
-        int rightButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_RIGHT );
-        int middleButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_MIDDLE );
-
-		int altPressed = glfwGetKey(window, GLFW_KEY_LEFT_ALT);
-		int shiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
-		int ctrlPressed = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL);
-
-        if( leftButton == GLFW_PRESS )
-            guiStates.turnLock = true;
-        else
-            guiStates.turnLock = false;
-
-        if( rightButton == GLFW_PRESS )
-            guiStates.zoomLock = true;
-        else
-            guiStates.zoomLock = false;
-
-        if( middleButton == GLFW_PRESS || (leftButton == GLFW_PRESS && altPressed) )
-            guiStates.panLock = true;
-        else
-            guiStates.panLock = false;
-
-        // Camera movements
-
-        if (!altPressed && (leftButton == GLFW_PRESS || rightButton == GLFW_PRESS || middleButton == GLFW_PRESS))
-        {
-            double x; double y;
-            glfwGetCursorPos(window, &x, &y);
-            guiStates.lockPositionX = x;
-            guiStates.lockPositionY = y;
-        }
-        if (altPressed == GLFW_PRESS || shiftPressed == GLFW_PRESS)
-        {
-            double mousex; double mousey;
-            glfwGetCursorPos(window, &mousex, &mousey);
-            int diffLockPositionX = mousex - guiStates.lockPositionX;
-            int diffLockPositionY = mousey - guiStates.lockPositionY;
-
-			if (altPressed == GLFW_PRESS && shiftPressed == GLFW_RELEASE)
-			{
-				if (guiStates.zoomLock)
-				{
-					float zoomDir = 0.0;
-					if (diffLockPositionX > 0)
-						zoomDir = -1.f;
-					else if (diffLockPositionX < 0)
-						zoomDir = 1.f;
-					camera_zoom(camera, zoomDir * GUIStates::MOUSE_ZOOM_SPEED);
-				}
-				else if (guiStates.turnLock)
-				{
-					camera_turn(camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
-						diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
-
-				}
-			}
-			if (altPressed == GLFW_PRESS && shiftPressed == GLFW_PRESS)
-			{
-				if (guiStates.panLock)
-				{
-					camera_pan(camera, diffLockPositionX * GUIStates::MOUSE_PAN_SPEED,
-						diffLockPositionY * GUIStates::MOUSE_PAN_SPEED);
-				}
-			}
-
-            guiStates.lockPositionX = mousex;
-            guiStates.lockPositionY = mousey;
-        }
-
-		// ui visibility : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_TAB) && ctrlPressed)
-		{
-			editor.toggleDebugVisibility(scene);
-		}
-
-		//entity copy / past : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_D) && ctrlPressed)
-		{
-			editor.duplicateSelected();
-		}
-
-		//delete selected : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_DELETE))
-		{
-			editor.deleteSelected(scene);
-		}
-
-		//object picking : 
-		if ( !altPressed && !ctrlPressed 
-			&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
-		{
-			float screenWidth = Application::get().getWindowWidth();
-			float screenHeight = Application::get().getWindowHeight();
-
-			glm::vec3 origin = camera.eye;
-			double mouseX, mouseY;
-			glfwGetCursorPos(window, &mouseX, &mouseY);
-			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, camera);
-			//direction = direction - origin;
-			//direction = glm::normalize(direction);
-
-			Ray ray(origin, direction, 1000.f);
-
-			// intersection with gizmo
-			if (editor.testGizmoIntersection(ray))
-			{
-				editor.beginMoveGizmo();
-			}
-			//intersection with a collider in the scene
-			else
-			{
-				auto entities = scene.getEntities();
-				float distanceToIntersection = 0;
-				float minDistanceToIntersection = 0;
-				Entity* selectedEntity = nullptr;
-				for (int i = 0, intersectedCount = 0; i < entities.size(); i++)
-				{
-					Collider* collider = static_cast<Collider*>(entities[i]->getComponent(Component::ComponentType::COLLIDER));
-					if (entities[i]->getComponent(Component::ComponentType::COLLIDER) != nullptr)
-					{
-						if (ray.intersect(*collider, &distanceToIntersection))
-						{
-							if (intersectedCount == 0 || distanceToIntersection < minDistanceToIntersection)
-							{
-								selectedEntity = entities[i];
-								minDistanceToIntersection = distanceToIntersection;
-							}
-							intersectedCount++;
-
-							//std::cout << "intersect a cube !!!" << std::endl;
-							//ray.debugLog();
-						}
-					}
-				}
-
-				if (selectedEntity != nullptr)
-				{
-					if (!shiftPressed)
-						editor.changeCurrentSelected(selectedEntity);
-					else
-						editor.toggleCurrentSelected(selectedEntity);
-				}
-			}
-			
-		}
-		else if (inputHandler.getMouseButtonUp(window, GLFW_MOUSE_BUTTON_LEFT))
-		{
-			if(editor.isMovingGizmo())
-				editor.endMoveGizmo();
-		}
-		if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
-		{
-			if (editor.isMovingGizmo())
-			{
-				float screenWidth = Application::get().getWindowWidth();
-				float screenHeight = Application::get().getWindowHeight();
-
-				glm::vec3 origin = camera.eye;
-				double mouseX, mouseY;
-				glfwGetCursorPos(window, &mouseX, &mouseY);
-				glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, camera);
-				Ray ray(origin, direction, 1000.f);
-
-				editor.moveGizmo(ray);
-			}
-		}
 
 		//update editor : 
-		editor.update(camera);
+		editor.update(scene, window, inputHandler);
 
 
 		//synchronize input handler : 
 		inputHandler.synchronize(window);
+
+		//get active camera before render scene : 
+		Camera& currentCamera = editor.getCamera();
 		
-		scene.culling(camera);
+		//scene.culling(currentCamera);
 
 		//rendering : 
 		//renderer.render(camera, entities);
-		scene.render(camera);
-		scene.renderColliders(camera);
+		scene.render(currentCamera);
+		scene.renderColliders(currentCamera);
 		scene.renderDebugDeferred();
-		scene.renderDebugLights(camera);
+		scene.renderDebugLights(currentCamera);
 
 		glDisable(GL_DEPTH_TEST);
-		editor.renderGizmo(camera);
+		editor.renderGizmo();
 		
 
 #if 1
@@ -688,14 +504,3 @@ int main( int argc, char **argv )
 }
 
 
-void init_gui_states(GUIStates & guiStates)
-{
-    guiStates.panLock = false;
-    guiStates.turnLock = false;
-    guiStates.zoomLock = false;
-    guiStates.lockPositionX = 0;
-    guiStates.lockPositionY = 0;
-    guiStates.camera = 0;
-    guiStates.time = 0.0;
-    guiStates.playing = false;
-}
