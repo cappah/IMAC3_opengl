@@ -44,17 +44,9 @@ void MeshRenderer::drawUI()
 
 		if (ImGui::InputText("meshName", tmpMeshName, 20))
 		{
-			meshName = tmpMeshName;
-
 			if (MeshFactory::get().contains(meshName))
 			{
-				mesh = MeshFactory::get().get(meshName);
-				if (m_entity != nullptr)
-				{
-					auto collider = static_cast<Collider*>( m_entity->getComponent(Component::COLLIDER) );
-					if (collider != nullptr)
-						collider->coverMesh(*mesh);
-				}
+				setMesh(MeshFactory::get().get(meshName));
 			}
 		}
 	}
@@ -85,6 +77,13 @@ void MeshRenderer::setMesh(Mesh * _mesh)
 		meshName = _mesh->name;
 
 	mesh = _mesh;
+
+	if (m_entity != nullptr)
+	{
+		auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+		if (collider != nullptr)
+			collider->coverMesh(*mesh);
+	}
 }
 
 void MeshRenderer::setMaterial(Material * _material)
