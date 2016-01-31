@@ -4,6 +4,19 @@ Voici le repo sur lequel je suis les cours d'Adrien Herubel, à l'IMAC (adrien.i
 
 J'ai décidé de partir de ces cours pour me faire un véritable éditeurde scènes.
 
+
+Commandes de la camera : 
+En mode editeur : 
+pan : maintenir alt + shift + clic gauche.
+turn : maintenir alt + clic gauche.
+zoom : maintenir alt + clic droit.
+
+En mode FPS : 
+translation : les touches z,q,s,d.
+rotation : maintenir le clic droit.
+
+Pour passer d'un mode à l'autre il faut aller dans l'onglet camera mode de la barre du menu, et choisir la camera que l'on souhaite.
+
 Quelques captures d'écran : 
 ![alt tag](/../td2-assimp/example_01.jpg?raw=true "example 01")
 ![alt tag](/../td2-assimp/example_02.jpg?raw=true "example 02")
