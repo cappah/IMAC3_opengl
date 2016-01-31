@@ -240,149 +240,6 @@ void Renderer::initPostProcessQuad(std::string programBlit_vert_path, std::strin
 	uniformTextureBlit = glGetUniformLocation(glProgram_blit, "Texture");
 }
 
-/*
-void Renderer::render(Camera& camera, std::vector<Entity*> entities)
-{
-
-	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-
-
-	////////////////////////// begin scene rendering 
-
-	// Viewport 
-	glViewport(0, 0, width, height);
-
-	// Clear default buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-	///////////// begin draw world
-
-	//////// begin deferred
-
-	////// begin matrix updates
-
-	// update values
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
-	glm::mat4 vp = projection * worldToView;
-	glm::mat4 screenToWorld = glm::transpose(glm::inverse(vp));
-
-	///// end matrix updates
-
-	////// begin G pass 
-
-	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
-
-	// Default states
-	glEnable(GL_DEPTH_TEST);
-
-	// Clear the front buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	for (int i = 0; i < entities.size(); i++)
-	{
-		glm::mat4 modelMatrix = entities[i]->getModelMatrix(); //get modelMatrix
-		glm::mat4 mv = worldToView * modelMatrix;
-		glm::mat4 normalMatrix = glm::transpose(glm::inverse(mv));
-		glm::mat4 mvp = projection * worldToView * modelMatrix;
-
-		entities[i]->meshRenderer->material->use();
-		entities[i]->meshRenderer->material->setUniform_MVP(mvp);
-		entities[i]->meshRenderer->material->setUniform_normalMatrix(normalMatrix);
-
-		entities[i]->meshRenderer->mesh->draw();
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	////// end G pass
-
-	///// begin light pass
-
-	glUseProgram(glProgram_lightPass);
-
-	// send screen to world matrix : 
-	glUniformMatrix4fv(unformScreenToWorld, 1, false, glm::value_ptr(screenToWorld));
-	glUniform3fv(uniformCameraPosition, 1, glm::value_ptr(camera.eye));
-
-	//for lighting : 
-	lightManager->renderLights();
-
-	//geometry informations :
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gbufferTextures[0]);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
-
-	glUniform1i(uniformTexturePosition, 0);
-	glUniform1i(uniformTextureNormal, 1);
-	glUniform1i(uniformTextureDepth, 2);
-
-	// Render quad
-	quadMesh.draw();
-
-	///// end light pass
-
-	///////// end deferred
-
-	///////// begin forward 
-
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, gbufferFbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//draw collider in forward rendering pass (no lightning)
-	for (int i = 0; i < entities.size(); i++)
-	{
-		if (entities[i]->collider == nullptr)
-			continue;
-
-		glm::vec3 colliderColor(1, 0, 0);
-		if (entities[i]->getIsSelected())
-			colliderColor = glm::vec3(1, 1, 0);
-
-		entities[i]->collider->render(projection, worldToView, colliderColor);
-	}
-
-
-	///////// end forward
-
-
-	///////////// end draw world
-
-
-	///////////// begin draw blit quad
-	glDisable(GL_DEPTH_TEST);
-
-	glUseProgram(glProgram_blit);
-
-	for (int i = 0; i < 3; i++)
-	{
-		glViewport((width * i) / 3, 0, width / 3, height / 4);
-
-		glActiveTexture(GL_TEXTURE0);
-		// Bind gbuffer color texture
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[i]);
-		glUniform1i(uniformTextureBlit, 0);
-
-		quadMesh.draw();
-	}
-
-	glViewport(0, 0, width, height);
-
-	///////////// end draw blit quad
-
-
-
-	//////////////////////// end scene rendering
-
-
-}
-*/
 
 void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox)
 {
@@ -441,6 +298,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 	////// end G pass
 
+
 	///// begin light pass
 	// Disable the depth test
 	glDisable(GL_DEPTH_TEST);
@@ -450,10 +308,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glBlendFunc(GL_ONE, GL_ONE);
 
 
-
 	// Render quad
-	//for lighting : 
-	//lightManager->renderLights(pointLights, directionalLights, spotLights);
 	
 	//point light : 
 	glUseProgram(glProgram_lightPass_pointLight);
@@ -634,106 +489,6 @@ void Renderer::debugDrawLights(const Camera& camera, const std::vector<PointLigh
 	}
 }
 
-void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights)
-{
-	pointLightCount = 0;
-	spotLightCount = 0;
-
-	int width = Application::get().getWindowWidth();
-	int height = Application::get().getWindowHeight();
-
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
-
-	int lastId = pointLights.size() - 1;;
-	for (int i = 0; i < pointLights.size(); i++)
-	{
-		
-		BoxCollider& collider = pointLights[i]->boundingBox;
-		glm::vec3 topRight = collider.topRight;
-		glm::vec3 bottomLeft = collider.bottomLeft;
-
-
-		if ( !(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
-		{
-			// permet au collider d'être toujours face à la camera. 
-			//cela permet d'éviter les erreurs du au caractère "AABB" du collider.
-			//en effet, on stock le collider avec une seule diagonale, il faut qu'une fois projeté en repère ecrant cette diagonale soit aussi celle du carré projeté.
-			glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
-			glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-			facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
-
-			//collider.applyRotation(glm::quat(facingCameraRotation));
-
-			glm::vec4 tmpTopRight = projection * view  /* facingCameraRotation */* glm::vec4(topRight, 1);
-			glm::vec4 tmpBottomLeft = projection * view  /* facingCameraRotation */* glm::vec4(bottomLeft, 1);
-
-			topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
-			bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
-
-			if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
-				|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
-			{
-				PointLight* tmpLight = pointLights[i];
-				pointLights[i] = pointLights[lastId];
-				pointLights[lastId] = tmpLight;
-
-				lastId--;
-				i--;
-			}
-		}
-
-		if (i >= lastId)
-		{
-			pointLightCount = i + 1;
-			std::cout << "nombre de point light visibles : " << pointLightCount << std::endl;
-			break;
-		}
-	}
-
-	lastId = spotLights.size() - 1;
-	for (int i = 0; i < spotLights.size(); i++)
-	{
-
-		BoxCollider& collider = spotLights[i]->boundingBox;
-
-		// this matrix will allow the light bounding box to allways facing the camera.
-		glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
-		glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
-
-		collider.applyRotation(glm::quat(facingCameraRotation));
-
-		glm::vec3 topRight = collider.topRight;
-		glm::vec3 bottomLeft = collider.bottomLeft;
-
-		glm::vec4 tmpTopRight = projection * view  * glm::vec4(topRight, 1);
-		glm::vec4 tmpBottomLeft = projection * view  * glm::vec4(bottomLeft, 1);
-
-		topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
-		bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
-
-		if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
-			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
-		{
-			SpotLight* tmpLight = spotLights[i];
-			spotLights[i] = spotLights[lastId];
-			spotLights[lastId] = tmpLight;
-
-			lastId--;
-			i--;
-		}
-
-		if (i >= lastId)
-		{
-			spotLightCount = i + 1;
-			std::cout << "nombre de spot light visibles : " << spotLightCount << std::endl;
-			break;
-		}
-	}
-
-}
-
 
 bool Renderer::passCullingTest(const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider)
 {
@@ -754,9 +509,11 @@ bool Renderer::passCullingTest(const glm::mat4& projection, const glm::mat4& vie
 		cameraPosition.y > bottomLeft.y && cameraPosition.y < topRight.y &&
 		cameraPosition.z > bottomLeft.z && cameraPosition.z < topRight.z))
 	{
+
 		// ce code semble plus optimisé que celui retenu, mais je n'ai pas réussi à le faire marcher convenablement pour deux raisons : 
 		// le carré généré est trop petit, il n'englobe pas tout le champs d'action de la lumière
 		// il y a des bugs lorsqu'on place la camera au dessus ou en dessous de la lumière, la rotation s'effectue mal et le collider se deforme.
+		
 		/*
 		// permet au collider d'être toujours face à la camera. 
 		//cela permet d'éviter les erreurs du au caractère "AABB" du collider.
@@ -844,4 +601,107 @@ bool Renderer::passCullingTest(const glm::mat4& projection, const glm::mat4& vie
 	}
 
 	return insideFrustum;
+}
+
+
+
+
+void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights)
+{
+	pointLightCount = 0;
+	spotLightCount = 0;
+
+	int width = Application::get().getWindowWidth();
+	int height = Application::get().getWindowHeight();
+
+	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+
+	int lastId = pointLights.size() - 1;;
+	for (int i = 0; i < pointLights.size(); i++)
+	{
+
+		BoxCollider& collider = pointLights[i]->boundingBox;
+		glm::vec3 topRight = collider.topRight;
+		glm::vec3 bottomLeft = collider.bottomLeft;
+
+
+		if (!(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
+		{
+			// permet au collider d'être toujours face à la camera. 
+			//cela permet d'éviter les erreurs du au caractère "AABB" du collider.
+			//en effet, on stock le collider avec une seule diagonale, il faut qu'une fois projeté en repère ecrant cette diagonale soit aussi celle du carré projeté.
+			glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
+			glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+			facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
+
+			//collider.applyRotation(glm::quat(facingCameraRotation));
+
+			glm::vec4 tmpTopRight = projection * view  /* facingCameraRotation */* glm::vec4(topRight, 1);
+			glm::vec4 tmpBottomLeft = projection * view  /* facingCameraRotation */* glm::vec4(bottomLeft, 1);
+
+			topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
+			bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
+
+			if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
+				|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
+			{
+				PointLight* tmpLight = pointLights[i];
+				pointLights[i] = pointLights[lastId];
+				pointLights[lastId] = tmpLight;
+
+				lastId--;
+				i--;
+			}
+		}
+
+		if (i >= lastId)
+		{
+			pointLightCount = i + 1;
+			std::cout << "nombre de point light visibles : " << pointLightCount << std::endl;
+			break;
+		}
+	}
+
+	lastId = spotLights.size() - 1;
+	for (int i = 0; i < spotLights.size(); i++)
+	{
+
+		BoxCollider& collider = spotLights[i]->boundingBox;
+
+		// this matrix will allow the light bounding box to allways facing the camera.
+		glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
+		glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
+
+		collider.applyRotation(glm::quat(facingCameraRotation));
+
+		glm::vec3 topRight = collider.topRight;
+		glm::vec3 bottomLeft = collider.bottomLeft;
+
+		glm::vec4 tmpTopRight = projection * view  * glm::vec4(topRight, 1);
+		glm::vec4 tmpBottomLeft = projection * view  * glm::vec4(bottomLeft, 1);
+
+		topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
+		bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
+
+		if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
+			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
+		{
+			SpotLight* tmpLight = spotLights[i];
+			spotLights[i] = spotLights[lastId];
+			spotLights[lastId] = tmpLight;
+
+			lastId--;
+			i--;
+		}
+
+		if (i >= lastId)
+		{
+			spotLightCount = i + 1;
+			std::cout << "nombre de spot light visibles : " << spotLightCount << std::endl;
+			break;
+		}
+	}
+
 }

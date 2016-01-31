@@ -48,24 +48,29 @@ private:
 public:
 	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight);
 
+	//update deferred textures used by the FBO when we resize the screen.
 	void onResizeWindow();
 
+	//initialyze buffers for blit quad.
 	void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
 
-	//void render(Camera& camera, std::vector<Entity*> entities);
-
+	//render all entities of the scene, using deferred shading.
 	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox);
 
-	//draw colliders on scene
+	//draw colliders on scene.
 	void debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities);
 
-	//draw textures of gPass
+	//draw textures of gPass.
 	void debugDrawDeferred();
 
-	//draw lights bounding box
+	//draw lights bounding box.
 	void debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights);
 
-	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights);
+	//check if a light bounding box has to be drawn, in that case it scales the blit quad to render only what is influenced by the light.
 	bool passCullingTest(const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider);
+
+
+	// Old function to compte camera culling for light, see passCullingTest instead.
+	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights);
 };
 
