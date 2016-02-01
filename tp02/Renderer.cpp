@@ -160,7 +160,7 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	////////////////////// LIGHT MANAGER /////////////////////////
 	lightManager = _lightManager;
 	lightManager->init(glProgram_lightPass_pointLight, glProgram_lightPass_directionalLight, glProgram_lightPass_spotLight);
-
+	lightManager->setShadowMapCount(10);
 }
 
 
@@ -273,53 +273,48 @@ void Renderer::initialyzeShadowMapping(std::string progamShadowPass_vert_path, s
 		exit(1);
 
 
-	glGenFramebuffers(1, &shadowFrameBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer);
+	//glGenFramebuffers(1, &shadowFrameBuffer);
+	//glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer);
 
-	//initialyze shadowRenderBuffer : 
-	glGenRenderbuffers(1, &shadowRenderBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, shadowRenderBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, 1024, 1024);
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, shadowRenderBuffer);
+	////initialyze shadowRenderBuffer : 
+	//glGenRenderbuffers(1, &shadowRenderBuffer);
+	//glBindRenderbuffer(GL_RENDERBUFFER, shadowRenderBuffer);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, 1024, 1024);
+	//glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, shadowRenderBuffer);
 
-	//initialyze shadow texture : 
-	glGenTextures(1, &shadowTexture);
-	glBindTexture(GL_TEXTURE_2D, shadowTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	////initialyze shadow texture : 
+	//glGenTextures(1, &shadowTexture);
+	//glBindTexture(GL_TEXTURE_2D, shadowTexture);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTexture, 0);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTexture, 0);
 
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		fprintf(stderr, "Error on building shadow framebuffer\n");
-		exit(EXIT_FAILURE);
-	}
+	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	//{
+	//	fprintf(stderr, "Error on building shadow framebuffer\n");
+	//	exit(EXIT_FAILURE);
+	//}
 
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 
-void Renderer::renderShadows(const SpotLight& light, MeshRenderer& meshRenderer)
+void Renderer::renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, MeshRenderer& meshRenderer)
 {
 	glm::mat4 modelMatrix = meshRenderer.entity()->getModelMatrix(); //get modelMatrix
 
-	glm::mat4 projection = glm::perspective( light.angle*2.f, 1.f, 1.f, 100.f );
-	glm::mat4 worldToLight = glm::lookAt(light.position, light.position + light.direction, glm::vec3(0, 0, -1));
-
 	// From object to light (MV for light)
-	glm::mat4 objectToLight = worldToLight * modelMatrix;
+	glm::mat4 objectToLight = lightView * modelMatrix;
 	// From object to shadow map screen space (MVP for light)
-	glm::mat4 objectToLightScreen = projection * objectToLight;
+	glm::mat4 objectToLightScreen = lightProjection * objectToLight;
 	// From world to shadow map screen space 
-	glm::mat4 worldToLightScreen = projection * worldToLight;
+	glm::mat4 worldToLightScreen = lightProjection * lightView;
 
-
-	glUseProgram(glProgram_shadowPass);
 	glUniformMatrix4fv(uniformShadowMVP, 1, false, glm::value_ptr(objectToLightScreen));
 
 	//draw mesh : 
@@ -337,25 +332,29 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 
 	//////// begin shadow pass
-
-
 	glEnable(GL_DEPTH_TEST);
 
-	if (spotLights.size() > 0)
+	glUseProgram(glProgram_shadowPass);
+	for (int i = 0; i < spotLights.size(); i++)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer);
-		glViewport(0, 0, 1024, 1024);
-		glClear(GL_DEPTH_BUFFER_BIT);
-
-		for (int i = 0; i < meshRenderers.size(); i++)
+		//TODO test culling...
+		if (i < lightManager->getShadowMapCount())
 		{
-			renderShadows(*spotLights[0],*meshRenderers[i]); // draw shadow for the first spot light
+			lightManager->bindShadowMapFBO(i);
+			glClear(GL_DEPTH_BUFFER_BIT);
+
+			glm::mat4 lightProjection = glm::perspective(spotLights[i]->angle*2.f, 1.f, 0.1f, 100.f);
+			glm::mat4 lightView = glm::lookAt(spotLights[i]->position, spotLights[i]->position + spotLights[i]->direction, glm::vec3(0, 0, 1));
+
+			for (int i = 0; i < meshRenderers.size(); i++)
+			{
+				renderShadows(lightProjection, lightView, *meshRenderers[i]); // draw shadow for the first spot light
+			}
+			lightManager->unbindShadowMapFBO();
 		}
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//////// end shadow pass
 
 
@@ -419,6 +418,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 
 	// Render quad
+	glm::vec4 viewport; 
 	
 	//point light : 
 	glUseProgram(glProgram_lightPass_pointLight);
@@ -440,8 +440,11 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTextureDepth[POINT], 2);
 	for (int i = 0; i < pointLights.size(); i++)
 	{
-		if (passCullingTest(projection, worldToView, camera.eye, pointLights[i]->boundingBox)) // optimisation test
+		if (passCullingTest(viewport, projection, worldToView, camera.eye, pointLights[i]->boundingBox)) // optimisation test
 		{
+			//resize viewport
+			resizeBlitQuad(viewport);
+
 			lightManager->uniformPointLight(*pointLights[i]);
 			quadMesh.draw();
 		}
@@ -462,8 +465,6 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, shadowTexture);
 
 	glUniform1i(uniformTexturePosition[SPOT], 0);
 	glUniform1i(uniformTextureNormal[SPOT], 1);
@@ -471,10 +472,21 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTextureShadow[SPOT], 3); // send shadow texture
 	for (int i = 0; i < spotLights.size(); i++)
 	{
-		if (passCullingTest(projection, worldToView, camera.eye, spotLights[i]->boundingBox)) // optimisation test
+		if (i < lightManager->getShadowMapCount())
 		{
-			glm::mat4 projectionSpotLight = glm::perspective(glm::degrees(spotLights[i]->angle*2.f), 1.f, 1.f, 100.f);
-			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLights[i]->position, spotLights[i]->position + spotLights[i]->direction, glm::vec3(0, 0, -1));
+			//active the shadow map texture
+			glActiveTexture(GL_TEXTURE3);
+			//glBindTexture(GL_TEXTURE_2D, shadowTexture);
+			lightManager->bindShadowMapTexture(i);
+		}
+
+		if (passCullingTest(viewport , projection, worldToView, camera.eye, spotLights[i]->boundingBox)) // optimisation test
+		{
+			//resize viewport
+			resizeBlitQuad(viewport);
+
+			glm::mat4 projectionSpotLight = glm::perspective(spotLights[i]->angle*2.f, 1.f, 0.1f, 100.f);
+			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLights[i]->position, spotLights[i]->position + spotLights[i]->direction, glm::vec3(0, 0, 1));
 			glm::mat4 WorldToLightScreen = projectionSpotLight * worldToLightSpotLight;
 			glUniformMatrix4fv(uniformWorldToLightScreen[SPOT], 1, false, glm::value_ptr(WorldToLightScreen));
 
@@ -484,7 +496,8 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	}
 
 	//make sure that the blit quat cover all the screen : 
-	quadMesh.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
+	resizeBlitQuad();
+
 	// update in CG : 
 	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.vbo_vertices);
 	glBufferData(GL_ARRAY_BUFFER, quadMesh.vertices.size() * sizeof(float), &(quadMesh.vertices)[0], GL_STATIC_DRAW);
@@ -585,12 +598,15 @@ void Renderer::debugDrawDeferred()
 	}
 
 	//shadow : 
-	glViewport((width * 3) / 4, 0, width / 4, height / 4);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, shadowTexture);
-	glUniform1i(uniformTextureBlit, 0);
+	if (lightManager->getShadowMapCount() > 0)
+	{
+		glViewport((width * 3) / 4, 0, width / 4, height / 4);
+		glActiveTexture(GL_TEXTURE0);
+		lightManager->bindShadowMapTexture(0);
+		glUniform1i(uniformTextureBlit, 0);
 
-	quadMesh.draw();
+		quadMesh.draw();
+	}
 
 
 	glViewport(0, 0, width, height);
@@ -618,7 +634,7 @@ void Renderer::debugDrawLights(const Camera& camera, const std::vector<PointLigh
 }
 
 
-bool Renderer::passCullingTest(const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider)
+bool Renderer::passCullingTest(glm::vec4& viewport, const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider)
 {
 	glm::vec3 topRight = collider.topRight;
 	glm::vec3 bottomLeft = collider.bottomLeft;
@@ -721,14 +737,25 @@ bool Renderer::passCullingTest(const glm::mat4& projection, const glm::mat4& vie
 	{
 		float width = maxX - minX;
 		float height = maxY - minY;
-		quadMesh.vertices = { minX, minY, minX + width, minY, minX, minY + height, minX + width , minY + height };
-		// update in CG : 
-		glBindBuffer(GL_ARRAY_BUFFER, quadMesh.vbo_vertices);
-		glBufferData(GL_ARRAY_BUFFER, quadMesh.vertices.size() * sizeof(float), &(quadMesh.vertices)[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		viewport = glm::vec4(minX, minY, width, height);
+
+		//quadMesh.vertices = { minX, minY, minX + width, minY, minX, minY + height, minX + width , minY + height };
+		//// update in CG : 
+		//glBindBuffer(GL_ARRAY_BUFFER, quadMesh.vbo_vertices);
+		//glBufferData(GL_ARRAY_BUFFER, quadMesh.vertices.size() * sizeof(float), &(quadMesh.vertices)[0], GL_STATIC_DRAW);
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 	return insideFrustum;
+}
+
+void Renderer::resizeBlitQuad(const glm::vec4 & viewport)
+{
+	quadMesh.vertices = { viewport.x, viewport.y, viewport.x + viewport.z, viewport.y, viewport.x, viewport.y + viewport.w, viewport.x + viewport.z , viewport.y + viewport.w };
+	// update in CG : 
+	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.vbo_vertices);
+	glBufferData(GL_ARRAY_BUFFER, quadMesh.vertices.size() * sizeof(float), &(quadMesh.vertices)[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 

@@ -11,17 +11,22 @@
 
 #include "Lights.h"
 
+struct ShadowMap
+{
+	int textureWidth;
+	int textureHeight;
+
+	GLuint shadowFrameBuffer;
+	GLuint shadowRenderBuffer;
+	GLuint shadowTexture;
+
+	ShadowMap(int _textureWidth = 1024, int _textureHeight = 1024);
+	~ShadowMap();
+};
+
 class LightManager
 {
 private:
-	/*
-	std::vector<PointLight> pointLights;
-	std::vector<DirectionalLight> directionalLights;
-	std::vector<SpotLight> spotLights;
-	
-	float globalIntensity;
-	float globalAngle;
-	*/
 
 	GLuint uniform_pointLight_pos;
 	GLuint uniform_pointLight_col;
@@ -37,32 +42,22 @@ private:
 	GLuint uniform_spotLight_pos;
 	GLuint uniform_spotLight_angle;
 
+	//shadows : 
+	std::vector<ShadowMap> shadowMaps;
+
+
 public:
 	LightManager();
-	/*
-	void addPointLight(PointLight light);
-
-	void addDirectionalLight(DirectionalLight light);
-
-	void addSpotLight(SpotLight light);
-
-	void removePointLight(int index);
-
-	void removeDirectionalLight(int index);
-
-	void removeSpotLight(int index);
-
-	void changeAllLightIntensities(float _intensity);
-
-	void changeAllSpotAngle(float _angle);
-
-	void drawUI();
-
-	void renderLights();*/
-
+	
 	void init(GLuint glProgram_pointLight, GLuint glProgram_directionalLight, GLuint glProgram_spotLight);
 
-	//void renderLights(std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
+	void setShadowMapCount(unsigned int count);
+	int getShadowMapCount();
+	//bind shadow map and resize viewport to cover the right area on screen
+	void bindShadowMapFBO(int index);
+	void unbindShadowMapFBO();
+	void bindShadowMapTexture(int index);
+
 
 	void uniformPointLight(PointLight& light);
 	void uniformDirectionalLight(DirectionalLight& light);

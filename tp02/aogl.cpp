@@ -396,13 +396,15 @@ int main( int argc, char **argv )
 	// an entity with a light : 
 	Entity* newEntity = new Entity(&scene);
 	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
-	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
-	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
-	newEntity->add(boxColliderLight).add(pointLight);
+	SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
+	spotLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+	newEntity->add(boxColliderLight).add(spotLight);
+	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 
 
 	//renderers : 
 	MeshRenderer* cubeRenderer01 = new MeshRenderer(&cube, &brickMaterial);
+	MeshRenderer* cubeRenderer02 = new MeshRenderer(&cube, &brickMaterial);
 
 	//MeshRenderer cubeRenderer02;
 	//cubeRenderer02.mesh = &cube;
@@ -411,7 +413,8 @@ int main( int argc, char **argv )
 	MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
 
 	//colliders : 
-    BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrameRenderer);
 
 	//entities : 
 	//cube entity 01
@@ -419,6 +422,12 @@ int main( int argc, char **argv )
 	entity_cube01->add(cubeRenderer01);
 	entity_cube01->add(boxCollider01);
 	entity_cube01->setTranslation( glm::vec3(0, 0, 0) );
+	//cube entity 02
+	Entity* entity_cube02 = new Entity(&scene);
+	entity_cube02->add(cubeRenderer02);
+	entity_cube02->add(boxCollider02);
+	entity_cube02->setTranslation(glm::vec3(0, -2, 0));
+	entity_cube02->setScale(glm::vec3(10, 1, 10));
 
 
 

@@ -91,13 +91,14 @@ void main(void)
 	vec3 color = computeSpotLight(spotLight, p, n, diffuse, specular, specularPower * 100);
 
 	//shadow
+	float shadowBias = 0.001f;
 	vec4 wlP = WorldToLightScreen * vec4(p.xyz, 1.0);
 	vec3 lP = vec3(wlP/wlP.w) * 0.5 + 0.5;
 	float lDepth = texture(Shadow, lP.xy).r;
 
-	if(lDepth < lP.z)
-		Color = vec4(0.0, 0.0, 0.0, 1.0);
-	else
+	if(lDepth + shadowBias > lP.z)
 		Color = vec4(color, 1.0);
+	else
+		Color = vec4(0.0, 0.0, 0.0, 1.0);
 
 }

@@ -51,10 +51,10 @@ private:
 	int pointLightCount;
 	int spotLightCount;
 
-	//shadows : 
-	GLuint shadowFrameBuffer;
-	GLuint shadowRenderBuffer;
-	GLuint shadowTexture;
+	////shadows : 
+	//GLuint shadowFrameBuffer;
+	//GLuint shadowRenderBuffer;
+	//GLuint shadowTexture;
 
 public:
 	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight);
@@ -67,7 +67,8 @@ public:
 
 	void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path);
 
-	void renderShadows(const SpotLight& light, MeshRenderer& meshRenderer);
+	//render a shadow on a shadow map
+	void renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, MeshRenderer& meshRenderer);
 
 	//render all entities of the scene, using deferred shading.
 	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox);
@@ -82,7 +83,10 @@ public:
 	void debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights);
 
 	//check if a light bounding box has to be drawn, in that case it scales the blit quad to render only what is influenced by the light.
-	bool passCullingTest(const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider);
+	bool passCullingTest(glm::vec4& viewport, const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider);
+
+	//resize the blit quad, changing its vertices coordinates
+	void resizeBlitQuad(const glm::vec4& viewport = glm::vec4(-1,-1,2,2));
 
 
 	// Old function to compte camera culling for light, see passCullingTest instead.

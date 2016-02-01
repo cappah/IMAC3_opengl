@@ -1,132 +1,48 @@
 #include "LightManager.h"
 
+ShadowMap::ShadowMap(int _textureWidth, int _textureHeight) : textureWidth(_textureWidth), textureHeight(_textureHeight)
+{
+	glGenFramebuffers(1, &shadowFrameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer);
+
+	//initialyze shadowRenderBuffer : 
+	glGenRenderbuffers(1, &shadowRenderBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, shadowRenderBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, textureWidth, _textureHeight);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, shadowRenderBuffer);
+
+	//initialyze shadow texture : 
+	glGenTextures(1, &shadowTexture);
+	glBindTexture(GL_TEXTURE_2D, shadowTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, textureWidth, _textureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTexture, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		fprintf(stderr, "Error on building shadow framebuffer\n");
+		exit(EXIT_FAILURE);
+	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+ShadowMap::~ShadowMap()
+{
+	glDeleteTextures(1, &shadowTexture);
+	glDeleteRenderbuffers(1, &shadowRenderBuffer);
+	glDeleteFramebuffers(1, &shadowFrameBuffer);
+}
+
 LightManager::LightManager() //: globalIntensity(0.f)
 {
 
 }
-
-/*
-void LightManager::addPointLight(PointLight light)
-{
-	pointLights.push_back(light);
-}
-
-void LightManager::addDirectionalLight(DirectionalLight light)
-{
-	directionalLights.push_back(light);
-}
-
-void LightManager::addSpotLight(SpotLight light)
-{
-	spotLights.push_back(light);
-}
-
-void LightManager::removePointLight(int index)
-{
-	pointLights.erase(pointLights.begin() + index);
-}
-
-void LightManager::removeDirectionalLight(int index)
-{
-	directionalLights.erase(directionalLights.begin() + index);
-}
-
-void LightManager::removeSpotLight(int index)
-{
-	spotLights.erase(spotLights.begin() + index);
-}
-
-void LightManager::changeAllLightIntensities(float _intensity)
-{
-	for (int i = 0; i < pointLights.size(); i++)
-	{
-		pointLights[i].intensity = _intensity;
-	}
-
-	for (int i = 0; i < directionalLights.size(); i++)
-	{
-		directionalLights[i].intensity = _intensity*0.1f;
-	}
-
-	for (int i = 0; i < spotLights.size(); i++)
-	{
-		spotLights[i].intensity = _intensity;
-	}
-}
-
-void LightManager::changeAllSpotAngle(float _angle)
-{
-	for (int i = 0; i < spotLights.size(); i++)
-	{
-		spotLights[i].angle = glm::radians(_angle);
-	}
-}
-
-void LightManager::drawUI()
-{
-	if (ImGui::Button("add pointLight"))
-		addPointLight(PointLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1, 0)));
-
-	ImGui::SameLine();
-	if (ImGui::Button("add DirectionalLight"))
-		addDirectionalLight(DirectionalLight(10, glm::vec3(1, 1, 1), glm::vec3(0, -1, 0)));
-
-	ImGui::SameLine();
-	if (ImGui::Button("add spotLight"))
-		addSpotLight(SpotLight(10, glm::vec3(1, 1, 1), glm::vec3(0, 1, 0), glm::vec3(0, -1, 0), glm::radians(30.f)));
-
-
-	int lightCount = 0;
-	for (auto& light : spotLights)
-	{
-		light.drawUI(lightCount);
-		lightCount++;
-	}
-	lightCount = 0;
-	for (auto& light : directionalLights)
-	{
-		light.drawUI(lightCount);
-		lightCount++;
-	}
-	lightCount = 0;
-	for (auto& light : pointLights)
-	{
-		light.drawUI(lightCount);
-		lightCount++;
-	}
-}
-
-void LightManager::renderLights()
-{
-	glUniform1i(uniform_pointLight_count, pointLights.size());
-	glUniform1i(uniform_directionalLight_count, directionalLights.size());
-	glUniform1i(uniform_spotLight_count, spotLights.size());
-
-	for (int i = 0; i < pointLights.size(); i++)
-	{
-		glUniform3fv(uniform_pointLight_pos[i], 1, glm::value_ptr(pointLights[i].position));
-		glUniform3fv(uniform_pointLight_col[i], 1, glm::value_ptr(pointLights[i].color));
-		glUniform1f(uniform_pointLight_int[i], pointLights[i].intensity);
-	}
-
-	for (int i = 0; i < directionalLights.size(); i++)
-	{
-		glUniform3fv(uniform_directionalLight_dir[i], 1, glm::value_ptr(directionalLights[i].direction));
-		glUniform3fv(uniform_directionalLight_col[i], 1, glm::value_ptr(directionalLights[i].color));
-		glUniform1f(uniform_directionalLight_int[i], directionalLights[i].intensity);
-	}
-
-	for (int i = 0; i < spotLights.size(); i++)
-	{
-		glUniform3fv(uniform_spotLight_dir[i], 1, glm::value_ptr(spotLights[i].direction));
-		glUniform3fv(uniform_spotLight_col[i], 1, glm::value_ptr(spotLights[i].color));
-		glUniform1f(uniform_spotLight_int[i], spotLights[i].intensity);
-		glUniform3fv(uniform_spotLight_pos[i], 1, glm::value_ptr(spotLights[i].position));
-		glUniform1f(uniform_spotLight_angle[i], spotLights[i].angle);
-	}
-}
-*/
-
 
 void LightManager::init(GLuint glProgram_pointLight, GLuint glProgram_directionalLight, GLuint glProgram_spotLight)
 {
@@ -144,27 +60,36 @@ void LightManager::init(GLuint glProgram_pointLight, GLuint glProgram_directiona
 	uniform_spotLight_pos = glGetUniformLocation(glProgram_spotLight, "spotLight.position");
 	uniform_spotLight_angle = glGetUniformLocation(glProgram_spotLight, "spotLight.angle");
 }
-/*
-void LightManager::renderLights(std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
+
+void LightManager::setShadowMapCount(unsigned int count)
 {
-
-		glUniform3fv(uniform_pointLight_pos[i], 1, glm::value_ptr(pointLights[i]->position));
-		glUniform3fv(uniform_pointLight_col[i], 1, glm::value_ptr(pointLights[i]->color));
-		glUniform1f(uniform_pointLight_int[i], pointLights[i]->intensity);
-
-
-		glUniform3fv(uniform_directionalLight_dir[i], 1, glm::value_ptr(directionalLights[i]->direction));
-		glUniform3fv(uniform_directionalLight_col[i], 1, glm::value_ptr(directionalLights[i]->color));
-		glUniform1f(uniform_directionalLight_int[i], directionalLights[i]->intensity);
-
-
-		glUniform3fv(uniform_spotLight_dir[i], 1, glm::value_ptr(spotLights[i]->direction));
-		glUniform3fv(uniform_spotLight_col[i], 1, glm::value_ptr(spotLights[i]->color));
-		glUniform1f(uniform_spotLight_int[i], spotLights[i]->intensity);
-		glUniform3fv(uniform_spotLight_pos[i], 1, glm::value_ptr(spotLights[i]->position));
-		glUniform1f(uniform_spotLight_angle[i], spotLights[i]->angle);
+	shadowMaps.resize(count);	
 }
-*/
+
+int LightManager::getShadowMapCount()
+{
+	return shadowMaps.size();
+}
+
+void LightManager::bindShadowMapFBO(int index)
+{
+	assert(index >= 0 && index < shadowMaps.size());
+
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowMaps[index].shadowFrameBuffer);
+	glViewport(0, 0, shadowMaps[index].textureWidth, shadowMaps[index].textureHeight);
+}
+
+void LightManager::unbindShadowMapFBO()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void LightManager::bindShadowMapTexture(int index)
+{
+	assert(index >= 0 && index < shadowMaps.size());
+
+	glBindTexture(GL_TEXTURE_2D, shadowMaps[index].shadowTexture);
+}
 
 void LightManager::uniformPointLight(PointLight & light)
 {

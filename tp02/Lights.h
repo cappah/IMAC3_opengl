@@ -25,6 +25,7 @@ struct Light : public Component
 	float intensity;
 	glm::vec3 color;
 
+
 	Light(float _intensity, glm::vec3 _color);
 	virtual ~Light();
 
