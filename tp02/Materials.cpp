@@ -212,3 +212,26 @@ void MaterialSkybox::drawUI()
 		}
 	}
 }
+
+/////////////////// SHADOW MATERIAL ////////////////////
+
+MaterialShadow::MaterialShadow()
+{
+
+}
+
+MaterialShadow::MaterialShadow(GLuint _glProgram) : Material(_glProgram)
+{
+
+}
+
+void MaterialShadow::use()
+{
+	//bind shaders
+	glUseProgram(glProgram);
+}
+
+void MaterialShadow::drawUI()
+{
+	//nothing
+}

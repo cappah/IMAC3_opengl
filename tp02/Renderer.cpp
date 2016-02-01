@@ -30,6 +30,8 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	uniformTextureDepth[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "DepthBuffer");
 	unformScreenToWorld[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "ScreenToWorld");
 	uniformCameraPosition[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "CameraPosition");
+	uniformTextureShadow[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "Shadow");
+	uniformWorldToLightScreen[POINT] = glGetUniformLocation(glProgram_lightPass_pointLight, "WorldToLightScreen");
 
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
@@ -53,6 +55,8 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	uniformTextureDepth[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "DepthBuffer");
 	unformScreenToWorld[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "ScreenToWorld");
 	uniformCameraPosition[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "CameraPosition");
+	uniformTextureShadow[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "Shadow");
+	uniformWorldToLightScreen[DIRECTIONAL] = glGetUniformLocation(glProgram_lightPass_directionalLight, "WorldToLightScreen");
 
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
@@ -75,7 +79,9 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	uniformTextureNormal[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "NormalBuffer");
 	uniformTextureDepth[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "DepthBuffer");
 	unformScreenToWorld[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "ScreenToWorld");
-	uniformCameraPosition[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "CameraPosition");
+	uniformCameraPosition[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "CameraPosition"); 
+	uniformTextureShadow[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "Shadow");
+	uniformWorldToLightScreen[SPOT] = glGetUniformLocation(glProgram_lightPass_spotLight, "WorldToLightScreen");
 
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
@@ -157,6 +163,7 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 }
 
+
 void Renderer::onResizeWindow()
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
@@ -218,6 +225,7 @@ void Renderer::onResizeWindow()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+
 void Renderer::initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path)
 {
 	//////////////////// BLIT shaders ////////////////////////
@@ -240,6 +248,85 @@ void Renderer::initPostProcessQuad(std::string programBlit_vert_path, std::strin
 	uniformTextureBlit = glGetUniformLocation(glProgram_blit, "Texture");
 }
 
+void Renderer::initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path)
+{
+	//////////////////////// SHADOWS //////////////////////////
+
+
+	//////////////////// shadow pass shader ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_shadowPass = compile_shader_from_file(GL_VERTEX_SHADER, progamShadowPass_vert_path.c_str());
+	GLuint fragShaderId_shadowPass = compile_shader_from_file(GL_FRAGMENT_SHADER, progamShadowPass_frag_path.c_str());
+
+	glProgram_shadowPass = glCreateProgram();
+	glAttachShader(glProgram_shadowPass, vertShaderId_shadowPass);
+	glAttachShader(glProgram_shadowPass, fragShaderId_shadowPass);
+
+	glLinkProgram(glProgram_shadowPass);
+	if (check_link_error(glProgram_shadowPass) < 0)
+		exit(1);
+
+	uniformShadowMVP = glGetUniformLocation(glProgram_shadowPass, "MVP");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+
+	glGenFramebuffers(1, &shadowFrameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer);
+
+	//initialyze shadowRenderBuffer : 
+	glGenRenderbuffers(1, &shadowRenderBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, shadowRenderBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, 1024, 1024);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, shadowRenderBuffer);
+
+	//initialyze shadow texture : 
+	glGenTextures(1, &shadowTexture);
+	glBindTexture(GL_TEXTURE_2D, shadowTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTexture, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		fprintf(stderr, "Error on building shadow framebuffer\n");
+		exit(EXIT_FAILURE);
+	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void Renderer::renderShadows(const SpotLight& light, MeshRenderer& meshRenderer)
+{
+	glm::mat4 modelMatrix = meshRenderer.entity()->getModelMatrix(); //get modelMatrix
+
+	glm::mat4 projection = glm::perspective( light.angle*2.f, 1.f, 1.f, 100.f );
+	glm::mat4 worldToLight = glm::lookAt(light.position, light.position + light.direction, glm::vec3(0, 0, -1));
+
+	// From object to light (MV for light)
+	glm::mat4 objectToLight = worldToLight * modelMatrix;
+	// From object to shadow map screen space (MVP for light)
+	glm::mat4 objectToLightScreen = projection * objectToLight;
+	// From world to shadow map screen space 
+	glm::mat4 worldToLightScreen = projection * worldToLight;
+
+
+	glUseProgram(glProgram_shadowPass);
+	glUniformMatrix4fv(uniformShadowMVP, 1, false, glm::value_ptr(objectToLightScreen));
+
+	//draw mesh : 
+	meshRenderer.getMesh()->draw();
+
+}
+
 
 void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox)
 {
@@ -248,12 +335,35 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 	////////////////////////// begin scene rendering 
 
+
+	//////// begin shadow pass
+
+
+	glEnable(GL_DEPTH_TEST);
+
+	if (spotLights.size() > 0)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer);
+		glViewport(0, 0, 1024, 1024);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		for (int i = 0; i < meshRenderers.size(); i++)
+		{
+			renderShadows(*spotLights[0],*meshRenderers[i]); // draw shadow for the first spot light
+		}
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	//////// end shadow pass
+
+
 	// Viewport 
 	glViewport(0, 0, width, height);
 
 	// Clear default buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 	///////////// begin draw world
 
@@ -338,6 +448,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	}
 
 	//spot lights : 
+
 	glUseProgram(glProgram_lightPass_spotLight);
 
 	// send screen to world matrix : 
@@ -351,14 +462,22 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, shadowTexture);
 
 	glUniform1i(uniformTexturePosition[SPOT], 0);
 	glUniform1i(uniformTextureNormal[SPOT], 1);
 	glUniform1i(uniformTextureDepth[SPOT], 2);
+	glUniform1i(uniformTextureShadow[SPOT], 3); // send shadow texture
 	for (int i = 0; i < spotLights.size(); i++)
 	{
 		if (passCullingTest(projection, worldToView, camera.eye, spotLights[i]->boundingBox)) // optimisation test
 		{
+			glm::mat4 projectionSpotLight = glm::perspective(glm::degrees(spotLights[i]->angle*2.f), 1.f, 1.f, 100.f);
+			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLights[i]->position, spotLights[i]->position + spotLights[i]->direction, glm::vec3(0, 0, -1));
+			glm::mat4 WorldToLightScreen = projectionSpotLight * worldToLightSpotLight;
+			glUniformMatrix4fv(uniformWorldToLightScreen[SPOT], 1, false, glm::value_ptr(WorldToLightScreen));
+
 			lightManager->uniformSpotLight(*spotLights[i]);
 			quadMesh.draw();
 		}
@@ -455,7 +574,7 @@ void Renderer::debugDrawDeferred()
 
 	for (int i = 0; i < 3; i++)
 	{
-		glViewport((width * i) / 3, 0, width / 3, height / 4);
+		glViewport((width * i) / 4, 0, width / 4, height / 4);
 
 		glActiveTexture(GL_TEXTURE0);
 		// Bind gbuffer color texture
@@ -465,8 +584,17 @@ void Renderer::debugDrawDeferred()
 		quadMesh.draw();
 	}
 
-	glViewport(0, 0, width, height);
+	//shadow : 
+	glViewport((width * 3) / 4, 0, width / 4, height / 4);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, shadowTexture);
+	glUniform1i(uniformTextureBlit, 0);
 
+	quadMesh.draw();
+
+
+	glViewport(0, 0, width, height);
+	
 	///////////// end draw blit quad
 }
 

@@ -107,3 +107,13 @@ public:
 
 	virtual void drawUI() override;
 };
+
+class MaterialShadow : public Material
+{
+public:
+	MaterialShadow();
+	MaterialShadow(GLuint _glProgram);
+
+	virtual void use() override;
+	virtual void drawUI() override;
+};

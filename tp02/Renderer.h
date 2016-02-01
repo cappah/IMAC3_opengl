@@ -9,6 +9,7 @@
 #include "Collider.h"
 #include "Terrain.h"
 #include "Skybox.h"
+#include "Materials.h"
 
 
 
@@ -21,10 +22,15 @@ private:
 	GLuint glProgram_lightPass_pointLight;
 	GLuint glProgram_lightPass_directionalLight;
 	GLuint glProgram_lightPass_spotLight;
+	GLuint glProgram_shadowPass;
+
+	GLuint uniformShadowMVP;
 
 	GLuint uniformTexturePosition[3];
 	GLuint uniformTextureNormal[3];
 	GLuint uniformTextureDepth[3];
+	GLuint uniformTextureShadow[3];
+	GLuint uniformWorldToLightScreen[3];
 	GLuint unformScreenToWorld[3];
 	GLuint uniformCameraPosition[3];
 
@@ -45,6 +51,11 @@ private:
 	int pointLightCount;
 	int spotLightCount;
 
+	//shadows : 
+	GLuint shadowFrameBuffer;
+	GLuint shadowRenderBuffer;
+	GLuint shadowTexture;
+
 public:
 	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight);
 
@@ -53,6 +64,10 @@ public:
 
 	//initialyze buffers for blit quad.
 	void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
+
+	void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path);
+
+	void renderShadows(const SpotLight& light, MeshRenderer& meshRenderer);
 
 	//render all entities of the scene, using deferred shading.
 	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox);

@@ -18,6 +18,9 @@ uniform sampler2D DepthBuffer;
 uniform mat4 ScreenToWorld;
 uniform vec3 CameraPosition;
  
+ //shadow : 
+ uniform sampler2D Shadow;
+ uniform mat4 WorldToLightScreen;
 
 
 //lights struct : 
@@ -87,5 +90,14 @@ void main(void)
 
 	vec3 color = computeSpotLight(spotLight, p, n, diffuse, specular, specularPower * 100);
 
-    Color = vec4(color, 1.0);
+	//shadow
+	vec4 wlP = WorldToLightScreen * vec4(p.xyz, 1.0);
+	vec3 lP = vec3(wlP/wlP.w) * 0.5 + 0.5;
+	float lDepth = texture(Shadow, lP.xy).r;
+
+	if(lDepth < lP.z)
+		Color = vec4(0.0, 0.0, 0.0, 1.0);
+	else
+		Color = vec4(color, 1.0);
+
 }
