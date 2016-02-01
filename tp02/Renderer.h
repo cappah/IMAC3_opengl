@@ -18,6 +18,9 @@ class Renderer
 	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
 
 private:
+	glm::vec4 primaryViewport;
+	glm::vec4 secondaryViewport;
+
 	GLuint glProgram_gPass;
 	GLuint glProgram_lightPass_pointLight;
 	GLuint glProgram_lightPass_directionalLight;
@@ -91,5 +94,9 @@ public:
 
 	// Old function to compte camera culling for light, see passCullingTest instead.
 	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights);
+
+	void setPrimaryViewport(const glm::vec4& viewport);
+
+	void setSecondaryViewport(const glm::vec4& viewport);
 };
 

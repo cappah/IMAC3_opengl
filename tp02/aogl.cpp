@@ -444,6 +444,10 @@ int main( int argc, char **argv )
 		//check if window has been resized by user
 		if (Application::get().getWindowResize())
 		{
+			//set viewports for sceen render : 
+			renderer.setSecondaryViewport(editor.getTopLeftWindowViewport());
+			renderer.setPrimaryViewport(editor.getTopRightWindowViewport());
+
 			renderer.onResizeWindow();
 			//TODO : 
 			//editor.onResizeWindow();
@@ -466,6 +470,11 @@ int main( int argc, char **argv )
 
 		//rendering : 
 		//renderer.render(camera, entities);
+
+		//set viewports for sceen render : 
+		renderer.setSecondaryViewport(editor.getBottomWindowViewport());
+		renderer.setPrimaryViewport(editor.getTopRightWindowViewport());
+
 		scene.render(currentCamera);
 		scene.renderColliders(currentCamera);
 		scene.renderDebugDeferred();
@@ -485,7 +494,7 @@ int main( int argc, char **argv )
         ImGui::End();
 		*/
 
-		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
+		//ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI(scene);
 
         ImGui::Render();

@@ -236,6 +236,10 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	camera_defaults(*m_camera);
 
 	init_gui_states(m_guiStates);
+
+	// windows sizes : 
+	m_leftPanelwidth = 100;
+	m_leftPanelHeight = 300;
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -374,6 +378,35 @@ void Editor::refreshSelectedComponents(bool clearComponentLists)
 			m_colliders.push_back(collider);
 		}
 	}
+}
+
+glm::vec4 Editor::getTopLeftWindowViewport() const
+{
+	int screenWidth = Application::get().getWindowWidth();
+	int screenHeight = Application::get().getWindowHeight();
+
+	return glm::vec4(0.f,1.f,m_leftPanelwidth / (float)screenWidth, m_leftPanelHeight / (float)screenHeight);
+}
+
+glm::vec4 Editor::getTopRightWindowViewport() const
+{
+	int screenWidth = Application::get().getWindowWidth();
+	int screenHeight = Application::get().getWindowHeight();
+
+	return glm::vec4( m_leftPanelwidth / (float)screenWidth , (screenHeight - m_leftPanelHeight) / (float)screenHeight, (screenWidth - m_leftPanelwidth) / (float)screenWidth, m_leftPanelHeight / (float)screenHeight);
+}
+
+glm::vec4 Editor::getBottomWindowViewport() const
+{
+	int screenWidth = Application::get().getWindowWidth();
+	int screenHeight = Application::get().getWindowHeight();
+
+	return glm::vec4(0.f, 0.f, 1.f, (screenHeight - m_leftPanelHeight) / (float)screenHeight);
+}
+
+void Editor::onResizeWindow()
+{
+	//TODO
 }
 
 void Editor::renderUI(Scene& scene)
@@ -522,6 +555,46 @@ void Editor::renderUI(Scene& scene)
 		ImGui::EndMainMenuBar();
 	}
 
+
+	int screenWidth = Application::get().getWindowWidth();
+	int screenHeight = Application::get().getWindowHeight();
+
+	//ImGui::Begin("sceen content", nullptr, ImVec2(0, 0), -1.0f, ImGuiWindowFlags_NoCollapse| ImGuiWindowFlags_NoResize);
+	ImGui::SetNextWindowSize( ImVec2(screenWidth + 6,screenHeight - 6) );
+	ImGui::SetNextWindowContentSize( ImVec2(screenWidth + 6, screenHeight - 6) );
+	ImGui::SetNextWindowPos(ImVec2(-6, 14));
+	ImGui::Begin("windowContent", nullptr, ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoBringToFrontOnFocus|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoTitleBar);
+	ImGui::BeginChildFrame(0, ImGui::GetWindowSize());
+
+	ImGui::BeginChild("topLeftWindow", ImVec2(m_leftPanelwidth, m_leftPanelHeight));
+	ImGui::EndChild();
+	ImGui::SameLine();
+
+	ImGui::Button("vSplitter", ImVec2(8.f, m_leftPanelHeight));
+	if (ImGui::IsItemActive())
+	{
+		m_leftPanelwidth += ImGui::GetIO().MouseDelta.x;
+		if (m_leftPanelwidth < 10) m_leftPanelwidth = 10;
+	}
+	
+	//ImGui::SameLine();
+	//ImGui::BeginChild("topRightWindow", ImVec2(screenWidth - m_leftPanelwidth, m_leftPanelHeight));
+	//ImGui::EndChild();
+	ImGui::Button("hSplitter", ImVec2(screenWidth, 8.f));
+	if (ImGui::IsItemActive())
+	{
+		m_leftPanelHeight += ImGui::GetIO().MouseDelta.y;
+		if (m_leftPanelwidth < 10) m_leftPanelwidth = 10;
+	}
+
+	//ImGui::BeginChild("bottomWindow", ImVec2(screenWidth, screenHeight - m_leftPanelHeight));
+	//ImGui::EndChild();
+
+	ImGui::EndChildFrame();
+	ImGui::End();
+	//ImGui::End();
+	
+	/*
 	int entityId = 0;
 
 	if (!m_currentSelected.empty())
@@ -614,6 +687,7 @@ void Editor::renderUI(Scene& scene)
 		MaterialFactory::get().drawUI();
 		ImGui::End();
 	}
+	*/
 		
 }
 

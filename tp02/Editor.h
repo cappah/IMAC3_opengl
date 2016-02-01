@@ -66,6 +66,7 @@ void init_gui_states(GUIStates & guiStates);
 
 /////////////////////////////////////////
 
+
 class Editor
 {
 
@@ -107,6 +108,10 @@ private:
 
 	bool m_hideCursorWhenMovingCamera;
 
+	//window splitter : 
+	float m_leftPanelwidth;
+	float m_leftPanelHeight;
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 
@@ -146,5 +151,11 @@ public:
 	//for multiple editing : 
 	void clearSelectedComponents();
 	void refreshSelectedComponents(bool clearComponentLists = true);
+
+	glm::vec4 getTopLeftWindowViewport() const;
+	glm::vec4 getTopRightWindowViewport() const;
+	glm::vec4 getBottomWindowViewport() const;
+
+	void onResizeWindow();
 };
 
