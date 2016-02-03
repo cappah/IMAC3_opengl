@@ -240,6 +240,7 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	// windows sizes : 
 	m_leftPanelwidth = 100;
 	m_leftPanelHeight = 300;
+	m_panelsDecal = glm::vec2(-6, 14);
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -384,24 +385,30 @@ glm::vec4 Editor::getTopLeftWindowViewport() const
 {
 	int screenWidth = Application::get().getWindowWidth();
 	int screenHeight = Application::get().getWindowHeight();
+	float decalX = m_panelsDecal.x / (float)screenWidth;
+	float decalY = m_panelsDecal.y / (float)screenHeight;
 
-	return glm::vec4(0.f,1.f,m_leftPanelwidth / (float)screenWidth, m_leftPanelHeight / (float)screenHeight);
+	return glm::vec4(decalX, (screenHeight - m_leftPanelHeight) / (float)screenHeight - decalY, m_leftPanelwidth / (float)screenWidth - decalX, m_leftPanelHeight / (float)screenHeight - decalY);
 }
 
 glm::vec4 Editor::getTopRightWindowViewport() const
 {
 	int screenWidth = Application::get().getWindowWidth();
 	int screenHeight = Application::get().getWindowHeight();
+	float decalX = m_panelsDecal.x / (float)screenWidth;
+	float decalY = m_panelsDecal.y / (float)screenHeight;
 
-	return glm::vec4( m_leftPanelwidth / (float)screenWidth , (screenHeight - m_leftPanelHeight) / (float)screenHeight, (screenWidth - m_leftPanelwidth) / (float)screenWidth, m_leftPanelHeight / (float)screenHeight);
+	return glm::vec4( decalX + m_leftPanelwidth / (float)screenWidth , (screenHeight - m_leftPanelHeight) / (float)screenHeight - decalY, (screenWidth - m_leftPanelwidth) / (float)screenWidth - decalX, m_leftPanelHeight / (float)screenHeight - decalY);
 }
 
 glm::vec4 Editor::getBottomWindowViewport() const
 {
 	int screenWidth = Application::get().getWindowWidth();
 	int screenHeight = Application::get().getWindowHeight();
+	float decalX = m_panelsDecal.x / (float)screenWidth;
+	float decalY = m_panelsDecal.y / (float)screenHeight;
 
-	return glm::vec4(0.f, 0.f, 1.f, (screenHeight - m_leftPanelHeight) / (float)screenHeight);
+	return glm::vec4(0.f, 0.f, 1.f, (screenHeight - m_leftPanelHeight) / (float)screenHeight - decalY);
 }
 
 void Editor::onResizeWindow()
@@ -560,38 +567,54 @@ void Editor::renderUI(Scene& scene)
 	int screenHeight = Application::get().getWindowHeight();
 
 	//ImGui::Begin("sceen content", nullptr, ImVec2(0, 0), -1.0f, ImGuiWindowFlags_NoCollapse| ImGuiWindowFlags_NoResize);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.f, 0.f, 0.f, 0.f));
 	ImGui::SetNextWindowSize( ImVec2(screenWidth + 6,screenHeight - 6) );
 	ImGui::SetNextWindowContentSize( ImVec2(screenWidth + 6, screenHeight - 6) );
 	ImGui::SetNextWindowPos(ImVec2(-6, 14));
 	ImGui::Begin("windowContent", nullptr, ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoBringToFrontOnFocus|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoTitleBar);
+	
 	ImGui::BeginChildFrame(0, ImGui::GetWindowSize());
 
-	ImGui::BeginChild("topLeftWindow", ImVec2(m_leftPanelwidth, m_leftPanelHeight));
-	ImGui::EndChild();
-	ImGui::SameLine();
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 1.f));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.f, 1.f, 1.f, 1.f));
+	ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImVec4(1.f, 1.f, 1.f, 1.f));
 
+	ImGui::BeginChild("topLeftWindow", ImVec2(m_leftPanelwidth, m_leftPanelHeight));
+	ImGui::Button("test");
+	ImGui::EndChild();
+
+	ImGui::SameLine();
+	
 	ImGui::Button("vSplitter", ImVec2(8.f, m_leftPanelHeight));
 	if (ImGui::IsItemActive())
 	{
 		m_leftPanelwidth += ImGui::GetIO().MouseDelta.x;
 		if (m_leftPanelwidth < 10) m_leftPanelwidth = 10;
 	}
+
 	
 	//ImGui::SameLine();
 	//ImGui::BeginChild("topRightWindow", ImVec2(screenWidth - m_leftPanelwidth, m_leftPanelHeight));
 	//ImGui::EndChild();
-	ImGui::Button("hSplitter", ImVec2(screenWidth, 8.f));
+	ImGui::Button("hsplitter", ImVec2(screenWidth, 8.f));
 	if (ImGui::IsItemActive())
 	{
 		m_leftPanelHeight += ImGui::GetIO().MouseDelta.y;
 		if (m_leftPanelwidth < 10) m_leftPanelwidth = 10;
 	}
 
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+
 	//ImGui::BeginChild("bottomWindow", ImVec2(screenWidth, screenHeight - m_leftPanelHeight));
 	//ImGui::EndChild();
 
 	ImGui::EndChildFrame();
 	ImGui::End();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
 	//ImGui::End();
 	
 	/*

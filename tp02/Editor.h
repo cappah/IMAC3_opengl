@@ -111,6 +111,7 @@ private:
 	//window splitter : 
 	float m_leftPanelwidth;
 	float m_leftPanelHeight;
+	glm::vec2 m_panelsDecal;
 
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
