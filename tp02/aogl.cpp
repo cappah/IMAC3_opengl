@@ -444,13 +444,13 @@ int main( int argc, char **argv )
 		//check if window has been resized by user
 		if (Application::get().getWindowResize())
 		{
+			editor.onResizeWindow();
+			
 			//set viewports for sceen render : 
 			renderer.setSecondaryViewport(editor.getTopLeftWindowViewport());
 			renderer.setPrimaryViewport(editor.getTopRightWindowViewport());
 
 			renderer.onResizeWindow();
-			//TODO : 
-			//editor.onResizeWindow();
 
 			Application::get().setWindowResize(false);
 		}

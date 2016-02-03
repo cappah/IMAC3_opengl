@@ -240,7 +240,9 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	// windows sizes : 
 	m_leftPanelwidth = 100;
 	m_leftPanelHeight = 300;
-	m_panelsDecal = glm::vec2(-6, 14);
+	m_panelsDecal = glm::vec2(0, 20);
+	m_windowWidth = Application::get().getWindowWidth() - m_panelsDecal.x;
+	m_windowHeight = Application::get().getWindowHeight() - m_panelsDecal.y;
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -385,35 +387,30 @@ glm::vec4 Editor::getTopLeftWindowViewport() const
 {
 	int screenWidth = Application::get().getWindowWidth();
 	int screenHeight = Application::get().getWindowHeight();
-	float decalX = m_panelsDecal.x / (float)screenWidth;
-	float decalY = m_panelsDecal.y / (float)screenHeight;
 
-	return glm::vec4(decalX, (screenHeight - m_leftPanelHeight) / (float)screenHeight - decalY, m_leftPanelwidth / (float)screenWidth - decalX, m_leftPanelHeight / (float)screenHeight - decalY);
+	return glm::vec4(0.f, m_windowHeight - m_leftPanelHeight, m_leftPanelwidth, m_leftPanelHeight);
 }
 
 glm::vec4 Editor::getTopRightWindowViewport() const
 {
 	int screenWidth = Application::get().getWindowWidth();
 	int screenHeight = Application::get().getWindowHeight();
-	float decalX = m_panelsDecal.x / (float)screenWidth;
-	float decalY = m_panelsDecal.y / (float)screenHeight;
 
-	return glm::vec4( decalX + m_leftPanelwidth / (float)screenWidth , (screenHeight - m_leftPanelHeight) / (float)screenHeight - decalY, (screenWidth - m_leftPanelwidth) / (float)screenWidth - decalX, m_leftPanelHeight / (float)screenHeight - decalY);
+	return glm::vec4( m_leftPanelwidth , (m_windowHeight - m_leftPanelHeight), m_windowWidth - m_leftPanelwidth, m_leftPanelHeight);
 }
 
 glm::vec4 Editor::getBottomWindowViewport() const
 {
 	int screenWidth = Application::get().getWindowWidth();
 	int screenHeight = Application::get().getWindowHeight();
-	float decalX = m_panelsDecal.x / (float)screenWidth;
-	float decalY = m_panelsDecal.y / (float)screenHeight;
 
-	return glm::vec4(0.f, 0.f, 1.f, (screenHeight - m_leftPanelHeight) / (float)screenHeight - decalY);
+	return glm::vec4(0.f, 0.f, m_windowWidth, (m_windowHeight - m_leftPanelHeight));
 }
 
 void Editor::onResizeWindow()
 {
-	//TODO
+	m_windowWidth = Application::get().getWindowWidth() - m_panelsDecal.x;
+	m_windowHeight = Application::get().getWindowHeight() - m_panelsDecal.y;
 }
 
 void Editor::renderUI(Scene& scene)
@@ -567,11 +564,15 @@ void Editor::renderUI(Scene& scene)
 	int screenHeight = Application::get().getWindowHeight();
 
 	//ImGui::Begin("sceen content", nullptr, ImVec2(0, 0), -1.0f, ImGuiWindowFlags_NoCollapse| ImGuiWindowFlags_NoResize);
+
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.f, 0.f, 0.f, 0.f));
-	ImGui::SetNextWindowSize( ImVec2(screenWidth + 6,screenHeight - 6) );
-	ImGui::SetNextWindowContentSize( ImVec2(screenWidth + 6, screenHeight - 6) );
-	ImGui::SetNextWindowPos(ImVec2(-6, 14));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	
+	ImGui::SetNextWindowSize( ImVec2(m_windowWidth, m_windowHeight) );
+	ImGui::SetNextWindowContentSize( ImVec2(m_windowWidth, m_windowHeight) );
+	ImGui::SetNextWindowPos( ImVec2(m_panelsDecal.x, m_panelsDecal.y) );
 	ImGui::Begin("windowContent", nullptr, ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoBringToFrontOnFocus|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoTitleBar);
 	
 	ImGui::BeginChildFrame(0, ImGui::GetWindowSize());
@@ -615,6 +616,8 @@ void Editor::renderUI(Scene& scene)
 	ImGui::End();
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
+	ImGui::PopStyleVar();
+	ImGui::PopStyleVar();
 	//ImGui::End();
 	
 	/*

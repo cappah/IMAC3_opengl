@@ -1,5 +1,8 @@
 #include "Utils.h"
 
+//forward
+#include "Application.h"
+
 glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, Camera& camera)
 {
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
@@ -176,4 +179,28 @@ glm::vec3 vertexFrom3Floats(const std::vector<float>& vertices, int indice)
 {
 	indice *= 3;
 	return glm::vec3(vertices[indice], vertices[indice + 1], vertices[indice + 2]);
+}
+
+void mapViewportToScreenRegion(glm::vec4& viewport, const glm::vec4& screenRegion)
+{
+	int W = Application::get().getWindowWidth();
+	int H = Application::get().getWindowHeight();
+
+	int X = screenRegion.x;
+	int Y = screenRegion.y;
+
+	int w = screenRegion.z;
+	int h = screenRegion.w;
+
+	float xv = viewport.x;
+	float yv = viewport.w;
+
+	float wv = viewport.z;
+	float hv = viewport.w;
+
+	viewport.x = ((xv + 1) / 2.f) * w + X;
+	viewport.y = ((yv + 1) / 2.f) * h + Y;
+
+	viewport.z = (wv / 2.f) * w;
+	viewport.w = (hv / 2.f) * h;
 }

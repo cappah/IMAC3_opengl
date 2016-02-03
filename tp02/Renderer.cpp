@@ -169,7 +169,9 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 void Renderer::onResizeWindow()
 {
 	int screenWidth = Application::get().getWindowWidth(), screenHeight = Application::get().getWindowHeight();
-	int width = primaryViewport.z * screenWidth, height = primaryViewport.w * screenHeight;
+	//int width = primaryViewport.z, height = primaryViewport.w;
+	int width = screenWidth;
+	int height = screenWidth / (primaryViewport.w / (float)primaryViewport.z);
 
 	// unbind texture of FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
@@ -329,13 +331,18 @@ void Renderer::renderShadows(const glm::mat4& lightProjection, const glm::mat4& 
 void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox)
 {
 	//int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-	float viewportWidth = primaryViewport.z * Application::get().getWindowWidth(), 
-		  viewportHeight = primaryViewport.w * Application::get().getWindowHeight(), 
-		  viewportLeft = primaryViewport.x * Application::get().getWindowWidth(), 
-		  viewportBottom = primaryViewport.y * Application::get().getWindowHeight();
+	float viewportWidth = primaryViewport.z, 
+		  viewportHeight = primaryViewport.w, 
+		  viewportLeft = primaryViewport.x, 
+		  viewportBottom = primaryViewport.y;
 
-	int width = viewportWidth * Application::get().getWindowWidth(), 
-		height = viewportHeight * Application::get().getWindowHeight();
+	int width = viewportWidth, // Application::get().getWindowWidth(),
+		height = viewportHeight;// Application::get().getWindowHeight();
+
+	float ratio = (float)width / (float)height;
+
+	int screenWidth = Application::get().getWindowWidth();
+	int screenHeight = Application::get().getWindowHeight();
 
 	////////////////////////// begin scene rendering 
 
@@ -368,7 +375,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 
 	// Viewport 
-	glViewport(viewportLeft, viewportBottom, viewportWidth, viewportHeight);
+	glViewport(0, screenHeight - screenWidth/ratio, screenWidth, screenWidth / ratio);
 
 	// Clear default buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -380,7 +387,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	////// begin matrix updates
 
 	// update values
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 projection = glm::perspective(45.0f, ratio, 0.1f, 1000.f);
 	glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
 	glm::mat4 camera_mvp = projection * worldToView;
 	glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
@@ -425,6 +432,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	// Setup additive blending
 	glBlendFunc(GL_ONE, GL_ONE);
 
+	glViewport(viewportLeft, viewportBottom, viewportWidth, viewportHeight);
 
 	// Render quad
 	glm::vec4 viewport; 
@@ -451,6 +459,9 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	{
 		if (passCullingTest(viewport, projection, worldToView, camera.eye, pointLights[i]->boundingBox)) // optimisation test
 		{
+			//map viewport to fill the right part of the screen
+			//mapViewportToScreenRegion(viewport, primaryViewport);
+
 			//resize viewport
 			resizeBlitQuad(viewport);
 
@@ -491,6 +502,9 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 		if (passCullingTest(viewport , projection, worldToView, camera.eye, spotLights[i]->boundingBox)) // optimisation test
 		{
+			//map viewport to fill the right part of the screen
+			//mapViewportToScreenRegion(viewport, primaryViewport);
+
 			//resize viewport
 			resizeBlitQuad(viewport);
 
@@ -563,8 +577,8 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 void Renderer::debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities)
 {
-	int width = primaryViewport.z * Application::get().getWindowWidth(), 
-		height = primaryViewport.w * Application::get().getWindowHeight();
+	int width = primaryViewport.z, 
+		height = primaryViewport.w;
 
 	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
@@ -588,10 +602,10 @@ void Renderer::debugDrawColliders(const Camera& camera, const std::vector<Entity
 
 void Renderer::debugDrawDeferred()
 {
-	int viewportWidth = secondaryViewport.z * Application::get().getWindowWidth(),
-		viewportHeight = secondaryViewport.w * Application::get().getWindowHeight();
-	int viewportLeft = secondaryViewport.x * Application::get().getWindowWidth(),
-		viewportTop = secondaryViewport.y * Application::get().getWindowHeight();
+	int viewportWidth = secondaryViewport.z,
+		viewportHeight = secondaryViewport.w;
+	int viewportLeft = secondaryViewport.x,
+		viewportTop = secondaryViewport.y;
 
 	///////////// begin draw blit quad
 	glDisable(GL_DEPTH_TEST);
@@ -629,8 +643,8 @@ void Renderer::debugDrawDeferred()
 
 void Renderer::debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
 {
-	int width = primaryViewport.z * Application::get().getWindowWidth();
-	int height = primaryViewport.w * Application::get().getWindowHeight();
+	int width = primaryViewport.z;
+	int height = primaryViewport.w;
 
 	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
@@ -779,8 +793,8 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 	pointLightCount = 0;
 	spotLightCount = 0;
 
-	int width = primaryViewport.z * Application::get().getWindowWidth();
-	int height = primaryViewport.w * Application::get().getWindowHeight();
+	int width = primaryViewport.z;
+	int height = primaryViewport.w;
 
 	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
@@ -871,7 +885,6 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 			break;
 		}
 	}
-
 }
 
 void Renderer::setPrimaryViewport(const glm::vec4 & viewport)

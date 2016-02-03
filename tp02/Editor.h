@@ -109,6 +109,8 @@ private:
 	bool m_hideCursorWhenMovingCamera;
 
 	//window splitter : 
+	float m_windowWidth;
+	float m_windowHeight;
 	float m_leftPanelwidth;
 	float m_leftPanelHeight;
 	glm::vec2 m_panelsDecal;

@@ -41,3 +41,6 @@ double interpolation_cos1D(double a, double b, double x);
 
 glm::vec3 vertexFrom3Floats(const std::vector<float>& vertices, int indice);
 
+//take a viewport (quad between -1 and 1 in x and y), and remap it to the given screenRegion : 
+void mapViewportToScreenRegion(glm::vec4& viewport, const glm::vec4& screenRegion);
+
