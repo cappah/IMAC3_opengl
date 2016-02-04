@@ -363,7 +363,7 @@ int main( int argc, char **argv )
 	// renderer : 
 	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
 	renderer.initPostProcessQuad("blit.vert", "blit.frag");
-	renderer.initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag");
+	renderer.initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag", "shadowPassOmni.vert", "shadowPassOmni.frag", "shadowPassOmni.geom");
 
 	// Our scene : 
 	Scene scene(&renderer);

@@ -23,16 +23,26 @@ private:
 	GLuint glProgram_lightPass_directionalLight;
 	GLuint glProgram_lightPass_spotLight;
 	GLuint glProgram_shadowPass;
+	GLuint glProgram_shadowPassOmni;
 
+	//uniform for unidirectional shadow map
 	GLuint uniformShadowMVP;
+
+	//uniforms for omniDirectional shadow map : 
+	GLuint uniformShadowOmniModelMatrix;
+	GLuint uniformShadowOmniVPLight[6];
+	GLuint uniformShadowOmniFarPlane;
+	GLuint uniformShadowOmniLightPos;
 
 	GLuint uniformTexturePosition[3];
 	GLuint uniformTextureNormal[3];
 	GLuint uniformTextureDepth[3];
-	GLuint uniformTextureShadow[3];
-	GLuint uniformWorldToLightScreen[3];
 	GLuint unformScreenToWorld[3];
 	GLuint uniformCameraPosition[3];
+	GLuint uniformTextureShadow[3];
+	GLuint uniformWorldToLightScreen_spot;
+	GLuint uniformWorldToLightScreen_directional;
+	GLuint uniformLightFarPlane;
 
 	Mesh quadMesh;
 
@@ -65,10 +75,13 @@ public:
 	//initialyze buffers for blit quad.
 	void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
 
-	void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path);
+	void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path, std::string progamShadowPassOmni_vert_path, std::string progamShadowPassOmni_frag_path, std::string progamShadowPassOmni_geom_path);
 
 	//render a shadow on a shadow map
 	void renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, MeshRenderer& meshRenderer);
+
+	//render a shadow on a shadow map
+	void renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, MeshRenderer & meshRenderer);
 
 	//render all entities of the scene, using deferred shading.
 	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox);
