@@ -76,7 +76,7 @@ void main(void)
 	vec3 color = computePointLight( pointLight, p, n, diffuse, specular, specularPower * 100 );
 
 	//shadow
-	float shadowBias = 0.001f;
+	float shadowBias = 0.01f;
 	vec3 lightToFrag = p - pointLight.position;
 	float clothestDepth = texture(Shadow, lightToFrag).r;
 	clothestDepth *= FarPlane;

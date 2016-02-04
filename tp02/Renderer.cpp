@@ -170,6 +170,9 @@ void Renderer::onResizeWindow()
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
+	if (width < 1 || height < 1)
+		return;
+
 	// unbind texture of FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
 
@@ -435,14 +438,14 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 		{
 			lightManager->bindShadowMapFBO(LightManager::POINT, i);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			glm::mat4 lightProjection = glm::perspective(90.f, 1.f, 1.f, 100.f);
+			glm::mat4 lightProjection = glm::perspective(glm::radians(90.f), 1.f, 1.f, 100.f);
 			std::vector<glm::mat4> lightVPs;
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f)) );
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
 			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
 			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 1.f, 0.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 1.f, 0.f)) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)) );
 
 			for (int j = 0; j < meshRenderers.size(); j++)
 			{

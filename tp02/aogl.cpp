@@ -396,15 +396,18 @@ int main( int argc, char **argv )
 	// an entity with a light : 
 	Entity* newEntity = new Entity(&scene);
 	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
-	SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
-	spotLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
-	newEntity->add(boxColliderLight).add(spotLight);
+	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
+	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
+	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+	newEntity->add(boxColliderLight).add(pointLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 
 
 	//renderers : 
 	MeshRenderer* cubeRenderer01 = new MeshRenderer(&cube, &brickMaterial);
 	MeshRenderer* cubeRenderer02 = new MeshRenderer(&cube, &brickMaterial);
+	MeshRenderer* cubeRenderer03 = new MeshRenderer(&cube, &brickMaterial);
+	MeshRenderer* cubeRenderer04 = new MeshRenderer(&cube, &brickMaterial);
 
 	//MeshRenderer cubeRenderer02;
 	//cubeRenderer02.mesh = &cube;
@@ -415,6 +418,8 @@ int main( int argc, char **argv )
 	//colliders : 
 	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
 	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider03 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider04 = new BoxCollider(&cubeWireFrameRenderer);
 
 	//entities : 
 	//cube entity 01
@@ -426,8 +431,23 @@ int main( int argc, char **argv )
 	Entity* entity_cube02 = new Entity(&scene);
 	entity_cube02->add(cubeRenderer02);
 	entity_cube02->add(boxCollider02);
-	entity_cube02->setTranslation(glm::vec3(0, -2, 0));
+	entity_cube02->setTranslation(glm::vec3(0, 4, 0));
 	entity_cube02->setScale(glm::vec3(10, 1, 10));
+	//cube entity 03
+	Entity* entity_cube03= new Entity(&scene);
+	entity_cube03->add(cubeRenderer03);
+	entity_cube03->add(boxCollider03);
+	entity_cube03->setScale(glm::vec3(10, 1, 10));
+	entity_cube03->setTranslation(glm::vec3(4, 2, 0));
+	entity_cube03->setRotation( glm::quat( glm::vec3(0, 0, -glm::pi<float>()*0.5f) ));
+	//cube entity 04
+	Entity* entity_cube04 = new Entity(&scene);
+	entity_cube04->add(cubeRenderer04);
+	entity_cube04->add(boxCollider04);
+	entity_cube04->setTranslation(glm::vec3(0, -2, 0));
+	entity_cube04->setScale(glm::vec3(10, 1, 10));
+	entity_cube04->setTranslation(glm::vec3(0, 2, 4));
+	entity_cube04->setRotation(glm::quat(glm::vec3(-glm::pi<float>()*0.5f, 0, 0)));
 
 
 
