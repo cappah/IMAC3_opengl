@@ -42,6 +42,8 @@
 *.pdb
 *.idb
 *.ilk
+*.user
+*.filters
 
 # Old tp02
 tp02_old/*
