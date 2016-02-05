@@ -37,6 +37,18 @@
 *.md
 *.sdf
 *.sln
+*.sln
 *.vcxproj.*
 *.opendb
+*.pdb
+*.idb
+*.ilk
+*.user
+*.filters
 
+# Old tp02
+tp02_old/*
+tp02_old_old/*
+tp02 - Copie/*
+tp02 - Copie - 2/*
+videos/*
