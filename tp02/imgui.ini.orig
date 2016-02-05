@@ -1,5 +1,5 @@
 [Debug]
-Pos=8,40
+Pos=351,342
 Size=895,98
 Collapsed=0
 
@@ -14,8 +14,13 @@ Size=322,181
 Collapsed=0
 
 [selected entities]
+<<<<<<< HEAD
+Pos=895,354
+Size=427,370
+=======
 Pos=106,113
 Size=267,235
+>>>>>>> td3-pointLightShadow
 Collapsed=0
 
 [Terrain tool]
@@ -24,13 +29,18 @@ Size=498,282
 Collapsed=0
 
 [Texture factory]
-Pos=82,431
+Pos=319,137
 Size=423,154
 Collapsed=0
 
 [Mesh factory]
+<<<<<<< HEAD
+Pos=109,296
+Size=418,127
+=======
 Pos=2,317
 Size=388,105
+>>>>>>> td3-pointLightShadow
 Collapsed=0
 
 [Program factory]
@@ -39,7 +49,7 @@ Size=210,106
 Collapsed=0
 
 [Material factory]
-Pos=45,213
+Pos=272,114
 Size=175,145
 Collapsed=0
 
@@ -49,17 +59,22 @@ Size=263,246
 Collapsed=0
 
 [Skybox tool]
-Pos=24,73
+Pos=788,316
 Size=323,91
+Collapsed=0
+
+[windowContent]
+Pos=0,20
+Size=1024,660
 Collapsed=0
 
 [topLeftWindow]
 Pos=0,20
-Size=100,770
+Size=301,638
 Collapsed=0
 
 [bottomWindow]
-Pos=0,790
-Size=1920,227
+Pos=0,658
+Size=1920,359
 Collapsed=0
 

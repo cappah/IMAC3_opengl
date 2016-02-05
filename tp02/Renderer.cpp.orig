@@ -354,6 +354,9 @@ void Renderer::renderShadows(const glm::mat4& lightProjection, const glm::mat4& 
 
 }
 
+<<<<<<< HEAD
+void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags)
+=======
 void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, MeshRenderer & meshRenderer)
 {
 	//get modelMatrix
@@ -374,7 +377,8 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 }
 
 
-void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags)
+void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox)
+>>>>>>> td3-pointLightShadow
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 

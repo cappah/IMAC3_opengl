@@ -39,7 +39,6 @@
 #include "Editor.h"
 #include "Ray.h"
 #include "Renderer.h"
-#include "Scene.h"
 #include "Factories.h"
 #include "Flag.h"
 #include "Scene.h"
@@ -410,6 +409,8 @@ int main( int argc, char **argv )
 	//renderers : 
 	MeshRenderer* cubeRenderer01 = new MeshRenderer(&cube, &brickMaterial);
 	MeshRenderer* cubeRenderer02 = new MeshRenderer(&cube, &brickMaterial);
+	MeshRenderer* cubeRenderer03 = new MeshRenderer(&cube, &brickMaterial);
+	MeshRenderer* cubeRenderer04 = new MeshRenderer(&cube, &brickMaterial);
 
 	//MeshRenderer cubeRenderer02;
 	//cubeRenderer02.mesh = &cube;
@@ -420,9 +421,11 @@ int main( int argc, char **argv )
 	//colliders : 
 	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
 	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider03 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider04 = new BoxCollider(&cubeWireFrameRenderer);
 
 	//entities : 
-	
+	/*
 	//cube entity 01
 	Entity* entity_cube01 = new Entity(&scene);
 	entity_cube01->add(cubeRenderer01);
@@ -432,9 +435,14 @@ int main( int argc, char **argv )
 	Entity* entity_cube02 = new Entity(&scene);
 	entity_cube02->add(cubeRenderer02);
 	entity_cube02->add(boxCollider02);
+<<<<<<< HEAD
 	entity_cube02->setTranslation(glm::vec3(3, -2, 0));
 	entity_cube02->setScale(glm::vec3(10, 1, 10));
-	/*
+	*/
+=======
+	entity_cube02->setTranslation(glm::vec3(0, 4, 0));
+	entity_cube02->setScale(glm::vec3(10, 1, 10));
+	//cube entity 03
 	Entity* entity_cube03= new Entity(&scene);
 	entity_cube03->add(cubeRenderer03);
 	entity_cube03->add(boxCollider03);
@@ -449,7 +457,7 @@ int main( int argc, char **argv )
 	entity_cube04->setScale(glm::vec3(10, 1, 10));
 	entity_cube04->setTranslation(glm::vec3(0, 2, 4));
 	entity_cube04->setRotation(glm::quat(glm::vec3(-glm::pi<float>()*0.5f, 0, 0)));
-	*/
+>>>>>>> td3-pointLightShadow
 
 	//flage entity : 
 	Material* tmpMat = MaterialFactory::get().get("default");
