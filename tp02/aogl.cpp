@@ -39,6 +39,7 @@
 #include "Editor.h"
 #include "Ray.h"
 #include "Renderer.h"
+#include "Scene.h"
 #include "Factories.h"
 #include "Flag.h"
 #include "Scene.h"
@@ -366,7 +367,7 @@ int main( int argc, char **argv )
 	// renderer : 
 	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
 	renderer.initPostProcessQuad("blit.vert", "blit.frag");
-	renderer.initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag");
+	renderer.initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag", "shadowPassOmni.vert", "shadowPassOmni.frag", "shadowPassOmni.geom");
 
 	// Our scene : 
 	Scene scene(&renderer);
@@ -399,9 +400,10 @@ int main( int argc, char **argv )
 	// an entity with a light : 
 	Entity* newEntity = new Entity(&scene);
 	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
-	SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
-	spotLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
-	newEntity->add(boxColliderLight).add(spotLight);
+	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
+	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
+	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+	newEntity->add(boxColliderLight).add(pointLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 
 
@@ -433,6 +435,20 @@ int main( int argc, char **argv )
 	entity_cube02->setTranslation(glm::vec3(3, -2, 0));
 	entity_cube02->setScale(glm::vec3(10, 1, 10));
 	*/
+	Entity* entity_cube03= new Entity(&scene);
+	entity_cube03->add(cubeRenderer03);
+	entity_cube03->add(boxCollider03);
+	entity_cube03->setScale(glm::vec3(10, 1, 10));
+	entity_cube03->setTranslation(glm::vec3(4, 2, 0));
+	entity_cube03->setRotation( glm::quat( glm::vec3(0, 0, -glm::pi<float>()*0.5f) ));
+	//cube entity 04
+	Entity* entity_cube04 = new Entity(&scene);
+	entity_cube04->add(cubeRenderer04);
+	entity_cube04->add(boxCollider04);
+	entity_cube04->setTranslation(glm::vec3(0, -2, 0));
+	entity_cube04->setScale(glm::vec3(10, 1, 10));
+	entity_cube04->setTranslation(glm::vec3(0, 2, 4));
+	entity_cube04->setRotation(glm::quat(glm::vec3(-glm::pi<float>()*0.5f, 0, 0)));
 
 	//flage entity : 
 	Material* tmpMat = MaterialFactory::get().get("default");

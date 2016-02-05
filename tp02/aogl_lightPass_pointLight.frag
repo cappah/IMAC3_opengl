@@ -19,8 +19,8 @@ uniform mat4 ScreenToWorld;
 uniform vec3 CameraPosition;
  
  //shadow : 
- uniform sampler2D Shadow;
- uniform mat4 WorldToLightScreen;
+ uniform samplerCube Shadow;
+ uniform float FarPlane;
 
 //lights struct : 
 
@@ -76,9 +76,14 @@ void main(void)
 	vec3 color = computePointLight( pointLight, p, n, diffuse, specular, specularPower * 100 );
 
 	//shadow
-	vec4 wlP = WorldToLightScreen * vec4(p, 1.0);
-	vec3 lP = vec3(wlP/wlP.w) * 0.5 + 0.5;
-	float lDepth = texture(Shadow, lP.xy).r;
+	float shadowBias = 0.01f;
+	vec3 lightToFrag = p - pointLight.position;
+	float clothestDepth = texture(Shadow, lightToFrag).r;
+	clothestDepth *= FarPlane;
+	float currentDepth = length(lightToFrag);
 
-    Color = vec4(color, 1.0);
+	if(clothestDepth + shadowBias > currentDepth)
+		Color = vec4(color, 1.0);
+	else
+		Color = vec4(0.0, 0.0, 0.0, 1.0);
 }

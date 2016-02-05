@@ -39,6 +39,61 @@ ShadowMap::~ShadowMap()
 	glDeleteFramebuffers(1, &shadowFrameBuffer);
 }
 
+///////////////////////////////////////////////////
+
+OmniShadowMap::OmniShadowMap(int _textureWidth, int _textureHeight) : textureWidth(_textureWidth), textureHeight(_textureHeight)
+{
+	glGenFramebuffers(1, &shadowFrameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFrameBuffer);
+
+	/*
+	//initialyze shadowRenderBuffer : 
+	glGenRenderbuffers(1, &shadowRenderBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, shadowRenderBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, textureWidth, textureHeight);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, shadowRenderBuffer);
+	*/
+
+	//initialyze shadow cube texture : 
+	glGenTextures(1, &shadowTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, shadowTexture);
+	for (int i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, textureWidth, textureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowTexture, 0);
+
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		fprintf(stderr, "Error on building shadow framebuffer\n");
+		exit(EXIT_FAILURE);
+	}
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+OmniShadowMap::~OmniShadowMap()
+{
+	glDeleteTextures(1, &shadowTexture);
+	glDeleteRenderbuffers(1, &shadowRenderBuffer);
+	glDeleteFramebuffers(1, &shadowFrameBuffer);
+}
+
+
+
+///////////////////////////////////////////////////////
+
 LightManager::LightManager() //: globalIntensity(0.f)
 {
 
@@ -61,34 +116,83 @@ void LightManager::init(GLuint glProgram_pointLight, GLuint glProgram_directiona
 	uniform_spotLight_angle = glGetUniformLocation(glProgram_spotLight, "spotLight.angle");
 }
 
-void LightManager::setShadowMapCount(unsigned int count)
+void LightManager::setShadowMapCount(LightType lightType, unsigned int count)
 {
-	shadowMaps.resize(count);	
+	if (lightType == LightType::SPOT)
+	{
+		spot_shadowMaps.resize(count);
+	}
+	else if (lightType == LightType::DIRECTIONAL)
+	{
+		directional_shadowMaps.resize(count);
+	}
+	else
+	{
+		point_shadowMaps.resize(count);
+	}
 }
 
-int LightManager::getShadowMapCount()
+int LightManager::getShadowMapCount(LightType lightType)
 {
-	return shadowMaps.size();
+	if (lightType == LightType::SPOT)
+	{
+		return spot_shadowMaps.size();
+	}
+	else if (lightType == LightType::DIRECTIONAL)
+	{
+		return directional_shadowMaps.size();
+	}
+	else
+	{
+		return point_shadowMaps.size();
+	}
 }
 
-void LightManager::bindShadowMapFBO(int index)
+void LightManager::bindShadowMapFBO(LightType lightType, int index)
 {
-	assert(index >= 0 && index < shadowMaps.size());
+	if (lightType == LightType::SPOT)
+	{
+		assert(index >= 0 && index < spot_shadowMaps.size());
+		glBindFramebuffer(GL_FRAMEBUFFER, spot_shadowMaps[index].shadowFrameBuffer);
+		glViewport(0, 0, spot_shadowMaps[index].textureWidth, spot_shadowMaps[index].textureHeight);
+	}
+	else if (lightType == LightType::DIRECTIONAL)
+	{
+		assert(index >= 0 && index < directional_shadowMaps.size());
+		glBindFramebuffer(GL_FRAMEBUFFER, directional_shadowMaps[index].shadowFrameBuffer);
+		glViewport(0, 0, directional_shadowMaps[index].textureWidth, directional_shadowMaps[index].textureHeight);
+	}
+	else
+	{
+		assert(index >= 0 && index < point_shadowMaps.size());
+		glBindFramebuffer(GL_FRAMEBUFFER, point_shadowMaps[index].shadowFrameBuffer);
+		glViewport(0, 0, point_shadowMaps[index].textureWidth, point_shadowMaps[index].textureHeight);
+	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowMaps[index].shadowFrameBuffer);
-	glViewport(0, 0, shadowMaps[index].textureWidth, shadowMaps[index].textureHeight);
 }
 
-void LightManager::unbindShadowMapFBO()
+void LightManager::unbindShadowMapFBO(LightType lightType)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void LightManager::bindShadowMapTexture(int index)
+void LightManager::bindShadowMapTexture(LightType lightType, int index)
 {
-	assert(index >= 0 && index < shadowMaps.size());
-
-	glBindTexture(GL_TEXTURE_2D, shadowMaps[index].shadowTexture);
+	if (lightType == LightType::SPOT)
+	{
+		assert(index >= 0 && index < spot_shadowMaps.size());
+		glBindTexture(GL_TEXTURE_2D, spot_shadowMaps[index].shadowTexture);
+	}
+	else if (lightType == LightType::DIRECTIONAL)
+	{
+		assert(index >= 0 && index < directional_shadowMaps.size());
+		glBindTexture(GL_TEXTURE_2D, directional_shadowMaps[index].shadowTexture);
+	}
+	else
+	{
+		assert(index >= 0 && index < point_shadowMaps.size());
+		glBindTexture(GL_TEXTURE_CUBE_MAP, point_shadowMaps[index].shadowTexture);
+	}
 }
 
 void LightManager::uniformPointLight(PointLight & light)

@@ -24,8 +24,24 @@ struct ShadowMap
 	~ShadowMap();
 };
 
+struct OmniShadowMap // omnidirectional shadow map for point lights
+{
+	int textureWidth;
+	int textureHeight;
+
+	GLuint shadowFrameBuffer;
+	GLuint shadowRenderBuffer;
+	GLuint shadowTexture;
+
+	OmniShadowMap(int _textureWidth = 1024, int _textureHeight = 1024);
+	~OmniShadowMap();
+};
+
 class LightManager
 {
+public:
+	enum LightType {POINT, DIRECTIONAL, SPOT};
+
 private:
 
 	GLuint uniform_pointLight_pos;
@@ -43,7 +59,9 @@ private:
 	GLuint uniform_spotLight_angle;
 
 	//shadows : 
-	std::vector<ShadowMap> shadowMaps;
+	std::vector<ShadowMap> spot_shadowMaps;
+	std::vector<ShadowMap> directional_shadowMaps;
+	std::vector<OmniShadowMap> point_shadowMaps;
 
 
 public:
@@ -51,12 +69,12 @@ public:
 	
 	void init(GLuint glProgram_pointLight, GLuint glProgram_directionalLight, GLuint glProgram_spotLight);
 
-	void setShadowMapCount(unsigned int count);
-	int getShadowMapCount();
+	void setShadowMapCount(LightType lightType, unsigned int count);
+	int getShadowMapCount(LightType lightType);
 	//bind shadow map and resize viewport to cover the right area on screen
-	void bindShadowMapFBO(int index);
-	void unbindShadowMapFBO();
-	void bindShadowMapTexture(int index);
+	void bindShadowMapFBO(LightType lightType, int index);
+	void unbindShadowMapFBO(LightType lightType);
+	void bindShadowMapTexture(LightType lightType, int index);
 
 
 	void uniformPointLight(PointLight& light);
