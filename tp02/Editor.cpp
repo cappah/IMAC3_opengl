@@ -774,6 +774,9 @@ void Editor::toggleLightsBoundingBoxVisibility(Scene& scene)
 
 void Editor::updateGuiStates(GLFWwindow* window)
 {
+	ImGuiIO& io = ImGui::GetIO();
+	m_guiStates.mouseOverUI = io.WantCaptureMouse;
+	m_guiStates.UICaptureKeyboard = io.WantCaptureKeyboard;
 
 	// Mouse states
 	m_guiStates.leftButton = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
@@ -912,89 +915,101 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	m_gizmo->setScale(distanceToCamera*0.1f);
 
 	updateGuiStates(window);
-	if (!m_cameraFPS)
-		updateCameraMovement_editor(window);
-	else
-		updateCameraMovement_fps(window);
 
-
-	// ui visibility : 
-	if (inputHandler.getKeyDown(window, GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
+	//camera movements : 
+	
+	if (!m_guiStates.UICaptureKeyboard)
 	{
-		this->toggleDebugVisibility(scene);
-	}
 
-	//entity copy / past : 
-	if (inputHandler.getKeyDown(window, GLFW_KEY_D) && m_guiStates.ctrlPressed)
-	{
-		this->duplicateSelected();
-	}
-
-	//delete selected : 
-	if (inputHandler.getKeyDown(window, GLFW_KEY_DELETE))
-	{
-		this->deleteSelected(scene);
-	}
-
-	//object picking : 
-	if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
-		&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
-	{
-		float screenWidth = Application::get().getWindowWidth();
-		float screenHeight = Application::get().getWindowHeight();
-
-		glm::vec3 origin = m_camera->eye;
-		double mouseX, mouseY;
-		glfwGetCursorPos(window, &mouseX, &mouseY);
-		glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
-		//direction = direction - origin;
-		//direction = glm::normalize(direction);
-
-		Ray ray(origin, direction, 1000.f);
-
-		// intersection with gizmo
-		if (this->testGizmoIntersection(ray))
-		{
-			this->beginMoveGizmo();
-		}
-		//intersection with a collider in the scene
+		if (!m_cameraFPS)
+			updateCameraMovement_editor(window);
 		else
-		{
-			auto entities = scene.getEntities();
-			float distanceToIntersection = 0;
-			float minDistanceToIntersection = 0;
-			Entity* selectedEntity = nullptr;
-			for (int i = 0, intersectedCount = 0; i < entities.size(); i++)
-			{
-				Collider* collider = static_cast<Collider*>(entities[i]->getComponent(Component::ComponentType::COLLIDER));
-				if (entities[i]->getComponent(Component::ComponentType::COLLIDER) != nullptr)
-				{
-					if (ray.intersect(*collider, &distanceToIntersection))
-					{
-						if (intersectedCount == 0 || distanceToIntersection < minDistanceToIntersection)
-						{
-							selectedEntity = entities[i];
-							minDistanceToIntersection = distanceToIntersection;
-						}
-						intersectedCount++;
+			updateCameraMovement_fps(window);
 
-						//std::cout << "intersect a cube !!!" << std::endl;
-						//ray.debugLog();
+		// ui visibility : 
+		if (inputHandler.getKeyDown(window, GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
+		{
+			this->toggleDebugVisibility(scene);
+		}
+
+		//entity copy / past : 
+		if (inputHandler.getKeyDown(window, GLFW_KEY_D) && m_guiStates.ctrlPressed)
+		{
+			this->duplicateSelected();
+		}
+
+		//delete selected : 
+		if (inputHandler.getKeyDown(window, GLFW_KEY_DELETE))
+		{
+			this->deleteSelected(scene);
+		}
+
+	}
+
+	if (!m_guiStates.mouseOverUI)
+	{
+		//object picking : 
+		if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
+			&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
+		{
+			float screenWidth = Application::get().getWindowWidth();
+			float screenHeight = Application::get().getWindowHeight();
+
+			glm::vec3 origin = m_camera->eye;
+			double mouseX, mouseY;
+			glfwGetCursorPos(window, &mouseX, &mouseY);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
+			//direction = direction - origin;
+			//direction = glm::normalize(direction);
+
+			Ray ray(origin, direction, 1000.f);
+
+			// intersection with gizmo
+			if (this->testGizmoIntersection(ray))
+			{
+				this->beginMoveGizmo();
+			}
+			//intersection with a collider in the scene
+			else
+			{
+				auto entities = scene.getEntities();
+				float distanceToIntersection = 0;
+				float minDistanceToIntersection = 0;
+				Entity* selectedEntity = nullptr;
+				for (int i = 0, intersectedCount = 0; i < entities.size(); i++)
+				{
+					Collider* collider = static_cast<Collider*>(entities[i]->getComponent(Component::ComponentType::COLLIDER));
+					if (entities[i]->getComponent(Component::ComponentType::COLLIDER) != nullptr)
+					{
+						if (ray.intersect(*collider, &distanceToIntersection))
+						{
+							if (intersectedCount == 0 || distanceToIntersection < minDistanceToIntersection)
+							{
+								selectedEntity = entities[i];
+								minDistanceToIntersection = distanceToIntersection;
+							}
+							intersectedCount++;
+
+							//std::cout << "intersect a cube !!!" << std::endl;
+							//ray.debugLog();
+						}
 					}
+				}
+
+				if (selectedEntity != nullptr)
+				{
+					if (!m_guiStates.shiftPressed)
+						this->changeCurrentSelected(selectedEntity);
+					else
+						this->toggleCurrentSelected(selectedEntity);
 				}
 			}
 
-			if (selectedEntity != nullptr)
-			{
-				if (!m_guiStates.shiftPressed)
-					this->changeCurrentSelected(selectedEntity);
-				else
-					this->toggleCurrentSelected(selectedEntity);
-			}
 		}
 
 	}
-	else if (inputHandler.getMouseButtonUp(window, GLFW_MOUSE_BUTTON_LEFT))
+
+	if (inputHandler.getMouseButtonUp(window, GLFW_MOUSE_BUTTON_LEFT))
 	{
 		if (this->isMovingGizmo())
 			this->endMoveGizmo();
@@ -1015,6 +1030,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 			this->moveGizmo(ray);
 		}
 	}
+	
 }
 
 Camera& Editor::getCamera()

@@ -36,6 +36,9 @@ public:
 
 struct GUIStates
 {
+	bool mouseOverUI;
+	bool UICaptureKeyboard;
+
 	bool panLock;
 	bool turnLock;
 	bool zoomLock;
