@@ -177,3 +177,45 @@ glm::vec3 vertexFrom3Floats(const std::vector<float>& vertices, int indice)
 	indice *= 3;
 	return glm::vec3(vertices[indice], vertices[indice + 1], vertices[indice + 2]);
 }
+
+int idx2DToIdx1D(int i, int j, int array2DWidth)
+{
+	return j*array2DWidth + i;
+}
+
+bool rayOBBoxIntersect(glm::vec3 Start, glm::vec3 Dir, glm::vec3 P, glm::vec3 H[3], glm::vec3 E, float* t)
+{
+	float tfirst = 0.0f, tlast = 1.0f;
+
+	if (!raySlabIntersect(glm::dot(Start, H[0]), glm::dot(Dir, H[0]), glm::dot(P, H[0] - E.x),glm::dot(P , H[0] + E.x), &tfirst, &tlast)) return false;
+	if (!raySlabIntersect(glm::dot(Start, H[1]), glm::dot(Dir, H[1]), glm::dot(P, H[1] - E.y), glm::dot(P, H[1] + E.y), &tfirst, &tlast)) return false;
+	if (!raySlabIntersect(glm::dot(Start, H[2]), glm::dot(Dir, H[2]), glm::dot(P, H[2] - E.z), glm::dot(P, H[2] + E.z), &tfirst, &tlast)) return false;
+
+	*t = tfirst;
+	return true;
+}
+
+
+bool raySlabIntersect(float start, float dir, float min, float max, float* tfirst, float* tlast)
+{
+	if (fabs(dir) < 0.00000001)
+	{
+		return (start < max && start > min);
+	}
+
+	float tmin = (min - start) / dir;
+	float tmax = (max - start) / dir;
+	if (tmin > tmax)
+	{
+		float w = tmin;
+		tmin = tmax;
+		tmax = w;
+	}
+
+	if (tmax < *tfirst || tmin > *tlast)
+		return false;
+
+	if (tmin > *tfirst) (*tfirst) = tmin;
+	if (tmax < *tlast)  (*tlast) = tmax;
+	return true;
+}
