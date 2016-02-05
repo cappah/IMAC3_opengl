@@ -2,8 +2,6 @@
 
 namespace Physic {
 
-
-
 	Point::Point() : vitesse(0.f, 0.f, 0.f), masse(0.f), force(0.f, 0.f, 0.f), position(0.f, 0.f, 0.f)
 	{
 

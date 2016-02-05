@@ -50,7 +50,13 @@ Scene& Scene::add(MeshRenderer * meshRenderer)
 	return *this;
 }
 
-Scene & Scene::erase(Entity * entity)
+Scene& Scene::add(Physic::Flag * flag)
+{
+	m_flags.push_back(flag);
+	return *this;
+}
+
+Scene& Scene::erase(Entity * entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
 
@@ -128,9 +134,22 @@ Scene & Scene::erase(MeshRenderer * meshRenderer)
 	return *this;
 }
 
+Scene & Scene::erase(Physic::Flag * flag)
+{
+	auto findIt = std::find(m_flags.begin(), m_flags.end(), flag);
+
+	if (findIt != m_flags.end())
+	{
+		delete flag;
+		m_flags.erase(findIt);
+	}
+
+	return *this;
+}
+
 void Scene::render(const Camera& camera)
 {
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox);
+	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags);
 }
 
 void Scene::renderColliders(const Camera & camera)
@@ -149,6 +168,11 @@ void Scene::renderDebugLights(const Camera & camera)
 {
 	if(m_areLightsBoundingBoxVisible)
 		m_renderer->debugDrawLights(camera, m_pointLights, m_spotLights);
+}
+
+void Scene::updatePhysic(float deltaTime)
+{
+	m_physicManager.update(deltaTime, m_flags);
 }
 
 void Scene::toggleColliderVisibility()

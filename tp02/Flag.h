@@ -12,10 +12,11 @@
 #include "Utils.h"
 #include "Mesh.h"
 #include "Materials.h"
+#include "Component.h"
 
 namespace Physic {
 
-	class Flag
+	class Flag : public Component
 	{
 		std::vector<Point> pointContainer;
 		std::vector<Link> linkShape; //maillages structurel (d4)
@@ -23,6 +24,8 @@ namespace Physic {
 		std::vector<Link> linkBlending; //maillage pont (tout les deux points)
 
 		Mesh m_mesh;
+
+		std::string m_materialName;
 		Material *m_material;
 
 		glm::vec3 gravity;
@@ -33,6 +36,7 @@ namespace Physic {
 
 	public:
 		Flag(Material* material, int subdivision = 10, float width = 10.f, float height = 10.f);
+		~Flag();
 
 		void update(float deltaTime);
 		void synchronizeVisual(); // update the mesh to follow the physic points
@@ -44,6 +48,13 @@ namespace Physic {
 		void setGravity(const glm::vec3& _gravity);
 	
 		void render(const glm::mat4& projection, const glm::mat4& view);
+
+		void drawUI();
+
+		// Inherited via Component
+		virtual void eraseFromScene(Scene & scene) override;
+		virtual void addToScene(Scene & scene) override;
+		virtual Component * clone(Entity * entity) override;
 	};
 
 }

@@ -284,6 +284,16 @@ Entity& Entity::add(MeshRenderer * meshRenderer)
 	return *this;
 }
 
+Entity & Entity::add(Physic::Flag * flag)
+{
+	flag->attachToEntity(this);
+
+	m_scene->add(flag);
+	m_components.push_back(flag);
+
+	return *this;
+}
+
 Entity& Entity::erase(PointLight * pointLight)
 {
 	auto findIt = std::find(m_components.begin(), m_components.end(), pointLight);
@@ -344,6 +354,19 @@ Entity& Entity::erase(MeshRenderer * meshRenderer)
 	{
 		m_components.erase(findIt);
 		m_scene->erase(meshRenderer);
+	}
+
+	return *this;
+}
+
+Entity & Entity::erase(Physic::Flag * flag)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), flag);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(flag);
 	}
 
 	return *this;

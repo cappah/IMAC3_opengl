@@ -322,8 +322,7 @@ void Renderer::renderShadows(const glm::mat4& lightProjection, const glm::mat4& 
 
 }
 
-
-void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox)
+void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
@@ -388,6 +387,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	// Clear the front buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	//render meshes
 	for (int i = 0; i < meshRenderers.size(); i++)
 	{
 		glm::mat4 modelMatrix = meshRenderers[i]->entity()->getModelMatrix(); //get modelMatrix
@@ -401,6 +401,13 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 		meshRenderers[i]->getMesh()->draw();
 	}
 
+	//render physic flags : 
+	for (int i = 0; i < flags.size(); i++)
+	{
+		flags[i]->render(projection, worldToView);
+	}
+
+	//render terrain : 
 	terrain.render(projection, worldToView);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

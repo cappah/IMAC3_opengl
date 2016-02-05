@@ -14,7 +14,7 @@ class Scene;
 class Component
 {
 public:
-	enum ComponentType {COLLIDER, MESH_RENDERER, LIGHT, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, COMPONENT_COUNT};
+	enum ComponentType {COLLIDER, MESH_RENDERER, LIGHT, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, COMPONENT_COUNT, FLAG};
 
 protected:
 	Entity* m_entity;

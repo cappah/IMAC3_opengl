@@ -10,6 +10,7 @@
 #include "Terrain.h"
 #include "Skybox.h"
 #include "Materials.h"
+#include "Flag.h"
 
 
 
@@ -71,7 +72,7 @@ public:
 	void renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, MeshRenderer& meshRenderer);
 
 	//render all entities of the scene, using deferred shading.
-	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox);
+	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags);
 
 	//draw colliders on scene.
 	void debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities);

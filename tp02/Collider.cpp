@@ -160,14 +160,15 @@ bool BoxCollider::isIntersectedByRay(const Ray& ray, float* t)
 {
 	glm::vec3 dir = ray.getDirection();
 	glm::vec3 orig = ray.getOrigin();
-
+	/*
 	glm::vec3 H[3];
 	H[0] = rotation*glm::vec3(1.f, 0.f, 0.f);
 	H[1] = rotation*glm::vec3(0.f, 1.f, 0.f);
 	H[2] = rotation*glm::vec3(0.f, 0.f, 1.f);
 	bool test = rayOBBoxIntersect(orig, dir, translation, H, scale, t);
 	return test;
-	/*
+	*/
+	
 	// r.dir is unit direction vector of ray
 	glm::vec3 dirfrac;
 	dirfrac.x = 1.0f / dir.x;
@@ -210,7 +211,7 @@ bool BoxCollider::isIntersectedByRay(const Ray& ray, float* t)
 		return false;
 
 	return true;
-	*/
+	
 
 	/*
 

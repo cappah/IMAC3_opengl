@@ -16,6 +16,7 @@
 #include "MeshRenderer.h"
 #include "Collider.h"
 #include "Lights.h"
+#include "Flag.h"
 
 #include "glm/gtc/quaternion.hpp"
 
@@ -96,6 +97,7 @@ public:
 	Entity& add(SpotLight* spotLight);
 	Entity& add(Collider* collider);
 	Entity& add(MeshRenderer* meshRenderer);
+	Entity& add(Physic::Flag* flag);
 
 	// functions to erase components : 
 	Entity& erase(PointLight* pointLight);
@@ -103,6 +105,7 @@ public:
 	Entity& erase(SpotLight* spotLight);
 	Entity& erase(Collider* collider);
 	Entity& erase(MeshRenderer* meshRenderer);
+	Entity& erase(Physic::Flag* flag);
 
 	void eraseAllComponents();
 

@@ -39,8 +39,9 @@
 #include "Editor.h"
 #include "Ray.h"
 #include "Renderer.h"
-#include "Scene.h"
 #include "Factories.h"
+#include "Flag.h"
+#include "Scene.h"
 
 #ifndef DEBUG_PRINT
 #define DEBUG_PRINT 1
@@ -334,10 +335,12 @@ int main( int argc, char **argv )
 	TextureFactory::get().add("brickBump", bumpTexture);
 
 	// materials : 
+	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
 
 	//material factories : 
+	MaterialFactory::get().add("default", &defaultMaterial);
 	MaterialFactory::get().add("brick", &brickMaterial);
 	MaterialFactory::get().add("wireframe", &wireframeMaterial);
 
@@ -417,22 +420,32 @@ int main( int argc, char **argv )
 	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrameRenderer);
 
 	//entities : 
+	/*
 	//cube entity 01
 	Entity* entity_cube01 = new Entity(&scene);
 	entity_cube01->add(cubeRenderer01);
 	entity_cube01->add(boxCollider01);
-	entity_cube01->setTranslation( glm::vec3(0, 0, 0) );
+	entity_cube01->setTranslation( glm::vec3(3, 0, 0) );
 	//cube entity 02
 	Entity* entity_cube02 = new Entity(&scene);
 	entity_cube02->add(cubeRenderer02);
 	entity_cube02->add(boxCollider02);
-	entity_cube02->setTranslation(glm::vec3(0, -2, 0));
+	entity_cube02->setTranslation(glm::vec3(3, -2, 0));
 	entity_cube02->setScale(glm::vec3(10, 1, 10));
+	*/
 
+	//flage entity : 
+	Material* tmpMat = MaterialFactory::get().get("default");
+	Physic::Flag* flag = new Physic::Flag(tmpMat);
+
+	Entity* entity_flag = new Entity(&scene);
+	entity_flag->add(flag);
 
 
 	//editor : 
 	Editor editor(&wireframeMaterial);
+
+	float deltaTime = 0.f;
 
 	//main loop
     do
@@ -440,6 +453,8 @@ int main( int argc, char **argv )
         t = glfwGetTime();
         ImGui_ImplGlfwGL3_NewFrame();
 
+		//Physics : 
+		scene.updatePhysic(deltaTime);
 
 		//check if window has been resized by user
 		if (Application::get().getWindowResize())
@@ -490,7 +505,6 @@ int main( int argc, char **argv )
 
         ImGui::Render();
 
-
         glDisable(GL_BLEND);
 #endif
 
@@ -502,6 +516,7 @@ int main( int argc, char **argv )
         glfwPollEvents();
 
         double newTime = glfwGetTime();
+		deltaTime = newTime - t;
         fps = 1.f/ (newTime - t);
     } // Check if the ESC key was pressed
     while( glfwGetKey( window, GLFW_KEY_ESCAPE ) != GLFW_PRESS );

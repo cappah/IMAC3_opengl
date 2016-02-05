@@ -5,12 +5,15 @@
 #include "Entity.h"
 #include "Lights.h"
 #include "Collider.h"
+#include "Flag.h"
+#include "PhysicManager.h"
 
 #include "LightManager.h"
 #include "Renderer.h"
 #include "Camera.h"
 #include "Terrain.h"
 #include "Skybox.h"
+#include "PhysicManager.h"
 
 class Scene
 {
@@ -29,7 +32,11 @@ private:
 	//meshRenderers : 
 	std::vector<MeshRenderer*> m_meshRenderers;
 
+	//flag : 
+	std::vector<Physic::Flag*> m_flags;
+
 	Renderer* m_renderer;
+	Physic::PhysicManager m_physicManager;
 
 	bool m_areCollidersVisible;
 	bool m_isDebugDeferredVisible;
@@ -50,6 +57,7 @@ public:
 	Scene& add(SpotLight* spotLight);
 	Scene& add(Collider* collider);
 	Scene& add(MeshRenderer* meshRenderer);
+	Scene& add(Physic::Flag* flag);
 
 	Scene& erase(Entity* entity);
 	Scene& erase(PointLight* pointLight);
@@ -57,11 +65,14 @@ public:
 	Scene& erase(SpotLight* spotLight);
 	Scene& erase(Collider* collider);
 	Scene& erase(MeshRenderer* meshRenderer);
+	Scene& erase(Physic::Flag* flag);
 
 	void render(const Camera& camera);
 	void renderColliders(const Camera& camera);
 	void renderDebugDeferred();
 	void renderDebugLights(const Camera& camera);
+
+	void updatePhysic(float deltaTime);
 
 	void toggleColliderVisibility();
 	void toggleDebugDeferredVisibility();

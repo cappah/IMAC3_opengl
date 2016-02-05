@@ -1,8 +1,11 @@
 #include "Flag.h"
+#include "Scene.h"
+#include "Entity.h"
+#include "Factories.h"
 
 namespace Physic {
 
-	Flag::Flag(Material* material, int subdivision, float width, float height) : m_material(material), m_subdivision(subdivision), m_width(width), m_height(height)
+	Flag::Flag(Material* material, int subdivision, float width, float height) : Component(FLAG), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height)
 	{
 
 		float paddingX = m_width / (float)m_subdivision;
@@ -76,58 +79,59 @@ namespace Physic {
 		m_mesh.initGl();
 
 		//intialyze physic links : 
-		for (int j = 1; j < m_subdivision - 1; j++)
+		for (int j = 0; j < m_subdivision; j++)
 		{
-			for (int i = 1; i < m_subdivision - 1; i++)
+			for (int i = 0; i < m_subdivision; i++)
 			{
-				Point* current = &pointContainer[ idx2DToIdx1D(i, j, m_subdivision) ];
-				Point* left = &pointContainer[ idx2DToIdx1D(i-1, j, m_subdivision) ];
-				Point* right = &pointContainer[ idx2DToIdx1D(i+1, j, m_subdivision) ];
-				Point* up = &pointContainer[ idx2DToIdx1D(i, j+1, m_subdivision) ];
-				Point* down = &pointContainer[ idx2DToIdx1D(i, j-1, m_subdivision) ];
+				Point* current = &pointContainer[idx2DToIdx1D(i, j, m_subdivision)];
 
-				Point* leftDown = &pointContainer[idx2DToIdx1D(i-1, j-1, m_subdivision)];
-				Point* leftUp = &pointContainer[idx2DToIdx1D(i-1, j+1, m_subdivision)];
-				Point* rightDown = &pointContainer[idx2DToIdx1D(i+1, j-1, m_subdivision)];
-				Point* rightUp = &pointContainer[idx2DToIdx1D(i+1, j+1, m_subdivision)];
+				//shape links
 
+				if (i + 1 < m_subdivision)
+				{
+					Point* right = &pointContainer[idx2DToIdx1D(i + 1, j, m_subdivision)];
+					linkShape.push_back(Link(current, right)); //right link
+				}
 
-				// shape links : 
-				linkShape.push_back(Link(left, current)); //left link
-				linkShape.push_back(Link(current, right)); //right link
-				linkShape.push_back(Link(down, current)); //down link
-				linkShape.push_back(Link(current, up)); //up link
+				if (j + 1 < m_subdivision)
+				{
+					Point* down = &pointContainer[idx2DToIdx1D(i, j + 1, m_subdivision)];
+					linkShape.push_back(Link(down, current)); //down link
+				}
 
-				// shearing links : 
-				linkShearing.push_back(Link(leftDown, current)); //left down link
-				linkShearing.push_back(Link(leftUp, current)); //left up link
-				linkShearing.push_back(Link(current, rightDown)); //right down link
-				linkShearing.push_back(Link(current, rightUp)); //right up link
+				//shearing links
+
+				if (j + 1 < m_subdivision && i + 1 < m_subdivision)
+				{
+					Point* rightUp = &pointContainer[idx2DToIdx1D(i + 1, j + 1, m_subdivision)];
+					linkShearing.push_back(Link(current, rightUp)); //right up link
+				}
+				if (j - 1 > 0 && i + 1 < m_subdivision)
+				{
+					Point* rightDown = &pointContainer[idx2DToIdx1D(i + 1, j - 1, m_subdivision)];
+					linkShearing.push_back(Link(current, rightDown)); //right down link
+				}
 
 				//blending links : 
-				if (i - 2 >= 0)
-				{
-					Point* left2 = &pointContainer[idx2DToIdx1D(i - 2, j, m_subdivision)];
-					linkShearing.push_back(Link(left2, current)); //left link
-				}
+
 				if (i + 2 < m_subdivision)
 				{
 					Point* right2 = &pointContainer[idx2DToIdx1D(i + 2, j, m_subdivision)];
-					linkShearing.push_back(Link(current, right2)); //right link
+					linkBlending.push_back(Link(current, right2)); //right link
 				}
-				if (j - 2 >= 0)
-				{
-					Point* down2 = &pointContainer[idx2DToIdx1D(i, j - 2, m_subdivision)];
-					linkShearing.push_back(Link(down2, current)); //down link
-				}
+
 				if (j + 2 < m_subdivision)
 				{
 					Point* up2 = &pointContainer[idx2DToIdx1D(i, j + 2, m_subdivision)];
-					linkShearing.push_back(Link(current, up2)); //up link
+					linkBlending.push_back(Link(current, up2)); //up link
 				}
 			}
 		}
 
+	}
+
+	Flag::~Flag()
+	{
 	}
 
 	void Physic::Flag::update(float deltaTime)
@@ -153,7 +157,16 @@ namespace Physic {
 
 	void Flag::synchronizeVisual()
 	{
-		//TODO
+		m_mesh.vertices.clear();
+
+		for (int i = 0; i < pointContainer.size(); i++)
+		{
+			m_mesh.vertices.push_back(pointContainer[i].position.x);
+			m_mesh.vertices.push_back(pointContainer[i].position.y);
+			m_mesh.vertices.push_back(pointContainer[i].position.z);
+		}
+
+		m_mesh.initGl();
 	}
 
 	void Flag::computeLinks(float deltaTime, Link* link)
@@ -199,6 +212,7 @@ namespace Physic {
 
 	void Physic::Flag::setGravity(const glm::vec3 & _gravity)
 	{
+
 	}
 
 	void Physic::Flag::render(const glm::mat4& projection, const glm::mat4& view)
@@ -207,19 +221,46 @@ namespace Physic {
 		glm::mat4 mvp = projection * view * modelMatrix;
 		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
-		m_material.setUniform_MVP(mvp);
-		m_material.setUniform_normalMatrix(normalMatrix);
+		m_material->setUniform_MVP(mvp);
+		m_material->setUniform_normalMatrix(normalMatrix);
+		m_material->use();
 
-		m_material.use();
-
-		glBindVertexArray(vao);
-		glDrawElements(GL_TRIANGLES, m_triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);
-		glBindVertexArray(0);
+		m_mesh.draw();
 	}
 
-
-	Flag::~Flag()
+	void Flag::drawUI()
 	{
+		if (ImGui::CollapsingHeader("flag"))
+		{
+			char tmpMaterialName[20];
+			m_materialName.copy(tmpMaterialName, m_materialName.size());
+			tmpMaterialName[m_materialName.size()] = '\0';
+
+			if (ImGui::InputText("materialName", tmpMaterialName, 20))
+			{
+				m_materialName = tmpMaterialName;
+
+				if (MaterialFactory::get().contains(m_materialName))
+				{
+					m_material = MaterialFactory::get().get(m_materialName);
+				}
+			}
+		}
+	}
+
+	void Flag::eraseFromScene(Scene & scene)
+	{
+		scene.erase(this);
+	}
+
+	void Flag::addToScene(Scene & scene)
+	{
+		scene.add(this);
+	}
+
+	Component * Flag::clone(Entity * entity)
+	{
+		return nullptr;
 	}
 
 }
