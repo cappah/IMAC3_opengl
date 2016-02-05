@@ -3,7 +3,7 @@
 #include "Scene.h"
 #include "Entity.h"
 
-Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1)
+Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1), origin(0,0,0)
 {
 
 }
@@ -93,6 +93,32 @@ void Collider::setOffsetScale(glm::vec3 _offset)
 	updateModelMatrix();
 }
 
+void Collider::addOffsetPosition(glm::vec3 _offset)
+{
+	offsetPosition += _offset;
+
+	updateModelMatrix();
+}
+
+void Collider::addOffsetScale(glm::vec3 _offset)
+{
+	offsetScale += _offset;
+
+	updateModelMatrix();
+}
+
+void Collider::setOrigin(const glm::vec3 & _origin)
+{
+	origin = _origin;
+
+	updateModelMatrix();
+}
+
+glm::vec3 Collider::getOrigin() const
+{
+	return origin;
+}
+
 glm::mat4 Collider::getModelMatrix()
 {
 	return modelMatrix;
@@ -127,7 +153,7 @@ BoxCollider::BoxCollider(MeshRenderer* _visual) : Collider(_visual)
 
 void BoxCollider::updateModelMatrix()
 {
-	modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale * offsetScale);
+	modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale * offsetScale) * glm::translate(glm::mat4(1), -origin);
 
 	topRight = glm::vec3( modelMatrix * glm::vec4(localTopRight, 1) );
 	bottomLeft = glm::vec3( modelMatrix * glm::vec4(localBottomLeft, 1) );
@@ -269,10 +295,11 @@ void BoxCollider::addToScene(Scene& scene)
 
 void BoxCollider::coverMesh(Mesh & mesh)
 {
+	origin = mesh.origin;
 	glm::vec3 dimensions = mesh.topRight - mesh.bottomLeft;
 
-	offsetPosition = dimensions * 0.5f + mesh.bottomLeft;
 	offsetScale = dimensions;
+	offsetPosition = dimensions * 0.5f + origin*dimensions + mesh.bottomLeft;
 
 	updateModelMatrix();
 }

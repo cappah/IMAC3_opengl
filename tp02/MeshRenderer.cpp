@@ -44,9 +44,9 @@ void MeshRenderer::drawUI()
 
 		if (ImGui::InputText("meshName", tmpMeshName, 20))
 		{
-			if (MeshFactory::get().contains(meshName))
+			if (MeshFactory::get().contains(tmpMeshName))
 			{
-				setMesh(MeshFactory::get().get(meshName));
+				setMesh(MeshFactory::get().get(tmpMeshName));
 			}
 		}
 	}
@@ -112,4 +112,9 @@ std::string MeshRenderer::getMaterialName() const
 std::string MeshRenderer::getMeshName() const
 {
 	return meshName;
+}
+
+glm::vec3 MeshRenderer::getOrigin() const
+{
+	return mesh->origin;
 }

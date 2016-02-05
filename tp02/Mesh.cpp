@@ -137,6 +137,8 @@ void Mesh::computeBoundingBox()
 		if (vertices[i + 2] > topRight.z)
 			topRight.z = vertices[i + 2];
 	}
+
+	origin = - glm::normalize(topRight - bottomLeft) * 0.5f;
 }
 
 
@@ -208,6 +210,8 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 			bottomLeft.y = pPos->y;
 		if (pPos->z < bottomLeft.z)
 			bottomLeft.z = pPos->z;
+
+		origin = -glm::normalize(topRight - bottomLeft) * 0.5f;
 	}
 
 	for (unsigned int i = 0; i < paiMesh->mNumFaces; i++) 

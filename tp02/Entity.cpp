@@ -372,6 +372,28 @@ Entity & Entity::erase(Physic::Flag * flag)
 	return *this;
 }
 
+void Entity::endCreation()
+{
+	Collider* colliderComponent = static_cast<Collider*>(getComponent(Component::ComponentType::COLLIDER));
+	if (colliderComponent != nullptr)
+	{
+		// if a component containing a mesh is present in the entity, cover it with the collider : 
+		Physic::Flag* flagComponent = static_cast<Physic::Flag*>(getComponent(Component::ComponentType::FLAG));
+		MeshRenderer* meshRendererComponent = static_cast<MeshRenderer*>(getComponent(Component::ComponentType::MESH_RENDERER));
+		if (flagComponent != nullptr)
+		{
+			colliderComponent->setOrigin(flagComponent->getOrigin());
+			colliderComponent->coverMesh(flagComponent->getMesh());
+			colliderComponent->addOffsetScale(glm::vec3(0.f, 0.f, 0.2f));
+		}
+		else if (meshRendererComponent != nullptr)
+		{
+			colliderComponent->setOrigin(meshRendererComponent->getOrigin());
+			colliderComponent->coverMesh(*meshRendererComponent->getMesh());
+		}
+	}
+}
+
 void Entity::eraseAllComponents()
 {
 	for (int i = 0; i < m_components.size(); i++)

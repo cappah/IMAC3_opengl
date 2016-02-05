@@ -5,6 +5,7 @@
 
 #include "glew/glew.h"
 
+#include "glm/glm.hpp"
 #include "glm/common.hpp"
 
 
@@ -18,6 +19,7 @@ struct Mesh
 
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
+	glm::vec3 origin;
 
 	std::string path;
 

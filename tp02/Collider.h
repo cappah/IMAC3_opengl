@@ -27,6 +27,7 @@ struct Collider : public Component
 	glm::vec3 offsetPosition;
 	glm::vec3 offsetScale;
 
+	glm::vec3 origin;
 	glm::vec3 translation;
 	glm::vec3 scale;
 	glm::quat rotation;
@@ -58,8 +59,12 @@ struct Collider : public Component
 	void appendRotation(const glm::quat& _rotation);
 
 	void setOffsetPosition(glm::vec3 _offset);
-
 	void setOffsetScale(glm::vec3 _offset);
+	void addOffsetPosition(glm::vec3 _offset);
+	void addOffsetScale(glm::vec3 _offset);
+
+	void setOrigin(const glm::vec3& _origin);
+	glm::vec3 getOrigin() const;
 
 	glm::mat4 getModelMatrix();
 

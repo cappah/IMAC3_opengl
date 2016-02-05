@@ -37,5 +37,7 @@ public:
 
 	std::string getMaterialName() const;
 	std::string getMeshName() const;
+
+	glm::vec3 getOrigin() const;
 };
 

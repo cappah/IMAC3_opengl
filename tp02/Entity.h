@@ -107,6 +107,9 @@ public:
 	Entity& erase(MeshRenderer* meshRenderer);
 	Entity& erase(Physic::Flag* flag);
 
+	//finalyze the creation of the entity : 
+	void endCreation();
+
 	void eraseAllComponents();
 
 	// function to get component : 

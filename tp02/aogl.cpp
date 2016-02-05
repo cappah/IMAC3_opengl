@@ -439,7 +439,9 @@ int main( int argc, char **argv )
 	Physic::Flag* flag = new Physic::Flag(tmpMat);
 
 	Entity* entity_flag = new Entity(&scene);
+	entity_flag->add(new BoxCollider(&cubeWireFrameRenderer));
 	entity_flag->add(flag);
+	entity_flag->endCreation();
 
 
 	//editor : 
