@@ -37,10 +37,7 @@ Skybox::~Skybox()
 
 void Skybox::drawUI()
 {
-	if (ImGui::CollapsingHeader("skybox"))
-	{
-		material.drawUI();
-	}
+	material.drawUI();
 }
 
 void Skybox::render(const glm::mat4& projection, const glm::mat4& view)

@@ -110,6 +110,12 @@ private:
 
 	bool m_hideCursorWhenMovingCamera;
 
+	int m_windowWidth;
+	int m_windowHeight;
+	glm::vec2 m_panelsDecal;
+	int m_leftPanelwidth;
+	int m_leftPanelHeight;
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 
@@ -121,6 +127,10 @@ public:
 
 	void renderGizmo();
 
+	void hideAllToolsUI();
+	void displayMenuBar(Scene& scene);
+	void displayTopLeftWindow(Scene& scene);
+	void displayBottomWindow(Scene& scene);
 	void renderUI(Scene& scene);
 
 	bool testGizmoIntersection(const Ray& ray);

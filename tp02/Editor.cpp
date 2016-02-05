@@ -236,6 +236,20 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	camera_defaults(*m_camera);
 
 	init_gui_states(m_guiStates);
+
+	//ui : 
+	m_panelsDecal = glm::vec2(0, 20);
+	m_leftPanelwidth = 100;
+	m_leftPanelHeight = 200;
+
+	//defaults : 
+	m_terrainToolVisible = true;
+	m_skyboxToolVisible = false;
+	m_textureFactoryVisible = false;
+	m_cubeTextureFactoryVisible = false;
+	m_meshFactoryVisible = false;
+	m_programFactoryVisible = false;
+	m_materialFactoryVisible = false;
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -376,12 +390,19 @@ void Editor::refreshSelectedComponents(bool clearComponentLists)
 	}
 }
 
-void Editor::renderUI(Scene& scene)
+void Editor::hideAllToolsUI()
 {
+	m_terrainToolVisible = false;
+	m_skyboxToolVisible = false;
+	m_textureFactoryVisible = false;
+	m_cubeTextureFactoryVisible = false;
+	m_meshFactoryVisible = false;
+	m_programFactoryVisible = false;
+	m_materialFactoryVisible = false;
+}
 
-	if (!m_isUIVisible)
-		return;
-
+void Editor::displayMenuBar(Scene& scene)
+{
 	if (ImGui::BeginMainMenuBar())
 	{
 		if (ImGui::BeginMenu("toggle visibility"))
@@ -522,14 +543,17 @@ void Editor::renderUI(Scene& scene)
 		ImGui::EndMainMenuBar();
 	}
 
+
+}
+
+void Editor::displayTopLeftWindow(Scene& scene)
+{
+
 	int entityId = 0;
 
 	if (!m_currentSelected.empty())
 	{
 		//can't add or remove components in multiple editing, only change components parameters
-
-		ImGui::Begin("selected entities");
-
 		if (ImGui::RadioButton("multiple editing", m_multipleEditing))
 		{
 			m_multipleEditing = !m_multipleEditing;
@@ -542,15 +566,15 @@ void Editor::renderUI(Scene& scene)
 
 		if (!m_multipleEditing)
 		{
-			for(auto& selected : m_currentSelected)
+			for (auto& selected : m_currentSelected)
 			{
 				ImGui::PushID(entityId);
 
-				if(ImGui::CollapsingHeader( ("entity "+patch::to_string(entityId)).c_str() ))
+				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str()))
 					selected->drawUI();
 				ImGui::PopID();
-				
-					entityId++;
+
+				entityId++;
 			}
 		}
 		else
@@ -561,60 +585,162 @@ void Editor::renderUI(Scene& scene)
 			m_inspector.drawUI(m_spotLights);
 			m_inspector.drawUI(m_meshRenderers);
 		}
-
-
-		ImGui::End();
 	}
+}
+
+void Editor::displayBottomWindow(Scene& scene)
+{
+	ImGui::BeginChild("choose tool", ImVec2(200, ImGui::GetWindowHeight()));
+	if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
+	{
+		hideAllToolsUI();
+		m_terrainToolVisible = true;
+	}
+	if (ImGui::RadioButton("skybox tool", m_skyboxToolVisible))
+	{
+		hideAllToolsUI();
+		m_skyboxToolVisible = true;
+	}
+	if (ImGui::RadioButton("texture factory", m_textureFactoryVisible))
+	{
+		hideAllToolsUI();
+		m_textureFactoryVisible = true;
+	}
+	if (ImGui::RadioButton("cube texture factory", m_cubeTextureFactoryVisible))
+	{
+		hideAllToolsUI();
+		m_cubeTextureFactoryVisible = true;
+	}
+	if (ImGui::RadioButton("mesh factory", m_meshFactoryVisible))
+	{
+		hideAllToolsUI();
+		m_meshFactoryVisible = true;
+	}
+	if (ImGui::RadioButton("program factory", m_programFactoryVisible))
+	{
+		hideAllToolsUI();
+		m_programFactoryVisible = true;
+	}
+	if (ImGui::RadioButton("material factory", m_materialFactoryVisible))
+	{
+		hideAllToolsUI();
+		m_materialFactoryVisible = true;
+	}
+	ImGui::EndChild();
+	
+	ImGui::SameLine();
 
 	if (m_terrainToolVisible)
 	{
-		ImGui::Begin("Terrain tool");
+		ImGui::BeginChild("Terrain tool");
 		scene.getTerrain().drawUI();
 		ImGui::End();
 	}
 
 	if (m_skyboxToolVisible)
 	{
-		ImGui::Begin("Skybox tool");
+		ImGui::BeginChild("Skybox tool");
 		scene.getSkybox().drawUI();
 		ImGui::End();
 	}
 
 	if (m_textureFactoryVisible)
 	{
-		ImGui::Begin("Texture factory");
+		ImGui::BeginChild("Texture factory");
 		TextureFactory::get().drawUI();
 		ImGui::End();
 	}
 
 	if (m_cubeTextureFactoryVisible)
 	{
-		ImGui::Begin("Cube Texture factory");
+		ImGui::BeginChild("Cube Texture factory");
 		CubeTextureFactory::get().drawUI();
 		ImGui::End();
 	}
 
 	if (m_meshFactoryVisible)
 	{
-		ImGui::Begin("Mesh factory");
+		ImGui::BeginChild("Mesh factory");
 		MeshFactory::get().drawUI();
 		ImGui::End();
 	}
 
 	if (m_programFactoryVisible)
 	{
-		ImGui::Begin("Program factory");
+		ImGui::BeginChild("Program factory");
 		ProgramFactory::get().drawUI();
 		ImGui::End();
 	}
 
 	if (m_materialFactoryVisible)
 	{
-		ImGui::Begin("Material factory");
+		ImGui::BeginChild("Material factory");
 		MaterialFactory::get().drawUI();
 		ImGui::End();
 	}
-		
+}
+
+void Editor::renderUI(Scene& scene)
+{
+
+	if (!m_isUIVisible)
+		return;
+
+	displayMenuBar(scene);
+
+
+	int screenWidth = Application::get().getWindowWidth();
+	int screenHeight = Application::get().getWindowHeight();
+	m_windowWidth = screenWidth - m_panelsDecal.x;
+	m_windowHeight = screenHeight - m_panelsDecal.y;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1, 0.1, 0.1, 255));
+
+	ImGui::SetNextWindowSize(ImVec2(m_leftPanelwidth, m_leftPanelHeight));
+	ImGui::SetNextWindowContentSize(ImVec2(m_leftPanelwidth, m_leftPanelHeight));
+	ImGui::SetNextWindowPos(ImVec2(m_panelsDecal.x, m_panelsDecal.y));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	ImGui::Begin("topLeftWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
+	ImGui::BeginChild("topLeftWindowContent", ImVec2(m_leftPanelwidth-30, m_leftPanelHeight));
+			displayTopLeftWindow(scene);
+	ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::InvisibleButton("vSplitter", ImVec2(20.f, m_leftPanelHeight));
+		if (ImGui::IsItemActive())
+		{
+			m_leftPanelwidth += ImGui::GetIO().MouseDelta.x;
+			if (m_leftPanelwidth < 10) m_leftPanelwidth = 10;
+			else if (m_leftPanelwidth > m_windowWidth - 10) m_leftPanelwidth = m_windowWidth - 10;
+		}
+	ImGui::End();
+	ImGui::PopStyleVar();
+
+	ImGui::SetNextWindowSize(ImVec2(screenWidth, m_windowHeight - m_leftPanelHeight));
+	ImGui::SetNextWindowContentSize(ImVec2(screenWidth, m_windowHeight - m_leftPanelHeight));
+	ImGui::SetNextWindowPos(ImVec2(m_panelsDecal.x, m_leftPanelHeight + m_panelsDecal.y));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	ImGui::Begin("bottomWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
+	ImGui::InvisibleButton("hsplitter", ImVec2(screenWidth, 20.f));
+	if (ImGui::IsItemActive())
+	{
+		m_leftPanelHeight += ImGui::GetIO().MouseDelta.y;
+		if (m_leftPanelHeight < 10) m_leftPanelHeight = 10;
+		else if (m_leftPanelHeight > m_windowHeight - 20) m_leftPanelHeight = m_windowHeight - 20;
+	}
+	ImGui::BeginChild("bottomWindowContent");
+		displayBottomWindow(scene);
+	ImGui::EndChild();
+
+	ImGui::End();
+	ImGui::PopStyleVar();
+
+	ImGui::PopStyleVar();
+	ImGui::PopStyleColor();
+
+	//ImGui::BeginChild("bottomWindow", ImVec2(screenWidth, screenHeight - m_leftPanelHeight));
+	//ImGui::EndChild();
+
 }
 
 bool Editor::testGizmoIntersection(const Ray & ray)
@@ -893,18 +1019,21 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 	if (m_guiStates.altPressed || m_guiStates.ctrlPressed)
 		return;
 
-	float cameraSpeed = 0.01f;
-	if (m_guiStates.shiftPressed)
-		cameraSpeed = 0.04f;
+	if (!m_guiStates.UICaptureKeyboard)
+	{
+		float cameraSpeed = 0.01f;
+		if (m_guiStates.shiftPressed)
+			cameraSpeed = 0.04f;
 
-	if (m_guiStates.leftPressed)
-		camera_translate(*m_camera, -cameraSpeed, 0, 0);
-	if (m_guiStates.rightPressed)
-		camera_translate(*m_camera, cameraSpeed, 0, 0);
-	if (m_guiStates.forwardPressed)
-		camera_translate(*m_camera, 0, 0, cameraSpeed);
-	if (m_guiStates.backwardPressed)
-		camera_translate(*m_camera, 0, 0, -cameraSpeed);
+		if (m_guiStates.leftPressed)
+			camera_translate(*m_camera, -cameraSpeed, 0, 0);
+		if (m_guiStates.rightPressed)
+			camera_translate(*m_camera, cameraSpeed, 0, 0);
+		if (m_guiStates.forwardPressed)
+			camera_translate(*m_camera, 0, 0, cameraSpeed);
+		if (m_guiStates.backwardPressed)
+			camera_translate(*m_camera, 0, 0, -cameraSpeed);
+	}
 }
 
 
@@ -918,14 +1047,14 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 
 	//camera movements : 
 	
-	if (!m_guiStates.UICaptureKeyboard)
-	{
 
 		if (!m_cameraFPS)
 			updateCameraMovement_editor(window);
 		else
 			updateCameraMovement_fps(window);
 
+	if (!m_guiStates.UICaptureKeyboard)
+	{
 		// ui visibility : 
 		if (inputHandler.getKeyDown(window, GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
 		{
