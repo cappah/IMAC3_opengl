@@ -6,6 +6,7 @@
 #include <string.h>
 #include <string>
 #include <iostream>
+#include <vector>
 
 #include <cmath>
 
@@ -14,7 +15,7 @@
 #include "GLFW/glfw3.h"
 #include "stb/stb_image.h"
 #include "imgui/imgui.h"
-#include "imgui/imguiRenderGL3.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "glm/glm.hpp"
 #include "glm/vec3.hpp" // glm::vec3
@@ -22,6 +23,25 @@
 #include "glm/mat4x4.hpp" // glm::mat4
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
+
+#include "InputHandler.h"
+#include "Camera.h"
+#include "Mesh.h"
+#include "MeshRenderer.h"
+#include "Materials.h"
+#include "LightManager.h"
+#include "Application.h"
+#include "Collider.h"
+#include "Utils.h"
+#include "Entity.h"
+#include "Editor.h"
+#include "Lights.h"
+#include "Editor.h"
+#include "Ray.h"
+#include "Renderer.h"
+#include "Factories.h"
+#include "Flag.h"
+#include "Scene.h"
 
 #ifndef DEBUG_PRINT
 #define DEBUG_PRINT 1
@@ -45,65 +65,23 @@
 extern const unsigned char DroidSans_ttf[];
 extern const unsigned int DroidSans_ttf_len;    
 
-// Shader utils
-int check_link_error(GLuint program);
-int check_compile_error(GLuint shader, const char ** sourceBuffer);
-GLuint compile_shader(GLenum shaderType, const char * sourceBuffer, int bufferSize);
-GLuint compile_shader_from_file(GLenum shaderType, const char * fileName);
 
-// OpenGL utils
-bool checkError(const char* title);
 
-struct Camera
+
+void window_size_callback(GLFWwindow* window, int width, int height)
 {
-    float radius;
-    float theta;
-    float phi;
-    glm::vec3 o;
-    glm::vec3 eye;
-    glm::vec3 up;
-};
-void camera_defaults(Camera & c);
-void camera_zoom(Camera & c, float factor);
-void camera_turn(Camera & c, float phi, float theta);
-void camera_pan(Camera & c, float x, float y);
-
-struct PointLight
-{
-    float intensity;
-    glm::vec3 position;
-    glm::vec3 color;
-};
-
-struct DirectionalLight : PointLight
-{
-    ;
-};
+	Application::get().setWindowResize(true);
+	Application::get().setWindowWidth(width);
+	Application::get().setWindowHeight(height);
+}
 
 
-struct GUIStates
-{
-    bool panLock;
-    bool turnLock;
-    bool zoomLock;
-    int lockPositionX;
-    int lockPositionY;
-    int camera;
-    double time;
-    bool playing;
-    static const float MOUSE_PAN_SPEED;
-    static const float MOUSE_ZOOM_SPEED;
-    static const float MOUSE_TURN_SPEED;
-};
-const float GUIStates::MOUSE_PAN_SPEED = 0.001f;
-const float GUIStates::MOUSE_ZOOM_SPEED = 0.05f;
-const float GUIStates::MOUSE_TURN_SPEED = 0.005f;
-void init_gui_states(GUIStates & guiStates);
 
 
 int main( int argc, char **argv )
 {
-    int width = 1024, height= 768;
+    //int width = 1024, height= 768;
+	int width = 1024, height = 680;
     float widthf = (float) width, heightf = (float) height;
     double t;
     float fps = 0.f;
@@ -115,7 +93,7 @@ int main( int argc, char **argv )
         exit( EXIT_FAILURE );
     }
     glfwInit();
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
     glfwWindowHint(GLFW_DECORATED, GL_TRUE);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
@@ -161,156 +139,157 @@ int main( int argc, char **argv )
     GLenum glerr = GL_NO_ERROR;
     glerr = glGetError();
 
-    if (!imguiRenderGLInit(DroidSans_ttf, DroidSans_ttf_len))
-    {
-        fprintf(stderr, "Could not init GUI renderer.\n");
-        exit(EXIT_FAILURE);
-    }
+    ImGui_ImplGlfwGL3_Init(window, true);
+
+	//set the resize window callback 
+	glfwSetWindowSizeCallback(window, window_size_callback);
+
 
     // Init viewer structures
-    Camera camera;
-    camera_defaults(camera);
-    GUIStates guiStates;
-    init_gui_states(guiStates);
-    float dummySlider = 0.f;
-    float specularSlider = 100.f;
-    float intensitySlider = 1.f;
+    //Camera camera;
+    //camera_defaults(camera);
+    //GUIStates guiStates;
+    //init_gui_states(guiStates);
 
 
-    // Try to load and compile shaders
-    GLuint vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
-	GLuint geomShaderId = compile_shader_from_file(GL_GEOMETRY_SHADER, "aogl.geom");
-    GLuint fragShaderId = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl.frag");
+	///////////////////// SET APPLICATION GLOBAL PARAMETERS /////////////////////
+	Application::get().setWindowWidth(width);
+	Application::get().setWindowHeight(height);
+
+	//////////////////// INPUT HANDLER ///////////////////////////
+	InputHandler inputHandler;
+
+	//////////////////// SKYBOX shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_skybox = compile_shader_from_file(GL_VERTEX_SHADER, "skybox.vert");
+	GLuint fragShaderId_skybox = compile_shader_from_file(GL_FRAGMENT_SHADER, "skybox.frag");
+
+	GLuint programObject_skybox = glCreateProgram();
+	glAttachShader(programObject_skybox, vertShaderId_skybox);
+	glAttachShader(programObject_skybox, fragShaderId_skybox);
+
+	glLinkProgram(programObject_skybox);
+	if (check_link_error(programObject_skybox) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// 3D Gpass shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_gpass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
+	GLuint fragShaderId_gpass = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl_gPass.frag");
+
+	GLuint programObject_gPass = glCreateProgram();
+	glAttachShader(programObject_gPass, vertShaderId_gpass);
+	glAttachShader(programObject_gPass, fragShaderId_gpass);
+
+	glLinkProgram(programObject_gPass);
+	if (check_link_error(programObject_gPass) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// WIREFRAME shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_wireframe = compile_shader_from_file(GL_VERTEX_SHADER, "wireframe.vert");
+	GLuint fragShaderId_wireframe = compile_shader_from_file(GL_FRAGMENT_SHADER, "wireframe.frag");
+
+	GLuint programObject_wireframe = glCreateProgram();
+	glAttachShader(programObject_wireframe, vertShaderId_wireframe);
+	glAttachShader(programObject_wireframe, fragShaderId_wireframe);
+
+	glLinkProgram(programObject_wireframe);
+	if (check_link_error(programObject_wireframe) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
 	
-    GLuint programObject = glCreateProgram();
-    glAttachShader(programObject, vertShaderId);
-    glAttachShader(programObject, fragShaderId);
-	//glAttachShader(programObject, geomShaderId);
- 	
-    glLinkProgram(programObject);
-    if (check_link_error(programObject) < 0)
-        exit(1);
-    
-    // Upload uniforms
-    GLuint mvpLocation = glGetUniformLocation(programObject, "MVP");
-    GLuint timeLocation = glGetUniformLocation(programObject,"Time");
-    GLuint diffuseLocation = glGetUniformLocation(programObject, "Diffuse");
-    GLuint specularLocation = glGetUniformLocation(programObject, "Specular");
-    GLuint lightPositionLocation = glGetUniformLocation(programObject, "lightPosition");
-    GLuint lightColorLocation = glGetUniformLocation(programObject, "lightColor");
-    GLuint lightIntensityLocation = glGetUniformLocation(programObject, "lightIntensity");
-    GLuint specPowLocation = glGetUniformLocation(programObject, "specularPower");
-    GLuint cameraLocation = glGetUniformLocation(programObject, "cameraPosition");
 
-    if (!checkError("Uniforms"))
-        exit(1);
+	// cube and plane ;
 
-    // Viewport 
-    glViewport( 0, 0, width, height  );
+	//Mesh cube;
+	//cube.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
+	//cube.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
+	//cube.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+	//				-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
+	//				-0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5,
+	//				-0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 
+	//				0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+	//				0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5,
+	//				-0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
+	//cube.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+	//				0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+	//				0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+	//				0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+	//				1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+	//				1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+	//				-1, 0, 0, -1, 0, 0, -1, 0, 0, };
+	//cube.initGl();
 
+	Mesh cube(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_TANGENTS));
+	cube.vertices = { 0.5,0.5,-0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  0.5,-0.5,-0.5,
+				-0.5,0.5,-0.5,  -0.5,0.5,0.5,  -0.5,-0.5,0.5,  -0.5,-0.5,-0.5,
+				-0.5,0.5,0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5,
+				-0.5,0.5,-0.5,  0.5,0.5,-0.5,  0.5,-0.5,-0.5,  -0.5,-0.5,-0.5,
+				0.5,0.5,0.5, -0.5,0.5,0.5, -0.5,0.5,-0.5, 0.5,0.5,-0.5,
+				-0.5,-0.5,-0.5,  0.5,-0.5,-0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5 };
 
+	cube.normals = { 1,0,0,  1,0,0,  1,0,0,  1,0,0,
+				-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0,
+				0,0,1,  0,0,1,  0,0,1,  0,0,1,
+				0,0,-1,  0,0,-1,  0,0,-1,  0,0,-1,
+				0,1,0,  0,1,0,  0,1,0,  0,1,0,
+				0,-1,0,  0,-1,0,  0,-1,0,  0,-1,0 };
 
+	cube.tangents = { 0,0,1,  0,0,1,  0,0,1,  0,0,1,
+				0,0,1,  0,0,1,  0,0,1,  0,0,1,
+				-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0,
+				1,0,0,  1,0,0,  1,0,0,  1,0,0,
+				1,0,0,  1,0,0,  1,0,0,  1,0,0,
+				-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0 };
 
+	cube.uvs = { 0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+				0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0 };
 
+	cube.triangleIndex = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20 };
 
-
-    /******************TD OPENGL***********************/
-    int cube_triangleCount = 12;
-    int cube_triangleList[] = {0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
-    float cube_uvs[] = {0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f,  };
-    float cube_vertices[] = {-0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
-    float cube_normals[] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, }; 
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
- 
-    // Create a VBO for each array
-    GLuint vbo[4];
-    glGenBuffers(4, vbo);
- 
-    // Bind the VAO
-    glBindVertexArray(vao);
- 
-    // Bind indices and upload data
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_triangleList), cube_triangleList, GL_STATIC_DRAW);
- 
-    // Bind vertices and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glEnableVertexAttribArray(0); 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
- 
-    // Bind normals and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_normals), cube_normals, GL_STATIC_DRAW);
- 
-    // Bind uv coords and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*2, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_uvs), cube_uvs, GL_STATIC_DRAW);
- 
-    // Unbind everything
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
- 
-    
-    int plane_triangleCount = 2;
-    int plane_triangleList[] = {0, 1, 2, 2, 1, 3}; 
-    float plane_uvs[] = {0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f};
-    float plane_vertices[] = {-5.0, -0.5, 5.0, 5.0, -0.5, 5.0, -5.0, -0.5, -5.0, 5.0, -0.5, -5.0};
-    float plane_normals[] = {0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0};
+	cube.initGl();
 
 
-    GLuint vao2;
-    glGenVertexArrays(1, &vao2);
+	Mesh cubeWireFrame(GL_LINE_STRIP, (Mesh::USE_INDEX | Mesh::USE_VERTICES));
+	cubeWireFrame.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
+	cubeWireFrame.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
+	cubeWireFrame.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
+	cubeWireFrame.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
+	cubeWireFrame.initGl();
 
-    glGenBuffers(4, vbo);
+	Mesh plane;
+	plane.triangleIndex = { 0, 1, 2, 2, 1, 3 };
+	plane.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f };
+	plane.vertices = { -5.0, -0.5, 5.0, 5.0, -0.5, 5.0, -5.0, -0.5, -5.0, 5.0, -0.5, -5.0 };
+	plane.normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
+	plane.initGl();
 
-    // Bind the VAO
-    glBindVertexArray(vao2);
- 
-    // Bind indices and upload data
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(plane_triangleList), plane_triangleList, GL_STATIC_DRAW);
- 
-    // Bind vertices and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glEnableVertexAttribArray(0); 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(plane_vertices), plane_vertices, GL_STATIC_DRAW);
- 
-    // Bind normals and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*3, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(plane_normals), plane_normals, GL_STATIC_DRAW);
- 
-    // Bind uv coords and upload data
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*2, (void*)0);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(plane_uvs), plane_uvs, GL_STATIC_DRAW);
- 
-    // Unbind everything
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-
+	/*
     int x;
     int y;
     int comp;
-    unsigned char * diffuse = stbi_load("textures/spnza_bricks_a_diff.tga", &x, &y, &comp, 3);
-    
 
-    GLuint textures[2];
-    glGenTextures(2, textures);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    unsigned char * diffuse = stbi_load("textures/spnza_bricks_a_diff.tga", &x, &y, &comp, 3);
+    GLuint diffuseTexture;
+    glGenTextures(1, &diffuseTexture);
+
+    glBindTexture(GL_TEXTURE_2D, diffuseTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, diffuse);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -319,180 +298,218 @@ int main( int argc, char **argv )
     glGenerateMipmap(GL_TEXTURE_2D);
 
     unsigned char * specular = stbi_load("textures/spnza_bricks_a_spec.tga", &x, &y, &comp, 3);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
+	GLuint specularTexture;
+	glGenTextures(1, &specularTexture);
+
+    glBindTexture(GL_TEXTURE_2D, specularTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, specular);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_2D);
+	*/
 
+	Texture* diffuseTexture = new Texture("textures/spnza_bricks_a_diff.tga");
+	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
+	Texture* bumpTexture = new Texture("textures/spnza_bricks_a_normal.png");
+
+	std::vector<std::string> skyboxTexturePaths = {"textures/skyboxes/right.png", "textures/skyboxes/left.png", 
+												   "textures/skyboxes/top.png", "textures/skyboxes/top.png",
+													"textures/skyboxes/front.png","textures/skyboxes/back.png" };
+
+	CubeTexture* defaultSkybox = new CubeTexture(skyboxTexturePaths);
+
+	//force texture initialisation
+	diffuseTexture->initGL();
+	specularTexture->initGL();
+	bumpTexture->initGL();
+
+	//////////////////// BEGIN RESSOURCES : 
+	//the order between resource initialization and factories initialisation is important, indeed it's the factory which set set name of the different ressources when they are added to the factories.
+	// So initialyzing materials before TextureFectory initialysation will create materials with wrong texture and mesh names. 
+
+	//texture factories : 
+	TextureFactory::get().add("brickDiffuse", diffuseTexture);
+	TextureFactory::get().add("brickSpecular", specularTexture);
+	TextureFactory::get().add("brickBump", bumpTexture);
+
+	// materials : 
+	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
+	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
+	MaterialUnlit wireframeMaterial(programObject_wireframe);
+
+	//material factories : 
+	MaterialFactory::get().add("default", &defaultMaterial);
+	MaterialFactory::get().add("brick", &brickMaterial);
+	MaterialFactory::get().add("wireframe", &wireframeMaterial);
+
+	//mesh factories : 
+	MeshFactory::get().add("cube", &cube);
+	MeshFactory::get().add("cubeWireframe", &cubeWireFrame);
+	MeshFactory::get().add("plane", &plane);
+
+	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
+
+	////////// INITIALYZE DEFAULT MATERIAL IN FACTORY : 
+	ProgramFactory::get().add("defaultLit", programObject_gPass);
+	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
+	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
+
+	///////////////////// END RESSOURCES 
+
+
+	// create and initialize our light manager
+	LightManager lightManager;
+	//lightManager.init(programObject_lightPass); // done in renderer
+
+	// renderer : 
+	Renderer renderer(&lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
+	renderer.initPostProcessQuad("blit.vert", "blit.frag");
+	renderer.initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag");
+
+	// Our scene : 
+	Scene scene(&renderer);
+
+	// populate the scene :
+
+	// mesh renderer for colliders : 
+	MeshRenderer cubeWireFrameRenderer;
+	cubeWireFrameRenderer.setMesh( &cubeWireFrame );
+	cubeWireFrameRenderer.setMaterial( &wireframeMaterial );
+
+	//int r = 5;
+	//float omega = 0;
+	//for (int i = 0; i < 100; i++)
+	//{
+	//	Entity* newEntity = new Entity(&scene);
+	//	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
+	//	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0,0,0));
+	//	newEntity->add(boxColliderLight).add(pointLight);
+	//	newEntity->setTranslation(glm::vec3(r*std::cosf(omega), 2.f, r*std::sinf(omega)));
+	//	
+	//	scene.add(newEntity);
+
+	//	omega += 0.4f;
+
+	//	if(i % 10 == 0)
+	//		r += 5;
+	//}
+
+	// an entity with a light : 
+	Entity* newEntity = new Entity(&scene);
+	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
+	SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
+	spotLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+	newEntity->add(boxColliderLight).add(spotLight);
+	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
+
+
+	//renderers : 
+	MeshRenderer* cubeRenderer01 = new MeshRenderer(&cube, &brickMaterial);
+	MeshRenderer* cubeRenderer02 = new MeshRenderer(&cube, &brickMaterial);
+
+	//MeshRenderer cubeRenderer02;
+	//cubeRenderer02.mesh = &cube;
+	//cubeRenderer02.material = &brickMaterial;
+
+	MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
+
+	//colliders : 
+	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrameRenderer);
+
+	//entities : 
+	/*
+	//cube entity 01
+	Entity* entity_cube01 = new Entity(&scene);
+	entity_cube01->add(cubeRenderer01);
+	entity_cube01->add(boxCollider01);
+	entity_cube01->setTranslation( glm::vec3(3, 0, 0) );
+	//cube entity 02
+	Entity* entity_cube02 = new Entity(&scene);
+	entity_cube02->add(cubeRenderer02);
+	entity_cube02->add(boxCollider02);
+	entity_cube02->setTranslation(glm::vec3(3, -2, 0));
+	entity_cube02->setScale(glm::vec3(10, 1, 10));
+	*/
+
+	//flage entity : 
+	Material* tmpMat = MaterialFactory::get().get("default");
+	Physic::Flag* flag = new Physic::Flag(tmpMat);
+
+	Entity* entity_flag = new Entity(&scene);
+	entity_flag->add(new BoxCollider(&cubeWireFrameRenderer));
+	entity_flag->add(flag);
+	entity_flag->endCreation();
+
+
+	//editor : 
+	Editor editor(&wireframeMaterial);
+
+	float deltaTime = 0.f;
+
+	//main loop
     do
     {
         t = glfwGetTime();
+        ImGui_ImplGlfwGL3_NewFrame();
 
-        // Mouse states
-        int leftButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_LEFT );
-        int rightButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_RIGHT );
-        int middleButton = glfwGetMouseButton( window, GLFW_MOUSE_BUTTON_MIDDLE );
+		//Physics : 
+		scene.updatePhysic(deltaTime);
 
-        if( leftButton == GLFW_PRESS )
-            guiStates.turnLock = true;
-        else
-            guiStates.turnLock = false;
+		//check if window has been resized by user
+		if (Application::get().getWindowResize())
+		{
+			renderer.onResizeWindow();
+			//TODO : 
+			//editor.onResizeWindow();
 
-        if( rightButton == GLFW_PRESS )
-            guiStates.zoomLock = true;
-        else
-            guiStates.zoomLock = false;
-
-        if( middleButton == GLFW_PRESS )
-            guiStates.panLock = true;
-        else
-            guiStates.panLock = false;
-
-        // Camera movements
-        int altPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
-        if (!altPressed && (leftButton == GLFW_PRESS || rightButton == GLFW_PRESS || middleButton == GLFW_PRESS))
-        {
-            double x; double y;
-            glfwGetCursorPos(window, &x, &y);
-            guiStates.lockPositionX = x;
-            guiStates.lockPositionY = y;
-        }
-        if (altPressed == GLFW_PRESS)
-        {
-            double mousex; double mousey;
-            glfwGetCursorPos(window, &mousex, &mousey);
-            int diffLockPositionX = mousex - guiStates.lockPositionX;
-            int diffLockPositionY = mousey - guiStates.lockPositionY;
-            if (guiStates.zoomLock)
-            {
-                float zoomDir = 0.0;
-                if (diffLockPositionX > 0)
-                    zoomDir = -1.f;
-                else if (diffLockPositionX < 0 )
-                    zoomDir = 1.f;
-                camera_zoom(camera, zoomDir * GUIStates::MOUSE_ZOOM_SPEED);
-            }
-            else if (guiStates.turnLock)
-            {
-                camera_turn(camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
-                            diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
-
-            }
-            else if (guiStates.panLock)
-            {
-                camera_pan(camera, diffLockPositionX * GUIStates::MOUSE_PAN_SPEED,
-                            diffLockPositionY * GUIStates::MOUSE_PAN_SPEED);
-            }
-            guiStates.lockPositionX = mousex;
-            guiStates.lockPositionY = mousey;
-        }
-
-        // Default states
-        glEnable(GL_DEPTH_TEST);
-
-        // Clear the front buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Get camera matrices
-        glm::mat4 projection = glm::perspective(45.0f, widthf / heightf, 0.1f, 1000.f); 
-        glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
-        glm::mat4 objectToWorld;
-        glm::mat4 mvp = projection * worldToView * objectToWorld;
-
-        // Select shader
-        glUseProgram(programObject);
-
-        // Upload uniforms
-        glProgramUniformMatrix4fv(programObject, mvpLocation, 1, 0, glm::value_ptr(mvp));
-        // Upload value
-        glProgramUniform1f(programObject, timeLocation, t);
-        glProgramUniform1i(programObject, diffuseLocation, 0);
-        glProgramUniform1i(programObject, specularLocation, 1);
-        glm::vec3 lightColor = glm::vec3(0.98,0.99,0.95);
-        glm::vec3 lightPosition = glm::vec3(1.0,2.0,0.0);
-        glProgramUniform3fv(programObject, lightColorLocation, 1,glm::value_ptr(lightColor));
-        glProgramUniform3fv(programObject, lightPositionLocation, 1,glm::value_ptr(lightPosition));
-        glProgramUniform1f(programObject, lightIntensityLocation, intensitySlider);
-        glProgramUniform1f(programObject, specPowLocation, specularSlider);
-        glProgramUniform3fv(programObject, cameraLocation, 1,glm::value_ptr(camera.eye));
+			Application::get().setWindowResize(false);
+		}
 
 
-        /***********TD******************/
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
+		//update editor : 
+		editor.update(scene, window, inputHandler);
 
 
-        // Render vaos
-        glBindVertexArray(vao);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-        glDrawElementsInstanced(GL_TRIANGLES, cube_triangleCount * 3, GL_UNSIGNED_INT, (void*)0, 1);
+		//synchronize input handler : 
+		inputHandler.synchronize(window);
 
+		//get active camera before render scene : 
+		Camera& currentCamera = editor.getCamera();
+		
+		//scene.culling(currentCamera);
 
+		//rendering : 
+		//renderer.render(camera, entities);
+		scene.render(currentCamera);
+		scene.renderColliders(currentCamera);
+		scene.renderDebugDeferred();
+		scene.renderDebugLights(currentCamera);
 
-        objectToWorld = glm::scale(glm::mat4(1),glm::vec3(5,1,5));
-        mvp = projection * worldToView * objectToWorld;
-
-        // Upload uniforms
-        glProgramUniformMatrix4fv(programObject, mvpLocation, 1, 0, glm::value_ptr(mvp));
-        glProgramUniform1f(programObject, timeLocation, 0);
-
-         // Render vaos
-        glBindVertexArray(vao2);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-        glDrawElementsInstanced(GL_TRIANGLES, plane_triangleCount * 3, GL_UNSIGNED_INT, (void*)0,4);
+		glDisable(GL_DEPTH_TEST);
+		editor.renderGizmo();
+		
 
 #if 1
-        // Draw UI
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glViewport(0, 0, width, height);
+		/*
+        ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+        ImGui::Begin("aogl");
+        ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
+        lightManager.drawUI();
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
+		*/
 
-        unsigned char mbut = 0;
-        int mscroll = 0;
-        double mousex; double mousey;
-        glfwGetCursorPos(window, &mousex, &mousey);
-        mousex*=DPI;
-        mousey*=DPI;
-        mousey = height - mousey;
+		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
+		editor.renderUI(scene);
 
-        if( leftButton == GLFW_PRESS )
-            mbut |= IMGUI_MBUT_LEFT;
-
-        imguiBeginFrame(mousex, mousey, mbut, mscroll);
-        int logScroll = 0;
-        char lineBuffer[512];
-        imguiBeginScrollArea("aogl", width - 210, height - 310, 200, 300, &logScroll);
-        sprintf(lineBuffer, "FPS %f", fps);
-        imguiLabel(lineBuffer);
-        imguiSlider("Dummy", &dummySlider, 0.0, 3.0, 0.1);
-        imguiSlider("Specular Power", &specularSlider, 0.0, 200.0, 1.0);
-        imguiSlider("Light Intensity", &intensitySlider, 0.0, 10.0, 0.1);
-
-        imguiEndScrollArea();
-        imguiEndFrame();
-        imguiRenderGLDraw(width, height);
-
-
+        ImGui::Render();
 
         glDisable(GL_BLEND);
 #endif
 
-
-        
 
         // Check for errors
         checkError("End loop");
@@ -501,212 +518,16 @@ int main( int argc, char **argv )
         glfwPollEvents();
 
         double newTime = glfwGetTime();
+		deltaTime = newTime - t;
         fps = 1.f/ (newTime - t);
     } // Check if the ESC key was pressed
     while( glfwGetKey( window, GLFW_KEY_ESCAPE ) != GLFW_PRESS );
 
     // Close OpenGL window and terminate GLFW
+    ImGui_ImplGlfwGL3_Shutdown();
     glfwTerminate();
 
     exit( EXIT_SUCCESS );
 }
 
-// No windows implementation of strsep
-char * strsep_custom(char **stringp, const char *delim)
-{
-    register char *s;
-    register const char *spanp;
-    register int c, sc;
-    char *tok;
-    if ((s = *stringp) == NULL)
-        return (NULL);
-    for (tok = s; ; ) {
-        c = *s++;
-        spanp = delim;
-        do {
-            if ((sc = *spanp++) == c) {
-                if (c == 0)
-                    s = NULL;
-                else
-                    s[-1] = 0;
-                *stringp = s;
-                return (tok);
-            }
-        } while (sc != 0);
-    }
-    return 0;
-}
 
-int check_compile_error(GLuint shader, const char ** sourceBuffer)
-{
-    // Get error log size and print it eventually
-    int logLength;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength > 1)
-    {
-        char * log = new char[logLength];
-        glGetShaderInfoLog(shader, logLength, &logLength, log);
-        char *token, *string;
-        string = strdup(sourceBuffer[0]);
-        int lc = 0;
-        while ((token = strsep_custom(&string, "\n")) != NULL) {
-           printf("%3d : %s\n", lc, token);
-           ++lc;
-        }
-        fprintf(stderr, "Compile : %s", log);
-        delete[] log;
-    }
-    // If an error happend quit
-    int status;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE)
-        return -1;     
-    return 0;
-}
-
-int check_link_error(GLuint program)
-{
-    // Get link error log size and print it eventually
-    int logLength;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength > 1)
-    {
-        char * log = new char[logLength];
-        glGetProgramInfoLog(program, logLength, &logLength, log);
-        fprintf(stderr, "Link : %s \n", log);
-        delete[] log;
-    }
-    int status;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);        
-    if (status == GL_FALSE)
-        return -1;
-    return 0;
-}
-
-
-GLuint compile_shader(GLenum shaderType, const char * sourceBuffer, int bufferSize)
-{
-    GLuint shaderObject = glCreateShader(shaderType);
-    const char * sc[1] = { sourceBuffer };
-    glShaderSource(shaderObject, 
-                   1, 
-                   sc,
-                   NULL);
-    glCompileShader(shaderObject);
-    check_compile_error(shaderObject, sc);
-    return shaderObject;
-}
-
-GLuint compile_shader_from_file(GLenum shaderType, const char * path)
-{
-    FILE * shaderFileDesc = fopen( path, "rb" );
-    if (!shaderFileDesc)
-        return 0;
-    fseek ( shaderFileDesc , 0 , SEEK_END );
-    long fileSize = ftell ( shaderFileDesc );
-    rewind ( shaderFileDesc );
-    char * buffer = new char[fileSize + 1];
-    fread( buffer, 1, fileSize, shaderFileDesc );
-    buffer[fileSize] = '\0';
-    GLuint shaderObject = compile_shader(shaderType, buffer, fileSize );
-    delete[] buffer;
-    return shaderObject;
-}
-
-
-bool checkError(const char* title)
-{
-    int error;
-    if((error = glGetError()) != GL_NO_ERROR)
-    {
-        std::string errorString;
-        switch(error)
-        {
-        case GL_INVALID_ENUM:
-            errorString = "GL_INVALID_ENUM";
-            break;
-        case GL_INVALID_VALUE:
-            errorString = "GL_INVALID_VALUE";
-            break;
-        case GL_INVALID_OPERATION:
-            errorString = "GL_INVALID_OPERATION";
-            break;
-        case GL_INVALID_FRAMEBUFFER_OPERATION:
-            errorString = "GL_INVALID_FRAMEBUFFER_OPERATION";
-            break;
-        case GL_OUT_OF_MEMORY:
-            errorString = "GL_OUT_OF_MEMORY";
-            break;
-        default:
-            errorString = "UNKNOWN";
-            break;
-        }
-        fprintf(stdout, "OpenGL Error(%s): %s\n", errorString.c_str(), title);
-    }
-    return error == GL_NO_ERROR;
-}
-
-void camera_compute(Camera & c)
-{
-    c.eye.x = cos(c.theta) * sin(c.phi) * c.radius + c.o.x;   
-    c.eye.y = cos(c.phi) * c.radius + c.o.y ;
-    c.eye.z = sin(c.theta) * sin(c.phi) * c.radius + c.o.z;   
-    c.up = glm::vec3(0.f, c.phi < M_PI ?1.f:-1.f, 0.f);
-}
-
-void camera_defaults(Camera & c)
-{
-    c.phi = 3.14/2.f;
-    c.theta = 3.14/2.f;
-    c.radius = 10.f;
-    camera_compute(c);
-}
-
-void camera_zoom(Camera & c, float factor)
-{
-    c.radius += factor * c.radius ;
-    if (c.radius < 0.1)
-    {
-        c.radius = 10.f;
-        c.o = c.eye + glm::normalize(c.o - c.eye) * c.radius;
-    }
-    camera_compute(c);
-}
-
-void camera_turn(Camera & c, float phi, float theta)
-{
-    c.theta += 1.f * theta;
-    c.phi   -= 1.f * phi;
-    if (c.phi >= (2 * M_PI) - 0.1 )
-        c.phi = 0.00001;
-    else if (c.phi <= 0 )
-        c.phi = 2 * M_PI - 0.1;
-    camera_compute(c);
-}
-
-void camera_pan(Camera & c, float x, float y)
-{
-    glm::vec3 up(0.f, c.phi < M_PI ?1.f:-1.f, 0.f);
-    glm::vec3 fwd = glm::normalize(c.o - c.eye);
-    glm::vec3 side = glm::normalize(glm::cross(fwd, up));
-    c.up = glm::normalize(glm::cross(side, fwd));
-    c.o[0] += up[0] * y * c.radius * 2;
-    c.o[1] += up[1] * y * c.radius * 2;
-    c.o[2] += up[2] * y * c.radius * 2;
-    c.o[0] -= side[0] * x * c.radius * 2;
-    c.o[1] -= side[1] * x * c.radius * 2;
-    c.o[2] -= side[2] * x * c.radius * 2;       
-    camera_compute(c);
-}
-
-void init_gui_states(GUIStates & guiStates)
-{
-    guiStates.panLock = false;
-    guiStates.turnLock = false;
-    guiStates.zoomLock = false;
-    guiStates.lockPositionX = 0;
-    guiStates.lockPositionY = 0;
-    guiStates.camera = 0;
-    guiStates.time = 0.0;
-    guiStates.playing = false;
-}

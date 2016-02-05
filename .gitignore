@@ -37,7 +37,6 @@
 *.md
 *.sdf
 *.sln
-*.sln
 *.vcxproj.*
 *.opendb
 *.pdb
@@ -50,5 +49,5 @@
 tp02_old/*
 tp02_old_old/*
 tp02 - Copie/*
-tp02 - Copie - 2/*
 videos/*
+tp02 - Copie - 2/*
