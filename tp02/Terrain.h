@@ -7,6 +7,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
+#include "Mesh.h"
 #include "Materials.h"
 #include "PerlinNoise.h"
 
@@ -42,7 +43,21 @@ private:
 
 	glm::vec3 m_offset;
 
+	int m_seed;
 	NoiseGenerator m_terrainNoise;
+
+	//texture tool : 
+	Texture m_noiseTexture;
+
+	MaterialTerrain m_terrainMaterial;
+
+	Mesh m_quadMesh;
+	GLuint m_terrainFbo;
+	Texture m_filterTexture;
+	Texture m_terrainTexture;
+
+	std::vector<Texture*> m_terrainLayouts;
+
 
 public:
 
@@ -61,5 +76,8 @@ public:
 	void applyNoise(Perlin2D& perlin2D);
 	void updateTerrain();
 	void generateTerrain();
+
+	void computeNoiseTexture(Perlin2D& perlin2D);
+	void generateTerrainTexture();
 };
 

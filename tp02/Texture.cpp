@@ -1,6 +1,22 @@
 #include "Texture.h"
 
 
+Texture::Texture() : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
+{
+	comp = 4;
+	w = 1;
+	h = 1;
+}
+
+Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
+{
+	comp = _comp;
+	w = width;
+	h = height;
+
+	pixels = _pixels;
+}
+
 Texture::Texture(char r, char g, char b) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
 {
 	comp = 4;
@@ -16,6 +32,19 @@ Texture::Texture(char r, char g, char b) : glId(0), path(""), internalFormat(GL_
 Texture::Texture(const std::string& _path) : glId(0), path(_path), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
 {
 	pixels = stbi_load(path.c_str(), &w, &h, &comp, 3);
+}
+
+Texture::Texture(int width, int height, const glm::vec4 & color) : w(width), h(height)
+{
+	comp = 4;
+	pixels = new unsigned char[4*width*height];
+	for (int i = 0; i < width * height * 4; i += 4)
+	{
+		pixels[i] = color.r;
+		pixels[i + 1] = color.g;
+		pixels[i + 2] = color.b;
+		pixels[i + 3] = color.a;
+	}
 }
 
 

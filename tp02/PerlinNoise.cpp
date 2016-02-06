@@ -6,17 +6,19 @@ NoiseGenerator::NoiseGenerator()
 	samplingOffset = 64;
 	octaveCount = 3;
 	height = 512;
+	seed = 0;
 }
 
 Perlin2D NoiseGenerator::generatePerlin2D()
 {
-	return Perlin2D(height, samplingOffset, octaveCount, persistence);
+	return Perlin2D(height, samplingOffset, octaveCount, persistence, seed);
 }
 
 ////////////////////////////////////////
 
-Perlin2D::Perlin2D(int l, int p, int n, float persistence)
+Perlin2D::Perlin2D(int l, int p, int n, float persistence, int seed)
 {
+	m_seed = seed;
 	m_persistence = persistence;
 	m_octaveCount = n;
 	m_values.clear();
@@ -24,6 +26,8 @@ Perlin2D::Perlin2D(int l, int p, int n, float persistence)
 	m_samplingOffset = p;
 
 	m_maxHeight = (int)ceil(m_height * pow(2, m_octaveCount - 1) / m_samplingOffset);
+
+	srand(m_seed);
 
 	m_values.resize(m_maxHeight * m_maxHeight);
 	for (int i = 0; i < m_maxHeight * m_maxHeight; i++)

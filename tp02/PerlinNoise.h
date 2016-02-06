@@ -1,6 +1,7 @@
 #pragma once
 
 #include  <vector>
+#include <time.h>
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -10,6 +11,7 @@
 
 struct Perlin2D
 {
+	int m_seed;
 	float m_persistence;
 	int m_samplingOffset;
 	int m_octaveCount;
@@ -17,7 +19,7 @@ struct Perlin2D
 	int m_maxHeight;
 	std::vector<double> m_values;
 
-	Perlin2D(int l, int p, int n, float persistence);
+	Perlin2D(int l, int p, int n, float persistence, int seed = 0);
 	
 	float getNoiseValue(float x, float y);
 
@@ -41,6 +43,7 @@ struct NoiseGenerator
 	int samplingOffset;
 	int octaveCount;
 	int height;
+	int seed;
 
 	NoiseGenerator();
 	Perlin2D generatePerlin2D();
