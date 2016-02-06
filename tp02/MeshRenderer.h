@@ -18,10 +18,10 @@ private:
 	Mesh* mesh;
 
 	std::string materialName;
-	Material* material;
+	Material3DObject* material;
 
 public:
-	MeshRenderer(Mesh* _mesh = nullptr, Material* _material = nullptr);
+	MeshRenderer(Mesh* _mesh = nullptr, Material3DObject* _material = nullptr);
 	virtual ~MeshRenderer();
 
 	virtual void drawUI() override;
@@ -30,9 +30,9 @@ public:
 	virtual void addToScene(Scene& scene) override;
 
 	void setMesh(Mesh* _mesh);
-	void setMaterial(Material* _material);
+	void setMaterial(Material3DObject* _material);
 
-	Material* getMaterial() const;
+	Material3DObject* getMaterial() const;
 	Mesh* getMesh() const;
 
 	std::string getMaterialName() const;

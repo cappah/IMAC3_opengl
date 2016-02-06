@@ -34,7 +34,7 @@ Texture::Texture(const std::string& _path) : glId(0), path(_path), internalForma
 	pixels = stbi_load(path.c_str(), &w, &h, &comp, 3);
 }
 
-Texture::Texture(int width, int height, const glm::vec4 & color) : w(width), h(height)
+Texture::Texture(int width, int height, const glm::vec4 & color) : w(width), h(height), glId(0), path(""), internalFormat(GL_RGBA), format(GL_RGBA), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
 {
 	comp = 4;
 	pixels = new unsigned char[4*width*height];

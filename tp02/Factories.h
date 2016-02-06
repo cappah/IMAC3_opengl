@@ -167,7 +167,8 @@ private:
 
 public:
 	void add(const std::string& name, Material* material);
-	Material* get(const std::string& name);
+	template<typename T>
+	T* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
 
@@ -189,4 +190,10 @@ public:
 	MaterialFactory(const MaterialFactory& other) = delete;
 	void operator=(const MaterialFactory& other) = delete;
 };
+
+template<typename T>
+T* MaterialFactory::get(const std::string& name)
+{
+	return dynamic_cast<T*>(m_materials[name]);
+}
 

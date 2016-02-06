@@ -49,7 +49,7 @@ private:
 	//texture tool : 
 	Texture m_noiseTexture;
 
-	MaterialTerrain m_terrainMaterial;
+	MaterialTerrainEdition m_terrainMaterial;
 
 	Mesh m_quadMesh;
 	GLuint m_terrainFbo;
@@ -57,6 +57,9 @@ private:
 	Texture m_terrainTexture;
 
 	std::vector<Texture*> m_terrainLayouts;
+
+	//for UI : 
+	char m_newTextureName[30];
 
 
 public:

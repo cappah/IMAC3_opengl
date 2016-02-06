@@ -5,7 +5,7 @@
 
 namespace Physic {
 
-	Flag::Flag(Material* material, int subdivision, float width, float height) : Component(FLAG), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height)
+	Flag::Flag(Material3DObject* material, int subdivision, float width, float height) : Component(FLAG), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height)
 	{
 
 		//don't forget to change the origin to have the right pivot rotation
@@ -276,7 +276,7 @@ namespace Physic {
 
 				if (MaterialFactory::get().contains(m_materialName))
 				{
-					m_material = MaterialFactory::get().get(m_materialName);
+					m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
 				}
 			}
 		}

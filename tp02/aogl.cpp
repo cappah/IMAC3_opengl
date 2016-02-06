@@ -210,6 +210,23 @@ int main( int argc, char **argv )
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
+
+	//////////////////// TERRAIN shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_terrain = compile_shader_from_file(GL_VERTEX_SHADER, "terrainEdition.vert");
+	GLuint fragShaderId_terrain = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrainEdition.frag");
+
+	GLuint programObject_terrain = glCreateProgram();
+	glAttachShader(programObject_terrain, vertShaderId_terrain);
+	glAttachShader(programObject_terrain, fragShaderId_terrain);
+
+	glLinkProgram(programObject_terrain);
+	if (check_link_error(programObject_terrain) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
 	
 
 	// cube and plane ;
@@ -356,6 +373,7 @@ int main( int argc, char **argv )
 	ProgramFactory::get().add("defaultLit", programObject_gPass);
 	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
 	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
+	ProgramFactory::get().add("defaultTerrain", programObject_terrain);
 
 	///////////////////// END RESSOURCES 
 
@@ -402,7 +420,7 @@ int main( int argc, char **argv )
 	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
 	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
 	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
-	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
 	newEntity->add(boxColliderLight).add(pointLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 
@@ -452,7 +470,7 @@ int main( int argc, char **argv )
 	*/
 
 	//flage entity : 
-	Material* tmpMat = MaterialFactory::get().get("default");
+	Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>("default");
 	Physic::Flag* flag = new Physic::Flag(tmpMat);
 
 	Entity* entity_flag = new Entity(&scene);

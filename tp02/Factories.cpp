@@ -241,10 +241,10 @@ void MaterialFactory::add(const std::string& name, Material* material)
 	m_materials[name] = material;
 }
 
-Material* MaterialFactory::get(const std::string& name)
-{
-	return m_materials[name];
-}
+//Material* MaterialFactory::get(const std::string& name)
+//{
+//	return m_materials[name];
+//}
 
 bool MaterialFactory::contains(const std::string& name)
 {

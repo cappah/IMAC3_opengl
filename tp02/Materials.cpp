@@ -3,16 +3,26 @@
 
 Material::Material(GLuint _glProgram) : glProgram(_glProgram)
 {
+
+}
+
+
+///////////////////////////////////////////
+
+
+Material3DObject::Material3DObject(GLuint _glProgram) : Material(_glProgram)
+{
 	uniform_MVP = glGetUniformLocation(glProgram, "MVP");
 	uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
 }
 
-void Material::setUniform_MVP(glm::mat4& mvp)
+
+void Material3DObject::setUniform_MVP(glm::mat4& mvp)
 {
 	glUniformMatrix4fv(uniform_MVP, 1, false, glm::value_ptr(mvp));
 }
 
-void Material::setUniform_normalMatrix(glm::mat4& normalMatrix)
+void Material3DObject::setUniform_normalMatrix(glm::mat4& normalMatrix)
 {
 	glUniformMatrix4fv(uniform_normalMatrix, 1, false, glm::value_ptr(normalMatrix));
 }
@@ -20,7 +30,7 @@ void Material::setUniform_normalMatrix(glm::mat4& normalMatrix)
 
 ///////////////////////////////////////////
 
-MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), textureDiffuse(TextureFactory::get().get("default")), specularPower(10), textureSpecular(TextureFactory::get().get("default")), textureBump(TextureFactory::get().get("default")), textureRepetition(1, 1)
+MaterialLit::MaterialLit() : Material3DObject(ProgramFactory::get().get("defaultLit")), textureDiffuse(TextureFactory::get().get("default")), specularPower(10), textureSpecular(TextureFactory::get().get("default")), textureBump(TextureFactory::get().get("default")), textureRepetition(1, 1)
 {
 	diffuseTextureName = textureDiffuse->name;
 	specularTextureName = textureSpecular->name;
@@ -38,14 +48,11 @@ MaterialLit::MaterialLit() : Material(ProgramFactory::get().get("defaultLit")), 
 }
 
 MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _textureSpecular, Texture* _textureBump, float _specularPower) :
-	Material(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureBump(_textureBump) , textureRepetition(1, 1)
+	Material3DObject(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureBump(_textureBump) , textureRepetition(1, 1)
 {
 	diffuseTextureName = textureDiffuse->name;
 	specularTextureName = textureSpecular->name;
 	bumpTextureName = textureBump->name;
-
-	uniform_MVP = glGetUniformLocation(glProgram, "MVP");
-	uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
 
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
@@ -58,6 +65,21 @@ MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _
 		exit(1);
 
 	textureDiffuse->initGL(); // we consider that each texture on a material will be used on the sceen and should be send to the GPU.
+}
+
+void MaterialLit::setDiffuse(Texture * _textureDiffuse)
+{
+	textureDiffuse = _textureDiffuse;
+}
+
+void MaterialLit::setSpecular(Texture * _textureSpecular)
+{
+	textureSpecular = _textureSpecular;
+}
+
+void MaterialLit::setBump(Texture * _textureBump)
+{
+	textureBump = _textureBump;
 }
 
 void MaterialLit::use()
@@ -136,7 +158,7 @@ void MaterialLit::drawUI()
 
 //////////////////////////////////////////////////
 
-MaterialUnlit::MaterialUnlit(GLuint _glProgram) : Material(_glProgram)
+MaterialUnlit::MaterialUnlit(GLuint _glProgram) : Material3DObject(_glProgram)
 {
 	uniform_color = glGetUniformLocation(glProgram, "Color");
 }
@@ -175,10 +197,16 @@ MaterialSkybox::MaterialSkybox(GLuint _glProgram, CubeTexture * _textureDiffuse)
 	diffuseTextureName = textureDiffuse->name;
 
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
+	uniform_VP = glGetUniformLocation(glProgram, "VP");
 
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
+}
+
+void MaterialSkybox::setUniform_VP(const glm::mat4 & vp)
+{
+	glUniformMatrix4fv(uniform_VP, 1, false, glm::value_ptr(vp));
 }
 
 void MaterialSkybox::use()
@@ -234,4 +262,149 @@ void MaterialShadow::use()
 void MaterialShadow::drawUI()
 {
 	//nothing
+}
+
+
+////////////////////////////////////////////////////////
+
+
+MaterialTerrain::MaterialTerrain()
+{
+}
+
+MaterialTerrain::MaterialTerrain(GLuint _glProgram)
+{
+}
+
+void MaterialTerrain::setUniformDiffuse(int textureId)
+{
+}
+
+void MaterialTerrain::use()
+{
+}
+
+void MaterialTerrain::drawUI()
+{
+}
+
+
+////////////////////////////////////////////////////////
+
+
+MaterialTerrainEdition::MaterialTerrainEdition()
+{
+	//diffuseTextureName = textureDiffuse->name;
+	//specularTextureName = textureSpecular->name;
+	//bumpTextureName = textureBump->name;
+
+	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
+	//uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	//uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
+	//uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
+	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
+	uniform_textureFilter = glGetUniformLocation(glProgram, "FilterTexture");
+	uniform_filterValues = glGetUniformLocation(glProgram, "FilterValues");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	textureDiffuse->initGL(); // we consider that each texture on a material will be used on the sceen and should be send to the GPU.
+}
+
+MaterialTerrainEdition::MaterialTerrainEdition(GLuint _glProgram) : Material(_glProgram)
+{
+	//diffuseTextureName = textureDiffuse->name;
+	//specularTextureName = textureSpecular->name;
+	//bumpTextureName = textureBump->name;
+
+	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
+	//uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	//uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
+	//uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
+	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
+	uniform_textureFilter = glGetUniformLocation(glProgram, "FilterTexture");
+	uniform_filterValues = glGetUniformLocation(glProgram, "FilterValues");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+}
+
+void MaterialTerrainEdition::setUniformFilterTexture(int textureId)
+{
+	glUniform1i(uniform_textureFilter, textureId);
+}
+
+void MaterialTerrainEdition::setUniformDiffuseTexture(int textureId)
+{
+	glUniform1i(uniform_textureDiffuse, textureId);
+}
+
+void MaterialTerrainEdition::setUniformLayoutOffset(const glm::vec2 & layoutOffset)
+{
+	glUniform2fv(uniform_filterValues, 1, glm::value_ptr(layoutOffset));
+}
+
+void MaterialTerrainEdition::use()
+{
+	//bind shaders
+	glUseProgram(glProgram);
+}
+
+void MaterialTerrainEdition::drawUI()
+{
+	//ImGui::InputFloat("specular power", &specularPower);
+
+	ImGui::InputFloat2("texture repetition", &textureRepetition[0]);
+
+	/*
+
+	char tmpTxt01[30];
+	diffuseTextureName.copy(tmpTxt01, glm::min(30, (int)diffuseTextureName.size()), 0);
+	tmpTxt01[diffuseTextureName.size()] = '\0';
+	if (ImGui::InputText("diffuse texture name", tmpTxt01, 20))
+	{
+		diffuseTextureName = tmpTxt01;
+
+		if (TextureFactory::get().contains(tmpTxt01))
+		{
+			textureDiffuse->freeGL();
+			textureDiffuse = TextureFactory::get().get(diffuseTextureName);
+			textureDiffuse->initGL();
+		}
+	}
+
+	
+	char tmpTxt02[30];
+	specularTextureName.copy(tmpTxt02, glm::min(30, (int)specularTextureName.size()), 0);
+	tmpTxt02[specularTextureName.size()] = '\0';
+	if (ImGui::InputText("specular texture name", tmpTxt02, 20))
+	{
+		specularTextureName = tmpTxt02;
+
+		if (TextureFactory::get().contains(specularTextureName))
+		{
+			textureSpecular->freeGL();
+			textureSpecular = TextureFactory::get().get(specularTextureName);
+			textureSpecular->initGL();
+		}
+	}
+
+	char tmpTxt03[30];
+	bumpTextureName.copy(tmpTxt03, glm::min(30, (int)bumpTextureName.size()), 0);
+	tmpTxt03[bumpTextureName.size()] = '\0';
+	if (ImGui::InputText("bump texture name", tmpTxt03, 20))
+	{
+		bumpTextureName = tmpTxt03;
+
+		if (TextureFactory::get().contains(bumpTextureName))
+		{
+			textureBump->freeGL();
+			textureBump = TextureFactory::get().get(bumpTextureName);
+			textureBump->initGL();
+		}
+	}
+	*/
 }

@@ -1,8 +1,14 @@
 #include "Terrain.h"
 #include "Factories.h" //forward
 
-Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,1.f)), m_terrainTexture(1024, 1024, glm::vec4(1, 1, 1, 1)), m_filterTexture(1024, 1024, glm::vec4(0, 0, 0, 1)), m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), m_seed(0)
+Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_terrainFbo(0), m_terrainMaterial(ProgramFactory::get().get("defaultTerrain")), m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,1.f)), m_terrainTexture(1024, 1024, glm::vec4(1, 1, 1, 1)), m_filterTexture(1024, 1024, glm::vec4(0, 0, 0, 1)), m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), m_seed(0)
 {
+	m_terrainTexture.initGL();
+	m_noiseTexture.initGL();
+
+	//set the terrain texture as diffuse texture : 
+	m_material.setDiffuse(&m_terrainTexture);
+
 	////////////////////// INIT QUAD MESH ////////////////////////
 	m_quadMesh.triangleIndex = { 0, 1, 2, 2, 1, 3 };
 	m_quadMesh.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
@@ -35,6 +41,8 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 
 Terrain::~Terrain()
 {
+	m_material.setDiffuse(nullptr); // detach texture as the texture is inside the terrain and will be destroyed
+
 	if (vbo_index != 0)
 		glDeleteBuffers(1, &vbo_index);
 
@@ -48,6 +56,11 @@ Terrain::~Terrain()
 		glDeleteBuffers(1, &vbo_normals);
 
 	glDeleteVertexArrays(1, &vao);
+
+	glDeleteFramebuffers(1, &m_terrainFbo);
+
+	m_terrainTexture.freeGL(); 
+	m_noiseTexture.freeGL();
 }
 
 
@@ -68,8 +81,8 @@ void Terrain::generateTerrainTexture()
 		glBindTexture(GL_TEXTURE_2D, m_filterTexture.glId);
 
 		m_terrainMaterial.setUniformFilterTexture(0);
-		m_terrainMaterial.setUniformLayoutTexture(1);
-		m_terrainMaterial.setUniformLayoutOffset(/*TODO*/);
+		m_terrainMaterial.setUniformDiffuseTexture(1);
+		m_terrainMaterial.setUniformLayoutOffset( glm::vec2( 255.f*i / (float)m_terrainLayouts.size(), 255.f*(i+1) / (float)m_terrainLayouts.size() ) );
 
 		m_quadMesh.draw();
 	}
@@ -185,7 +198,9 @@ void Terrain::applyNoise(Perlin2D& perlin2D)
 
 	computeNormals();
 
+	//refresh the terrain texture : 
 	computeNoiseTexture(perlin2D);
+	generateTerrainTexture();
 }
 
 void Terrain::generateTerrain()
@@ -371,9 +386,9 @@ void Terrain::drawUI()
 		applyNoise(m_terrainNoise.generatePerlin2D());
 	}
 
-	ImGui::PushID("terrainMaterial");
-	m_material.drawUI();
-	ImGui::PopID();
+	//ImGui::PushID("terrainMaterial");
+	//m_material.drawUI();
+	//ImGui::PopID();
 	
 	if (ImGui::SliderFloat("noise persistence", &m_terrainNoise.persistence, 0.f, 1.f))
 	{
@@ -393,5 +408,26 @@ void Terrain::drawUI()
 	}
 
 
-	//TODO
+	ImGui::InputText("new texture layout", m_newTextureName, 30);
+	ImGui::SameLine();
+	if (ImGui::SmallButton("add"))
+	{
+		if (TextureFactory::get().contains(m_newTextureName))
+		{
+			m_terrainLayouts.push_back(TextureFactory::get().get(m_newTextureName));
+			m_terrainLayouts.back()->initGL();
+		}
+	}
+
+	for (int i = 0; i < m_terrainLayouts.size(); i++)
+	{
+		ImGui::Text(m_terrainLayouts[i]->name.c_str());
+		ImGui::SameLine();
+		if (ImGui::SmallButton("remove"))
+		{
+			m_terrainLayouts[i]->freeGL();
+			m_terrainLayouts.erase(m_terrainLayouts.begin() + i);
+
+		}
+	}
 }

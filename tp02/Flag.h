@@ -37,14 +37,14 @@ namespace Physic {
 		Mesh m_mesh;
 
 		std::string m_materialName;
-		Material *m_material;
+		Material3DObject *m_material;
 
 		float m_width;
 		float m_height;
 		int m_subdivision;
 
 	public:
-		Flag(Material* material, int subdivision = 10, float width = 10.f, float height = 10.f);
+		Flag(Material3DObject* material, int subdivision = 10, float width = 10.f, float height = 10.f);
 		~Flag();
 
 		void update(float deltaTime);
