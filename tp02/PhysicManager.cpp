@@ -2,7 +2,7 @@
 
 namespace Physic {
 
-	PhysicManager::PhysicManager()
+	PhysicManager::PhysicManager(const glm::vec3& _gravity) : m_gravity(_gravity)
 	{
 	}
 
@@ -25,7 +25,7 @@ namespace Physic {
 	{
 		for (int i = 0; i < flags.size(); i++)
 		{
-			flags[i]->applyForce(m_gravity);
+			flags[i]->applyGravity(m_gravity);
 			flags[i]->update(deltaTime);
 		}
 	}

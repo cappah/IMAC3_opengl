@@ -177,8 +177,10 @@ void Entity::drawUI()
 		m_name = tmpName;
 	}
 
-	if (ImGui::SliderFloat3("rotation", &m_eulerRotation[0], 0, 2 * glm::pi<float>()))
+	glm::vec3 tmpRot = m_eulerRotation * (180.f / glm::pi<float>());
+	if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 360 ))
 	{
+		m_eulerRotation = tmpRot * glm::pi<float>() / 180.f;
 		setRotation( glm::quat(m_eulerRotation) );
 		applyTransform();
 	}

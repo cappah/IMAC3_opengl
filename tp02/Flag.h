@@ -61,6 +61,8 @@ namespace Physic {
 		void drawUI();
 
 		void applyForce(const glm::vec3& force);
+		//compute weight of each point, based on gravity and point mass, and add the weight force 
+		void applyGravity(const glm::vec3& gravity);
 
 		// Inherited via Component
 		virtual void eraseFromScene(Scene & scene) override;

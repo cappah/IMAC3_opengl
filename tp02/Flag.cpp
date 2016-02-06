@@ -5,7 +5,7 @@
 
 namespace Physic {
 
-	Flag::Flag(Material* material, int subdivision, float width, float height) : Component(FLAG), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height)
+	Flag::Flag(Material* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height)
 	{
 
 		//don't forget to change the origin to have the right pivot rotation
@@ -88,6 +88,9 @@ namespace Physic {
 		m_mesh.initGl();
 
 		//intialyze physic links : 
+		float k = 0.00002f;
+		float z = 0.000002f;
+		float l = 0.f;
 		for (int j = 0; j < m_subdivision; j++)
 		{
 			for (int i = 0; i < m_subdivision; i++)
@@ -99,13 +102,15 @@ namespace Physic {
 				if (i + 1 < m_subdivision)
 				{
 					Point* right = &pointContainer[idx2DToIdx1D(i + 1, j, m_subdivision)];
-					linkShape.push_back(Link(current, right)); //right link
+					l = glm::distance( right->position, current->position );
+					linkShape.push_back(Link(current, right, k, z, l)); //right link
 				}
 
 				if (j + 1 < m_subdivision)
 				{
-					Point* down = &pointContainer[idx2DToIdx1D(i, j + 1, m_subdivision)];
-					linkShape.push_back(Link(down, current)); //down link
+					Point* up = &pointContainer[idx2DToIdx1D(i, j + 1, m_subdivision)];
+					l = glm::distance(up->position, current->position);
+					linkShape.push_back(Link(up, current, k, z, l)); //up link
 				}
 
 				//shearing links
@@ -113,12 +118,14 @@ namespace Physic {
 				if (j + 1 < m_subdivision && i + 1 < m_subdivision)
 				{
 					Point* rightUp = &pointContainer[idx2DToIdx1D(i + 1, j + 1, m_subdivision)];
-					linkShearing.push_back(Link(current, rightUp)); //right up link
+					l = glm::distance(rightUp->position, current->position);
+					linkShearing.push_back(Link(current, rightUp, k, z, l)); //right up link
 				}
 				if (j - 1 > 0 && i + 1 < m_subdivision)
 				{
 					Point* rightDown = &pointContainer[idx2DToIdx1D(i + 1, j - 1, m_subdivision)];
-					linkShearing.push_back(Link(current, rightDown)); //right down link
+					l = glm::distance(rightDown->position, current->position);
+					linkShearing.push_back(Link(current, rightDown, k, z, l)); //right down link
 				}
 
 				//blending links : 
@@ -126,13 +133,15 @@ namespace Physic {
 				if (i + 2 < m_subdivision)
 				{
 					Point* right2 = &pointContainer[idx2DToIdx1D(i + 2, j, m_subdivision)];
-					linkBlending.push_back(Link(current, right2)); //right link
+					l = glm::distance(right2->position, current->position);
+					linkBlending.push_back(Link(current, right2, k, z, l)); //right link
 				}
 
 				if (j + 2 < m_subdivision)
 				{
 					Point* up2 = &pointContainer[idx2DToIdx1D(i, j + 2, m_subdivision)];
-					linkBlending.push_back(Link(current, up2)); //up link
+					l = glm::distance(up2->position, current->position);
+					linkBlending.push_back(Link(current, up2, k, z, l)); //up link
 				}
 			}
 		}
@@ -147,7 +156,7 @@ namespace Physic {
 		{
 			for (int i = 0; i < m_subdivision; i++)
 			{
-				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = 0.5f;
+				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = 0.00008f / (float)(m_subdivision * m_subdivision);
 			}
 		}
 
@@ -174,6 +183,7 @@ namespace Physic {
 		for (int i = 0; i < pointContainer.size(); i++)
 			computePoints(deltaTime, &pointContainer[i]);
 
+		
 		//shape : 
 		for (int i = 0; i < linkShape.size(); i++)
 			computeLinks(deltaTime, &linkShape[i]);
@@ -185,22 +195,24 @@ namespace Physic {
 		//blending : 
 		for (int i = 0; i < linkBlending.size(); i++)
 			computeLinks(deltaTime, &linkBlending[i]);
+			
+			
 
 		synchronizeVisual();
 	}
 
 	void Flag::synchronizeVisual()
 	{
-		m_mesh.vertices.clear();
-
-		for (int i = 0; i < pointContainer.size(); i++)
+		for (int i = 0, j = 0; i < pointContainer.size(); i++, j+=3)
 		{
-			m_mesh.vertices.push_back(pointContainer[i].position.x);
-			m_mesh.vertices.push_back(pointContainer[i].position.y);
-			m_mesh.vertices.push_back(pointContainer[i].position.z);
+			m_mesh.vertices[j] = pointContainer[i].position.x;
+			m_mesh.vertices[j+1] = pointContainer[i].position.y;
+			m_mesh.vertices[j+2] = pointContainer[i].position.z;
 		}
 
-		m_mesh.initGl();
+		m_mesh.updateVBO(Mesh::VERTICES);
+		m_mesh.updateVBO(Mesh::NORMALS);
+		m_mesh.updateVBO(Mesh::TANGENTS);
 	}
 
 	void Flag::computeLinks(float deltaTime, Link* link)
@@ -224,13 +236,13 @@ namespace Physic {
 		link->M1->force += (f * M1M2 + frein);
 		link->M2->force += (-f * M1M2 - frein);
 
-		std::cout << "force de rappel en M1 : " << link->M1->force.x << ", " << link->M1->force.y << std::endl;
-		std::cout << "force de rappel en M2 : " << link->M2->force.x << ", " << link->M2->force.y << std::endl;
+		//std::cout << "force de rappel en M1 : " << link->M1->force.x << ", " << link->M1->force.y << std::endl;
+		//std::cout << "force de rappel en M2 : " << link->M2->force.x << ", " << link->M2->force.y << std::endl;
 	}
 
 	void Flag::computePoints(float deltaTime, Point* point)
 	{
-		if (point->masse < 0.000001f)
+		if (point->masse < 0.00000001f)
 			return;
 
 		//leapfrog
@@ -286,6 +298,12 @@ namespace Physic {
 	{
 		for (int i = 0; i < pointContainer.size(); i++)
 			pointContainer[i].force += force;
+	}
+
+	void Flag::applyGravity(const glm::vec3 & gravity)
+	{
+		for (int i = 0; i < pointContainer.size(); i++)
+			pointContainer[i].force += (gravity * pointContainer[i].masse); // weight = m * g 
 	}
 
 	void Flag::eraseFromScene(Scene & scene)
