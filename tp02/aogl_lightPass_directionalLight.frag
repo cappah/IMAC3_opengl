@@ -76,9 +76,13 @@ void main(void)
 	vec3 color = computeDirectionalLight(directionalLight, p, n, diffuse, specular, specularPower * 100);
 
 	//shadow
-	vec4 wlP = WorldToLightScreen * vec4(p, 1.0);
+	float shadowBias = 0;//.001f;
+	vec4 wlP = WorldToLightScreen * vec4(p.xyz, 1.0);
 	vec3 lP = vec3(wlP/wlP.w) * 0.5 + 0.5;
 	float lDepth = texture(Shadow, lP.xy).r;
 
-    Color = vec4(color, 1.0);
+	if(lDepth + shadowBias > lP.z)
+		Color = vec4(color, 1.0);
+	else
+		Color = vec4(0.0, 0.0, 0.0, 1.0);
 }

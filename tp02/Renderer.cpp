@@ -406,7 +406,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 		}
 	}
 
-	/*
+	
 	//for directional lights : 
 	glUseProgram(glProgram_shadowPass);
 	for (int i = 0; i < directionalLights.size(); i++)
@@ -416,18 +416,18 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 		{
 			glClear(GL_DEPTH_BUFFER_BIT);
 			lightManager->bindShadowMapFBO(LightManager::DIRECTIONAL, i);
-			glm::mat4 lightProjection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 0.1f, 100.f); //TODO
-			glm::mat4 lightView = glm::lookAt(glm::vec3(0,0,0), directionalLights[i]->direction, glm::vec3(0, 0, 1)); //TODO
+			glm::mat4 lightProjection = glm::ortho(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
+			glm::mat4 lightView = glm::lookAt(-directionalLights[i]->direction, glm::vec3(0,0,0), glm::vec3(0, 0, 1));
 
-			for (int i = 0; i < meshRenderers.size(); i++)
+			for (int j = 0; j < meshRenderers.size(); j++)
 			{
-				renderShadows(lightProjection, lightView, *meshRenderers[i]); // draw shadow for the first spot light
+				renderShadows(lightProjection, lightView, *meshRenderers[j]);
 			}
 			lightManager->unbindShadowMapFBO(LightManager::DIRECTIONAL);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 	}
-	*/
+	
 
 	//for point lights : 
 	glUseProgram(glProgram_shadowPassOmni);
@@ -640,9 +640,22 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTexturePosition[DIRECTIONAL], 0);
 	glUniform1i(uniformTextureNormal[DIRECTIONAL], 1);
 	glUniform1i(uniformTextureDepth[DIRECTIONAL], 2);
-	for (auto& light : directionalLights)
+	for (int i = 0; i < directionalLights.size(); i++)
 	{
-		lightManager->uniformDirectionalLight(*light);
+		if (i < lightManager->getShadowMapCount(LightManager::DIRECTIONAL))
+		{
+			//active the shadow map texture
+			glActiveTexture(GL_TEXTURE3);
+			lightManager->bindShadowMapTexture(LightManager::DIRECTIONAL, i);
+			glUniform1i(uniformTextureShadow[DIRECTIONAL], 3); // send shadow texture
+		}
+
+		glm::mat4 projectionDirectionalLight = glm::ortho(-100.f, 100.f, -100.f, 100.f, 1.f, 100.f);
+		glm::mat4 worldToLightDirectionalLight = glm::lookAt(-directionalLights[i]->direction*10.f,  glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+		glm::mat4 WorldToLightScreen = projectionDirectionalLight * worldToLightDirectionalLight;
+		glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
+
+		lightManager->uniformDirectionalLight(*directionalLights[i]);
 		quadMesh.draw();
 	}
 
@@ -718,11 +731,11 @@ void Renderer::debugDrawDeferred()
 	}
 
 	//shadow : 
-	if (lightManager->getShadowMapCount(LightManager::SPOT) > 0)
+	if (lightManager->getShadowMapCount(LightManager::DIRECTIONAL) > 0)
 	{
 		glViewport((width * 3) / 4, 0, width / 4, height / 4);
 		glActiveTexture(GL_TEXTURE0);
-		lightManager->bindShadowMapTexture(LightManager::SPOT, 0);
+		lightManager->bindShadowMapTexture(LightManager::DIRECTIONAL, 0);
 		glUniform1i(uniformTextureBlit, 0);
 
 		quadMesh.draw();
