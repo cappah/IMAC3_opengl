@@ -130,31 +130,30 @@ public:
 
 
 
-class MaterialTerrain : public Material3DObject
+struct MaterialTerrain : public Material3DObject
 {
 
-private:
 	std::string diffuseTextureName;
 	Texture* textureDiffuse;
 
 	
-	//float specularPower;
-	//std::string specularTextureName;
-	//Texture* textureSpecular;
+	float specularPower;
+	std::string specularTextureName;
+	Texture* textureSpecular;
 
-	//std::string bumpTextureName;
-	//Texture* textureBump;
+	std::string bumpTextureName;
+	Texture* textureBump;
 	
 
 	glm::vec2 textureRepetition;
 
 	GLuint uniform_textureDiffuse;
-	//GLuint uniform_textureSpecular;
-	//GLuint uniform_textureBump;
-	//GLuint uniform_specularPower;
+	GLuint uniform_textureSpecular;
+	GLuint uniform_textureBump;
+	GLuint uniform_specularPower;
 	GLuint uniform_textureRepetition;
 
-public:
+
 	MaterialTerrain();
 	MaterialTerrain(GLuint _glProgram);
 	
@@ -199,6 +198,7 @@ public:
 	void setUniformFilterTexture(int textureId);
 	void setUniformDiffuseTexture(int textureId);
 	void setUniformLayoutOffset(const glm::vec2& layoutOffset);
+	void setUniformTextureRepetition(const glm::vec2& textureRepetition);
 
 	virtual void use() override;
 

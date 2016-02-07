@@ -35,7 +35,7 @@ private:
 
 	int m_subdivision;
 
-	MaterialLit m_material;
+	MaterialTerrain m_material;
 
 	float m_width;
 	float m_depth;
@@ -54,9 +54,15 @@ private:
 	Mesh m_quadMesh;
 	GLuint m_terrainFbo;
 	Texture m_filterTexture;
-	Texture m_terrainTexture;
+	Texture m_terrainDiffuse;
+	Texture m_terrainBump;
+	Texture m_terrainSpecular;
 
 	std::vector<Texture*> m_terrainLayouts;
+	std::vector<glm::vec2> m_textureRepetitions;
+
+	float m_noiseMax;
+	float m_noiseMin;
 
 	//for UI : 
 	char m_newTextureName[30];

@@ -30,9 +30,9 @@ layout(location = 1) out vec4 outNormal;
 // Uniforms : 
 
 uniform sampler2D Diffuse;
-//uniform sampler2D Specular;
-//uniform sampler2D Bump;
-//uniform float specularPower;
+uniform sampler2D Specular;
+uniform sampler2D Bump;
+uniform float specularPower;
 
 void main()
 {

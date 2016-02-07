@@ -47,6 +47,18 @@ Texture::Texture(int width, int height, const glm::vec4 & color) : w(width), h(h
 	}
 }
 
+Texture::Texture(int width, int height, const glm::vec3 & color) : w(width), h(height), glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
+{
+	comp = 3;
+	pixels = new unsigned char[3 * width*height];
+	for (int i = 0; i < width * height * 3; i += 3)
+	{
+		pixels[i] = color.r;
+		pixels[i + 1] = color.g;
+		pixels[i + 2] = color.b;
+	}
+}
+
 
 Texture::~Texture()
 {

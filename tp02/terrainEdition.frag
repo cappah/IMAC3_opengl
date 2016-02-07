@@ -21,7 +21,7 @@ void main(void)
 {
 
     float filterColor = texture(FilterTexture, In.Texcoord).r;
-	if(filterColor >= FilterValues.x && filterColor < FilterValues.y)
+	if(filterColor >= (FilterValues.x) && filterColor < (FilterValues.y))
 	{
 		Color = vec4(texture(Diffuse, In.RepeatedTexcoord).rgb, 1.0);
 	}
@@ -29,5 +29,4 @@ void main(void)
 	{
 		discard;
 	}
-
 }
