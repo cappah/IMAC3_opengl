@@ -169,6 +169,7 @@ public:
 	void add(const std::string& name, Material* material);
 	template<typename T>
 	T* get(const std::string& name);
+	template<typename T>
 	bool contains(const std::string& name);
 	void drawUI();
 
@@ -195,5 +196,12 @@ template<typename T>
 T* MaterialFactory::get(const std::string& name)
 {
 	return dynamic_cast<T*>(m_materials[name]);
+}
+
+template<typename T>
+bool MaterialFactory::contains(const std::string& name)
+{
+	auto findResult = m_materials.find(name);
+	return ( findResult != m_materials.end() && dynamic_cast<T*>(findResult->second));
 }
 

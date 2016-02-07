@@ -69,6 +69,10 @@ public:
 	void setSpecular(Texture* _textureSpecular);
 	void setBump(Texture* _textureBump);
 
+	Texture* getDiffuse() const;
+	Texture* getSpecular() const;
+	Texture* getBump() const;
+
 	//void setUniform_MVP(glm::mat4& mvp);
 	//void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
@@ -172,21 +176,19 @@ private:
 	//std::string diffuseTextureName;
 	Texture* textureDiffuse;
 
-	/*
-	float specularPower;
-	std::string specularTextureName;
+	//float specularPower;
+	//std::string specularTextureName;
 	Texture* textureSpecular;
 
-	std::string bumpTextureName;
+	//std::string bumpTextureName;
 	Texture* textureBump;
-	*/
 
 	glm::vec2 textureRepetition;
 
 	GLuint uniform_textureDiffuse;
-	/*GLuint uniform_textureSpecular;
+	GLuint uniform_textureSpecular;
 	GLuint uniform_textureBump;
-	GLuint uniform_specularPower; */
+	//GLuint uniform_specularPower; 
 	GLuint uniform_textureRepetition;
 	GLuint uniform_textureFilter;
 	GLuint uniform_filterValues;
@@ -197,6 +199,8 @@ public:
 
 	void setUniformFilterTexture(int textureId);
 	void setUniformDiffuseTexture(int textureId);
+	void setUniformBumpTexture(int textureId);
+	void setUniformSpecularTexture(int textureId);
 	void setUniformLayoutOffset(const glm::vec2& layoutOffset);
 	void setUniformTextureRepetition(const glm::vec2& textureRepetition);
 

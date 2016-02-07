@@ -58,14 +58,14 @@ private:
 	Texture m_terrainBump;
 	Texture m_terrainSpecular;
 
-	std::vector<Texture*> m_terrainLayouts;
+	std::vector<MaterialLit*> m_terrainLayouts;
 	std::vector<glm::vec2> m_textureRepetitions;
 
 	float m_noiseMax;
 	float m_noiseMin;
 
 	//for UI : 
-	char m_newTextureName[30];
+	char m_newLayoutName[30];
 
 
 public:
@@ -82,7 +82,7 @@ public:
 
 	void computeNormals();
 
-	void applyNoise(Perlin2D& perlin2D);
+	void applyNoise(Perlin2D& perlin2D, bool _computeNoiseTexture = true);
 	void updateTerrain();
 	void generateTerrain();
 

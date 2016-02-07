@@ -155,7 +155,7 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 	{
 		for (auto& meshRenderer : meshRenderers)
 		{
-			if (MaterialFactory::get().contains(textValue))
+			if (MaterialFactory::get().contains<Material3DObject>(textValue))
 			{
 				meshRenderer->setMaterial( MaterialFactory::get().get<Material3DObject>(textValue) );
 			}

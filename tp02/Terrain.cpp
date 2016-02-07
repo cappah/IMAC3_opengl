@@ -8,7 +8,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 			m_terrainBump(1024, 1024, glm::vec3(128, 128, 255)), m_terrainSpecular(1024, 1024, glm::vec3(128.f, 128.f, 128.f))
 {
 	// initialyze the textute name : 
-	m_newTextureName[0] = '\0';
+	m_newLayoutName[0] = '\0';
 
 	//push terrain texture to GPU
 	//bump
@@ -43,15 +43,23 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_terrainNoise.seed = m_seed;
 
 	generateTerrain();
-	applyNoise(m_terrainNoise.generatePerlin2D());
+	//applyNoise(m_terrainNoise.generatePerlin2D());
 
 
 	//generate terrain FBO : 
 	glGenFramebuffers(1, &m_terrainFbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_terrainFbo);
 
+	GLuint terrainDrawBuffers[3];
+	terrainDrawBuffers[0] = GL_COLOR_ATTACHMENT0;
+	terrainDrawBuffers[1] = GL_COLOR_ATTACHMENT1;
+	terrainDrawBuffers[2] = GL_COLOR_ATTACHMENT2;
+	glDrawBuffers(3, terrainDrawBuffers);
+
 	// Attach textures to framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_terrainDiffuse.glId, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_terrainBump.glId, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_terrainSpecular.glId, 0);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -95,12 +103,11 @@ Terrain::~Terrain()
 
 void Terrain::generateTerrainTexture() 
 {
-	m_material.textureRepetition = glm::vec2(1.f / (float)m_subdivision, 1.f / (float)m_subdivision);
+	//m_material.textureRepetition = glm::vec2(1.f / (float)m_subdivision, 1.f / (float)m_subdivision);
 
 	glViewport(0, 0, 1024, 1024);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_terrainFbo);
 
-	glEnable(GL_BLEND);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	m_terrainMaterial.use();
@@ -110,19 +117,31 @@ void Terrain::generateTerrainTexture()
 
 	for (int i = 0; i < m_terrainLayouts.size(); i++)
 	{
+		//diffuse
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->glId);
+		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getDiffuse()->glId);
+		//bump
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getBump()->glId);
+		//specular
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getSpecular()->glId);
 
+		//filter texture : 
 		m_terrainMaterial.setUniformFilterTexture(0);
+		//diffuse texture :
 		m_terrainMaterial.setUniformDiffuseTexture(1);
+		//bump texture : 
+		m_terrainMaterial.setUniformBumpTexture(2);
+		//specular texture : 
+		m_terrainMaterial.setUniformSpecularTexture(3);
+
 		float offsetMin = (i / (float)m_terrainLayouts.size());
 		float offsetMax = ((i + 1) / (float)m_terrainLayouts.size());
 		m_terrainMaterial.setUniformLayoutOffset( glm::vec2( offsetMin, offsetMax ) );
 		m_terrainMaterial.setUniformTextureRepetition(m_textureRepetitions[i]);
 
 		m_quadMesh.draw();
-
-		glDisable(GL_BLEND);
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -142,25 +161,15 @@ void Terrain::computeNoiseTexture(Perlin2D& perlin2D)
 			float x = (i * m_subdivision) / 1024.f;
 			float y = (j * m_subdivision) / 1024.f;
 
+
 			float noiseValue = perlin2D.getNoiseValue(x, y);
-			
+
 			for (int p = 0; p < 3; p++)
 			{
 				m_noiseTexture.pixels[k + p] = ((noiseValue - m_noiseMin) / (m_noiseMax - m_noiseMin)) * 255;
 				m_filterTexture.pixels[k + p] = ((noiseValue - m_noiseMin) / (m_noiseMax - m_noiseMin)) * 255;
 			}
 		}
-	}
-
-	for (int i = 0, k = 0; i < 10; i++)
-	{
-		for (int j = 0; j < 10; j++, k++)
-		{
-			std::cout << "(" << (int)m_filterTexture.pixels[i * 1024 + j] << ", ";
-			std::cout << (int)m_filterTexture.pixels[i * 1024 + j + 1] << ", ";
-			std::cout <<(int)m_filterTexture.pixels[i * 1024 + j + 2]<<"), ";
-		}
-		std::cout<<std::endl;
 	}
 
 	m_noiseTexture.initGL();
@@ -237,7 +246,7 @@ void Terrain::computeNormals()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Terrain::applyNoise(Perlin2D& perlin2D)
+void Terrain::applyNoise(Perlin2D& perlin2D, bool _computeNoiseTexture)
 {
 	m_noiseMin = 1.f;
 	m_noiseMax = 0.f;
@@ -266,8 +275,11 @@ void Terrain::applyNoise(Perlin2D& perlin2D)
 	computeNormals();
 
 	//refresh the terrain texture : 
-	computeNoiseTexture(perlin2D);
-	generateTerrainTexture();
+	if (_computeNoiseTexture)
+	{
+		computeNoiseTexture(perlin2D);
+		generateTerrainTexture();
+	}
 }
 
 void Terrain::generateTerrain()
@@ -311,8 +323,6 @@ void Terrain::generateTerrain()
 
 	for (int i = 0, k = 0; i < m_triangleCount; i++)
 	{
-
-
 		if (i % 2 == 0)
 		{
 			m_triangleIndex.push_back(k + 0);
@@ -429,7 +439,7 @@ void Terrain::drawUI()
 		// change the seed of the generator
 		m_terrainNoise.seed = m_seed;
 		//apply new noise to terrain
-		applyNoise(m_terrainNoise.generatePerlin2D());
+		applyNoise(m_terrainNoise.generatePerlin2D(), false);
 	}
 
 	if (ImGui::InputFloat3("terrain offset", &m_offset[0]))
@@ -450,39 +460,45 @@ void Terrain::drawUI()
 	if (ImGui::InputInt("terrain subdivision", &m_subdivision))
 	{
 		generateTerrain();
-		applyNoise(m_terrainNoise.generatePerlin2D());
+		applyNoise(m_terrainNoise.generatePerlin2D(), false);
 	}
 	
 	if (ImGui::SliderFloat("noise persistence", &m_terrainNoise.persistence, 0.f, 1.f))
 	{
-		applyNoise(m_terrainNoise.generatePerlin2D());
+		applyNoise(m_terrainNoise.generatePerlin2D(), false);
 	}
 	if (ImGui::SliderInt("noise octave count", &m_terrainNoise.octaveCount, 1, 10))
 	{
-		applyNoise(m_terrainNoise.generatePerlin2D());
+		applyNoise(m_terrainNoise.generatePerlin2D(), false);
 	}
 	if (ImGui::SliderInt("noise height", &m_terrainNoise.height, 1, 512))
 	{
-		applyNoise(m_terrainNoise.generatePerlin2D());
+		applyNoise(m_terrainNoise.generatePerlin2D(), false);
 	}
 	if (ImGui::SliderInt("noise sampling offset", &m_terrainNoise.samplingOffset, 1, 128))
 	{
-		applyNoise(m_terrainNoise.generatePerlin2D());
+		applyNoise(m_terrainNoise.generatePerlin2D(), false);
 	}
 
+
+	if (ImGui::Button("refresh noise texture"))
+	{
+		computeNoiseTexture(m_terrainNoise.generatePerlin2D());
+		generateTerrainTexture();
+	}
 
 	ImGui::PushID("terrainMaterial");
 	m_material.drawUI();
 	ImGui::PopID();
 
-	ImGui::InputText("new texture layout", m_newTextureName, 30);
+	ImGui::InputText("new texture layout", m_newLayoutName, 30);
 	ImGui::SameLine();
 	if (ImGui::SmallButton("add"))
 	{
-		if (TextureFactory::get().contains(m_newTextureName))
+		if (MaterialFactory::get().contains<MaterialLit>(m_newLayoutName))
 		{
-			m_terrainLayouts.push_back(TextureFactory::get().get(m_newTextureName));
-			m_terrainLayouts.back()->initGL();
+			m_terrainLayouts.push_back(MaterialFactory::get().get<MaterialLit>(m_newLayoutName));
+			//m_terrainLayouts.back()->initGL();
 			m_textureRepetitions.push_back(glm::vec2(1.f, 1.f));
 
 			//redraw the terrain texture : 
@@ -492,13 +508,36 @@ void Terrain::drawUI()
 
 	for (int i = 0; i < m_terrainLayouts.size(); i++)
 	{
+		ImGui::PushID(i);
+
+		if (ImGui::SmallButton("up") && i > 0)
+		{
+			auto tmp = m_terrainLayouts[i];
+			m_terrainLayouts[i] = m_terrainLayouts[i - 1];
+			m_terrainLayouts[i - 1] = tmp;
+
+			generateTerrainTexture();
+		}
+		ImGui::SameLine();
+
+		if (ImGui::SmallButton("down") && i < m_terrainLayouts.size() - 1)
+		{
+			auto tmp = m_terrainLayouts[i];
+			m_terrainLayouts[i] = m_terrainLayouts[i + 1];
+			m_terrainLayouts[i + 1] = tmp;
+
+			generateTerrainTexture();
+		}
+		ImGui::SameLine();
+
 		ImGui::Text(m_terrainLayouts[i]->name.c_str());
 		ImGui::SameLine();
-		ImGui::PushID(i);
+		
 		glm::vec2 tmpVec2 = m_textureRepetitions[i];
+		
 		if (ImGui::SmallButton("remove"))
 		{
-			m_terrainLayouts[i]->freeGL();
+			//m_terrainLayouts[i]->freeGL();
 			m_terrainLayouts.erase(m_terrainLayouts.begin() + i);
 			m_textureRepetitions.erase(m_textureRepetitions.begin() + i);
 

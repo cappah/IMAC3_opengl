@@ -85,6 +85,21 @@ void MaterialLit::setBump(Texture * _textureBump)
 	textureBump = _textureBump;
 }
 
+Texture * MaterialLit::getDiffuse() const
+{
+	return textureDiffuse;
+}
+
+Texture * MaterialLit::getSpecular() const
+{
+	return textureSpecular;
+}
+
+Texture * MaterialLit::getBump() const
+{
+	return textureBump;
+}
+
 void MaterialLit::use()
 {
 	//bind shaders
@@ -345,8 +360,8 @@ MaterialTerrainEdition::MaterialTerrainEdition()
 	//bumpTextureName = textureBump->name;
 
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
-	//uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
-	//uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
+	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
 	//uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
 	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
 	uniform_textureFilter = glGetUniformLocation(glProgram, "FilterTexture");
@@ -366,8 +381,8 @@ MaterialTerrainEdition::MaterialTerrainEdition(GLuint _glProgram) : Material(_gl
 	//bumpTextureName = textureBump->name;
 
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
-	//uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
-	//uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
+	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
 	//uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
 	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
 	uniform_textureFilter = glGetUniformLocation(glProgram, "FilterTexture");
@@ -386,6 +401,16 @@ void MaterialTerrainEdition::setUniformFilterTexture(int textureId)
 void MaterialTerrainEdition::setUniformDiffuseTexture(int textureId)
 {
 	glUniform1i(uniform_textureDiffuse, textureId);
+}
+
+void MaterialTerrainEdition::setUniformBumpTexture(int textureId)
+{
+	glUniform1i(uniform_textureBump, textureId);
+}
+
+void MaterialTerrainEdition::setUniformSpecularTexture(int textureId)
+{
+	glUniform1i(uniform_textureSpecular, textureId);
 }
 
 void MaterialTerrainEdition::setUniformLayoutOffset(const glm::vec2 & layoutOffset)

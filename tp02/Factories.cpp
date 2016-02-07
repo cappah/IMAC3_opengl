@@ -246,11 +246,6 @@ void MaterialFactory::add(const std::string& name, Material* material)
 //	return m_materials[name];
 //}
 
-bool MaterialFactory::contains(const std::string& name)
-{
-	return m_materials.find(name) != m_materials.end();
-}
-
 void MaterialFactory::drawUI()
 {
 	ImGui::PushID("materialFactory");

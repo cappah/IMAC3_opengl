@@ -274,7 +274,7 @@ namespace Physic {
 			{
 				m_materialName = tmpMaterialName;
 
-				if (MaterialFactory::get().contains(m_materialName))
+				if (MaterialFactory::get().contains<Material3DObject>(m_materialName))
 				{
 					m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
 				}

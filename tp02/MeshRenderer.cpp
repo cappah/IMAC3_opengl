@@ -30,7 +30,7 @@ void MeshRenderer::drawUI()
 		{
 			materialName = tmpMaterialName;
 
-			if (MaterialFactory::get().contains(materialName))
+			if (MaterialFactory::get().contains<Material3DObject>(materialName))
 			{
 				Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
 				if (tmpMat != nullptr)
