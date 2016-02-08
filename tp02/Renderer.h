@@ -11,14 +11,15 @@
 #include "Skybox.h"
 #include "Materials.h"
 #include "Flag.h"
-
-
+#include "PostProcess.h"
 
 class Renderer
 {
 	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
 
 private:
+	PostProcess postProcess;
+
 	GLuint glProgram_gPass;
 	GLuint glProgram_lightPass_pointLight;
 	GLuint glProgram_lightPass_directionalLight;
@@ -61,6 +62,9 @@ private:
 	//light count after culling : 
 	int pointLightCount;
 	int spotLightCount;
+
+	GLuint beautyFbo;
+	GLuint beautyTexture;
 
 	////shadows : 
 	//GLuint shadowFrameBuffer;
@@ -105,5 +109,8 @@ public:
 
 	// Old function to compte camera culling for light, see passCullingTest instead.
 	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights);
+
+	GLuint getBeautyTextureId() const;
+	GLuint getDepthTextureId() const;
 };
 

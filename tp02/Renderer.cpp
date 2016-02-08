@@ -163,7 +163,40 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	lightManager->setShadowMapCount(LightManager::SPOT, 10);
 	lightManager->setShadowMapCount(LightManager::DIRECTIONAL, 5);
 	lightManager->setShadowMapCount(LightManager::POINT, 10);
+
+	////////////////////// BEAUTY TEXTURE AND FBO ////////////////////
+	
+	//beauty texture : 
+	glGenTextures(1, &beautyTexture);
+	glBindTexture(GL_TEXTURE_2D, beautyTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, width, height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	
+	//beauty framebuffer : 
+	glGenFramebuffers(1, &beautyFbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, beautyFbo);
+	GLuint beautyDrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, beautyDrawBuffers);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, beautyTexture, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		fprintf(stderr, "Error on building framebuffer\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Back to the default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	
+
 }
+
 
 
 void Renderer::onResizeWindow()
@@ -228,6 +261,44 @@ void Renderer::onResizeWindow()
 
 	// Back to the default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+	// beauty texture resize : 
+	// unbind texture of FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//delete old textures
+	glDeleteTextures(1, &beautyTexture);
+
+	//generate new textures
+	glGenTextures(1, &beautyTexture);
+	glBindTexture(GL_TEXTURE_2D, beautyTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, width, height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	//beauty framebuffer : 
+	glBindFramebuffer(GL_FRAMEBUFFER, beautyFbo);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, beautyTexture, 0);
+	
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		fprintf(stderr, "Error on building framebuffer\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Back to the default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
 
@@ -245,12 +316,13 @@ void Renderer::initPostProcessQuad(std::string programBlit_vert_path, std::strin
 	if (check_link_error(glProgram_blit) < 0)
 		exit(1);
 
+	// Upload uniforms
+	uniformTextureBlit = glGetUniformLocation(glProgram_blit, "Texture");
+
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
 
-	// Upload uniforms
-	uniformTextureBlit = glGetUniformLocation(glProgram_blit, "Texture");
 }
 
 void Renderer::initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path,
@@ -518,6 +590,10 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 
 	///// begin light pass
+	//light pass on beuty texture for post processing
+	glBindFramebuffer(GL_FRAMEBUFFER, beautyFbo);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// Disable the depth test
 	glDisable(GL_DEPTH_TEST);
 	// Enable blending
@@ -650,6 +726,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glDisable(GL_BLEND);	
 	glEnable(GL_DEPTH_TEST);
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	///// end light pass
 
 	///////// end deferred
@@ -662,14 +739,19 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 	///////// turn on forward rendering : 
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, gbufferFbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//TEMPORARY DESACTIVATE SKYBOX : 
 
-	
-	//rander skybox : 
-	skybox.render(projection, worldToView);
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER, gbufferFbo);
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+	//glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//
+	////rander skybox : 
+	//skybox.render(projection, worldToView);
+
+	postProcess.render(projection, worldToView, getBeautyTextureId(), getDepthTextureId());
+
 }
 
 void Renderer::debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities)
@@ -980,3 +1062,14 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 	}
 
 }
+
+GLuint Renderer::getBeautyTextureId() const
+{
+	return beautyTexture;
+}
+
+GLuint Renderer::getDepthTextureId() const
+{
+	return gbufferTextures[2];
+}
+
