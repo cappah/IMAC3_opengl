@@ -28,6 +28,9 @@ public:
 	Component& operator=(const Component& other);
 	virtual ~Component();
 
+	//this function simply set the m_entity parameter on this component.
+	//You normally don't have to call this function, it is internally called in entity.add(component).
+	//To add a component to an entity, call entity.add(component)
 	void attachToEntity(Entity* entity);
 	
 	Entity* entity();
@@ -37,10 +40,17 @@ public:
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1,1,1), const glm::quat& rotation = glm::quat());
 
+	//Erase a component from the scene
+	//You normally don't have to directly call this function
+	//to erase a component from the scene, call entity.erase(component).
 	virtual void eraseFromScene(Scene& scene) = 0;
+	//Add a component to the scene
+	//You normally don't have to directly call this function
+	//to add a component to the scene, call entity.add(component).
 	virtual void addToScene(Scene& scene) = 0;
 
 	//clone a component, and attach it to the given entity
+	//This function is internally called by the copy contructor and operator=() of entity, to properly copy the entity.
 	virtual Component* clone(Entity* entity) = 0;
 };
 

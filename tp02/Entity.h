@@ -77,42 +77,62 @@ public:
 	Entity& operator=(const Entity& other);
 	virtual ~Entity();
 
+	//this function is called each time the model matrix of this entity changes.It internally call apply transform. 
 	virtual void onChangeModelMatrix() override;
 
+	//apply transform on this entity, and apply transform on all its components.
 	void applyTransform();
 
+	//draw the entity UI
 	void drawUI();
 
+	//return the value of m_isSelected
 	bool getIsSelected() const ;
+
+	//get the name of this entity
 	std::string getName() const;
+	//set the name of this entity
 	void setName(const std::string& name);
 
-
+	//select this entity, set m_isSelected to true
 	void select();
+	//deselect this entity, set m_isSelected to false
 	void deselect();
 
-	// functions to add components : 
+	// function to add a component. 
 	Entity& add(PointLight* pointLight);
+	// function to add a component. 
 	Entity& add(DirectionalLight* directionalLight);
+	// function to add a component. 
 	Entity& add(SpotLight* spotLight);
+	// function to add a component. 
 	Entity& add(Collider* collider);
+	// function to add a component. 
 	Entity& add(MeshRenderer* meshRenderer);
+	// function to add a component. 
 	Entity& add(Physic::Flag* flag);
 
-	// functions to erase components : 
+	// function to erase a component.
 	Entity& erase(PointLight* pointLight);
+	// function to erase a component.
 	Entity& erase(DirectionalLight* directionalLight);
+	// function to erase a component.
 	Entity& erase(SpotLight* spotLight);
+	// function to erase a component.
 	Entity& erase(Collider* collider);
+	// function to erase a component.
 	Entity& erase(MeshRenderer* meshRenderer);
+	// function to erase a component.
 	Entity& erase(Physic::Flag* flag);
 
-	//finalyze the creation of the entity : 
+	//finalyze the creation of the entity, should be called after all components has been added to the entity : 
+	//One of the goal of this function is to properly set up the collider such that it cover well all the components of the entity.
 	void endCreation();
 
+	//delete all the components attached to this entity.
 	void eraseAllComponents();
 
-	// function to get component : 
+	// function to get component.
 	Component* getComponent(Component::ComponentType type);
 
 };
