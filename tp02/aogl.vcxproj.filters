@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="aogl.cpp" />
+    <ClCompile Include="Editor.cpp" />
+    <ClCompile Include="Gizmo.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="LightManager.cpp" />
+    <ClCompile Include="Materials.cpp" />
+    <ClCompile Include="Lights.cpp" />
+    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="MeshRenderer.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="Factories.cpp" />
+    <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="PerlinNoise.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="Link.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicManager.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Flag.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitter.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Editor.h" />
+    <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="Utils.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="Ray.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="LightManager.h" />
+    <ClInclude Include="Materials.h" />
+    <ClInclude Include="Lights.h" />
+    <ClInclude Include="Application.h" />
+    <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="Factories.h" />
+    <ClInclude Include="Terrain.h" />
+    <ClInclude Include="PerlinNoise.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="Flag.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Link.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicManager.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEmitter.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{fb80e163-5313-4d51-b201-fb45ba18f485}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physic">
+      <UniqueIdentifier>{054c5353-b65c-4e44-ad72-a0d9c79ebaeb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="aogl.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="aogl_gPass.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="aogl_lightPass.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="aogl_lightPass_directionalLight.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="aogl_lightPass_pointLight.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="aogl_lightPass_spotLight.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="blit.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowPass.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="skybox.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="wireframe.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="aogl.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="aogl_lightPass.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="blit.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowPass.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="skybox.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="wireframe.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowPassOmni.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowPassOmni.geom">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shadowPassOmni.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="terrainEdition.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="terrainEdition.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="terrain.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="terrain.vert">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

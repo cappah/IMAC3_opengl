@@ -304,3 +304,14 @@ void BoxCollider::coverMesh(Mesh & mesh)
 	updateModelMatrix();
 }
 
+void BoxCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin)
+{
+	origin = origin;
+	glm::vec3 dimensions = min - max;
+
+	offsetScale = dimensions;
+	offsetPosition = dimensions * 0.5f + origin*dimensions + min;
+
+	updateModelMatrix();
+}
+

@@ -47,31 +47,48 @@ namespace Physic {
 		Flag(Material* material, int subdivision = 10, float width = 10.f, float height = 10.f);
 		~Flag();
 
+		//function to call each frame, with deltaTime = frame duration or fixe duration
 		void update(float deltaTime);
-		void synchronizeVisual(); // update the mesh to follow the physic points
-
-		void computeLinks(float deltaTime, Link* link);
-		void computePoints(float deltaTime, Point* point);
-
-		glm::vec3 getGravity() const;
-		void setGravity(const glm::vec3& _gravity);
-	
+		
+		//render the flag with the camera projection and view
 		void render(const glm::mat4& projection, const glm::mat4& view);
 
+		//draw the UI for the flag
 		void drawUI();
 
+		//add a force to each point the flag
 		void applyForce(const glm::vec3& force);
+		//add gravity to each point of the flag
+		void applyGravity(const glm::vec3& gravity);
 
 		// Inherited via Component
 		virtual void eraseFromScene(Scene & scene) override;
 		virtual void addToScene(Scene & scene) override;
 		virtual Component * clone(Entity * entity) override;
 
+		//return the flag mesh
 		Mesh& getMesh();
 
+		//apply a transform operation to the flag, modelMatrix only retain the translation. Rotation and scale are applied locally on each point of the flag
 		virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 
+		//Return the origin of the flag, which is normaly also the origin of the flag mesh.
 		glm::vec3 getOrigin() const;
+
+	private : 
+		//simply generate the model, don't destroy or allocate memory, we have to do it manually before and after calling this function
+		void generateMesh();
+		//update all normals such that they follow the shape
+		void updateNormals();
+		//initialyze and place the physic points and links
+		void initialyzePhysic();
+		//function call at each update, it will update vertices, normals (calling updateNormals())
+		void synchronizeVisual(); // update the mesh to follow the physic points
+
+		//apply physic simulation on links
+		void computeLinks(float deltaTime, Link* link);
+		//apply physic simulation on points
+		void computePoints(float deltaTime, Point* point);
 
 	};
 
