@@ -6,6 +6,7 @@
 #include "Lights.h"
 #include "Collider.h"
 #include "Flag.h"
+#include "ParticleEmitter.h"
 #include "PhysicManager.h"
 
 #include "LightManager.h"
@@ -13,7 +14,6 @@
 #include "Camera.h"
 #include "Terrain.h"
 #include "Skybox.h"
-#include "PhysicManager.h"
 
 class Scene
 {
@@ -21,6 +21,7 @@ private:
 	//entities : 
 	std::vector<Entity*> m_entities;
 
+	//components : 
 	//lights : 
 	std::vector<PointLight*> m_pointLights;
 	std::vector<DirectionalLight*> m_directionalLights;
@@ -35,15 +36,28 @@ private:
 	//flag : 
 	std::vector<Physic::Flag*> m_flags;
 
+	//particles : 
+	std::vector<Physic::ParticleEmitter*> m_particleEmitters;
+
+	//special componants : 
+	//terrain : 
+	Terrain m_terrain;
+
+	//skybox : 
+	Skybox m_skybox;
+
+
+	//systems : 
 	Renderer* m_renderer;
 	Physic::PhysicManager m_physicManager;
+	//TODO
+	//CloudSystem m_cloudSystem;
 
+	//parameters : 
 	bool m_areCollidersVisible;
 	bool m_isDebugDeferredVisible;
 	bool m_areLightsBoundingBoxVisible;
 
-	Terrain m_terrain;
-	Skybox m_skybox;
 
 public:
 	Scene(Renderer * renderer);
@@ -58,6 +72,7 @@ public:
 	Scene& add(Collider* collider);
 	Scene& add(MeshRenderer* meshRenderer);
 	Scene& add(Physic::Flag* flag);
+	Scene& add(Physic::ParticleEmitter* particleEmitter);
 
 	Scene& erase(Entity* entity);
 	Scene& erase(PointLight* pointLight);
@@ -66,6 +81,7 @@ public:
 	Scene& erase(Collider* collider);
 	Scene& erase(MeshRenderer* meshRenderer);
 	Scene& erase(Physic::Flag* flag);
+	Scene& erase(Physic::ParticleEmitter* particleEmitter);
 
 	void render(const Camera& camera);
 	void renderColliders(const Camera& camera);
