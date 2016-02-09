@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="lib">
+      <UniqueIdentifier>{406C105A-9DAD-F148-9828-FA071006333E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\stb">
+      <UniqueIdentifier>{E4D0156F-8690-2744-870B-9FC257C9D731}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lib\stb\stb_image.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\stb\stb_truetype.h">
+      <Filter>lib\stb</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lib\stb\stb_image.c">
+      <Filter>lib\stb</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
