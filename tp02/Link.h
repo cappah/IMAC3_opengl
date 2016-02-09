@@ -21,7 +21,7 @@ namespace Physic {
 
 		Link();
 		Link(Point* _M1, Point* _M2);
-		Link(Point* _M1, Point* _M2, float _k, float _z, float _l, float _s1, float _s2, float _s3);
+		Link(Point* _M1, Point* _M2, float _k, float _z = 0.f, float _l = 1.f, float _s1 = 0.f, float _s2 = 0.f, float _s3 = 0.f);
 		~Link();
 
 		void setConnection(Point* _M1, Point* _M2);

@@ -1,11 +1,11 @@
 #include "Mesh.h"
 
-Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0)
+Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage)
 {
 
 }
 
-Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0)
+Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
 {
 	bool Ret = false;
 	Assimp::Importer Importer;
@@ -60,7 +60,7 @@ void Mesh::initGl()
 		glGenBuffers(1, &vbo_vertices);
 		glEnableVertexAttribArray(VERTICES);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], drawUsage);
 		glVertexAttribPointer(VERTICES, coordCountByVertex, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * coordCountByVertex, (void*)0);
 	}
 
@@ -69,7 +69,7 @@ void Mesh::initGl()
 		glGenBuffers(1, &vbo_normals);
 		glEnableVertexAttribArray(NORMALS);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
-		glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float), &normals[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float), &normals[0], drawUsage);
 		glVertexAttribPointer(NORMALS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 	}
 
@@ -78,7 +78,7 @@ void Mesh::initGl()
 		glGenBuffers(1, &vbo_tangents);
 		glEnableVertexAttribArray(TANGENTS);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_tangents);
-		glBufferData(GL_ARRAY_BUFFER, tangents.size()*sizeof(float), &tangents[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, tangents.size()*sizeof(float), &tangents[0], drawUsage);
 		glVertexAttribPointer(TANGENTS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 	}
 
@@ -94,6 +94,44 @@ void Mesh::initGl()
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Mesh::updateVBO(Vbo_types type)
+{
+	if (type == Vbo_types::INDEX)
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_index);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangleIndex.size()*sizeof(int), &triangleIndex[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
+	if (type == Vbo_types::VERTICES)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], drawUsage);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	if (type == Vbo_types::NORMALS)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
+		glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float), &normals[0], drawUsage);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	if (type == Vbo_types::TANGENTS)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_tangents);
+		glBufferData(GL_ARRAY_BUFFER, tangents.size()*sizeof(float), &tangents[0], drawUsage);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	if (type == Vbo_types::UVS)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_uvs);
+		glBufferData(GL_ARRAY_BUFFER, uvs.size()*sizeof(float), &uvs[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 }
 
 // simply draw the vertices, using vao.

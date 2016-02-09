@@ -56,6 +56,12 @@ Scene& Scene::add(Physic::Flag * flag)
 	return *this;
 }
 
+Scene & Scene::add(Physic::ParticleEmitter * particleEmitter)
+{
+	m_particleEmitters.push_back(particleEmitter);
+	return *this;
+}
+
 Scene& Scene::erase(Entity * entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
@@ -142,6 +148,19 @@ Scene & Scene::erase(Physic::Flag * flag)
 	{
 		delete flag;
 		m_flags.erase(findIt);
+	}
+
+	return *this;
+}
+
+Scene & Scene::erase(Physic::ParticleEmitter * particleEmitter)
+{
+	auto findIt = std::find(m_particleEmitters.begin(), m_particleEmitters.end(), particleEmitter);
+
+	if (findIt != m_particleEmitters.end())
+	{
+		delete particleEmitter;
+		m_particleEmitters.erase(findIt);
 	}
 
 	return *this;
