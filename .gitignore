@@ -29,11 +29,23 @@
 
 # Everything except code and shaders
 */build/*
+*/lib/*
+*/obj/*
+*/bin/*
+*/textures/*
 *.lua
 *.md
+*.sdf
+*.sln
+*.vcxproj.*
+*.opendb
+*.pdb
+*.idb
+*.ilk
+*.user
+*.filters
 
 # Old tp02
-aogl_course_2015-master/*
 tp02_old/*
 tp02_old_old/*
 tp02 - Copie/*
