@@ -50,8 +50,9 @@ private:
 	//systems : 
 	Renderer* m_renderer;
 	Physic::PhysicManager m_physicManager;
-	//TODO
+	//TODO, after particles
 	//CloudSystem m_cloudSystem;
+	//WeatherSystem m_weatherSystem;
 
 	//parameters : 
 	bool m_areCollidersVisible;
