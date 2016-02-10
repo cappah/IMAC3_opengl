@@ -479,8 +479,7 @@ int main( int argc, char **argv )
 		if (Application::get().getWindowResize())
 		{
 			renderer.onResizeWindow();
-			//TODO : 
-			//editor.onResizeWindow();
+			editor.onResizeWindow();
 
 			Application::get().setWindowResize(false);
 		}

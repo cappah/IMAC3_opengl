@@ -232,15 +232,17 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 {
 	m_gizmo = new Gizmo(_unlitMaterial, this);
 
-	m_camera = new Camera();
+	m_camera = new CameraEditor();
 	camera_defaults(*m_camera);
 
 	init_gui_states(m_guiStates);
 
 	//ui : 
-	m_panelsDecal = glm::vec2(0, 20);
-	m_leftPanelwidth = 100;
-	m_leftPanelHeight = 200;
+	m_windowDecal = glm::vec2(1, 20);
+	m_windowRect = glm::vec4(m_windowDecal.x, m_windowDecal.y, Application::get().getWindowWidth(), Application::get().getWindowHeight());
+	m_topLeftPanelRect = glm::vec4(m_windowRect.x, m_windowRect.y, 100, 200);
+	m_bottomLeftPanelRect = glm::vec4(m_windowRect.x,m_topLeftPanelRect.w, m_topLeftPanelRect.z, m_windowRect.w - m_topLeftPanelRect.w);
+	m_bottomPanelRect = glm::vec4(m_windowRect.x + m_topLeftPanelRect.z, 200, m_windowRect.z - m_topLeftPanelRect.z, m_windowRect.w - 200 );
 
 	//defaults : 
 	m_terrainToolVisible = true;
@@ -518,7 +520,11 @@ void Editor::displayMenuBar(Scene& scene)
 			{
 				if (m_cameraFPS)
 				{
-					toogleCamera(*m_camera);
+					CameraEditor* newCam = new CameraEditor();
+					newCam->switchFromCameraFPS(*m_camera); //set up the camera
+					delete m_camera;
+					m_camera = newCam;
+					//toogleCamera(*m_camera);
 					m_cameraFPS = false;
 				}
 			}
@@ -526,7 +532,11 @@ void Editor::displayMenuBar(Scene& scene)
 			{
 				if (!m_cameraFPS)
 				{
-					toogleCamera(*m_camera);
+					CameraFPS* newCam = new CameraFPS();
+					newCam->switchFromCameraEditor(*m_camera); //set up the camera
+					delete m_camera;
+					m_camera = newCam;
+					//toogleCamera(*m_camera);
 					m_cameraFPS = true;
 				}
 			}
@@ -586,6 +596,33 @@ void Editor::displayTopLeftWindow(Scene& scene)
 			m_inspector.drawUI(m_meshRenderers);
 		}
 	}
+}
+
+void Editor::displayBottomLeftWindow(Scene& scene)
+{
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4, 0.4, 0.4, 0.2));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
+
+	auto entities = scene.getEntities();
+
+	int entityId = 0;
+	for (auto& entity : entities)
+	{
+		ImGui::PushID(entityId);
+		if (ImGui::Button(entity->getName().c_str(), ImVec2(m_bottomLeftPanelRect.z - 35.f, 16.f)))
+		{
+			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->dir*3.f;
+			m_camera->setTranslation(cameraFinalPosition);
+			m_camera->setDirection(entity->getTranslation() - m_camera->eye);
+		}
+		ImGui::PopID();
+		entityId++;
+	}
+
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
 }
 
 void Editor::displayBottomWindow(Scene& scene)
@@ -680,6 +717,22 @@ void Editor::displayBottomWindow(Scene& scene)
 	}
 }
 
+void Editor::updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight)
+{
+	m_windowRect = glm::vec4(m_windowDecal.x, m_windowDecal.y, Application::get().getWindowWidth(), Application::get().getWindowHeight());
+	m_topLeftPanelRect = glm::vec4(m_windowRect.x, m_windowRect.y, topLeftWidth, topLeftHeight);
+	m_bottomLeftPanelRect = glm::vec4(m_windowRect.x, m_topLeftPanelRect.w, m_topLeftPanelRect.z, m_windowRect.w - m_topLeftPanelRect.w);
+	m_bottomPanelRect = glm::vec4(m_windowRect.x + m_topLeftPanelRect.z, m_windowRect.w - bottomHeight, m_windowRect.z - m_topLeftPanelRect.z, bottomHeight);
+}
+
+void Editor::onResizeWindow()
+{
+	m_windowRect.z = Application::get().getWindowWidth();
+	m_windowRect.w = Application::get().getWindowHeight();
+
+	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+}
+
 void Editor::renderUI(Scene& scene)
 {
 
@@ -689,45 +742,75 @@ void Editor::renderUI(Scene& scene)
 	displayMenuBar(scene);
 
 
-	int screenWidth = Application::get().getWindowWidth();
-	int screenHeight = Application::get().getWindowHeight();
-	m_windowWidth = screenWidth - m_panelsDecal.x;
-	m_windowHeight = screenHeight - m_panelsDecal.y;
-
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1, 0.1, 0.1, 255));
 
-	ImGui::SetNextWindowSize(ImVec2(m_leftPanelwidth, m_leftPanelHeight));
-	ImGui::SetNextWindowContentSize(ImVec2(m_leftPanelwidth, m_leftPanelHeight));
-	ImGui::SetNextWindowPos(ImVec2(m_panelsDecal.x, m_panelsDecal.y));
+	//top left window :
+	ImGui::SetNextWindowSize(ImVec2(m_topLeftPanelRect.z, m_windowRect.w));
+	ImGui::SetNextWindowContentSize(ImVec2(m_topLeftPanelRect.z, m_windowRect.w));
+	ImGui::SetNextWindowPos(ImVec2(m_topLeftPanelRect.x, m_topLeftPanelRect.y));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-	ImGui::Begin("topLeftWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
-	ImGui::BeginChild("topLeftWindowContent", ImVec2(m_leftPanelwidth-30, m_leftPanelHeight));
-			displayTopLeftWindow(scene);
-	ImGui::EndChild();
+	ImGui::Begin("leftWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
+		ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z -30, m_windowRect.w));
+
+			ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
+				displayTopLeftWindow(scene);
+			ImGui::EndChild();
+
+
+				ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
+				if (ImGui::IsItemActive())
+				{
+					m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
+					if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
+					else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
+					updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+				}
+			ImGui::Separator();
+				ImGui::InvisibleButton("hSplitter1", ImVec2(m_topLeftPanelRect.z, 8.f));
+				if (ImGui::IsItemActive())
+				{
+					m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
+					if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
+					else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
+					updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+				}
+
+			ImGui::BeginChild("bottomLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_bottomLeftPanelRect.w - 16.f));
+				displayBottomLeftWindow(scene);
+			ImGui::EndChild();
+
+		ImGui::EndChild();
 		ImGui::SameLine();
-		ImGui::InvisibleButton("vSplitter", ImVec2(20.f, m_leftPanelHeight));
+
+		ImGui::InvisibleButton("vSplitter", ImVec2(20.f, m_windowRect.w));
 		if (ImGui::IsItemActive())
 		{
-			m_leftPanelwidth += ImGui::GetIO().MouseDelta.x;
-			if (m_leftPanelwidth < 10) m_leftPanelwidth = 10;
-			else if (m_leftPanelwidth > m_windowWidth - 10) m_leftPanelwidth = m_windowWidth - 10;
+			m_topLeftPanelRect.z += ImGui::GetIO().MouseDelta.x;
+			if (m_topLeftPanelRect.z < 10) m_topLeftPanelRect.z = 10;
+			else if (m_topLeftPanelRect.z > m_windowRect.z - 10) m_topLeftPanelRect.z = m_windowRect.z - 10;
+			updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
 		}
+
 	ImGui::End();
 	ImGui::PopStyleVar();
 
-	ImGui::SetNextWindowSize(ImVec2(screenWidth, m_windowHeight - m_leftPanelHeight));
-	ImGui::SetNextWindowContentSize(ImVec2(screenWidth, m_windowHeight - m_leftPanelHeight));
-	ImGui::SetNextWindowPos(ImVec2(m_panelsDecal.x, m_leftPanelHeight + m_panelsDecal.y));
+	//bottom window :
+	ImGui::SetNextWindowSize(ImVec2(m_bottomPanelRect.z, m_bottomPanelRect.w));
+	ImGui::SetNextWindowContentSize(ImVec2(m_bottomPanelRect.z, m_bottomPanelRect.w));
+	ImGui::SetNextWindowPos(ImVec2(m_bottomPanelRect.x, m_bottomPanelRect.y));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 	ImGui::Begin("bottomWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
-	ImGui::InvisibleButton("hsplitter", ImVec2(screenWidth, 20.f));
+	
+	ImGui::InvisibleButton("hsplitter", ImVec2(m_bottomPanelRect.z, 20.f));
 	if (ImGui::IsItemActive())
 	{
-		m_leftPanelHeight += ImGui::GetIO().MouseDelta.y;
-		if (m_leftPanelHeight < 10) m_leftPanelHeight = 10;
-		else if (m_leftPanelHeight > m_windowHeight - 20) m_leftPanelHeight = m_windowHeight - 20;
+		m_bottomPanelRect.w -= ImGui::GetIO().MouseDelta.y;
+		if (m_bottomPanelRect.w < 10) m_bottomPanelRect.w = 10;
+		else if (m_bottomPanelRect.w > m_windowRect.w - 20) m_bottomPanelRect.w = m_bottomPanelRect.w - 20;
+		updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
 	}
+
 	ImGui::BeginChild("bottomWindowContent");
 		displayBottomWindow(scene);
 	ImGui::EndChild();
