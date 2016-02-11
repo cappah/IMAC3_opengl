@@ -1,5 +1,7 @@
 #pragma once
 
+#include <math.h>
+
 #include "glm/glm.hpp"
 #include "glm/vec3.hpp" // glm::vec3
 #include "glm/vec4.hpp" // glm::vec4, glm::ivec4
@@ -34,6 +36,7 @@ struct CameraFPS : public Camera
 {
 
 	CameraFPS();
+	CameraFPS(const Camera& cam);
 
 	virtual void setTranslationLocal(glm::vec3 pos) override;
 	virtual void translateLocal(glm::vec3 pos) override;
@@ -50,6 +53,7 @@ struct CameraEditor : public Camera
 {
 
 	CameraEditor();
+	CameraEditor(const Camera& cam);
 
 	virtual void setTranslationLocal(glm::vec3 pos) override;
 	virtual void translateLocal(glm::vec3 pos) override;

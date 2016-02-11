@@ -40,6 +40,10 @@ CameraFPS::CameraFPS() : Camera()
 	updateTransform();
 }
 
+CameraFPS::CameraFPS(const Camera & cam): Camera(cam)
+{
+}
+
 void CameraFPS::setTranslationLocal(glm::vec3 pos)
 {
 	glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
@@ -84,23 +88,25 @@ void CameraFPS::translateLocal(glm::vec3 pos)
 	updateTransform();
 }
 
-void CameraFPS::setDirection(glm::vec3 dir)
+void CameraFPS::setDirection(glm::vec3 _dir)
 {
+	dir = glm::normalize(_dir);
+
 	float r = std::sqrt(dir.x*dir.x + dir.z*dir.z);
-	phi = dir.y == glm::pi<float>()*0.5f ? 0 : std::atanf(r / dir.y);
-	theta = dir.x == glm::pi<float>()*0.5f ? 0 : std::atanf(dir.z / dir.x);
+	phi = atan2(r, dir.y) + glm::pi<float>();
+	theta = atan2(dir.z, dir.x) + glm::pi<float>();
 
 	if (phi >= (2 * glm::pi<float>()) - 0.1)
 		phi = 0.00001;
 	else if (phi <= 0)
 		phi = 2 * glm::pi<float>() - 0.1;
 
-	o = dir;
+	o = eye + dir;
 
 	up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
 }
 
-void CameraFPS::setRotation(float phi, float theta)
+void CameraFPS::setRotation(float _phi, float _theta)
 {
 	theta += 1.f * theta;
 	phi += 1.f * phi;
@@ -114,15 +120,20 @@ void CameraFPS::setRotation(float phi, float theta)
 
 void CameraFPS::updateTransform()
 {
-	o.x = cos(theta) * sin(phi) + eye.x;
-	o.y = cos(phi) + eye.y;
-	o.z = sin(theta) * sin(phi) + eye.z;
+	dir.x = cos(theta) * sin(phi);
+	dir.y = cos(phi);
+	dir.z = sin(theta) * sin(phi);
+
+	dir = glm::normalize(dir);
+
+	o = dir + eye;
 	up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
-	dir = glm::normalize(o - eye);
 }
 
 void CameraFPS::switchFromCameraEditor(const Camera & other)
 {
+	eye = other.o;
+
 	theta += glm::pi<float>();
 	phi = glm::pi<float>() - phi;
 
@@ -136,6 +147,10 @@ void CameraFPS::switchFromCameraEditor(const Camera & other)
 CameraEditor::CameraEditor() : Camera()
 {
 	updateTransform();
+}
+
+CameraEditor::CameraEditor(const Camera & cam) : Camera(cam)
+{
 }
 
 void CameraEditor::setTranslationLocal(glm::vec3 pos)
@@ -245,6 +260,8 @@ void CameraEditor::updateTransform()
 
 void CameraEditor::switchFromCameraFPS(const Camera & other)
 {
+	eye = other.o;
+
 	theta += glm::pi<float>();
 	phi = glm::pi<float>() - phi;
 

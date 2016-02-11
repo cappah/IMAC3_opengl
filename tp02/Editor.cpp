@@ -520,7 +520,7 @@ void Editor::displayMenuBar(Scene& scene)
 			{
 				if (m_cameraFPS)
 				{
-					CameraEditor* newCam = new CameraEditor();
+					CameraEditor* newCam = new CameraEditor(*m_camera);
 					newCam->switchFromCameraFPS(*m_camera); //set up the camera
 					delete m_camera;
 					m_camera = newCam;
@@ -614,7 +614,9 @@ void Editor::displayBottomLeftWindow(Scene& scene)
 		{
 			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->dir*3.f;
 			m_camera->setTranslation(cameraFinalPosition);
-			m_camera->setDirection(entity->getTranslation() - m_camera->eye);
+			
+			if(m_cameraFPS)
+				m_camera->setDirection(glm::normalize(entity->getTranslation() - m_camera->eye));
 		}
 		ImGui::PopID();
 		entityId++;
