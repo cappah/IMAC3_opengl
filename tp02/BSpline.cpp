@@ -67,4 +67,9 @@ namespace Math
 		return (P0 + P1) + t*(-2.f * P0 + 2.f * P1) + t*t*(P0 - 2.f * P1 + P2);
 	}
 
+	glm::vec3 getBSplinePoint(const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2, float t)
+	{
+		return (P0 + P1) + t*(-2.f * P0 + 2.f * P1) + t*t*(P0 - 2.f * P1 + P2);
+	}
+
 }

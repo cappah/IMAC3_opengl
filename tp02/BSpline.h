@@ -32,5 +32,8 @@ namespace Math {
 
 	};
 
+	//return the point in the spline, between the control points P0, P1 and P2, at position t
+	glm::vec3 getBSplinePoint(const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2, float t);
+
 }
 
