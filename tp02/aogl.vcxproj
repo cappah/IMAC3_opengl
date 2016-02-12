@@ -217,6 +217,7 @@
       <ObjectFileName>$(IntDir)aogl.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="BSpline.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -233,6 +234,9 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
+    <ClCompile Include="Path.cpp" />
+    <ClCompile Include="PathManager.cpp" />
+    <ClCompile Include="PathPoint.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="PhysicManager.cpp" />
     <ClCompile Include="Point.cpp" />
@@ -260,6 +264,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="BSpline.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
@@ -276,6 +281,9 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="ParticleEmitter.h" />
+    <ClInclude Include="Path.h" />
+    <ClInclude Include="PathManager.h" />
+    <ClInclude Include="PathPoint.h" />
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="PhysicManager.h" />
     <ClInclude Include="Point.h" />

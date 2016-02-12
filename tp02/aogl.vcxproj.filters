@@ -39,6 +39,12 @@
     <ClCompile Include="ParticleEmitter.cpp">
       <Filter>Physic</Filter>
     </ClCompile>
+    <ClCompile Include="BSpline.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="PathManager.cpp" />
+    <ClCompile Include="Path.cpp" />
+    <ClCompile Include="PathPoint.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Editor.h" />
@@ -78,6 +84,12 @@
     <ClInclude Include="ParticleEmitter.h">
       <Filter>Physic</Filter>
     </ClInclude>
+    <ClInclude Include="BSpline.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="PathManager.h" />
+    <ClInclude Include="Path.h" />
+    <ClInclude Include="PathPoint.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -85,6 +97,9 @@
     </Filter>
     <Filter Include="Physic">
       <UniqueIdentifier>{054c5353-b65c-4e44-ad72-a0d9c79ebaeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{e74059dc-5723-4153-89a1-3454637a0da8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

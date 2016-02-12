@@ -29,3 +29,19 @@ void Application::setWindowResize(bool state)
 {
 	m_windowResize = state;
 }
+
+double Application::getTime() const
+{
+	return glfwGetTime();
+}
+
+void Application::setDeltaTime(double deltaTime)
+{
+	m_deltaTime = deltaTime;
+}
+
+double Application::getDeltaTime() const
+{
+	return m_deltaTime;
+}
+
