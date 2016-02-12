@@ -1,14 +1,24 @@
 #pragma once
 
+#include <algorithm>
+
 #include "Path.h"
 
 class PathManager
 {
-
+private:
+	std::vector<Path> m_paths;
 
 public:
 	PathManager();
 	~PathManager();
+
+	void updatePathId(int pathId, int oldPathId);
+	void updatePointIdx(int pointIdx, int oldPointOdx);
+
+	Path* findPath(int pathId);
+	PathPoint* findPointInPath(int pathId, int pointIdx);
+
 
 // singleton implementation :
 private:
