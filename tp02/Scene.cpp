@@ -241,7 +241,7 @@ void Scene::setAreLightsBoundingBoxVisible(bool value)
 
 void Scene::culling(const Camera & camera)
 {
-	m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
+	//m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
 }
 
 Terrain& Scene::getTerrain()
