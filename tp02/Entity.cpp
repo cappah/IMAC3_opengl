@@ -166,7 +166,7 @@ void Entity::applyTransform()
 	}
 }
 
-void Entity::drawUI()
+void Entity::drawUI(Scene& scene)
 {
 
 	char tmpName[20];
@@ -194,7 +194,7 @@ void Entity::drawUI()
 
 	for (auto c : m_components)
 	{
-		c->drawUI();
+		c->drawUI(scene);
 	}
 
 	//if(collider != nullptr)

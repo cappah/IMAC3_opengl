@@ -4,6 +4,7 @@
 
 #include "Path.h"
 #include "Materials.h"
+#include "Camera.h"
 
 class PathManager
 {
@@ -17,6 +18,7 @@ public:
 
 	void updatePathId(int pathId, int oldPathId, PathPoint* pathPoint);
 	void updatePointIdx(int pathId);
+	void updateVisual(int pathId);
 
 	Path* findPath(int pathId);
 	PathPoint* findPointInPath(int pathId, int pointIdx);
@@ -24,25 +26,6 @@ public:
 	void add(PathPoint* pathPoint);
 	void erase(PathPoint* pathPoint);
 
-	void render(const glm::mat4& projection, const glm::mat4& view);
-
-
-// singleton implementation :
-private:
-	PathManager() {
-
-	}
-
-public:
-	inline static PathManager& get()
-	{
-		static PathManager instance;
-
-		return instance;
-	}
-
-
-	PathManager(const PathManager& other) = delete;
-	void operator=(const PathManager& other) = delete;
+	void render(const Camera& camera);
 };
 

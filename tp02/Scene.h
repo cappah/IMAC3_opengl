@@ -91,6 +91,7 @@ public:
 	void renderColliders(const Camera& camera);
 	void renderDebugDeferred();
 	void renderDebugLights(const Camera& camera);
+	void renderPaths(const Camera& camera);
 
 	void updatePhysic(float deltaTime);
 

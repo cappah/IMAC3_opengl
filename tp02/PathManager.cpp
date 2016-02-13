@@ -1,4 +1,11 @@
 #include "PathManager.h"
+#include "Application.h"
+#include "Factories.h"
+
+PathManager::PathManager()
+{
+	m_material = MaterialFactory::get().get("wireframe");
+}
 
 PathManager::~PathManager()
 {
@@ -13,7 +20,10 @@ void PathManager::updatePathId(int pathId, int oldPathId, PathPoint* pathPoint)
 	if (oldPath != nullptr)
 	{
 		if (newPath == nullptr)
+		{
 			m_paths.push_back(new Path(pathId));
+			newPath = m_paths.back();
+		}
 
 		oldPath->erase(pathPoint);
 		newPath->push_back(pathPoint);
@@ -31,13 +41,22 @@ void PathManager::updatePathId(int pathId, int oldPathId, PathPoint* pathPoint)
 void PathManager::updatePointIdx(int pathId)
 {
 	auto path = findPath(pathId);
+	
+	if(path != nullptr)
+		path->sort();
+}
 
-	path->sort();
+void PathManager::updateVisual(int pathId)
+{
+	auto path = findPath(pathId);
+
+	if (path != nullptr)
+		path->updateVisual();
 }
 
 Path* PathManager::findPath(int pathId)
 {
-	auto pathIt = std::find_if(m_paths.begin(), m_paths.end(), [pathId](const Path& p) { return p.getPathId() == pathId; });
+	auto pathIt = std::find_if(m_paths.begin(), m_paths.end(), [pathId](const Path* p) { return p->getPathId() == pathId; });
 
 	if (pathIt != m_paths.end())
 		return *pathIt;
@@ -53,7 +72,7 @@ PathPoint* PathManager::findPointInPath(int pathId, int pointIdx)
 		return nullptr;
 	else
 	{
-		auto pathPointIt = std::find_if(path->begin(), path->end(), [pointIdx](const PathPoint& p) { return p.getPointIdx() == pointIdx; });
+		auto pathPointIt = std::find_if(path->begin(), path->end(), [pointIdx](const PathPoint* p) { return p->getPointIdx() == pointIdx; });
 
 		if (pathPointIt != path->end())
 			return *pathPointIt;
@@ -92,8 +111,11 @@ void PathManager::erase(PathPoint * pathPoint)
 	}
 }
 
-void PathManager::render(const glm::mat4 & projection, const glm::mat4 & view)
+void PathManager::render(const Camera& camera)
 {
+	glm::mat4 projection = glm::perspective(45.0f, (float)Application::get().getWindowWidth() / (float)Application::get().getWindowHeight(), 0.1f, 1000.f);
+	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+
 	m_material->use();
 	for (auto& path : m_paths)
 	{

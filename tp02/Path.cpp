@@ -1,7 +1,17 @@
 #include "Path.h"
 
-Path::Path(int pathId = 0): m_pathId(pathId)
+Path::Path(int pathId): m_pathId(pathId), m_mesh(GL_LINE_STRIP, Mesh::Vbo_usage::USE_VERTICES, 3, GL_STREAM_DRAW)
 {
+
+	for (int i = 0; i < 10; i++)
+	{
+		m_mesh.vertices.push_back(0);
+		m_mesh.vertices.push_back(0);
+		m_mesh.vertices.push_back(0);
+	}
+
+	m_mesh.initGl();
+
 }
 
 Path::~Path()
@@ -84,15 +94,28 @@ PathPoint * Path::getPathPoint(int idx) const
 
 glm::vec3 Path::get(float t) const
 {
-	int idx = (int)(t * m_pathPoints.size() - 0.999f);
+	if (m_pathPoints.size() < 2)
+	{
+		return m_pathPoints[0]->getPosition();
+	}
+	else if (m_pathPoints.size() < 3)
+	{
+		return t*m_pathPoints[0]->getPosition() + (1 - t)*m_pathPoints[1]->getPosition();
+	}
+	else
+	{
+		//int idx = (int)((t * (m_pathPoints.size() - 1)) / 1.999f) * 2;
+		int idx = t * (m_pathPoints.size() - 3) + 1;
 
-	assert(idx >= 0 && idx + 2 < m_pathPoints.size());
+		glm::vec3 P0 = m_pathPoints[idx - 1]->getPosition();
+		glm::vec3 P1 = m_pathPoints[idx]->getPosition();
+		glm::vec3 P2 = m_pathPoints[idx + 1]->getPosition();
 
-	glm::vec3 P0 = m_pathPoints[idx]->getPosition();
-	glm::vec3 P1 = m_pathPoints[idx + 1]->getPosition();
-	glm::vec3 P2 = m_pathPoints[idx + 2]->getPosition();
+		float T = 1.f / (m_pathPoints.size() - 1);
+		float t2 = t - idx*T - 0.5f*T;
 
-	return Math::getBSplinePoint<glm::vec3>(P0, P1, P2, t);
+		return Math::getBSplinePoint<glm::vec3>(P0, P1, P2, t);
+	}
 }
 
 
@@ -108,10 +131,35 @@ void Path::setPathId(int id)
 
 void Path::updateVisual()
 {
-	//TODO
+	if (m_pathPoints.size() == 0)
+		return;
+
+	m_mesh.vertices.clear();
+
+	glm::vec3 begin = m_pathPoints[0]->getPosition();
+	glm::vec3 end = m_pathPoints[m_pathPoints.size() - 1]->getPosition();
+
+	//m_mesh.vertices.push_back(begin.x);
+	//m_mesh.vertices.push_back(begin.y);
+	//m_mesh.vertices.push_back(begin.z);
+
+	for (int i = 0; i <= 10 * m_pathPoints.size(); i++)
+	{
+		float t = i / (float)(10.f * m_pathPoints.size());
+		glm::vec3 vertex = get(t);
+		m_mesh.vertices.push_back(vertex.x);
+		m_mesh.vertices.push_back(vertex.y);
+		m_mesh.vertices.push_back(vertex.z);
+	}
+
+	//m_mesh.vertices.push_back(end.x);
+	//m_mesh.vertices.push_back(end.y);
+	//m_mesh.vertices.push_back(end.z);
+
+	m_mesh.updateVBO(Mesh::Vbo_types::VERTICES);
 }
 
 void Path::draw()
 {
-	//TODO
+	m_mesh.draw();
 }

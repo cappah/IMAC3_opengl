@@ -141,7 +141,7 @@ void Mesh::draw()
 	if (USE_INDEX & vbo_usage)
 		glDrawElements(primitiveType, triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);
 	else
-		glDrawArrays(primitiveType, 0, vertices.size());
+		glDrawArrays(primitiveType, 0, vertices.size() / 3);
 	glBindVertexArray(0);
 }
 

@@ -174,7 +174,7 @@ Scene & Scene::erase(Physic::ParticleEmitter * particleEmitter)
 
 Scene & Scene::erase(PathPoint * pathPoint)
 {
-	m_pathManager.remove(pathPoint);
+	m_pathManager.erase(pathPoint);
 	return *this;
 }
 
@@ -183,7 +183,7 @@ void Scene::render(const Camera& camera)
 	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags);
 }
 
-void Scene::renderColliders(const Camera & camera)
+void Scene::renderColliders(const Camera& camera)
 {
 	if(m_areCollidersVisible)
 		m_renderer->debugDrawColliders(camera, m_entities);
@@ -195,10 +195,15 @@ void Scene::renderDebugDeferred()
 		m_renderer->debugDrawDeferred();
 }
 
-void Scene::renderDebugLights(const Camera & camera)
+void Scene::renderDebugLights(const Camera& camera)
 {
 	if(m_areLightsBoundingBoxVisible)
 		m_renderer->debugDrawLights(camera, m_pointLights, m_spotLights);
+}
+
+void Scene::renderPaths(const Camera& camera)
+{
+	m_pathManager.render(camera);
 }
 
 void Scene::updatePhysic(float deltaTime)

@@ -495,12 +495,12 @@ int main( int argc, char **argv )
 
 		//get active camera before render scene : 
 		Camera& currentCamera = editor.getCamera();
-		
 		//scene.culling(currentCamera);
 
 		//rendering : 
 		//renderer.render(camera, entities);
 		scene.render(currentCamera);
+		scene.renderPaths(currentCamera);
 		scene.renderColliders(currentCamera);
 		scene.renderDebugDeferred();
 		scene.renderDebugLights(currentCamera);

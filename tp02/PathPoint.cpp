@@ -7,7 +7,7 @@
 
 PathPoint::PathPoint(): Component(ComponentType::PATH_POINT), m_pathId(0), m_pointIdx(0)
 {
-
+	
 }
 
 PathPoint::~PathPoint()
@@ -45,6 +45,10 @@ void PathPoint::drawUI(Scene& scene)
 		if (ImGui::InputInt("point index", &m_pointIdx))
 		{
 			scene.getPathManager().updatePointIdx(m_pathId);
+		}
+		if (ImGui::Button("update visual"))
+		{
+			scene.getPathManager().updateVisual(m_pathId);
 		}
 	}
 }

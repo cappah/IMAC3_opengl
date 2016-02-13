@@ -589,7 +589,7 @@ void Editor::displayTopLeftWindow(Scene& scene)
 				ImGui::PushID(entityId);
 
 				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str()))
-					selected->drawUI();
+					selected->drawUI(scene);
 				ImGui::PopID();
 
 				entityId++;

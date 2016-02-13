@@ -38,7 +38,7 @@ namespace Math {
 
 	//return the point in the spline, between the control points P0, P1 and P2, at position t
 	template<typename T>
-	T getBSplinePoint(const T& P0, const glm::vec3& P1, const glm::vec3& P2, float t);
+	T getBSplinePoint(const T& P0, const T& P1, const T& P2, float t);
 
 }
 
@@ -46,60 +46,60 @@ namespace Math {
 namespace Math
 {
 	template<typename T>
-	BSpline::BSpline()
+	BSpline<T>::BSpline()
 	{
 	}
 
 	template<typename T>
-	BSpline::~BSpline()
+	BSpline<T>::~BSpline()
 	{
 	}
 
 	template<typename T>
-	void BSpline::push_back(T p)
+	void BSpline<T>::push_back(T p)
 	{
 		m_points.push_back(p);
 	}
 
 	template<typename T>
-	void BSpline::insert(int idx, T p)
+	void BSpline<T>::insert(int idx, T p)
 	{
 		m_points.insert(m_points.begin() + idx, p);
 	}
 
 	template<typename T>
-	void BSpline::pop_back()
+	void BSpline<T>::pop_back()
 	{
 		m_points.pop_back();
 	}
 
 	template<typename T>
-	void BSpline::remove(int idx)
+	void BSpline<T>::remove(int idx)
 	{
 		m_points.erase(m_points.begin() + idx);
 	}
 
 	template<typename T>
-	void BSpline::clear()
+	void BSpline<T>::clear()
 	{
 		m_points.clear();
 	}
 
 	template<typename T>
-	void BSpline::append(const std::vector<T>& points)
+	void BSpline<T>::append(const std::vector<T>& points)
 	{
 		for (auto& p : points)
 			m_points.push_back(p);
 	}
 
 	template<typename T>
-	int BSpline::size()
+	int BSpline<T>::size()
 	{
 		return m_points.size();
 	}
 
 	template<typename T>
-	T BSpline::getPoint(int idx) const
+	T BSpline<T>::getPoint(int idx) const
 	{
 		assert(idx >= 0 && idx < m_points.size());
 
@@ -107,34 +107,34 @@ namespace Math
 	}
 
 	template<typename T>
-	T BSpline::get(int idx, float t) const
+	T BSpline<T>::get(int idx, float t) const
 	{
 		assert(idx >= 0 && idx + 2 < m_points.size());
 
-		glm::vec3 P0 = m_points[idx];
-		glm::vec3 P1 = m_points[idx + 1];
-		glm::vec3 P2 = m_points[idx + 2];
+		T P0 = m_points[idx];
+		T = m_points[idx + 1];
+		T = m_points[idx + 2];
 
 		return (P0 + P1) + t*(-2.f * P0 + 2.f * P1) + t*t*(P0 - 2.f * P1 + P2);
 	}
 
 	template<typename T>
-	T BSpline::get(float t) const
+	T BSpline<T>::get(float t) const
 	{
 		int idx = (int)(t * m_points.size() - 0.999f);
 
 		assert(idx >= 0 && idx + 2 < m_points.size());
 
-		glm::vec3 P0 = m_points[idx];
-		glm::vec3 P1 = m_points[idx + 1];
-		glm::vec3 P2 = m_points[idx + 2];
+		T P0 = m_points[idx];
+		T P1 = m_points[idx + 1];
+		T P2 = m_points[idx + 2];
 
 		return (P0 + P1) + t*(-2.f * P0 + 2.f * P1) + t*t*(P0 - 2.f * P1 + P2);
 
 	}
 
 	template<typename T>
-	T getBSplinePoint(const T& P0, const glm::vec3& P1, const glm::vec3& P2, float t)
+	T getBSplinePoint(const T& P0, const T& P1, const T& P2, float t)
 	{
 		return (P0 + P1) + t*(-2.f * P0 + 2.f * P1) + t*t*(P0 - 2.f * P1 + P2);
 	}

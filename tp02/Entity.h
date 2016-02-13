@@ -86,7 +86,7 @@ public:
 	void applyTransform();
 
 	//draw the entity UI
-	void drawUI();
+	void drawUI(Scene& scene);
 
 	//return the value of m_isSelected
 	bool getIsSelected() const ;
