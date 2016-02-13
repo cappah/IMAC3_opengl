@@ -90,6 +90,7 @@
     <ClCompile Include="ParticleEmitter.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="CSpline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -180,6 +181,7 @@
     <ClInclude Include="ParticleEmitter.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="CSpline.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

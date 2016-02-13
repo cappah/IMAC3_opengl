@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 #include "PathPoint.h"
-#include "BSpline.h"
+#include "CSpline.h"
 #include "Mesh.h"
 
 class Path

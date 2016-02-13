@@ -98,23 +98,68 @@ glm::vec3 Path::get(float t) const
 	{
 		return m_pathPoints[0]->getPosition();
 	}
-	else if (m_pathPoints.size() < 3)
-	{
-		return t*m_pathPoints[0]->getPosition() + (1 - t)*m_pathPoints[1]->getPosition();
-	}
 	else
 	{
 		//int idx = (int)((t * (m_pathPoints.size() - 1)) / 1.999f) * 2;
-		int idx = t * (m_pathPoints.size() - 3) + 1;
+		/*float T = 1.f / (m_pathPoints.size() - 1);
 
-		glm::vec3 P0 = m_pathPoints[idx - 1]->getPosition();
-		glm::vec3 P1 = m_pathPoints[idx]->getPosition();
-		glm::vec3 P2 = m_pathPoints[idx + 1]->getPosition();
+		int idx = t / (float)T;
+
+		glm::vec3 P0;
+		glm::vec3 P1;
+		glm::vec3 P2;
+
+		if (idx == 0)
+		{
+			P1 = m_pathPoints[idx]->getPosition();
+			P2 = m_pathPoints[idx + 1]->getPosition();
+
+			P0 = glm::normalize(P1 - P2)*2.f + P1;
+		}
+		else if (idx == m_pathPoints.size() - 1)
+		{
+			P0 = m_pathPoints[idx - 1]->getPosition();
+			P1 = m_pathPoints[idx]->getPosition();
+
+			P2 = glm::normalize(P1 - P0)*2.f + P1;
+		}
+		else
+		{
+			P0 = m_pathPoints[idx - 1]->getPosition();
+			P1 = m_pathPoints[idx]->getPosition();
+			P2 = m_pathPoints[idx + 1]->getPosition();
+		}
+
+		float t2 = ((t - (idx)*T ) / T)*0.5f + 0.25f;
+
+		return Math::getBSplinePoint<glm::vec3>(P0, P1, P2, t2);*/
 
 		float T = 1.f / (m_pathPoints.size() - 1);
-		float t2 = t - idx*T - 0.5f*T;
 
-		return Math::getBSplinePoint<glm::vec3>(P0, P1, P2, t);
+		float T2 = 1.f / (m_pathPoints.size() - 2);
+		int idx = t / T2;
+
+		glm::vec3 P0;
+		glm::vec3 P1 = m_pathPoints[idx]->getPosition();
+		glm::vec3 P2 = m_pathPoints[idx + 1]->getPosition();
+		glm::vec3 P3;
+
+		if (idx == 0)
+			P0 = glm::normalize(P1 - P2) + P1;
+		else if (idx + 2 >= m_pathPoints.size())
+			P3 = glm::normalize(P2 - P1) + P1;
+		else
+		{
+			P0 = m_pathPoints[idx - 1]->getPosition();
+			P3 = m_pathPoints[idx + 2]->getPosition();
+		}
+
+		float t2 = ((t - (idx)*T2 ) / T2);
+
+		return Math::getCSplinePoint<glm::vec3>(P0, P1, P2, P3, t2);
+
+
+
 	}
 }
 
