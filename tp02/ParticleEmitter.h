@@ -21,7 +21,7 @@ namespace Physic{
 		//TODO
 
 		//draw the ui of particle emitter
-		virtual void drawUI() override;
+		virtual void drawUI(Scene& scene) override;
 		//herited from Component
 		virtual void eraseFromScene(Scene & scene) override;
 		virtual void addToScene(Scene & scene) override;

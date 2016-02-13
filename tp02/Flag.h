@@ -54,7 +54,7 @@ namespace Physic {
 		void render(const glm::mat4& projection, const glm::mat4& view);
 
 		//draw the UI for the flag
-		void drawUI();
+		virtual void drawUI(Scene& scene) override;
 
 		//add a force to each point the flag
 		void applyForce(const glm::vec3& force);

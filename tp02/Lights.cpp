@@ -62,7 +62,7 @@ void PointLight::updateBoundingBox()
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
 }
 
-void PointLight::drawUI()
+void PointLight::drawUI(Scene& scene)
 {
 	if (ImGui::CollapsingHeader("point light"))
 	{
@@ -123,7 +123,7 @@ DirectionalLight::~DirectionalLight()
 {
 }
 
-void DirectionalLight::drawUI()
+void DirectionalLight::drawUI(Scene& scene)
 {
 	if (ImGui::CollapsingHeader("directional light"))
 	{
@@ -178,7 +178,7 @@ void SpotLight::updateBoundingBox()
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
 }
 
-void SpotLight::drawUI()
+void SpotLight::drawUI(Scene& scene)
 {
 	if (ImGui::CollapsingHeader("spot light"))
 	{

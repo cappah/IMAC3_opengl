@@ -18,7 +18,7 @@ MeshRenderer::~MeshRenderer()
 	material = nullptr;
 }
 
-void MeshRenderer::drawUI()
+void MeshRenderer::drawUI(Scene& scene)
 {
 	if (ImGui::CollapsingHeader("mesh renderer"))
 	{

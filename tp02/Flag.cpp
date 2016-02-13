@@ -447,7 +447,7 @@ namespace Physic {
 		m_mesh.draw();
 	}
 
-	void Flag::drawUI()
+	void Flag::drawUI(Scene& scene)
 	{
 		if (ImGui::CollapsingHeader("flag"))
 		{

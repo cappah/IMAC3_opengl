@@ -5,7 +5,7 @@
 #include "Factories.h"
 #include "PathManager.h"
 
-PathPoint::PathPoint(): Component(ComponentType::PATH_POINT)
+PathPoint::PathPoint(): Component(ComponentType::PATH_POINT), m_pathId(0), m_pointIdx(0)
 {
 
 }
@@ -33,19 +33,18 @@ int PathPoint::getPathId() const
 	return m_pathId;
 }
 
-void PathPoint::drawUI()
+void PathPoint::drawUI(Scene& scene)
 {
 	if (ImGui::CollapsingHeader("Path point"))
 	{
 		int oldPathId = m_pathId;
 		if (ImGui::InputInt("path id", &m_pathId))
 		{
-			PathManager::get().updatePathId(m_pathId, oldPathId);
+			scene.getPathManager().updatePathId(m_pathId, oldPathId, this);
 		}
-		int oldPointIdx = m_pointIdx;
 		if (ImGui::InputInt("point index", &m_pointIdx))
 		{
-			PathManager::get().updatePointIdx(m_pathId, oldPathId);
+			scene.getPathManager().updatePointIdx(m_pathId);
 		}
 	}
 }

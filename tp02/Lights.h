@@ -48,7 +48,7 @@ struct PointLight : public Light
 
 	virtual void updateBoundingBox() override;
 
-	virtual void drawUI() override;
+	virtual void drawUI(Scene& scene) override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation  = glm::quat()) override;
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
@@ -66,7 +66,7 @@ struct DirectionalLight : public Light
 	DirectionalLight(float _intensity = 0.2f, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _direction = glm::vec3(0, -1, 0));
 	virtual ~DirectionalLight();
 
-	virtual void drawUI() override;
+	virtual void drawUI(Scene& scene) override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
@@ -86,7 +86,7 @@ struct SpotLight : public Light
 
 	virtual void updateBoundingBox() override;
 
-	virtual void drawUI() override;
+	virtual void drawUI(Scene& scene) override;
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;

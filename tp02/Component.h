@@ -14,7 +14,7 @@ class Scene;
 class Component
 {
 public:
-	enum ComponentType {COLLIDER, MESH_RENDERER, LIGHT, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, COMPONENT_COUNT, FLAG, PARTICLE_EMITTER};
+	enum ComponentType {COLLIDER, MESH_RENDERER, LIGHT, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, COMPONENT_COUNT, FLAG, PARTICLE_EMITTER, PATH_POINT};
 
 protected:
 	Entity* m_entity;
@@ -36,7 +36,7 @@ public:
 	Entity* entity();
 	ComponentType type() const;
 
-	virtual void drawUI() = 0;
+	virtual void drawUI(Scene& scene) = 0;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1,1,1), const glm::quat& rotation = glm::quat());
 

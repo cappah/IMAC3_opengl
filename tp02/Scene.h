@@ -8,6 +8,7 @@
 #include "Flag.h"
 #include "ParticleEmitter.h"
 #include "PhysicManager.h"
+#include "PathManager.h"
 
 #include "LightManager.h"
 #include "Renderer.h"
@@ -39,7 +40,7 @@ private:
 	//particles : 
 	std::vector<Physic::ParticleEmitter*> m_particleEmitters;
 
-	//special componants : 
+	//special components : 
 	//terrain : 
 	Terrain m_terrain;
 
@@ -50,6 +51,7 @@ private:
 	//systems : 
 	Renderer* m_renderer;
 	Physic::PhysicManager m_physicManager;
+	PathManager m_pathManager;
 	//TODO
 	//CloudSystem m_cloudSystem;
 
@@ -73,6 +75,7 @@ public:
 	Scene& add(MeshRenderer* meshRenderer);
 	Scene& add(Physic::Flag* flag);
 	Scene& add(Physic::ParticleEmitter* particleEmitter);
+	Scene& add(PathPoint* pathPoint);
 
 	Scene& erase(Entity* entity);
 	Scene& erase(PointLight* pointLight);
@@ -82,6 +85,7 @@ public:
 	Scene& erase(MeshRenderer* meshRenderer);
 	Scene& erase(Physic::Flag* flag);
 	Scene& erase(Physic::ParticleEmitter* particleEmitter);
+	Scene& erase(PathPoint* pathPoint);
 
 	void render(const Camera& camera);
 	void renderColliders(const Camera& camera);
@@ -104,5 +108,6 @@ public:
 
 	Terrain& getTerrain();
 	Skybox& getSkybox();
+	PathManager& getPathManager();
 };
 

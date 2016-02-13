@@ -96,7 +96,7 @@ struct Collider : public Component
 	//return true if the collider is intersected by the ray. t is the distance from the origin of the ray, to the intersection.
 	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) = 0;
 
-	virtual void drawUI() override;
+	virtual void drawUI(Scene& scene) override;
 
 	virtual void eraseFromScene(Scene& scene) override;
 
@@ -121,7 +121,7 @@ struct BoxCollider : public Collider
 	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1,0,0)) override;
 	virtual void debugLog() override;
 	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) override;
-	virtual void drawUI() override;
+	virtual void drawUI(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
 	virtual void coverMesh(Mesh& mesh) override;

@@ -306,6 +306,16 @@ Entity & Entity::add(Physic::ParticleEmitter * particleEmitter)
 	return *this;
 }
 
+Entity & Entity::add(PathPoint * pathPoint)
+{
+	pathPoint->attachToEntity(this);
+
+	m_scene->add(pathPoint);
+	m_components.push_back(pathPoint);
+
+	return *this;
+}
+
 Entity& Entity::erase(PointLight * pointLight)
 {
 	auto findIt = std::find(m_components.begin(), m_components.end(), pointLight);
@@ -392,6 +402,19 @@ Entity & Entity::erase(Physic::ParticleEmitter * particleEmitter)
 	{
 		m_components.erase(findIt);
 		m_scene->erase(particleEmitter);
+	}
+
+	return *this;
+}
+
+Entity & Entity::erase(PathPoint * pathPoint)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), pathPoint);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(pathPoint);
 	}
 
 	return *this;

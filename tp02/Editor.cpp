@@ -510,6 +510,24 @@ void Editor::displayMenuBar(Scene& scene)
 				newEntity->add(newCollider).add(meshRenderer);
 			}
 
+			if (ImGui::Button("add flag"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto flag = new Physic::Flag(MaterialFactory::get().get("default"), 10);
+				newEntity->add(newCollider).add(flag);
+			}
+
+			if (ImGui::Button("add path point"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto pathPoint = new PathPoint();
+				newEntity->add(newCollider).add(pathPoint);
+			}
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("camera mode"))

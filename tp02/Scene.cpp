@@ -62,6 +62,12 @@ Scene & Scene::add(Physic::ParticleEmitter * particleEmitter)
 	return *this;
 }
 
+Scene & Scene::add(PathPoint * pathPoint)
+{
+	m_pathManager.add(pathPoint);
+	return *this;
+}
+
 Scene& Scene::erase(Entity * entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
@@ -166,6 +172,12 @@ Scene & Scene::erase(Physic::ParticleEmitter * particleEmitter)
 	return *this;
 }
 
+Scene & Scene::erase(PathPoint * pathPoint)
+{
+	m_pathManager.remove(pathPoint);
+	return *this;
+}
+
 void Scene::render(const Camera& camera)
 {
 	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags);
@@ -252,4 +264,9 @@ Terrain& Scene::getTerrain()
 Skybox& Scene::getSkybox()
 {
 	return m_skybox;
+}
+
+PathManager & Scene::getPathManager()
+{
+	return m_pathManager;
 }

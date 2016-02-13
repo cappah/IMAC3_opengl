@@ -17,7 +17,7 @@ namespace Physic {
 		//TODO
 	}
 
-	void ParticleEmitter::drawUI()
+	void ParticleEmitter::drawUI(Scene& scene)
 	{
 		if (ImGui::CollapsingHeader("particle emitter"))
 		{

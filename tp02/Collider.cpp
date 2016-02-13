@@ -129,7 +129,7 @@ void Collider::eraseFromScene(Scene & scene)
 	scene.erase(this);
 }
 
-void Collider::drawUI()
+void Collider::drawUI(Scene& scene)
 {
 	glm::vec3 tmpOffset = offsetPosition;
 	if (ImGui::InputFloat3("offset position", &tmpOffset[0]))
@@ -271,11 +271,11 @@ bool BoxCollider::isIntersectedByRay(const Ray& ray, float* t)
 	return false;*/
 }
 
-void BoxCollider::drawUI()
+void BoxCollider::drawUI(Scene& scene)
 {
 	if (ImGui::CollapsingHeader("collider"))
 	{
-		Collider::drawUI();
+		Collider::drawUI(scene);
 	}
 }
 

@@ -213,6 +213,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="aogl.cpp">
       <ObjectFileName>$(IntDir)aogl.obj</ObjectFileName>
     </ClCompile>
@@ -263,6 +264,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="BSpline.h" />
     <ClInclude Include="Camera.h" />

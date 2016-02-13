@@ -19,7 +19,7 @@ public:
 	int getPointIdx() const;
 	int getPathId() const;
 
-	void drawUI();
+	void drawUI(Scene& scene);
 
 	// Hérité via Component
 	virtual void eraseFromScene(Scene & scene) override;

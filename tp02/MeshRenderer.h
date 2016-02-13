@@ -24,7 +24,7 @@ public:
 	MeshRenderer(Mesh* _mesh = nullptr, Material* _material = nullptr);
 	virtual ~MeshRenderer();
 
-	virtual void drawUI() override;
+	virtual void drawUI(Scene& scene) override;
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
