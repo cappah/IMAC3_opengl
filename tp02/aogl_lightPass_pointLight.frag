@@ -53,6 +53,39 @@ vec3 computePointLight(PointLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 spe
 	return intensity * light.color * 3.1415 * (diffuse + specular) * (ndotl) ; 
 }
 
+vec3 kernelSoft[20] = vec3[](
+
+   vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+   vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+   vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
+   vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
+
+);
+
+float computeShadow(vec3 p)
+{
+
+	//shadow
+	float shadowBias = 0.01f;
+	vec3 lightToFrag = p - pointLight.position;
+	float clothestDepth = texture(Shadow, lightToFrag).r;
+	clothestDepth *= FarPlane;
+	float currentDepth = length(lightToFrag);
+
+	float shadow = 0.0;
+   for(int i=0; i<20; i++)
+   {
+   		lightToFrag = p - pointLight.position + kernelSoft[i]*0.05f;
+		clothestDepth = texture(Shadow, lightToFrag).r;
+		clothestDepth *= FarPlane;
+
+		shadow += (clothestDepth + shadowBias > currentDepth) ? 0.0 : 1.0;  
+   }
+   shadow /= 20.0;
+
+	return shadow;
+}
 
 void main(void)
 {
@@ -74,16 +107,10 @@ void main(void)
 	vec3 n = normalBuffer.rgb*2.0 -1.0;
 
 	vec3 color = computePointLight( pointLight, p, n, diffuse, specular, specularPower * 100 );
+	color *= (1.0 - computeShadow(p));
 
-	//shadow
-	float shadowBias = 0.01f;
-	vec3 lightToFrag = p - pointLight.position;
-	float clothestDepth = texture(Shadow, lightToFrag).r;
-	clothestDepth *= FarPlane;
-	float currentDepth = length(lightToFrag);
-
-	if(clothestDepth + shadowBias > currentDepth)
+	//if(clothestDepth + shadowBias > currentDepth)
 		Color = vec4(color, 1.0);
-	else
-		Color = vec4(0.0, 0.0, 0.0, 1.0);
+	//else
+	//	Color = vec4(0.0, 0.0, 0.0, 1.0);
 }

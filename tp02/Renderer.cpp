@@ -395,13 +395,13 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	for (int shadowIdx = 0; shadowIdx < spotLightCount; shadowIdx++)
 	{
 		int lightIdx = spotLightCullingInfos[shadowIdx].idx;
-		//TODO test culling...
+
 		if (shadowIdx < lightManager->getShadowMapCount(LightManager::SPOT))
 		{
 			lightManager->bindShadowMapFBO(LightManager::SPOT, shadowIdx);
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glm::mat4 lightProjection = glm::perspective(spotLights[lightIdx]->angle*2.f, 1.f, 0.1f, 100.f);
-			glm::mat4 lightView = glm::lookAt(spotLights[lightIdx]->position, spotLights[lightIdx]->position + spotLights[lightIdx]->direction, glm::vec3(0, 0, 1));
+			glm::mat4 lightView = glm::lookAt(spotLights[lightIdx]->position, spotLights[lightIdx]->position + spotLights[lightIdx]->direction, spotLights[lightIdx]->up);
 
 			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
 			{
@@ -417,13 +417,12 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUseProgram(glProgram_shadowPass);
 	for (int lightIdx = 0; lightIdx < directionalLights.size(); lightIdx++)
 	{
-		//TODO test culling...
 		if (lightIdx < lightManager->getShadowMapCount(LightManager::DIRECTIONAL))
 		{
-			glClear(GL_DEPTH_BUFFER_BIT);
 			lightManager->bindShadowMapFBO(LightManager::DIRECTIONAL, lightIdx);
-			glm::mat4 lightProjection = glm::ortho(-1.f, 1.f, -1.f, 1.f, 0.1f, 100.f);
-			glm::mat4 lightView = glm::lookAt(-directionalLights[lightIdx]->direction, glm::vec3(0,0,0), glm::vec3(0, 0, 1));
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glm::mat4 lightProjection = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
+			glm::mat4 lightView = glm::lookAt(-directionalLights[lightIdx]->direction*2.f , glm::vec3(0,0,0) , directionalLights[lightIdx]->up);
 
 			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
 			{
@@ -440,7 +439,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	for (int shadowIdx = 0; shadowIdx < pointLightCount; shadowIdx++)
 	{
 		int lightIdx = pointLightCullingInfos[shadowIdx].idx;
-		//TODO test culling...
+
 		if (shadowIdx < lightManager->getShadowMapCount(LightManager::POINT))
 		{
 			lightManager->bindShadowMapFBO(LightManager::POINT, shadowIdx);
@@ -620,7 +619,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 			resizeBlitQuad(viewport);
 
 			glm::mat4 projectionSpotLight = glm::perspective(spotLights[lightIdx]->angle*2.f, 1.f, 0.1f, 100.f);
-			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLights[lightIdx]->position, spotLights[lightIdx]->position + spotLights[lightIdx]->direction, glm::vec3(0, 0, 1));
+			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLights[lightIdx]->position, spotLights[lightIdx]->position + spotLights[lightIdx]->direction, spotLights[lightIdx]->up);
 			glm::mat4 WorldToLightScreen = projectionSpotLight * worldToLightSpotLight;
 			glUniformMatrix4fv(uniformWorldToLightScreen_spot, 1, false, glm::value_ptr(WorldToLightScreen));
 
@@ -664,8 +663,8 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 			glUniform1i(uniformTextureShadow[DIRECTIONAL], 3); // send shadow texture
 		}
 
-		glm::mat4 projectionDirectionalLight = glm::ortho(-100.f, 100.f, -100.f, 100.f, 1.f, 100.f);
-		glm::mat4 worldToLightDirectionalLight = glm::lookAt(-directionalLights[i]->direction*10.f,  glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
+		glm::mat4 projectionDirectionalLight = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
+		glm::mat4 worldToLightDirectionalLight = glm::lookAt(-directionalLights[i]->direction*2.f ,  glm::vec3(0, 0, 0) , directionalLights[i]->up);
 		glm::mat4 WorldToLightScreen = projectionDirectionalLight * worldToLightDirectionalLight;
 		glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
 
