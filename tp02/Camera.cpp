@@ -34,6 +34,18 @@ void CameraFPS::translate(glm::vec3 pos)
 	updateTransform();
 }
 
+void CameraFPS::rotate(float deltaX, float deltaY)
+{
+	theta += 1.f * deltaX;
+	phi += 1.f * deltaY;
+	if (phi >= (2 * glm::pi<float>()) - 0.1)
+		phi = 0.00001;
+	else if (phi <= 0)
+		phi = 2 * glm::pi<float>() - 0.1;
+
+	updateTransform();
+}
+
 
 CameraFPS::CameraFPS() : Camera()
 {
@@ -245,6 +257,17 @@ void CameraEditor::translate(glm::vec3 pos)
 	o[1] += 0;
 	o[2] += pos.z;
 
+	updateTransform();
+}
+
+void CameraEditor::rotate(float deltaX, float deltaY)
+{
+	theta += 1.f * deltaX;
+	phi -= 1.f * deltaY;
+	if (phi >= (2 * glm::pi<float>()) - 0.1)
+		phi = 0.00001;
+	else if (phi <= 0)
+		phi = 2 * glm::pi<float>() - 0.1;
 	updateTransform();
 }
 

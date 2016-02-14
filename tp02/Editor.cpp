@@ -520,8 +520,8 @@ void Editor::displayMenuBar(Scene& scene)
 			{
 				if (m_cameraFPS)
 				{
-					CameraEditor* newCam = new CameraEditor(*m_camera);
-					newCam->switchFromCameraFPS(*m_camera); //set up the camera
+					CameraEditor* newCam = new CameraEditor();
+					//newCam->switchFromCameraFPS(*m_camera); //set up the camera
 					delete m_camera;
 					m_camera = newCam;
 					//toogleCamera(*m_camera);
@@ -533,7 +533,7 @@ void Editor::displayMenuBar(Scene& scene)
 				if (!m_cameraFPS)
 				{
 					CameraFPS* newCam = new CameraFPS();
-					newCam->switchFromCameraEditor(*m_camera); //set up the camera
+					//newCam->switchFromCameraEditor(*m_camera); //set up the camera
 					delete m_camera;
 					m_camera = newCam;
 					//toogleCamera(*m_camera);
@@ -614,9 +614,6 @@ void Editor::displayBottomLeftWindow(Scene& scene)
 		{
 			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->dir*3.f;
 			m_camera->setTranslation(cameraFinalPosition);
-			
-			if(m_cameraFPS)
-				m_camera->setDirection(glm::normalize(entity->getTranslation() - m_camera->eye));
 		}
 		ImGui::PopID();
 		entityId++;
@@ -1055,8 +1052,10 @@ void Editor::updateCameraMovement_editor(GLFWwindow* window)
 			}
 			else if (m_guiStates.turnLock)
 			{
-				camera_turn(*m_camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
-					diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
+				m_camera->rotate(diffLockPositionX * GUIStates::MOUSE_TURN_SPEED, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED);
+
+				//camera_turn(*m_camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
+				//	diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
 
 			}
 		}
@@ -1064,8 +1063,10 @@ void Editor::updateCameraMovement_editor(GLFWwindow* window)
 		{
 			if (m_guiStates.panLock)
 			{
-				camera_pan(*m_camera, diffLockPositionX * GUIStates::MOUSE_PAN_SPEED,
-					diffLockPositionY * GUIStates::MOUSE_PAN_SPEED);
+				m_camera->translateLocal( glm::vec3(diffLockPositionX * GUIStates::MOUSE_PAN_SPEED, diffLockPositionY * GUIStates::MOUSE_PAN_SPEED, 0));
+
+/*				camera_pan(*m_camera, diffLockPositionX * GUIStates::MOUSE_PAN_SPEED,
+					diffLockPositionY * GUIStates::MOUSE_PAN_SPEED)*/;
 			}
 		}
 
@@ -1095,8 +1096,10 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 		int diffLockPositionX = mousex - m_guiStates.lockPositionX;
 		int diffLockPositionY = mousey - m_guiStates.lockPositionY;
 
-		camera_rotate(*m_camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
-			diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
+		m_camera->rotate(diffLockPositionX * GUIStates::MOUSE_TURN_SPEED, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED);
+
+		//camera_rotate(*m_camera, diffLockPositionY * GUIStates::MOUSE_TURN_SPEED,
+		//	diffLockPositionX * GUIStates::MOUSE_TURN_SPEED);
 
 		glfwSetCursorPos(window, m_guiStates.lockPositionX, m_guiStates.lockPositionY);
 	}
@@ -1106,18 +1109,32 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 
 	if (!m_guiStates.UICaptureKeyboard)
 	{
-		float cameraSpeed = 0.01f;
+		float cameraSpeed = 0.1f;
 		if (m_guiStates.shiftPressed)
-			cameraSpeed = 0.04f;
+			cameraSpeed = 0.5f;
+
+		glm::vec3 translateDirection = glm::vec3(0,0,0);
 
 		if (m_guiStates.leftPressed)
-			camera_translate(*m_camera, -cameraSpeed, 0, 0);
+			translateDirection += glm::vec3(-1, 0, 0);
 		if (m_guiStates.rightPressed)
-			camera_translate(*m_camera, cameraSpeed, 0, 0);
+			translateDirection += glm::vec3(1, 0, 0);
 		if (m_guiStates.forwardPressed)
-			camera_translate(*m_camera, 0, 0, cameraSpeed);
+			translateDirection += glm::vec3(0, 0, 1);
 		if (m_guiStates.backwardPressed)
-			camera_translate(*m_camera, 0, 0, -cameraSpeed);
+			translateDirection += glm::vec3(0, 0, -1);
+
+		translateDirection = glm::normalize(translateDirection) * cameraSpeed;
+		m_camera->translateLocal(translateDirection);
+
+		//if (m_guiStates.leftPressed)
+		//	camera_translate(*m_camera, -cameraSpeed, 0, 0);
+		//if (m_guiStates.rightPressed)
+		//	camera_translate(*m_camera, cameraSpeed, 0, 0);
+		//if (m_guiStates.forwardPressed)
+		//	camera_translate(*m_camera, 0, 0, cameraSpeed);
+		//if (m_guiStates.backwardPressed)
+		//	camera_translate(*m_camera, 0, 0, -cameraSpeed);
 	}
 }
 
