@@ -28,9 +28,6 @@ namespace Math {
 		//return the position of the idx control point
 		T getPoint(int idx) const;
 
-		//return the position in the curve, betwwen the control points idx, idx + 1 and idx + 2, at position t (0 <= t < 1).
-		T get(int idx, float t) const;
-
 		//return the position in the curve, betwwen begin and end, at position t (0 <= t < 1).
 		T get(float t) const;
 
@@ -107,27 +104,42 @@ namespace Math
 	}
 
 	template<typename T>
-	T CSpline<T>::get(int idx, float t) const
-	{
-		T P0 = m_points[idx];
-		T P1 = m_points[idx + 1];
-		T P2 = m_points[idx + 2];
-		T P3 = m_points[idx + 3];
-
-		return P1 + (t*(-0.5f*P0 + 0.5f*P2)) + (t*t*(P0 - 2.5f*P1 + 2*P2 -0.5f*P3)) + (t*t*t*(-0.5f * P0 + 1.5f * P1 - 1.5f * P2 + 0.5f*P3));
-	}
-
-	template<typename T>
 	T CSpline<T>::get(float t) const
 	{
-		int idx = (int)(t * m_points.size() - 0.999f);
 
-		T P0 = m_points[idx];
-		T P1 = m_points[idx + 1];
-		T P2 = m_points[idx + 2];
-		T P3 = m_points[idx + 3];
+		if (m_points.size() < 2)
+		{
+			return m_points[0]->getPosition();
+		}
+		else
+		{
+			float T = 1.f / (m_points.size() - 1);
 
-		return P1 + (t*(-0.5f*P0 + 0.5f*P2)) + (t*t*(P0 - 2.5f*P1 + 2 * P2 - 0.5f*P3)) + (t*t*t*(-0.5f * P0 + 1.5f * P1 - 1.5f * P2 + 0.5f*P3));
+			int idx = t / T;
+
+			if (idx == m_points.size() - 1)
+				return m_points[m_points.size() - 1]->getPosition();
+
+			glm::vec3 P0;
+			glm::vec3 P1 = m_points[idx]->getPosition();
+			glm::vec3 P2 = m_points[idx + 1]->getPosition();
+			glm::vec3 P3;
+
+
+			if (idx == 0)
+				P0 = glm::normalize(P1 - P2) + P1;
+			else
+				P0 = m_pathPoints[idx - 1]->getPosition();
+
+			if (idx + 2 >= m_pathPoints.size())
+				P3 = glm::normalize(P2 - P1) + P1;
+			else
+				P3 = m_pathPoints[idx + 2]->getPosition();
+
+			float t2 = ((t - (idx)*T) / T);
+
+			return Math::getCSplinePoint<glm::vec3>(P0, P1, P2, P3, t2);
+		}
 
 	}
 
