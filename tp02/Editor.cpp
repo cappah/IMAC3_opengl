@@ -431,7 +431,7 @@ void Editor::displayMenuBar(Scene& scene)
 
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("tools"))
+		/*if (ImGui::BeginMenu("tools"))
 		{
 			if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
 			{
@@ -463,7 +463,7 @@ void Editor::displayMenuBar(Scene& scene)
 			}
 
 			ImGui::EndMenu();
-		}
+		}*/
 		if (ImGui::BeginMenu("Add default entities"))
 		{
 			if (ImGui::Button("add empty entity"))
