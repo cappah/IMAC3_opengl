@@ -13,6 +13,14 @@
 #include "Flag.h"
 
 
+struct LightCullingInfo
+{
+	glm::vec4 viewport;
+	int idx;
+
+	inline LightCullingInfo(const glm::vec4& _viewport, int _idx) : viewport(_viewport), idx(_idx) {}
+};
+
 
 class Renderer
 {
@@ -62,6 +70,10 @@ private:
 	int pointLightCount;
 	int spotLightCount;
 
+	//for light culling : 
+	std::vector<LightCullingInfo> pointLightCullingInfos;
+	std::vector<LightCullingInfo> spotLightCullingInfos;
+
 	////shadows : 
 	//GLuint shadowFrameBuffer;
 	//GLuint shadowRenderBuffer;
@@ -102,8 +114,7 @@ public:
 	//resize the blit quad, changing its vertices coordinates
 	void resizeBlitQuad(const glm::vec4& viewport = glm::vec4(-1,-1,2,2));
 
-
-	// Old function to compte camera culling for light, see passCullingTest instead.
-	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights);
+	// Camera culling for light
+	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos);
 };
 

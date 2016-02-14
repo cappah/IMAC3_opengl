@@ -61,6 +61,8 @@ struct PointLight : public Light
 
 struct DirectionalLight : public Light
 {
+	glm::vec3 up;
+
 	glm::vec3 direction;
 
 	DirectionalLight(float _intensity = 0.2f, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _direction = glm::vec3(0, -1, 0));
@@ -75,6 +77,8 @@ struct DirectionalLight : public Light
 
 struct SpotLight : public Light
 {
+	glm::vec3 up;
+
 	glm::vec3 position;
 	glm::vec3 direction;
 	float angle;

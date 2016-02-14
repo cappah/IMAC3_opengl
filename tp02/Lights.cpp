@@ -114,7 +114,7 @@ void PointLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4&
 ////////////////////////////////
 
 DirectionalLight::DirectionalLight(float _intensity, glm::vec3 _color, glm::vec3 _direction) :
-	Light(_intensity, _color), direction(_direction)
+	Light(_intensity, _color), direction(_direction), up(1,0,0)
 {
 	m_type = DIRECTIONAL_LIGHT;
 }
@@ -134,7 +134,9 @@ void DirectionalLight::drawUI(Scene& scene)
 
 void DirectionalLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 {
-	direction = glm::normalize( glm::mat3_cast(rotation) * glm::vec3(0, -1, 0) ); // ???
+	glm::mat3 rotMat = glm::mat3_cast(rotation);
+	up = glm::normalize( rotMat * glm::vec3(1, 0, 0) );
+	direction = glm::normalize( rotMat * glm::vec3(0, -1, 0) );
 }
 
 void DirectionalLight::eraseFromScene(Scene & scene)
@@ -159,7 +161,7 @@ void DirectionalLight::addToScene(Scene& scene)
 ////////////////////////////////////
 
 SpotLight::SpotLight(float _intensity, glm::vec3 _color, glm::vec3 _position, glm::vec3 _direction, float _angle) :
-	Light(_intensity, _color), position(_position), direction(_direction), angle(_angle)
+	Light(_intensity, _color), position(_position), direction(_direction), angle(_angle), up(1,0,0)
 {
 	m_type = SPOT_LIGHT;
 
@@ -194,7 +196,10 @@ void SpotLight::drawUI(Scene& scene)
 void SpotLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 {
 	position = translation;
-	direction = glm::normalize(glm::mat3_cast(rotation) * glm::vec3(0, -1, 0));
+
+	glm::mat3 rotMat = glm::mat3_cast(rotation);
+	up = glm::normalize(rotMat * glm::vec3(1, 0, 0));
+	direction = glm::normalize(rotMat * glm::vec3(0, -1, 0));
 
 	updateBoundingBox();
 }

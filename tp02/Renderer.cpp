@@ -385,71 +385,77 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	//////// begin shadow pass
 	glEnable(GL_DEPTH_TEST);
 
+	//culling for lights : 
+	updateCulling(camera, pointLights, spotLights, pointLightCullingInfos, spotLightCullingInfos);
+
+	//TODO : check if shadow map count and light count match
+
 	//for spot lights : 
 	glUseProgram(glProgram_shadowPass);
-	for (int i = 0; i < spotLights.size(); i++)
+	for (int shadowIdx = 0; shadowIdx < spotLightCount; shadowIdx++)
 	{
-		//TODO test culling...
-		if (i < lightManager->getShadowMapCount(LightManager::SPOT))
-		{
-			lightManager->bindShadowMapFBO(LightManager::SPOT, i);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			glm::mat4 lightProjection = glm::perspective(spotLights[i]->angle*2.f, 1.f, 0.1f, 100.f);
-			glm::mat4 lightView = glm::lookAt(spotLights[i]->position, spotLights[i]->position + spotLights[i]->direction, glm::vec3(0, 0, 1));
+		int lightIdx = spotLightCullingInfos[shadowIdx].idx;
 
-			for (int j = 0; j < meshRenderers.size(); j++)
+		if (shadowIdx < lightManager->getShadowMapCount(LightManager::SPOT))
+		{
+			lightManager->bindShadowMapFBO(LightManager::SPOT, shadowIdx);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glm::mat4 lightProjection = glm::perspective(spotLights[lightIdx]->angle*2.f, 1.f, 0.1f, 100.f);
+			glm::mat4 lightView = glm::lookAt(spotLights[lightIdx]->position, spotLights[lightIdx]->position + spotLights[lightIdx]->direction, spotLights[lightIdx]->up);
+
+			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
 			{
-				renderShadows(lightProjection, lightView, *meshRenderers[j]); // draw shadow for the first spot light
+				renderShadows(lightProjection, lightView, *meshRenderers[meshIdx]);
 			}
 			lightManager->unbindShadowMapFBO(LightManager::SPOT);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 	}
 
-	/*
+	
 	//for directional lights : 
 	glUseProgram(glProgram_shadowPass);
-	for (int i = 0; i < directionalLights.size(); i++)
+	for (int lightIdx = 0; lightIdx < directionalLights.size(); lightIdx++)
 	{
-		//TODO test culling...
-		if (i < lightManager->getShadowMapCount(LightManager::DIRECTIONAL))
+		if (lightIdx < lightManager->getShadowMapCount(LightManager::DIRECTIONAL))
 		{
+			lightManager->bindShadowMapFBO(LightManager::DIRECTIONAL, lightIdx);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			lightManager->bindShadowMapFBO(LightManager::DIRECTIONAL, i);
-			glm::mat4 lightProjection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 0.1f, 100.f); //TODO
-			glm::mat4 lightView = glm::lookAt(glm::vec3(0,0,0), directionalLights[i]->direction, glm::vec3(0, 0, 1)); //TODO
+			glm::mat4 lightProjection = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
+			glm::mat4 lightView = glm::lookAt(-directionalLights[lightIdx]->direction*2.f , glm::vec3(0,0,0) , directionalLights[lightIdx]->up);
 
-			for (int i = 0; i < meshRenderers.size(); i++)
+			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
 			{
-				renderShadows(lightProjection, lightView, *meshRenderers[i]); // draw shadow for the first spot light
+				renderShadows(lightProjection, lightView, *meshRenderers[meshIdx]);
 			}
 			lightManager->unbindShadowMapFBO(LightManager::DIRECTIONAL);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 	}
-	*/
+	
 
 	//for point lights : 
 	glUseProgram(glProgram_shadowPassOmni);
-	for (int i = 0; i < pointLights.size(); i++)
+	for (int shadowIdx = 0; shadowIdx < pointLightCount; shadowIdx++)
 	{
-		//TODO test culling...
-		if (i < lightManager->getShadowMapCount(LightManager::POINT))
+		int lightIdx = pointLightCullingInfos[shadowIdx].idx;
+
+		if (shadowIdx < lightManager->getShadowMapCount(LightManager::POINT))
 		{
-			lightManager->bindShadowMapFBO(LightManager::POINT, i);
+			lightManager->bindShadowMapFBO(LightManager::POINT, shadowIdx);
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glm::mat4 lightProjection = glm::perspective(glm::radians(90.f), 1.f, 1.f, 100.f);
 			std::vector<glm::mat4> lightVPs;
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)) );
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[i]->position, pointLights[i]->position + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)) );
 
-			for (int j = 0; j < meshRenderers.size(); j++)
+			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
 			{
-				renderShadows(100.f, pointLights[i]->position, lightVPs, *meshRenderers[j]); // draw shadow for the first spot light
+				renderShadows(100.f, pointLights[lightIdx]->position, lightVPs, *meshRenderers[meshIdx]); // draw shadow for the first spot light
 			}
 			lightManager->unbindShadowMapFBO(LightManager::POINT);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -548,8 +554,11 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTextureNormal[POINT], 1);
 	glUniform1i(uniformTextureDepth[POINT], 2);
 
-	for (int i = 0; i < pointLights.size(); i++)
+	for (int i = 0; i < pointLightCount; i++)
 	{
+		int lightIdx = pointLightCullingInfos[i].idx;
+		viewport = pointLightCullingInfos[i].viewport;
+
 		if (i < lightManager->getShadowMapCount(LightManager::POINT))
 		{
 			//active the shadow map texture
@@ -558,14 +567,14 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 			glUniform1i(uniformTextureShadow[POINT], 3); // send shadow texture
 		}
 
-		if (passCullingTest(viewport, projection, worldToView, camera.eye, pointLights[i]->boundingBox)) // optimisation test
+		//if (passCullingTest(viewport, projection, worldToView, camera.eye, pointLights[i]->boundingBox)) // optimisation test
 		{
 			//resize viewport
 			resizeBlitQuad(viewport);
 
 			glUniform1f(uniformLightFarPlane, 100.f);
 
-			lightManager->uniformPointLight(*pointLights[i]);
+			lightManager->uniformPointLight(*pointLights[lightIdx]);
 			quadMesh.draw();
 		}
 	}
@@ -590,8 +599,12 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTextureNormal[SPOT], 1);
 	glUniform1i(uniformTextureDepth[SPOT], 2);
 
-	for (int i = 0; i < spotLights.size(); i++)
+	for (int i = 0; i < spotLightCount; i++)
 	{
+
+		int lightIdx = spotLightCullingInfos[i].idx;
+		viewport = spotLightCullingInfos[i].viewport;
+
 		if (i < lightManager->getShadowMapCount(LightManager::SPOT))
 		{
 			//active the shadow map texture
@@ -600,17 +613,17 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 			glUniform1i(uniformTextureShadow[SPOT], 3); // send shadow texture
 		}
 
-		if (passCullingTest(viewport , projection, worldToView, camera.eye, spotLights[i]->boundingBox)) // optimisation test
+		//if (passCullingTest(viewport , projection, worldToView, camera.eye, spotLights[i]->boundingBox)) // optimisation test
 		{
 			//resize viewport
 			resizeBlitQuad(viewport);
 
-			glm::mat4 projectionSpotLight = glm::perspective(spotLights[i]->angle*2.f, 1.f, 0.1f, 100.f);
-			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLights[i]->position, spotLights[i]->position + spotLights[i]->direction, glm::vec3(0, 0, 1));
+			glm::mat4 projectionSpotLight = glm::perspective(spotLights[lightIdx]->angle*2.f, 1.f, 0.1f, 100.f);
+			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLights[lightIdx]->position, spotLights[lightIdx]->position + spotLights[lightIdx]->direction, spotLights[lightIdx]->up);
 			glm::mat4 WorldToLightScreen = projectionSpotLight * worldToLightSpotLight;
 			glUniformMatrix4fv(uniformWorldToLightScreen_spot, 1, false, glm::value_ptr(WorldToLightScreen));
 
-			lightManager->uniformSpotLight(*spotLights[i]);
+			lightManager->uniformSpotLight(*spotLights[lightIdx]);
 			quadMesh.draw();
 		}
 	}
@@ -640,9 +653,22 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUniform1i(uniformTexturePosition[DIRECTIONAL], 0);
 	glUniform1i(uniformTextureNormal[DIRECTIONAL], 1);
 	glUniform1i(uniformTextureDepth[DIRECTIONAL], 2);
-	for (auto& light : directionalLights)
+	for (int i = 0; i < directionalLights.size(); i++)
 	{
-		lightManager->uniformDirectionalLight(*light);
+		if (i < lightManager->getShadowMapCount(LightManager::DIRECTIONAL))
+		{
+			//active the shadow map texture
+			glActiveTexture(GL_TEXTURE3);
+			lightManager->bindShadowMapTexture(LightManager::DIRECTIONAL, i);
+			glUniform1i(uniformTextureShadow[DIRECTIONAL], 3); // send shadow texture
+		}
+
+		glm::mat4 projectionDirectionalLight = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
+		glm::mat4 worldToLightDirectionalLight = glm::lookAt(-directionalLights[i]->direction*2.f ,  glm::vec3(0, 0, 0) , directionalLights[i]->up);
+		glm::mat4 WorldToLightScreen = projectionDirectionalLight * worldToLightDirectionalLight;
+		glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
+
+		lightManager->uniformDirectionalLight(*directionalLights[i]);
 		quadMesh.draw();
 	}
 
@@ -718,11 +744,11 @@ void Renderer::debugDrawDeferred()
 	}
 
 	//shadow : 
-	if (lightManager->getShadowMapCount(LightManager::SPOT) > 0)
+	if (lightManager->getShadowMapCount(LightManager::DIRECTIONAL) > 0)
 	{
 		glViewport((width * 3) / 4, 0, width / 4, height / 4);
 		glActiveTexture(GL_TEXTURE0);
-		lightManager->bindShadowMapTexture(LightManager::SPOT, 0);
+		lightManager->bindShadowMapTexture(LightManager::DIRECTIONAL, 0);
 		glUniform1i(uniformTextureBlit, 0);
 
 		quadMesh.draw();
@@ -881,8 +907,21 @@ void Renderer::resizeBlitQuad(const glm::vec4 & viewport)
 
 
 
-void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights)
+void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos )
 {
+
+	if (!pointLightCullingInfos.empty())
+		pointLightCullingInfos.clear();
+	if (!spotLightCullingInfos.empty())
+		spotLightCullingInfos.clear();
+
+	bool insideFrustum = false;
+
+	float maxX = 1;
+	float maxY = 1;
+	float minX = -1;
+	float minY = -1;
+
 	pointLightCount = 0;
 	spotLightCount = 0;
 
@@ -903,80 +942,145 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 
 		if (!(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
 		{
-			// permet au collider d'être toujours face à la camera. 
-			//cela permet d'éviter les erreurs du au caractère "AABB" du collider.
-			//en effet, on stock le collider avec une seule diagonale, il faut qu'une fois projeté en repère ecrant cette diagonale soit aussi celle du carré projeté.
-			glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
-			glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-			facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
 
-			//collider.applyRotation(glm::quat(facingCameraRotation));
+			//compute 8 points of 3D collider : 
 
-			glm::vec4 tmpTopRight = projection * view  /* facingCameraRotation */* glm::vec4(topRight, 1);
-			glm::vec4 tmpBottomLeft = projection * view  /* facingCameraRotation */* glm::vec4(bottomLeft, 1);
+			float colliderWidth = glm::abs(topRight.x - bottomLeft.x);
+			float colliderDepth = glm::abs(topRight.z - bottomLeft.z);
 
-			topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
-			bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
+			glm::vec3 colliderPoints[8] = { bottomLeft, glm::vec3(bottomLeft.x, bottomLeft.y, bottomLeft.z + colliderDepth), glm::vec3(bottomLeft.x + colliderWidth, bottomLeft.y, bottomLeft.z), glm::vec3(bottomLeft.x + colliderWidth, bottomLeft.y, bottomLeft.z + colliderDepth),
+				topRight, glm::vec3(topRight.x, topRight.y, topRight.z - colliderDepth), glm::vec3(topRight.x - colliderWidth, topRight.y, topRight.z), glm::vec3(topRight.x - colliderWidth, topRight.y, topRight.z - colliderDepth) };
 
-			if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
-				|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
+			glm::mat4 vp = projection * view;
+			glm::vec4 tmpColliderPoint;
+			maxX = -1;
+			maxY = -1;
+			minX = 1;
+			minY = 1;
+			for (int i = 0; i < 8; i++)
 			{
-				PointLight* tmpLight = pointLights[i];
-				pointLights[i] = pointLights[lastId];
-				pointLights[lastId] = tmpLight;
+				tmpColliderPoint = projection * view * glm::vec4(colliderPoints[i], 1);
+				colliderPoints[i] = glm::vec3(tmpColliderPoint.x / tmpColliderPoint.w, tmpColliderPoint.y / tmpColliderPoint.w, tmpColliderPoint.z / tmpColliderPoint.w);
 
-				lastId--;
-				i--;
+				if (colliderPoints[i].x > maxX)
+					maxX = colliderPoints[i].x;
+				if (colliderPoints[i].x < minX)
+					minX = colliderPoints[i].x;
+
+				if (colliderPoints[i].y > maxY)
+					maxY = colliderPoints[i].y;
+				if (colliderPoints[i].y < minY)
+					minY = colliderPoints[i].y;
 			}
+
+
+			//is light outside the camera frustum ? 
+			if ((maxX < -1 && minX < -1) || (maxY < -1 && minY < -1)
+				|| (maxX > 1 && minX > 1) || (maxY > 1 && minY > 1))
+			{
+				//PointLight* tmpLight = pointLights[i];
+				//pointLights[i] = pointLights[lastId];
+				//pointLights[lastId] = tmpLight;
+
+				//lastId--;
+				//i--;
+
+				//we don't have to draw the light if its bounding box is outside the camera frustum
+				insideFrustum = false;
+			}
+
+			//we have to draw the light if its boudning box is inside/intersect the camera frustum
+			insideFrustum = true;
+		}
+		//we draw the light if we are inside its bounding box
+		insideFrustum = true;
+
+		//second optimisation : we modify the quad verticies such that it is reduce to the area of the light
+		if (insideFrustum)
+		{
+			float width = maxX - minX;
+			float height = maxY - minY;
+			
+			pointLightCullingInfos.push_back(LightCullingInfo(glm::vec4(minX, minY, width, height), i));
 		}
 
-		if (i >= lastId)
-		{
-			pointLightCount = i + 1;
-			std::cout << "nombre de point light visibles : " << pointLightCount << std::endl;
-			break;
-		}
 	}
 
-	lastId = spotLights.size() - 1;
+	//lastId = spotLights.size() - 1;
 	for (int i = 0; i < spotLights.size(); i++)
 	{
 
 		BoxCollider& collider = spotLights[i]->boundingBox;
-
-		// this matrix will allow the light bounding box to allways facing the camera.
-		glm::vec3 camToCollider = glm::normalize(collider.translation - camera.eye);
-		glm::mat4 facingCameraRotation = glm::lookAt(camToCollider, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		facingCameraRotation = glm::inverse(glm::mat4(facingCameraRotation));
-
-		collider.applyRotation(glm::quat(facingCameraRotation));
-
 		glm::vec3 topRight = collider.topRight;
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
-		glm::vec4 tmpTopRight = projection * view  * glm::vec4(topRight, 1);
-		glm::vec4 tmpBottomLeft = projection * view  * glm::vec4(bottomLeft, 1);
 
-		topRight = glm::vec3(tmpTopRight.x / tmpTopRight.w, tmpTopRight.y / tmpTopRight.w, tmpTopRight.z / tmpTopRight.w);
-		bottomLeft = glm::vec3(tmpBottomLeft.x / tmpBottomLeft.w, tmpBottomLeft.y / tmpBottomLeft.w, tmpBottomLeft.z / tmpBottomLeft.w);
-
-		if ((topRight.x < -1 && bottomLeft.x < -1) || (topRight.y < -1 && bottomLeft.y < -1)
-			|| (topRight.x > 1 && bottomLeft.x > 1) || (topRight.y > 1 && bottomLeft.y > 1))
+		if (!(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
 		{
-			SpotLight* tmpLight = spotLights[i];
-			spotLights[i] = spotLights[lastId];
-			spotLights[lastId] = tmpLight;
+			//compute 8 points of 3D collider : 
 
-			lastId--;
-			i--;
+			float colliderWidth = glm::abs(topRight.x - bottomLeft.x);
+			float colliderDepth = glm::abs(topRight.z - bottomLeft.z);
+
+			glm::vec3 colliderPoints[8] = { bottomLeft, glm::vec3(bottomLeft.x, bottomLeft.y, bottomLeft.z + colliderDepth), glm::vec3(bottomLeft.x + colliderWidth, bottomLeft.y, bottomLeft.z), glm::vec3(bottomLeft.x + colliderWidth, bottomLeft.y, bottomLeft.z + colliderDepth),
+				topRight, glm::vec3(topRight.x, topRight.y, topRight.z - colliderDepth), glm::vec3(topRight.x - colliderWidth, topRight.y, topRight.z), glm::vec3(topRight.x - colliderWidth, topRight.y, topRight.z - colliderDepth) };
+
+			glm::mat4 vp = projection * view;
+			glm::vec4 tmpColliderPoint;
+			maxX = -1;
+			maxY = -1;
+			minX = 1;
+			minY = 1;
+			for (int i = 0; i < 8; i++)
+			{
+				tmpColliderPoint = projection * view * glm::vec4(colliderPoints[i], 1);
+				colliderPoints[i] = glm::vec3(tmpColliderPoint.x / tmpColliderPoint.w, tmpColliderPoint.y / tmpColliderPoint.w, tmpColliderPoint.z / tmpColliderPoint.w);
+
+				if (colliderPoints[i].x > maxX)
+					maxX = colliderPoints[i].x;
+				if (colliderPoints[i].x < minX)
+					minX = colliderPoints[i].x;
+
+				if (colliderPoints[i].y > maxY)
+					maxY = colliderPoints[i].y;
+				if (colliderPoints[i].y < minY)
+					minY = colliderPoints[i].y;
+			}
+
+
+			//is light outside the camera frustum ? 
+			if ((maxX < -1 && minX < -1) || (maxY < -1 && minY < -1)
+				|| (maxX > 1 && minX > 1) || (maxY > 1 && minY > 1))
+			{
+				//SpotLight* tmpLight = spotLights[i];
+				//spotLights[i] = spotLights[lastId];
+				//spotLights[lastId] = tmpLight;
+
+				//lastId--;
+				//i--;
+
+				//we don't have to draw the light if its bounding box is outside the camera frustum
+				insideFrustum = false;
+			}
+
+			//we have to draw the light if its boudning box is inside/intersect the camera frustum
+			insideFrustum = true;
 		}
 
-		if (i >= lastId)
+		//we draw the light if we are inside its bounding box
+		insideFrustum = true;
+
+		//second optimisation : we modify the quad verticies such that it is reduce to the area of the light
+		if (insideFrustum)
 		{
-			spotLightCount = i + 1;
-			std::cout << "nombre de spot light visibles : " << spotLightCount << std::endl;
-			break;
+			float width = maxX - minX;
+			float height = maxY - minY;
+
+			spotLightCullingInfos.push_back(LightCullingInfo(glm::vec4(minX, minY, width, height), i));
 		}
 	}
+
+	spotLightCount = spotLightCullingInfos.size();
+	pointLightCount = pointLightCullingInfos.size();
 
 }

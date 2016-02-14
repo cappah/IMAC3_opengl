@@ -51,6 +51,29 @@ vec3 computeDirectionalLight(DirectionalLight light, vec3 p, vec3 n,  vec3 diffu
 	return intensity * light.color * 3.1415 * (diffuse + specular) * (ndotl) ; 
 }
 
+float computeShadow(vec3 p)
+{
+	//shadow
+	float shadowBias = 0.01f;
+	vec4 wlP = WorldToLightScreen * vec4(p.xyz, 1.0);
+	vec3 lP = vec3(wlP/wlP.w) * 0.5 + 0.5;
+	//float lDepth =  texture(Shadow, lP.xy).r; //textureProj(Shadow, vec4(lP.xy, lP.z - shadowBias, 1.0), 0.0);
+
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(Shadow, 0);
+	for(int x = -1; x <= 1; ++x)
+	{
+		for(int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(Shadow, lP.xy + vec2(x, y)*texelSize).r;
+			shadow += (pcfDepth + shadowBias > lP.z) ? 0.0 : 1.0;        
+		}    
+	}
+	shadow /= 9.0;
+
+	return shadow;
+}
+
 
 void main(void)
 {
@@ -74,11 +97,11 @@ void main(void)
 
 
 	vec3 color = computeDirectionalLight(directionalLight, p, n, diffuse, specular, specularPower * 100);
+	color *= (1-computeShadow(p));
 
-	//shadow
-	vec4 wlP = WorldToLightScreen * vec4(p, 1.0);
-	vec3 lP = vec3(wlP/wlP.w) * 0.5 + 0.5;
-	float lDepth = texture(Shadow, lP.xy).r;
+	//if(lDepth + shadowBias > lP.z)
+		Color = vec4(color, 1.0);
+	//else
+	//	Color = vec4(0.0, 0.0, 0.0, 1.0);
 
-    Color = vec4(color, 1.0);
 }
