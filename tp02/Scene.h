@@ -39,6 +39,9 @@ private:
 	//particles : 
 	std::vector<Physic::ParticleEmitter*> m_particleEmitters;
 
+	//cameras : 
+	std::vector<Camera*> m_cameras;
+
 	//special componants : 
 	//terrain : 
 	Terrain m_terrain;
@@ -73,6 +76,7 @@ public:
 	Scene& add(MeshRenderer* meshRenderer);
 	Scene& add(Physic::Flag* flag);
 	Scene& add(Physic::ParticleEmitter* particleEmitter);
+	Scene& add(Camera* camera);
 
 	Scene& erase(Entity* entity);
 	Scene& erase(PointLight* pointLight);
@@ -82,6 +86,7 @@ public:
 	Scene& erase(MeshRenderer* meshRenderer);
 	Scene& erase(Physic::Flag* flag);
 	Scene& erase(Physic::ParticleEmitter* particleEmitter);
+	Scene& erase(Camera* camera);
 
 	void render(const Camera& camera);
 	void renderColliders(const Camera& camera);

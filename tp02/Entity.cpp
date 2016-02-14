@@ -306,6 +306,16 @@ Entity & Entity::add(Physic::ParticleEmitter * particleEmitter)
 	return *this;
 }
 
+Entity & Entity::add(Camera * camera)
+{
+	camera->attachToEntity(this);
+
+	m_scene->add(camera);
+	m_components.push_back(camera);
+
+	return *this;
+}
+
 Entity& Entity::erase(PointLight * pointLight)
 {
 	auto findIt = std::find(m_components.begin(), m_components.end(), pointLight);
@@ -392,6 +402,19 @@ Entity & Entity::erase(Physic::ParticleEmitter * particleEmitter)
 	{
 		m_components.erase(findIt);
 		m_scene->erase(particleEmitter);
+	}
+
+	return *this;
+}
+
+Entity & Entity::erase(Camera * camera)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), camera);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(camera);
 	}
 
 	return *this;

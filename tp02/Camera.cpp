@@ -1,35 +1,43 @@
-
 #include "Camera.h"
+#include "Scene.h"
+#include "Entity.h"
+#include "Factories.h"
 
-
-Camera::Camera() : 
-	radius(1), theta(glm::pi<float>()*0.5f), phi(0), o(0), eye(o), up(glm::vec3(0,1,0)), dir(1,0,0)
+Camera::Camera() : Component(ComponentType::CAMERA),
+	theta(glm::pi<float>()*0.5f), phi(0), o(0), eye(o), up(0,1,0), forward(0,0,1), right(1,0,0)
 {
 	
 }
 
-Camera::Camera(const Camera & other) :
-	radius(other.radius), theta(other.theta), phi(other.phi), o(other.o), eye(other.eye), up(other.up), dir(other.dir)
+Camera::Camera(const Camera & other) : Component(ComponentType::CAMERA),
+	theta(other.theta), phi(other.phi), o(other.o), eye(other.eye), up(other.up), forward(other.forward), right(other.right)
 {
 
 }
 
 ///////////////////////////
 
+
+CameraFPS::CameraFPS() : Camera()
+{
+	updateTransform();
+}
+
+CameraFPS::CameraFPS(const Camera & cam) : Camera(cam)
+{
+}
+
+
 void CameraFPS::setTranslation(glm::vec3 pos)
 {
-	eye[0] = pos.x;
-	eye[1] = pos.y;
-	eye[2] = pos.z;
+	eye = pos;
 
 	updateTransform();
 }
 
 void CameraFPS::translate(glm::vec3 pos)
 {
-	eye[0] += pos.x;
-	eye[1] += pos.y;
-	eye[2] += pos.z;
+	eye += pos;
 
 	updateTransform();
 }
@@ -43,103 +51,85 @@ void CameraFPS::rotate(float deltaX, float deltaY)
 	else if (phi <= 0)
 		phi = 2 * glm::pi<float>() - 0.1;
 
+	forward.x = cos(theta) * sin(phi);
+	forward.y = cos(phi);
+	forward.z = sin(theta) * sin(phi);
+
 	updateTransform();
-}
-
-
-CameraFPS::CameraFPS() : Camera()
-{
-	updateTransform();
-}
-
-CameraFPS::CameraFPS(const Camera & cam): Camera(cam)
-{
 }
 
 void CameraFPS::setTranslationLocal(glm::vec3 pos)
 {
-	glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
-	glm::vec3 fwd = glm::normalize(o - eye);
-	glm::vec3 side = glm::normalize(glm::cross(fwd, up));
-	up = glm::normalize(glm::cross(side, fwd));
+	eye = glm::vec3(0, 0, 0);
 
-	eye[0] = up[0] * pos.y;
-	eye[1] = up[1] * pos.y;
-	eye[2] = up[2] * pos.y;
-
-	eye[0] = side[0] * pos.x;
-	eye[1] = side[1] * pos.x;
-	eye[2] = side[2] * pos.x;
-
-	eye[0] = fwd[0] * pos.z;
-	eye[1] = fwd[1] * pos.z;
-	eye[2] = fwd[2] * pos.z;
+	eye += up * pos.y;
+	eye += right * pos.x;
+	eye += forward * pos.z;
 
 	updateTransform();
 }
 
 void CameraFPS::translateLocal(glm::vec3 pos)
 {
-	glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
-	glm::vec3 fwd = glm::normalize(o - eye);
-	glm::vec3 side = glm::normalize(glm::cross(fwd, up));
-	up = glm::normalize(glm::cross(side, fwd));
+	//glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	//glm::vec3 fwd = glm::normalize(o - eye);
+	//glm::vec3 side = glm::normalize(glm::cross(fwd, up));
+	//up = glm::normalize(glm::cross(side, fwd));
 
-	eye[0] += up[0] * pos.y;
-	eye[1] += up[1] * pos.y;
-	eye[2] += up[2] * pos.y;
-
-	eye[0] += side[0] * pos.x;
-	eye[1] += side[1] * pos.x;
-	eye[2] += side[2] * pos.x;
-
-	eye[0] += fwd[0] * pos.z;
-	eye[1] += fwd[1] * pos.z;
-	eye[2] += fwd[2] * pos.z;
+	eye += up * pos.y;
+	eye += right * pos.x;
+	eye += forward * pos.z;
 
 	updateTransform();
 }
 
 void CameraFPS::setDirection(glm::vec3 _dir)
 {
-	dir = glm::normalize(_dir);
+	//forward = glm::normalize(_dir);
 
-	float r = std::sqrt(dir.x*dir.x + dir.z*dir.z);
-	phi = atan2(r, dir.y) + glm::pi<float>();
-	theta = atan2(dir.z, dir.x) + glm::pi<float>();
+	//float r = std::sqrt(forward.x*forward.x + forward.z*forward.z);
+	//phi = atan2(r, forward.y) + glm::pi<float>();
+	//theta = atan2(forward.z, forward.x) + glm::pi<float>();
 
-	if (phi >= (2 * glm::pi<float>()) - 0.1)
-		phi = 0.00001;
-	else if (phi <= 0)
-		phi = 2 * glm::pi<float>() - 0.1;
+	//if (phi >= (2 * glm::pi<float>()) - 0.1)
+	//	phi = 0.00001;
+	//else if (phi <= 0)
+	//	phi = 2 * glm::pi<float>() - 0.1;
 
-	o = eye + dir;
+	//o = eye + forward;
 
-	up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	//up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+
+	forward = _dir;
+
+	updateTransform();
 }
 
 void CameraFPS::setRotation(float _phi, float _theta)
 {
-	theta += 1.f * theta;
-	phi += 1.f * phi;
+	theta = 1.f * theta;
+	phi = 1.f * phi;
 	if (phi >= (2 * glm::pi<float>()) - 0.1)
 		phi = 0.00001;
 	else if (phi <= 0)
 		phi = 2 * glm::pi<float>() - 0.1;
+
+	forward.x = cos(theta) * sin(phi);
+	forward.y = cos(phi);
+	forward.z = sin(theta) * sin(phi);
 
 	updateTransform();
 }
 
 void CameraFPS::updateTransform()
 {
-	dir.x = cos(theta) * sin(phi);
-	dir.y = cos(phi);
-	dir.z = sin(theta) * sin(phi);
+	forward = glm::normalize(forward);
 
-	dir = glm::normalize(dir);
-
-	o = dir + eye;
 	up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	right = glm::normalize(glm::cross(forward, up));
+	up = glm::normalize(glm::cross(right, forward));
+
+	o = forward + eye;
 }
 
 void CameraFPS::switchFromCameraEditor(const Camera & other)
@@ -152,110 +142,99 @@ void CameraFPS::switchFromCameraEditor(const Camera & other)
 	updateTransform();
 }
 
+Component * CameraFPS::clone(Entity * entity)
+{
+	CameraFPS* camera = new CameraFPS(*this);
+
+	camera->attachToEntity(entity);
+
+	return camera;
+}
+
 //////////////////////////////////
 
 
 
-CameraEditor::CameraEditor() : Camera()
+CameraEditor::CameraEditor() : Camera(), radius(3.f)
 {
 	updateTransform();
 }
 
-CameraEditor::CameraEditor(const Camera & cam) : Camera(cam)
+CameraEditor::CameraEditor(const Camera & cam) : Camera(cam), radius(3.f)
 {
 }
 
 void CameraEditor::setTranslationLocal(glm::vec3 pos)
 {
-	glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
-	glm::vec3 fwd = glm::normalize(o - eye);
-	glm::vec3 side = glm::normalize(glm::cross(fwd, up));
-	up = glm::normalize(glm::cross(side, fwd));
+	//glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	//glm::vec3 fwd = glm::normalize(o - eye);
+	//glm::vec3 side = glm::normalize(glm::cross(fwd, up));
+	//up = glm::normalize(glm::cross(side, fwd));
 
-	o[0] = up[0] * pos.y * radius * 2;
-	o[1] = up[1] * pos.y * radius * 2;
-	o[2] = up[2] * pos.y * radius * 2;
-	o[0] = -side[0] * pos.x * radius * 2;
-	o[1] = -side[1] * pos.x * radius * 2;
-	o[2] = -side[2] * pos.x * radius * 2;
+	o = up * pos.y * radius * 2.f;
+	o = -right * pos.x * radius * 2.f;
+	o = forward * pos.z * radius * 2.f;
 
 	updateTransform();
 }
 
 void CameraEditor::translateLocal(glm::vec3 pos)
 {
-	glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
-	glm::vec3 fwd = glm::normalize(o - eye);
-	glm::vec3 side = glm::normalize(glm::cross(fwd, up));
-	up = glm::normalize(glm::cross(side, fwd));
+	//glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	//glm::vec3 fwd = glm::normalize(o - eye);
+	//glm::vec3 side = glm::normalize(glm::cross(fwd, up));
+	//up = glm::normalize(glm::cross(side, fwd));
 
-	o[0] += up[0] * pos.y * radius * 2;
-	o[1] += up[1] * pos.y * radius * 2;
-	o[2] += up[2] * pos.y * radius * 2;
-	o[0] -= side[0] * pos.x * radius * 2;
-	o[1] -= side[1] * pos.x * radius * 2;
-	o[2] -= side[2] * pos.x * radius * 2;
+	o += up * pos.y * radius * 2.f;
+	o += -right * pos.x * radius * 2.f;
+	o += forward * pos.z * radius * 2.f;
 
 	updateTransform();
 }
 
 void CameraEditor::setDirection(glm::vec3 dir)
 {
-	float r = std::sqrt(dir.x*dir.x + dir.z*dir.z);
-	phi = dir.y == glm::pi<float>()*0.5f ? 0 : std::atanf(r / dir.y);
-	theta = dir.x == glm::pi<float>()*0.5f ? 0 : std::atanf(dir.z / dir.x);
+	//float r = std::sqrt(dir.x*dir.x + dir.z*dir.z);
+	//phi = dir.y == glm::pi<float>()*0.5f ? 0 : std::atanf(r / dir.y);
+	//theta = dir.x == glm::pi<float>()*0.5f ? 0 : std::atanf(dir.z / dir.x);
 
-	if (phi >= (2 * glm::pi<float>()) - 0.1)
-		phi = 0.00001;
-	else if (phi <= 0)
-		phi = 2 * glm::pi<float>() - 0.1;
+	//if (phi >= (2 * glm::pi<float>()) - 0.1)
+	//	phi = 0.00001;
+	//else if (phi <= 0)
+	//	phi = 2 * glm::pi<float>() - 0.1;
+
+	forward = dir;
 
 	updateTransform();
 }
 
 void CameraEditor::setRotation(float phi, float theta)
 {
-	theta += 1.f * theta;
-	phi -= 1.f * phi;
+	theta = 1.f * theta;
+	phi = 1.f * phi;
 
 	if (phi >= (2 * glm::pi<float>()) - 0.1)
 		phi = 0.00001;
 	else if (phi <= 0)
 		phi = 2 * glm::pi<float>() - 0.1;
 
+	forward.x = cos(theta) * sin(phi);
+	forward.y = cos(phi);
+	forward.z = sin(theta) * sin(phi);
+
 	updateTransform();
 }
 
 void CameraEditor::setTranslation(glm::vec3 pos)
 {
-	o[0] = pos.y;
-	o[1] = 0;
-	o[2] = 0;
-
-	o[0] = 0;
-	o[1] = pos.x;
-	o[2] = 0;
-
-	o[0] = 0;
-	o[1] = 0;
-	o[2] = pos.z;
+	o = pos;
 
 	updateTransform();
 }
 
 void CameraEditor::translate(glm::vec3 pos)
 {
-	o[0] += pos.y;
-	o[1] += 0;
-	o[2] += 0;
-
-	o[0] += 0;
-	o[1] += pos.x;
-	o[2] += 0;
-
-	o[0] += 0;
-	o[1] += 0;
-	o[2] += pos.z;
+	o += pos;
 
 	updateTransform();
 }
@@ -263,22 +242,30 @@ void CameraEditor::translate(glm::vec3 pos)
 void CameraEditor::rotate(float deltaX, float deltaY)
 {
 	theta += 1.f * deltaX;
-	phi -= 1.f * deltaY;
+	phi += 1.f * deltaY;
 	if (phi >= (2 * glm::pi<float>()) - 0.1)
 		phi = 0.00001;
 	else if (phi <= 0)
 		phi = 2 * glm::pi<float>() - 0.1;
+
+
+	forward.x = cos(theta) * sin(phi);
+	forward.y = cos(phi);
+	forward.z = sin(theta) * sin(phi);
+
+
 	updateTransform();
 }
 
 void CameraEditor::updateTransform()
 {
-	eye.x = cos(theta) * sin(phi) * radius + o.x;
-	eye.y = cos(phi) * radius + o.y;
-	eye.z = sin(theta) * sin(phi) * radius + o.z;
-	up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	forward = glm::normalize(forward);
 
-	dir = glm::normalize(o - eye);
+	up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	right = glm::normalize(glm::cross(forward, up));
+	up = glm::normalize(glm::cross(right, forward));
+
+	eye = o - forward*radius;
 }
 
 void CameraEditor::switchFromCameraFPS(const Camera & other)
@@ -291,8 +278,18 @@ void CameraEditor::switchFromCameraFPS(const Camera & other)
 	updateTransform();
 }
 
+Component * CameraEditor::clone(Entity * entity)
+{
+	CameraEditor* camera = new CameraEditor(*this);
+
+	camera->attachToEntity(entity);
+
+	return camera;
+}
+
 
 //////////////////////////////////
+/*
 
 void camera_compute(Camera & c)
 {
@@ -393,4 +390,23 @@ void toogleCamera(Camera& c)
 {
 	c.theta += glm::pi<float>();
 	c.phi = glm::pi<float>() - c.phi;
+}
+*/
+
+void Camera::drawUI()
+{
+	if (ImGui::CollapsingHeader("camera"))
+	{
+		//TODO
+	}
+}
+
+void Camera::eraseFromScene(Scene & scene)
+{
+	scene.erase(this);
+}
+
+void Camera::addToScene(Scene & scene)
+{
+	scene.add(this);
 }

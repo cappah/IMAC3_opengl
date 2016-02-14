@@ -233,7 +233,7 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	m_gizmo = new Gizmo(_unlitMaterial, this);
 
 	m_camera = new CameraEditor();
-	camera_defaults(*m_camera);
+	//camera_defaults(*m_camera);
 
 	init_gui_states(m_guiStates);
 
@@ -612,7 +612,7 @@ void Editor::displayBottomLeftWindow(Scene& scene)
 		ImGui::PushID(entityId);
 		if (ImGui::Button(entity->getName().c_str(), ImVec2(m_bottomLeftPanelRect.z - 35.f, 16.f)))
 		{
-			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->dir*3.f;
+			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->forward*3.f;
 			m_camera->setTranslation(cameraFinalPosition);
 		}
 		ImGui::PopID();
@@ -1048,7 +1048,8 @@ void Editor::updateCameraMovement_editor(GLFWwindow* window)
 					zoomDir = -1.f;
 				else if (diffLockPositionX < 0)
 					zoomDir = 1.f;
-				camera_zoom(*m_camera, zoomDir * GUIStates::MOUSE_ZOOM_SPEED);
+				m_camera->translateLocal(glm::vec3(0, 0, GUIStates::MOUSE_ZOOM_SPEED * zoomDir));
+				//camera_zoom(*m_camera, zoomDir * GUIStates::MOUSE_ZOOM_SPEED);
 			}
 			else if (m_guiStates.turnLock)
 			{
@@ -1124,8 +1125,12 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 		if (m_guiStates.backwardPressed)
 			translateDirection += glm::vec3(0, 0, -1);
 
-		translateDirection = glm::normalize(translateDirection) * cameraSpeed;
-		m_camera->translateLocal(translateDirection);
+		if (translateDirection != glm::vec3(0, 0, 0))
+		{
+			translateDirection = glm::normalize(translateDirection) * cameraSpeed;
+			m_camera->translateLocal(translateDirection);
+		}
+
 
 		//if (m_guiStates.leftPressed)
 		//	camera_translate(*m_camera, -cameraSpeed, 0, 0);

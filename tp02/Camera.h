@@ -9,15 +9,22 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
-struct Camera
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
+
+#include "Component.h"
+
+struct Camera : public Component
 {
-	float radius;
+	//float radius;
 	float theta;
 	float phi;
 	glm::vec3 o;
 	glm::vec3 eye;
+
 	glm::vec3 up;
-	glm::vec3 dir;
+	glm::vec3 forward;
+	glm::vec3 right;
 
 	Camera();
 	Camera(const Camera& other);
@@ -30,6 +37,11 @@ struct Camera
 	virtual void translate(glm::vec3 pos) = 0;
 	virtual void rotate(float deltaX, float deltaY) = 0;
 	virtual void updateTransform() = 0;
+
+	virtual void drawUI() override;
+	virtual void eraseFromScene(Scene & scene) override;
+	virtual void addToScene(Scene & scene) override;
+	virtual Component * clone(Entity * entity) = 0;
 
 };
 
@@ -49,10 +61,13 @@ struct CameraFPS : public Camera
 	virtual void updateTransform() override;
 	void switchFromCameraEditor(const Camera& other); // make the transition between camera editor and camera fps
 
+	virtual Component * clone(Entity * entity) override;
+
 };
 
 struct CameraEditor : public Camera
 {
+	float radius;
 
 	CameraEditor();
 	CameraEditor(const Camera& cam);
@@ -67,9 +82,11 @@ struct CameraEditor : public Camera
 	virtual void updateTransform() override;
 	void switchFromCameraFPS(const Camera& other);
 
+	virtual Component * clone(Entity * entity) override;
+
 };
 
-
+/*
 void camera_defaults(Camera & c);
 void camera_zoom(Camera & c, float factor);
 void camera_turn(Camera & c, float phi, float theta);
@@ -77,3 +94,4 @@ void camera_pan(Camera & c, float x, float y);
 void camera_rotate(Camera& c, float phi, float theta);
 void camera_translate(Camera& c, float x, float y, float z);
 void toogleCamera(Camera& c);
+*/
