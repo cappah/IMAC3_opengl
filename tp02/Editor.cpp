@@ -228,7 +228,7 @@ void init_gui_states(GUIStates & guiStates)
 
 /////////////////////////////////// EDITOR
 
-Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(false)
+Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(false), m_cameraBaseSpeed(0.05f), m_cameraBoostSpeed(0.1f)
 {
 	m_gizmo = new Gizmo(_unlitMaterial, this);
 
@@ -335,8 +335,8 @@ void Editor::renderGizmo()
 		return;
 
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 viewMatrix = glm::lookAt(m_camera->eye, m_camera->o, m_camera->up);
+	glm::mat4 projectionMatrix = m_camera->getProjectionMatrix(); // glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 viewMatrix = m_camera->getViewMatrix(); // glm::lookAt(m_camera->eye, m_camera->o, m_camera->up);
 
 	m_gizmo->render(projectionMatrix, viewMatrix);
 }
@@ -512,6 +512,15 @@ void Editor::displayMenuBar(Scene& scene)
 				newEntity->add(newCollider).add(meshRenderer);
 			}
 
+			if (ImGui::Button("add Camera"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto camera = new Camera();
+				newEntity->add(newCollider).add(camera);
+			}
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("camera mode"))
@@ -520,11 +529,12 @@ void Editor::displayMenuBar(Scene& scene)
 			{
 				if (m_cameraFPS)
 				{
-					CameraEditor* newCam = new CameraEditor();
-					//newCam->switchFromCameraFPS(*m_camera); //set up the camera
-					delete m_camera;
-					m_camera = newCam;
+					//CameraEditor* newCam = new CameraEditor();
+					////newCam->switchFromCameraFPS(*m_camera); //set up the camera
+					//delete m_camera;
+					//m_camera = newCam;
 					//toogleCamera(*m_camera);
+					m_camera->setFPSMode(false);
 					m_cameraFPS = false;
 				}
 			}
@@ -532,11 +542,12 @@ void Editor::displayMenuBar(Scene& scene)
 			{
 				if (!m_cameraFPS)
 				{
-					CameraFPS* newCam = new CameraFPS();
-					//newCam->switchFromCameraEditor(*m_camera); //set up the camera
-					delete m_camera;
-					m_camera = newCam;
+					//CameraFPS* newCam = new CameraFPS();
+					////newCam->switchFromCameraEditor(*m_camera); //set up the camera
+					//delete m_camera;
+					//m_camera = newCam;
 					//toogleCamera(*m_camera);
+					m_camera->setFPSMode(true);
 					m_cameraFPS = true;
 				}
 			}
@@ -544,6 +555,23 @@ void Editor::displayMenuBar(Scene& scene)
 			{
 				m_hideCursorWhenMovingCamera = !m_hideCursorWhenMovingCamera;
 			}
+			ImGui::SliderFloat("camera base speed", &m_cameraBaseSpeed, 0.01f, 1.f);
+			ImGui::SliderFloat("camera boost speed", &m_cameraBoostSpeed, 0.01f, 1.f);
+			float tmpFloat = m_camera->getFOV();
+			if(ImGui::SliderFloat("camera fov", &(tmpFloat), 0.f, glm::pi<float>()))
+				m_camera->setFOV(tmpFloat);
+
+			tmpFloat = m_camera->getNear();
+			if (ImGui::SliderFloat("camera near", &(tmpFloat), 0.001f, 5.f))
+				m_camera->setNear(tmpFloat);
+
+			tmpFloat = m_camera->getFar();
+			if (ImGui::SliderFloat("camera far", &(tmpFloat), 0.01f, 1000.f))
+				m_camera->setFar(tmpFloat);
+
+			tmpFloat = m_camera->getAspect();
+			if (ImGui::SliderFloat("camera aspect", &(tmpFloat), 0.01f, 10.f))
+				m_camera->setAspect(tmpFloat);
 
 			ImGui::EndMenu();
 		}
@@ -612,7 +640,7 @@ void Editor::displayBottomLeftWindow(Scene& scene)
 		ImGui::PushID(entityId);
 		if (ImGui::Button(entity->getName().c_str(), ImVec2(m_bottomLeftPanelRect.z - 35.f, 16.f)))
 		{
-			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->forward*3.f;
+			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
 			m_camera->setTranslation(cameraFinalPosition);
 		}
 		ImGui::PopID();
@@ -1110,9 +1138,9 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 
 	if (!m_guiStates.UICaptureKeyboard)
 	{
-		float cameraSpeed = 0.1f;
+		float cameraSpeed = m_cameraBaseSpeed;
 		if (m_guiStates.shiftPressed)
-			cameraSpeed = 0.5f;
+			cameraSpeed = m_cameraBoostSpeed;
 
 		glm::vec3 translateDirection = glm::vec3(0,0,0);
 
@@ -1147,7 +1175,7 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler )
 {
 	//update gizmo
-	float distanceToCamera = glm::length(m_camera->eye - m_gizmo->getPosition());
+	float distanceToCamera = glm::length(m_camera->getCameraPosition() - m_gizmo->getPosition());
 	m_gizmo->setScale(distanceToCamera*0.1f);
 
 	updateGuiStates(window);
@@ -1191,7 +1219,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 			float screenWidth = Application::get().getWindowWidth();
 			float screenHeight = Application::get().getWindowHeight();
 
-			glm::vec3 origin = m_camera->eye;
+			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
 			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
@@ -1257,7 +1285,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 			float screenWidth = Application::get().getWindowWidth();
 			float screenHeight = Application::get().getWindowHeight();
 
-			glm::vec3 origin = m_camera->eye;
+			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
 			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
@@ -1269,7 +1297,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	
 }
 
-Camera& Editor::getCamera()
+CameraEditor& Editor::getCamera()
 {
 	return *m_camera;
 }

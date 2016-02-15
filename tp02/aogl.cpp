@@ -493,8 +493,8 @@ int main( int argc, char **argv )
 		inputHandler.synchronize(window);
 
 		//get active camera before render scene : 
-		Camera& currentCamera = editor.getCamera();
-		
+		BaseCamera& currentCamera = editor.getCamera();
+		//currentCamera.updateScreenSize(width, height);
 		//scene.culling(currentCamera);
 
 		//rendering : 

@@ -34,7 +34,7 @@ GLuint compile_shader_from_file(GLenum shaderType, const char * fileName);
 bool checkError(const char* title);
 
 //return the point in world coordinate matching the given mouse position in screen space : 
-glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, Camera& camera);
+glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, BaseCamera& camera);
 
 double interpolation_cos2D(double a, double b, double c, double d, double x, double y);
 double interpolation_cos1D(double a, double b, double x);

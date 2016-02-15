@@ -105,8 +105,10 @@ private:
 
 	GUIStates m_guiStates;
 
-	Camera* m_camera;
+	CameraEditor* m_camera;
 	bool m_cameraFPS;
+	float m_cameraBaseSpeed;
+	float m_cameraBoostSpeed;
 
 	bool m_hideCursorWhenMovingCamera;
 
@@ -153,7 +155,7 @@ public:
 
 	void update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler);
 
-	Camera& getCamera();
+	CameraEditor& getCamera();
 
 	void updateGuiStates(GLFWwindow* window);
 	void updateCameraMovement_editor(GLFWwindow* window);

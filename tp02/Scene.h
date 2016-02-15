@@ -88,10 +88,10 @@ public:
 	Scene& erase(Physic::ParticleEmitter* particleEmitter);
 	Scene& erase(Camera* camera);
 
-	void render(const Camera& camera);
-	void renderColliders(const Camera& camera);
+	void render(const BaseCamera& camera);
+	void renderColliders(const BaseCamera& camera);
 	void renderDebugDeferred();
-	void renderDebugLights(const Camera& camera);
+	void renderDebugLights(const BaseCamera& camera);
 
 	void updatePhysic(float deltaTime);
 
