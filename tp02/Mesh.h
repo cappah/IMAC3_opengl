@@ -55,9 +55,12 @@ struct Mesh
 
 	//initialize vbos and vao, based on the informations of the mesh.
 	void initGl();
+	void freeGl();
 
-	//update a single vbo
+	//update a single vbo.
 	void updateVBO(Vbo_types type);
+	//update all vbos.
+	void updateAllVBOs();
 
 	// simply draw the vertices, using vao.
 	void draw();

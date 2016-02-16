@@ -29,6 +29,7 @@ namespace Physic {
 		linkShearing.clear();
 		linkBlending.clear();
 
+		generatePoints();
 		generateMesh();
 
 		m_mesh.initGl();
@@ -52,7 +53,7 @@ namespace Physic {
 	{
 	}
 
-	void Flag::generateMesh()
+	void Flag::generatePoints()
 	{
 		float paddingX = m_width / (float)(m_subdivision - 1);
 		float paddingY = m_height / (float)(m_subdivision - 1);
@@ -66,6 +67,64 @@ namespace Physic {
 				pointContainer.push_back(Point(glm::vec3(i*paddingX, j*paddingY, 0.f), glm::vec3(0, 0, 0), 0.f));
 			}
 		}
+	}
+
+	void Flag::regenerateFlag()
+	{
+		modelMatrix = glm::mat4(1);
+
+		//don't forget to change the origin to have the right pivot rotation
+		origin = glm::vec3(-0.5f, -0.5f, 0.f);
+		m_mesh.origin = glm::vec3(-0.5f, -0.5f, 0.f);
+
+		m_mesh.topRight = glm::vec3(m_width, m_height, 0.f);
+		m_mesh.bottomLeft = glm::vec3(0.f, 0.f, 0.f);
+
+		m_mesh.vertices.clear();
+		m_mesh.normals.clear();
+		m_mesh.uvs.clear();
+		m_mesh.triangleIndex.clear();
+		m_mesh.tangents.clear();
+
+		localPointPositions.clear();
+		pointContainer.clear();
+		linkShape.clear();
+		linkShearing.clear();
+		linkBlending.clear();
+
+		generatePoints();
+		generateMesh();
+
+		m_mesh.updateAllVBOs();
+
+		initialyzePhysic();
+
+		//cover the mesh with collider : 
+		if (m_entity != nullptr)
+		{
+			auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+			if (collider != nullptr)
+			{
+				collider->coverMesh(m_mesh);
+				collider->setOffsetScale(glm::vec3(1.f, 1.f, 2.f));
+			}
+		}
+
+		//applied old transforms to the vertices :
+		for (int i = 0; i < pointContainer.size(); i++)
+		{
+			pointContainer[i].position = glm::vec3(glm::translate(glm::mat4(1), translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale) *  glm::vec4(localPointPositions[i], 1.f));
+			pointContainer[i].setVitesse(glm::vec3(0, 0, 0));
+			pointContainer[i].setForce(glm::vec3(0, 0, 0));
+		}
+
+		synchronizeVisual();
+	}
+
+	void Flag::generateMesh()
+	{
+		float paddingX = m_width / (float)(m_subdivision - 1);
+		float paddingY = m_height / (float)(m_subdivision - 1);
 
 		int lineCount = (m_subdivision - 1);
 		int rowCount = (m_subdivision - 1);
@@ -364,12 +423,31 @@ namespace Physic {
 
 	void Flag::restartSimulation()
 	{
+
+
+		origin = glm::vec3(-0.5f, -0.5f, 0.f);
+		m_mesh.origin = glm::vec3(-0.5f, -0.5f, 0.f);
+
+		m_mesh.topRight = glm::vec3(m_width, m_height, 0.f);
+		m_mesh.bottomLeft = glm::vec3(0.f, 0.f, 0.f);
+		
+		m_mesh.vertices.clear();
+		m_mesh.normals.clear();
+		m_mesh.uvs.clear();
+		m_mesh.triangleIndex.clear();
+		m_mesh.tangents.clear();
+
+		generateMesh();
+	
 		for (int i = 0; i < pointContainer.size(); i++)
 		{
-			pointContainer[i].position = glm::vec3(modelMatrix * glm::vec4(localPointPositions[i], 1.f));
+			pointContainer[i].position = glm::vec3(glm::translate(glm::mat4(1), translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale) *  glm::vec4(localPointPositions[i], 1.f));
+			pointContainer[i].setVitesse(glm::vec3(0, 0, 0));
+			pointContainer[i].setForce(glm::vec3(0, 0, 0));
 		}
 
 		synchronizeVisual();
+
 	}
 
 	void Physic::Flag::update(float deltaTime)
@@ -443,6 +521,7 @@ namespace Physic {
 			//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
 			collider->scale = glm::vec3(1, 1, 1); 
 			collider->rotation = glm::quat(0, 0, 0, 0);
+			collider->translation = glm::vec3(0, 0, 0);
 			collider->coverMesh(m_mesh);
 		}
 	}
@@ -504,6 +583,13 @@ namespace Physic {
 			if(ImGui::InputFloat("rigidity", &m_rigidity))
 				updatePhysic();
 
+			int tmpSub = m_subdivision;
+			if (ImGui::InputInt("subdivision", &m_subdivision))
+			{
+				m_mass *= ((m_subdivision * m_subdivision) / (float)(tmpSub*tmpSub)); // change mass because we add matter, otherwise the system isn't stable
+				regenerateFlag();
+			}
+
 			if (ImGui::Button("restart simulation"))
 				restartSimulation();
 
@@ -557,21 +643,26 @@ namespace Physic {
 		return m_mesh;
 	}
 
-	void Flag::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
+	void Flag::applyTransform(const glm::vec3 & _translation, const glm::vec3 & _scale, const glm::quat & _rotation)
 	{
-		modelMatrix = glm::translate(glm::mat4(1), translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale);
+		modelMatrix = glm::translate(glm::mat4(1), _translation) * glm::mat4_cast(_rotation) * glm::scale(glm::mat4(1), _scale);
 
 		for (int i = 0; i < m_subdivision; i++)
 		{
-			pointContainer[i].position = glm::vec3(glm::translate(glm::mat4(1), translation) * glm::vec4(localPointPositions[i], 1.f));
+			pointContainer[i].position = glm::vec3(glm::translate(glm::mat4(1), _translation) * glm::mat4_cast(_rotation) *  glm::vec4(localPointPositions[i], 1.f));
 		}
 
 		for (int i = 0; i < pointContainer.size(); i++)
 		{
-			pointContainer[i].position = glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale) * glm::vec4(localPointPositions[i], 1.f);
+			pointContainer[i].position = glm::vec3(glm::scale(glm::mat4(1), 1.f/scale) * glm::vec4(pointContainer[i].position, 1.f)); // inverse previous scale
+			pointContainer[i].position = glm::vec3( glm::scale(glm::mat4(1), _scale) * glm::vec4(pointContainer[i].position, 1.f));
 		}
 
 		modelMatrix = glm::mat4(1);//glm::translate(glm::mat4(1), -translation);
+
+		translation = _translation;
+		rotation = _rotation;
+		scale = _scale;
 
 		synchronizeVisual();
 	}
@@ -609,6 +700,16 @@ namespace Physic {
 	void Flag::setViscosity(float viscosity)
 	{
 		m_viscosity = viscosity;
+	}
+
+	void Flag::setSubdivision(int subdivision)
+	{
+		m_subdivision = subdivision;
+	}
+
+	int Flag::getSubdivision() const
+	{
+		return m_subdivision;
 	}
 
 }

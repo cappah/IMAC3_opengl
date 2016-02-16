@@ -86,13 +86,19 @@ namespace Physic {
 		void setRigidity(float rigidity);
 		void setViscosity(float viscosity);
 
+		void setSubdivision(int subdivision);
+		int getSubdivision() const;
+
 		void updatePhysic();
 
 		void restartSimulation();
 
 	private : 
+		//completly free memory allocate for the flag and then reconstruct the flag
+		void regenerateFlag();
 		//simply generate the model, don't destroy or allocate memory, we have to do it manually before and after calling this function
 		void generateMesh();
+		void generatePoints(); 
 		//update all normals such that they follow the shape
 		void updateNormals();
 		//initialyze and place the physic points and links

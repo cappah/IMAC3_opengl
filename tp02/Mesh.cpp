@@ -22,22 +22,7 @@ Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByV
 
 Mesh::~Mesh()
 {
-	if (vbo_index != 0)
-		glDeleteBuffers(1, &vbo_index);
-
-	if (vbo_vertices != 0)
-		glDeleteBuffers(1, &vbo_vertices);
-
-	if (vbo_uvs != 0)
-		glDeleteBuffers(1, &vbo_uvs);
-
-	if (vbo_normals != 0)
-		glDeleteBuffers(1, &vbo_normals);
-
-	if (vbo_tangents != 0)
-		glDeleteBuffers(1, &vbo_tangents);
-
-	glDeleteVertexArrays(1, &vao);
+	freeGl();
 }
 
 //initialize vbos and vao, based on the informations of the mesh.
@@ -96,37 +81,95 @@ void Mesh::initGl()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void Mesh::freeGl()
+{
+	if (vbo_index != 0)
+		glDeleteBuffers(1, &vbo_index);
+
+	if (vbo_vertices != 0)
+		glDeleteBuffers(1, &vbo_vertices);
+
+	if (vbo_uvs != 0)
+		glDeleteBuffers(1, &vbo_uvs);
+
+	if (vbo_normals != 0)
+		glDeleteBuffers(1, &vbo_normals);
+
+	if (vbo_tangents != 0)
+		glDeleteBuffers(1, &vbo_tangents);
+
+	glDeleteVertexArrays(1, &vao);
+}
+
 void Mesh::updateVBO(Vbo_types type)
 {
-	if (type == Vbo_types::INDEX)
+	if (type == Vbo_types::INDEX && (USE_INDEX & vbo_usage))
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_index);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangleIndex.size()*sizeof(int), &triangleIndex[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
-	if (type == Vbo_types::VERTICES)
+	if (type == Vbo_types::VERTICES && (USE_VERTICES & vbo_usage))
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
 		glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], drawUsage);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	if (type == Vbo_types::NORMALS)
+	if (type == Vbo_types::NORMALS && (USE_NORMALS & vbo_usage))
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
 		glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float), &normals[0], drawUsage);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	if (type == Vbo_types::TANGENTS)
+	if (type == Vbo_types::TANGENTS && (USE_TANGENTS & vbo_usage))
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_tangents);
 		glBufferData(GL_ARRAY_BUFFER, tangents.size()*sizeof(float), &tangents[0], drawUsage);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	if (type == Vbo_types::UVS)
+	if (type == Vbo_types::UVS && (USE_UVS & vbo_usage))
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_uvs);
+		glBufferData(GL_ARRAY_BUFFER, uvs.size()*sizeof(float), &uvs[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+}
+
+void Mesh::updateAllVBOs()
+{
+	if (USE_INDEX & vbo_usage)
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_index);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangleIndex.size()*sizeof(int), &triangleIndex[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
+	if (USE_VERTICES & vbo_usage)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], drawUsage);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	if (USE_NORMALS & vbo_usage)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
+		glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float), &normals[0], drawUsage);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	if (USE_TANGENTS & vbo_usage)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_tangents);
+		glBufferData(GL_ARRAY_BUFFER, tangents.size()*sizeof(float), &tangents[0], drawUsage);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	if (USE_UVS & vbo_usage)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_uvs);
 		glBufferData(GL_ARRAY_BUFFER, uvs.size()*sizeof(float), &uvs[0], GL_STATIC_DRAW);
