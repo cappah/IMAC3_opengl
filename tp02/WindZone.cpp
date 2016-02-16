@@ -34,7 +34,7 @@ namespace Physic {
 		for (int i = 0; i < 10; i++)
 		{
 			float direction = (i % 2 == 0) ? 1 : -1;
-			float newPoint = direction*m_amplitude*0.5f - m_randomFactor * direction * (float)(rand() % 100) / 100.f;
+			float newPoint = m_amplitude - m_randomFactor * direction * (float)(rand() % 100) / 100.f;
 			m_cspline[i] = (newPoint);
 		}
 	}

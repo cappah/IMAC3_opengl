@@ -5,7 +5,8 @@
 
 namespace Physic {
 
-	Flag::Flag(Material* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1) 
+	Flag::Flag(Material* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1),
+		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f)
 	{
 		modelMatrix = glm::mat4(1);
 
@@ -252,10 +253,6 @@ namespace Physic {
 
 	void Flag::initialyzePhysic()
 	{
-
-		float m = 0.00008f;
-		float k = 0.00002f;
-		float z = 0.000002f;
 		float l = 0.f;
 
 		//intialyze physic links : 
@@ -271,14 +268,14 @@ namespace Physic {
 				{
 					Point* right = &pointContainer[idx2DToIdx1D(i + 1, j, m_subdivision)];
 					l = glm::distance(right->position, current->position);
-					linkShape.push_back(Link(current, right, k, z, l)); //right link
+					linkShape.push_back(Link(current, right, m_rigidity, m_viscosity, l)); //right link
 				}
 
 				if (j + 1 < m_subdivision)
 				{
 					Point* up = &pointContainer[idx2DToIdx1D(i, j + 1, m_subdivision)];
 					l = glm::distance(up->position, current->position);
-					linkShape.push_back(Link(up, current, k, z, l)); //up link
+					linkShape.push_back(Link(up, current, m_rigidity, m_viscosity, l)); //up link
 				}
 
 				//shearing links
@@ -287,13 +284,13 @@ namespace Physic {
 				{
 					Point* rightUp = &pointContainer[idx2DToIdx1D(i + 1, j + 1, m_subdivision)];
 					l = glm::distance(rightUp->position, current->position);
-					linkShearing.push_back(Link(current, rightUp, k, z, l)); //right up link
+					linkShearing.push_back(Link(current, rightUp, m_rigidity, m_viscosity, l)); //right up link
 				}
 				if (j - 1 > 0 && i + 1 < m_subdivision)
 				{
 					Point* rightDown = &pointContainer[idx2DToIdx1D(i + 1, j - 1, m_subdivision)];
 					l = glm::distance(rightDown->position, current->position);
-					linkShearing.push_back(Link(current, rightDown, k, z, l)); //right down link
+					linkShearing.push_back(Link(current, rightDown, m_rigidity, m_viscosity, l)); //right down link
 				}
 
 				//blending links : 
@@ -302,17 +299,19 @@ namespace Physic {
 				{
 					Point* right2 = &pointContainer[idx2DToIdx1D(i + 2, j, m_subdivision)];
 					l = glm::distance(right2->position, current->position);
-					linkBlending.push_back(Link(current, right2, k, z, l)); //right link
+					linkBlending.push_back(Link(current, right2, m_rigidity, m_viscosity, l)); //right link
 				}
 
 				if (j + 2 < m_subdivision)
 				{
 					Point* up2 = &pointContainer[idx2DToIdx1D(i, j + 2, m_subdivision)];
 					l = glm::distance(up2->position, current->position);
-					linkBlending.push_back(Link(current, up2, k, z, l)); //up link
+					linkBlending.push_back(Link(current, up2, m_rigidity, m_viscosity, l)); //up link
 				}
 			}
 		}
+
+
 
 		//set masses : 
 		for (int i = 0; i < m_subdivision; i++)
@@ -324,9 +323,53 @@ namespace Physic {
 		{
 			for (int i = 0; i < m_subdivision; i++)
 			{
-				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = m / (float)(m_subdivision * m_subdivision);
+				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = m_mass / (float)(m_subdivision * m_subdivision);
 			}
 		}
+	}
+
+	void Flag::updatePhysic()
+	{
+		//update rigidity and viscosity of links : 
+		for (int i = 0; i < linkShape.size(); i++)
+		{
+			linkShape[i].k = m_rigidity;
+			linkShape[i].z = m_viscosity;
+		}
+		for (int i = 0; i < linkBlending.size(); i++)
+		{
+			linkBlending[i].k = m_rigidity;
+			linkBlending[i].z = m_viscosity;
+		}
+		for (int i = 0; i < linkShearing.size(); i++)
+		{
+			linkShearing[i].k = m_rigidity;
+			linkShearing[i].z = m_viscosity;
+		}
+
+		//update masses : 
+		for (int i = 0; i < m_subdivision; i++)
+		{
+			pointContainer[i].masse = 0.f;
+		}
+
+		for (int j = 1; j < m_subdivision; j++)
+		{
+			for (int i = 0; i < m_subdivision; i++)
+			{
+				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = m_mass / (float)(m_subdivision * m_subdivision);
+			}
+		}
+	}
+
+	void Flag::restartSimulation()
+	{
+		for (int i = 0; i < pointContainer.size(); i++)
+		{
+			pointContainer[i].position = glm::vec3(modelMatrix * glm::vec4(localPointPositions[i], 1.f));
+		}
+
+		synchronizeVisual();
 	}
 
 	void Physic::Flag::update(float deltaTime)
@@ -363,13 +406,13 @@ namespace Physic {
 
 		for (int i = 0, j = 0; i < pointContainer.size(); i++, j+=3)
 		{
-			m_mesh.vertices[j] = pointContainer[i].position.x + m_mesh.normals[j]*0.1f;
-			m_mesh.vertices[j+1] = pointContainer[i].position.y + m_mesh.normals[j + 1] * 0.1f;
-			m_mesh.vertices[j+2] = pointContainer[i].position.z + m_mesh.normals[j + 2] * 0.1f;
+			m_mesh.vertices[j] = pointContainer[i].position.x + m_mesh.normals[j]*0.01f;
+			m_mesh.vertices[j+1] = pointContainer[i].position.y + m_mesh.normals[j + 1] * 0.01f;
+			m_mesh.vertices[j+2] = pointContainer[i].position.z + m_mesh.normals[j + 2] * 0.01f;
 
-			m_mesh.vertices[j + verticePerFace*3] = pointContainer[i].position.x + m_mesh.normals[j + verticePerFace*3] * 0.1f;
-			m_mesh.vertices[j + 1 + verticePerFace*3] = pointContainer[i].position.y + m_mesh.normals[j + 1 + verticePerFace*3] * 0.1f;
-			m_mesh.vertices[j + 2 + verticePerFace*3] = pointContainer[i].position.z + m_mesh.normals[j + 2 + verticePerFace*3] * 0.1f;
+			m_mesh.vertices[j + verticePerFace*3] = pointContainer[i].position.x + m_mesh.normals[j + verticePerFace*3] * 0.01f;
+			m_mesh.vertices[j + 1 + verticePerFace*3] = pointContainer[i].position.y + m_mesh.normals[j + 1 + verticePerFace*3] * 0.01f;
+			m_mesh.vertices[j + 2 + verticePerFace*3] = pointContainer[i].position.z + m_mesh.normals[j + 2 + verticePerFace*3] * 0.01f;
 
 			//calculate bounds : 
 			if (pointContainer[i].position.x < min.x)
@@ -454,6 +497,16 @@ namespace Physic {
 	{
 		if (ImGui::CollapsingHeader("flag"))
 		{
+			if (ImGui::InputFloat("mass", &m_mass))
+				updatePhysic();
+			if(ImGui::InputFloat("viscosity", &m_viscosity))
+				updatePhysic();
+			if(ImGui::InputFloat("rigidity", &m_rigidity))
+				updatePhysic();
+
+			if (ImGui::Button("restart simulation"))
+				restartSimulation();
+
 			char tmpMaterialName[20];
 			m_materialName.copy(tmpMaterialName, m_materialName.size());
 			tmpMaterialName[m_materialName.size()] = '\0';
@@ -506,14 +559,19 @@ namespace Physic {
 
 	void Flag::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 	{
-		modelMatrix = glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale);
+		modelMatrix = glm::translate(glm::mat4(1), translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale);
+
+		for (int i = 0; i < m_subdivision; i++)
+		{
+			pointContainer[i].position = glm::vec3(glm::translate(glm::mat4(1), translation) * glm::vec4(localPointPositions[i], 1.f));
+		}
 
 		for (int i = 0; i < pointContainer.size(); i++)
 		{
-			pointContainer[i].position = glm::vec3(modelMatrix * glm::vec4(localPointPositions[i], 1.f));
+			pointContainer[i].position = glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale) * glm::vec4(localPointPositions[i], 1.f);
 		}
 
-		modelMatrix = glm::translate(glm::mat4(1), translation);
+		modelMatrix = glm::mat4(1);//glm::translate(glm::mat4(1), -translation);
 
 		synchronizeVisual();
 	}
@@ -521,6 +579,36 @@ namespace Physic {
 	glm::vec3 Flag::getOrigin() const
 	{
 		return origin;
+	}
+
+	float Flag::getMass() const
+	{
+		return m_mass;
+	}
+
+	float Flag::getRigidity() const
+	{
+		return m_rigidity;
+	}
+
+	float Flag::getViscosity() const
+	{
+		return m_viscosity;
+	}
+
+	void Flag::setMass(float mass)
+	{
+		m_mass = mass;
+	}
+
+	void Flag::setRigidity(float rigidity)
+	{
+		m_rigidity = rigidity;
+	}
+
+	void Flag::setViscosity(float viscosity)
+	{
+		m_viscosity = viscosity;
 	}
 
 }
