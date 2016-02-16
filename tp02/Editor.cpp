@@ -472,6 +472,9 @@ void Editor::displayMenuBar(Scene& scene)
 				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				newEntity->add(newCollider);
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("add pointLight"))
@@ -482,6 +485,9 @@ void Editor::displayMenuBar(Scene& scene)
 				auto light = new PointLight();
 				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
 				newEntity->add(newCollider).add(light);
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("add directionalLight"))
@@ -491,6 +497,9 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto light = new DirectionalLight();
 				newEntity->add(newCollider).add(light);
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("add spotLight"))
@@ -501,6 +510,9 @@ void Editor::displayMenuBar(Scene& scene)
 				auto light = new SpotLight();
 				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
 				newEntity->add(newCollider).add(light);
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 
 			if (ImGui::Button("add cube"))
@@ -510,6 +522,9 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get("brick"));
 				newEntity->add(newCollider).add(meshRenderer);
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 
 			if (ImGui::Button("add Camera"))
@@ -519,6 +534,9 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto camera = new Camera();
 				newEntity->add(newCollider).add(camera);
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 
 			ImGui::EndMenu();
