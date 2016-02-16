@@ -316,6 +316,16 @@ Entity & Entity::add(PathPoint * pathPoint)
 	return *this;
 }
 
+Entity & Entity::add(Physic::WindZone * windZone)
+{
+	windZone->attachToEntity(this);
+
+	m_scene->add(windZone);
+	m_components.push_back(windZone);
+
+	return *this;
+}
+
 Entity& Entity::erase(PointLight * pointLight)
 {
 	auto findIt = std::find(m_components.begin(), m_components.end(), pointLight);
@@ -415,6 +425,19 @@ Entity & Entity::erase(PathPoint * pathPoint)
 	{
 		m_components.erase(findIt);
 		m_scene->erase(pathPoint);
+	}
+
+	return *this;
+}
+
+Entity & Entity::erase(Physic::WindZone * windZone)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), windZone);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(windZone);
 	}
 
 	return *this;

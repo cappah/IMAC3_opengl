@@ -249,6 +249,7 @@
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="WindZone.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="imgui.vcxproj">
@@ -298,6 +299,7 @@
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="WindZone.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="aogl.frag" />

@@ -252,10 +252,13 @@ namespace Physic {
 
 	void Flag::initialyzePhysic()
 	{
-		//intialyze physic links : 
+
+		float m = 0.00008f;
 		float k = 0.00002f;
 		float z = 0.000002f;
 		float l = 0.f;
+
+		//intialyze physic links : 
 		for (int j = 0; j < m_subdivision; j++)
 		{
 			for (int i = 0; i < m_subdivision; i++)
@@ -321,7 +324,7 @@ namespace Physic {
 		{
 			for (int i = 0; i < m_subdivision; i++)
 			{
-				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = 0.00008f / (float)(m_subdivision * m_subdivision);
+				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = m / (float)(m_subdivision * m_subdivision);
 			}
 		}
 	}

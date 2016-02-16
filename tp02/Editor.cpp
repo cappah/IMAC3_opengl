@@ -528,6 +528,15 @@ void Editor::displayMenuBar(Scene& scene)
 				newEntity->add(newCollider).add(pathPoint);
 			}
 
+			if (ImGui::Button("add wind zone"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto windZone = new Physic::WindZone();
+				newEntity->add(newCollider).add(windZone);
+			}
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("camera mode"))
