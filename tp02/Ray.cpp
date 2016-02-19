@@ -41,6 +41,38 @@ bool Ray::intersectPlane(const glm::vec3& anchor, const glm::vec3& normal, float
 	return true;
 }
 
+bool Ray::intersectTriangle(const glm::vec3 & a, const glm::vec3 & b, const glm::vec3 & c, CollisionInfo & collisionInfo) const
+{
+	glm::vec3 triangleNormal = glm::cross(b - a, c - a);
+	collisionInfo.normal = triangleNormal;
+	collisionInfo.point = glm::vec3(0, 0, 0);
+	if (triangleNormal.length == 0)
+		triangleNormal = -direction;
+	triangleNormal = glm::normalize(triangleNormal);
+	
+	float denom = glm::dot(triangleNormal, direction);
+	//we are strictly perpendicular to the triangle so there are no intersection
+	if (denom == 0) 
+		return false;
+	float k = glm::dot(triangleNormal, (origin - a)) / denom;
+
+	//collision with plane is OK
+	if (k > 0)
+	{
+		//p is the intersection point with the plane
+		glm::vec3 p = origin + k * direction;
+		collisionInfo.point = p;
+		//is p also inside the triangle ? 
+		return glm::dot(glm::cross(a-p, b-p), triangleNormal) > 0.f && glm::dot(glm::cross(b-p,c-p), triangleNormal) > 0.f && glm::dot(glm::cross(c-p,a-p), triangleNormal) > 0.f;
+	}
+	return false;
+}
+
+bool Ray::intersectMesh(const Mesh & mesh, CollisionInfo & collisionInfo) const
+{
+	return mesh.isIntersectedByRay(*this, collisionInfo);
+}
+
 void Ray::debugLog()
 {
 	std::cout << "ray origin : (" << origin.x <<", "<<origin.y<<", "<<origin.z << "), ray direction : (" << direction.x << ", " << direction.y << ", " << direction.z << "), ray lenght : " << length << std::endl;
