@@ -49,14 +49,20 @@ private:
 	//texture tool : 
 	Texture m_noiseTexture;
 
+	MaterialDrawOnTexture m_drawOnTextureMaterial;
 	MaterialTerrainEdition m_terrainMaterial;
 
 	Mesh m_quadMesh;
+
 	GLuint m_terrainFbo;
+	GLuint m_materialLayoutsFBO;
+
 	Texture m_filterTexture;
 	Texture m_terrainDiffuse;
 	Texture m_terrainBump;
 	Texture m_terrainSpecular;
+	Texture m_drawMatTexture;
+	//Texture m_terrainDepth;
 
 	std::vector<MaterialLit*> m_terrainLayouts;
 	std::vector<glm::vec2> m_textureRepetitions;
@@ -88,5 +94,7 @@ public:
 
 	void computeNoiseTexture(Perlin2D& perlin2D);
 	void generateTerrainTexture();
+
+	void drawMaterialOnTerrain(glm::vec3 position, float radius, int textureIdx);
 };
 

@@ -169,7 +169,6 @@ struct MaterialTerrain : public Material3DObject
 };
 
 
-
 class MaterialTerrainEdition : public Material
 {
 private:
@@ -206,6 +205,26 @@ public:
 
 	virtual void use() override;
 
+	virtual void drawUI() override;
+};
+
+class MaterialDrawOnTexture : public Material
+{
+private:
+	GLuint uniform_colorToDraw;
+	GLuint uniform_drawPosition;
+	GLuint uniform_drawRadius;
+	GLuint uniform_textureToDrawOn;
+
+public : 
+	MaterialDrawOnTexture(GLuint _glProgram);
+
+	void setUniformDrawPosition(glm::vec3 position);
+	void setUniformColorToDraw(glm::vec4 color);
+	void setUniformDrawRadius(float radius);
+	void setUniformTextureToDrawOn(int textureId);
+
+	virtual void use() override;
 	virtual void drawUI() override;
 };
 

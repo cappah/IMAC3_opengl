@@ -1,18 +1,22 @@
 #include "Terrain.h"
 #include "Factories.h" //forward
 
-Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_noiseMin(0.f), m_noiseMax(1.f), m_terrainFbo(0), 
-			m_terrainMaterial(ProgramFactory::get().get("defaultTerrain")), m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , 
-			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024, glm::vec3(1, 1, 1)), m_filterTexture(1024, 1024, glm::vec3(0.f, 0.f, 0.f)),
-			m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), m_seed(0),
-			m_terrainBump(1024, 1024, glm::vec3(128, 128, 255)), m_terrainSpecular(1024, 1024, glm::vec3(128.f, 128.f, 128.f))
+Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_noiseMin(0.f), m_noiseMax(1.f), m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), m_seed(0), //properties
+			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
+			m_terrainMaterial(ProgramFactory::get().get("defaultTerrain")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
+			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
+			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024), m_filterTexture(1024, 1024, glm::vec3(0.f, 0.f, 0.f)), //textures
+			m_terrainBump(1024, 1024), m_terrainSpecular(1024, 1024), m_drawMatTexture(1024, 1024)
 {
-	// initialyze the textute name : 
+	// initialyze the texture name : 
 	m_newLayoutName[0] = '\0';
 
 	//push terrain texture to GPU
 	//bump
 	m_terrainBump.name = "terrainTextureBump";
+	m_terrainBump.internalFormat = GL_RGBA16;
+	m_terrainBump.format = GL_RGBA;
+	m_terrainBump.type = GL_FLOAT;
 	m_terrainBump.initGL();
 	//specular
 	m_terrainSpecular.name = "terrainTextureSpecular";
@@ -20,11 +24,21 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	//diffuse
 	m_terrainDiffuse.name = "terrainTextureDiffuse";
 	m_terrainDiffuse.initGL();
+	//depth
+	//m_terrainDepth.name = "terrainTextureDepth";
+	//m_terrainDepth.internalFormat = GL_DEPTH_COMPONENT24;
+	//m_terrainDepth.format = GL_DEPTH_COMPONENT;
+	//m_terrainDepth.type = GL_FLOAT;
+	//m_terrainDepth.generateMipMap = false;
+	//m_terrainDepth.initGL ();
 	//noise and filter
 	m_noiseTexture.initGL();
 	m_filterTexture.initGL();
+	//draw texture
+	m_drawMatTexture.name = "texture draw text";
+	m_drawMatTexture.initGL();
 
-	//set the terrain texture as diffuse texture : 
+	//set the terrain texture : 
 	//bump
 	m_material.textureBump = &m_terrainBump;
 	m_material.bumpTextureName = m_terrainBump.name;
@@ -46,6 +60,25 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	//applyNoise(m_terrainNoise.generatePerlin2D());
 
 
+	//generate material layout FBO : 
+	glGenFramebuffers(1, &m_materialLayoutsFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_materialLayoutsFBO);
+
+	GLuint matLayoutDrawBuffers[1];
+	matLayoutDrawBuffers[0] = GL_COLOR_ATTACHMENT0;
+	glDrawBuffers(1, matLayoutDrawBuffers);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_filterTexture.glId, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		fprintf(stderr, "Error on building framebuffer\n");
+		exit(EXIT_FAILURE);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
 	//generate terrain FBO : 
 	glGenFramebuffers(1, &m_terrainFbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_terrainFbo);
@@ -56,18 +89,16 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	terrainDrawBuffers[2] = GL_COLOR_ATTACHMENT2;
 	glDrawBuffers(3, terrainDrawBuffers);
 
-	// Attach textures to framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_terrainDiffuse.glId, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_terrainBump.glId, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_terrainSpecular.glId, 0);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_terrainDepth.glId, 0);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
 		fprintf(stderr, "Error on building framebuffer\n");
 		exit(EXIT_FAILURE);
 	}
-
-	// Back to the default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
@@ -100,6 +131,28 @@ Terrain::~Terrain()
 	m_filterTexture.freeGL();
 }
 
+void Terrain::drawMaterialOnTerrain(glm::vec3 position, float radius, int textureIdx)
+{
+	assert(textureIdx >= 0 && textureIdx < m_terrainLayouts.size());
+	float greyValue = (textureIdx + 0.25f)/ (float)m_terrainLayouts.size();
+
+	glViewport(0, 0, 1024, 1024);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_materialLayoutsFBO);
+	//we don't want to clear the texture attached to the framebuffer
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_filterTexture.glId); //we read and write on the same texture
+
+	m_drawOnTextureMaterial.use();
+	m_drawOnTextureMaterial.setUniformColorToDraw(glm::vec4(greyValue, greyValue, greyValue,1));
+	m_drawOnTextureMaterial.setUniformDrawPosition(position);
+	m_drawOnTextureMaterial.setUniformDrawRadius(radius);
+	m_drawOnTextureMaterial.setUniformTextureToDrawOn(0);
+
+	m_quadMesh.draw();
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 void Terrain::generateTerrainTexture() 
 {
@@ -421,10 +474,10 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 	glm::mat4 mvp = projection * view * modelMatrix;
 	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
+	m_material.use();
+
 	m_material.setUniform_MVP(mvp);
 	m_material.setUniform_normalMatrix(normalMatrix);
-
-	m_material.use();
 
 	glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, m_triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);

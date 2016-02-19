@@ -30,6 +30,7 @@ struct Texture
 	int m_textureUseCounts;
 
 	Texture();
+	Texture(int width, int height);
 	Texture(unsigned char* _pixels, int width, int height, int _comp);
 	Texture(char r, char g, char b);
 	Texture(const std::string& _path);

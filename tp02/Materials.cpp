@@ -484,3 +484,43 @@ void MaterialTerrainEdition::drawUI()
 	}
 	*/
 }
+
+MaterialDrawOnTexture::MaterialDrawOnTexture(GLuint _glProgram)
+{
+	glProgram = glProgram;
+
+	uniform_colorToDraw = glGetUniformLocation(_glProgram, "DrawColor");
+	uniform_drawPosition = glGetUniformLocation(_glProgram, "DrawPosition");
+	uniform_drawRadius = glGetUniformLocation(_glProgram, "DrawRadius");
+	uniform_textureToDrawOn = glGetUniformLocation(_glProgram, "Texture");
+}
+
+void MaterialDrawOnTexture::setUniformDrawPosition(glm::vec3 position)
+{
+	glUniform3fv(uniform_drawPosition, 1, glm::value_ptr(position));
+}
+
+void MaterialDrawOnTexture::setUniformColorToDraw(glm::vec4 color)
+{
+	glUniform4fv(uniform_colorToDraw, 1, glm::value_ptr(color));
+}
+
+void MaterialDrawOnTexture::setUniformDrawRadius(float radius)
+{
+	glUniform1f(uniform_drawRadius, radius);
+}
+
+void MaterialDrawOnTexture::setUniformTextureToDrawOn(int textureId)
+{
+	glUniform1i(uniform_textureToDrawOn, textureId);
+}
+
+void MaterialDrawOnTexture::use()
+{
+	glUseProgram(glProgram);
+}
+
+void MaterialDrawOnTexture::drawUI()
+{
+	//not displayed in UI
+}

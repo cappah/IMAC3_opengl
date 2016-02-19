@@ -46,8 +46,6 @@ bool Ray::intersectTriangle(const glm::vec3 & a, const glm::vec3 & b, const glm:
 	glm::vec3 triangleNormal = glm::cross(b - a, c - a);
 	collisionInfo.normal = triangleNormal;
 	collisionInfo.point = glm::vec3(0, 0, 0);
-	if (triangleNormal.length == 0)
-		triangleNormal = -direction;
 	triangleNormal = glm::normalize(triangleNormal);
 	
 	float denom = glm::dot(triangleNormal, direction);

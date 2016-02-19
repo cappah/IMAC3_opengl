@@ -440,9 +440,9 @@ namespace Physic {
 		glm::mat4 mvp = projection * view * modelMatrix;
 		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
+		m_material->use();
 		m_material->setUniform_MVP(mvp);
 		m_material->setUniform_normalMatrix(normalMatrix);
-		m_material->use();
 
 		m_mesh.draw();
 	}

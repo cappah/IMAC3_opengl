@@ -1,11 +1,14 @@
 #include "Texture.h"
 
 
-Texture::Texture() : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
+Texture::Texture() : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), comp(3), pixels(0), w(1), h(1)
 {
-	comp = 4;
-	w = 1;
-	h = 1;
+
+}
+
+Texture::Texture(int width, int height) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), comp(3), pixels(0), w(width), h(height)
+{
+
 }
 
 Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
