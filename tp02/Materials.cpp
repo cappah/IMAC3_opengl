@@ -235,3 +235,66 @@ void MaterialShadow::drawUI()
 {
 	//nothing
 }
+
+//////////////////////////////// BILLBOARD //////////////////////
+
+MaterialBillboard::MaterialBillboard()
+{
+	MaterialBillboard(ProgramFactory::get().get("defaultBillboard"));
+}
+
+MaterialBillboard::MaterialBillboard(GLuint _glProgram) : Material(_glProgram)
+{
+	 m_uniformMVP = glGetUniformLocation(glProgram, "MVP");
+	 m_uniformScale = glGetUniformLocation(glProgram, "Scale");
+	 m_uniformTranslation = glGetUniformLocation(glProgram, "Translation");
+	 m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
+	 m_uniformCameraRight = glGetUniformLocation(glProgram, "CameraRight");
+	 m_uniformCameraUp = glGetUniformLocation(glProgram, "CameraUp");
+	 m_uniformColor = glGetUniformLocation(glProgram, "Color");
+}
+
+void MaterialBillboard::use()
+{
+	glUseProgram(glProgram);
+}
+
+void MaterialBillboard::drawUI()
+{
+	//nothing
+}
+
+void MaterialBillboard::setUniformMVP(const glm::mat4 & mvp)
+{
+	glUniformMatrix4fv(m_uniformMVP, 1, false, glm::value_ptr(mvp));
+}
+
+void MaterialBillboard::setUniformScale(const glm::vec2 & scale)
+{
+	glUniform2fv(m_uniformScale, 1, glm::value_ptr(scale));
+}
+
+void MaterialBillboard::setUniformTranslation(const glm::vec3 & translation)
+{
+	glUniform3fv(m_uniformTranslation, 1, glm::value_ptr(translation));
+}
+
+void MaterialBillboard::setUniformTexture(int texId)
+{
+	glUniform1i(m_uniformTexture, texId);
+}
+
+void MaterialBillboard::setUniformCameraRight(const glm::vec3& camRight)
+{
+	glUniform3fv(m_uniformCameraRight, 1, glm::value_ptr(camRight));
+}
+
+void MaterialBillboard::setUniformCameraUp(const glm::vec3& camUp)
+{
+	glUniform3fv(m_uniformCameraUp, 1, glm::value_ptr(camUp));
+}
+
+void MaterialBillboard::setUniformColor(const glm::vec4 & color)
+{
+	glUniform4fv(m_uniformColor, 1, glm::value_ptr(color));
+}

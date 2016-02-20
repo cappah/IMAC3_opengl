@@ -374,7 +374,7 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 }
 
 
-void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags)
+void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
@@ -696,6 +696,12 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	
 	//rander skybox : 
 	skybox.render(projection, worldToView);
+
+
+	for (int i = 0; i < billboards.size(); i++)
+	{
+		billboards[i]->render(projection, worldToView);
+	}
 }
 
 void Renderer::debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities)

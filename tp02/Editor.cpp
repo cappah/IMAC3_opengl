@@ -528,6 +528,15 @@ void Editor::displayMenuBar(Scene& scene)
 				newEntity->add(newCollider).add(pathPoint);
 			}
 
+			if (ImGui::Button("add billboard"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto newCollider = new BoxCollider(colliderRenderer);
+				auto billboard = new Billboard();
+				newEntity->add(newCollider).add(billboard);
+			}
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("camera mode"))

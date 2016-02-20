@@ -9,6 +9,7 @@
 #include "ParticleEmitter.h"
 #include "PhysicManager.h"
 #include "PathManager.h"
+#include "Billboard.h"
 
 #include "LightManager.h"
 #include "Renderer.h"
@@ -39,6 +40,9 @@ private:
 
 	//particles : 
 	std::vector<Physic::ParticleEmitter*> m_particleEmitters;
+
+	//billboards : 
+	std::vector<Billboard*> m_billboards;
 
 	//special components : 
 	//terrain : 
@@ -76,6 +80,7 @@ public:
 	Scene& add(Physic::Flag* flag);
 	Scene& add(Physic::ParticleEmitter* particleEmitter);
 	Scene& add(PathPoint* pathPoint);
+	Scene& add(Billboard* billboard);
 
 	Scene& erase(Entity* entity);
 	Scene& erase(PointLight* pointLight);
@@ -86,6 +91,7 @@ public:
 	Scene& erase(Physic::Flag* flag);
 	Scene& erase(Physic::ParticleEmitter* particleEmitter);
 	Scene& erase(PathPoint* pathPoint);
+	Scene& erase(Billboard* billboard);
 
 	void render(const Camera& camera);
 	void renderColliders(const Camera& camera);

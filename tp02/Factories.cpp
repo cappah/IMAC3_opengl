@@ -36,11 +36,17 @@ TextureFactory::TextureFactory()
 	
 	newTex->name = "default";
 	m_textures["default"] = newTex;
+
+	newTex = new Texture(0, 0, 125);
+	newTex->initGL();
+
+	newTex->name = "defaultNormal";
+	m_textures["defaultNormal"] = newTex;
 }
 
 void TextureFactory::add(const std::string& name, const std::string& path)
 {
-	if (name == "default") //can't override default key
+	if (name == "default" || name == "defaultNormal") //can't override default key
 		return;
 
 	auto newTexture = new Texture(path);
@@ -51,7 +57,7 @@ void TextureFactory::add(const std::string& name, const std::string& path)
 
 void TextureFactory::add(const std::string& name, Texture* texture)
 {
-	if (name == "default") //can't override default key
+	if (name == "default" || name == "defaultNormal") //can't override default key
 		return;
 
 	texture->name = name;
@@ -175,9 +181,24 @@ void CubeTextureFactory::drawUI()
 
 /////////////////////////////////////////
 
+MeshFactory::MeshFactory()
+{
+	//add defaults resources  :
+	//quad : 
+	Mesh* quad = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_VERTICES), 2);
+	quad->triangleIndex = { 0, 1, 2, 0, 2, 3 };
+	quad->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
+	quad->vertices = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+	quad->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
+	quad->initGl();
+
+	quad->name = "defaultQuad";
+	m_meshes[quad->name] = quad;
+}
+
 void MeshFactory::add(const std::string& name, Mesh* mesh)
 {
-	if (name == "default") //can't override default key
+	if (name == "defaultQuad") //can't override default key
 		return;
 
 	mesh->name = name;
@@ -186,7 +207,7 @@ void MeshFactory::add(const std::string& name, Mesh* mesh)
 
 void MeshFactory::add(const std::string & name, const std::string & path)
 {
-	if (name == "default") //can't override default key
+	if (name == "defaultQuad") //can't override default key
 		return;
 
 	Mesh* newMesh = new Mesh(path);

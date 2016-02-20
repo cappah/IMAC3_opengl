@@ -210,6 +210,23 @@ int main( int argc, char **argv )
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
+
+	//////////////////// BILLBOARD shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_billboard = compile_shader_from_file(GL_VERTEX_SHADER, "billboard.vert");
+	GLuint fragShaderId_billboard = compile_shader_from_file(GL_FRAGMENT_SHADER, "billboard.frag");
+
+	GLuint programObject_billboard = glCreateProgram();
+	glAttachShader(programObject_billboard, vertShaderId_billboard);
+	glAttachShader(programObject_billboard, fragShaderId_billboard);
+
+	glLinkProgram(programObject_billboard);
+	if (check_link_error(programObject_billboard) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
 	
 
 	// cube and plane ;
@@ -274,13 +291,6 @@ int main( int argc, char **argv )
 	cubeWireFrame.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
 	cubeWireFrame.initGl();
 
-	Mesh plane;
-	plane.triangleIndex = { 0, 1, 2, 2, 1, 3 };
-	plane.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f };
-	plane.vertices = { -5.0, -0.5, 5.0, 5.0, -0.5, 5.0, -5.0, -0.5, -5.0, 5.0, -0.5, -5.0 };
-	plane.normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
-	plane.initGl();
-
 	/*
     int x;
     int y;
@@ -339,16 +349,17 @@ int main( int argc, char **argv )
 	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
+	MaterialBillboard billboardMaterial(programObject_billboard);
 
 	//material factories : 
 	MaterialFactory::get().add("default", &defaultMaterial);
 	MaterialFactory::get().add("brick", &brickMaterial);
 	MaterialFactory::get().add("wireframe", &wireframeMaterial);
+	MaterialFactory::get().add("billboard", &billboardMaterial);
 
 	//mesh factories : 
 	MeshFactory::get().add("cube", &cube);
 	MeshFactory::get().add("cubeWireframe", &cubeWireFrame);
-	MeshFactory::get().add("plane", &plane);
 
 	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
 
@@ -356,6 +367,7 @@ int main( int argc, char **argv )
 	ProgramFactory::get().add("defaultLit", programObject_gPass);
 	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
 	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
+	ProgramFactory::get().add("defaultBillboard", programObject_billboard);
 
 	///////////////////// END RESSOURCES 
 
@@ -415,7 +427,7 @@ int main( int argc, char **argv )
 	//cubeRenderer02.mesh = &cube;
 	//cubeRenderer02.material = &brickMaterial;
 
-	MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
+	//MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
 
 	//colliders : 
 	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);

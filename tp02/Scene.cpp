@@ -68,6 +68,12 @@ Scene & Scene::add(PathPoint * pathPoint)
 	return *this;
 }
 
+Scene & Scene::add(Billboard * billboard)
+{
+	m_billboards.push_back(billboard);
+	return *this;
+}
+
 Scene& Scene::erase(Entity * entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
@@ -178,9 +184,22 @@ Scene & Scene::erase(PathPoint * pathPoint)
 	return *this;
 }
 
+Scene & Scene::erase(Billboard * billboard)
+{
+	auto findIt = std::find(m_billboards.begin(), m_billboards.end(), billboard);
+
+	if (findIt != m_billboards.end())
+	{
+		delete billboard;
+		m_billboards.erase(findIt);
+	}
+
+	return *this;
+}
+
 void Scene::render(const Camera& camera)
 {
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags);
+	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards);
 }
 
 void Scene::renderColliders(const Camera& camera)

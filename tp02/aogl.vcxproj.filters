@@ -91,6 +91,9 @@
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="CSpline.cpp" />
+    <ClCompile Include="Billboard.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -182,6 +185,9 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="CSpline.h" />
+    <ClInclude Include="Billboard.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -280,6 +286,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="terrain.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="billboard.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="billboard.vert">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

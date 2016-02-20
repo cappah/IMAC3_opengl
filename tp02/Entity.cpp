@@ -316,6 +316,16 @@ Entity & Entity::add(PathPoint * pathPoint)
 	return *this;
 }
 
+Entity & Entity::add(Billboard * billboard)
+{
+	billboard->attachToEntity(this);
+
+	m_scene->add(billboard);
+	m_components.push_back(billboard);
+
+	return *this;
+}
+
 Entity& Entity::erase(PointLight * pointLight)
 {
 	auto findIt = std::find(m_components.begin(), m_components.end(), pointLight);
@@ -415,6 +425,19 @@ Entity & Entity::erase(PathPoint * pathPoint)
 	{
 		m_components.erase(findIt);
 		m_scene->erase(pathPoint);
+	}
+
+	return *this;
+}
+
+Entity & Entity::erase(Billboard * billboard)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), billboard);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(billboard);
 	}
 
 	return *this;
