@@ -64,7 +64,9 @@ MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _
 	if (!checkError("Uniforms"))
 		exit(1);
 
-	textureDiffuse->initGL(); // we consider that each texture on a material will be used on the sceen and should be send to the GPU.
+	//textureDiffuse->initGL(); // we consider that each texture on a material will be used on the sceen and should be send to the GPU.
+	//textureBump->initGL();
+	//textureSpecular->initGL();
 }
 
 void MaterialLit::setDiffuse(Texture * _textureDiffuse)
@@ -306,9 +308,9 @@ MaterialTerrain::MaterialTerrain() : Material3DObject(ProgramFactory::get().get(
 MaterialTerrain::MaterialTerrain(GLuint _glProgram) :
 	Material3DObject(_glProgram), textureDiffuse(nullptr), specularPower(50.f), textureSpecular(nullptr), textureBump(nullptr), textureRepetition(1, 1)
 {
-	diffuseTextureName = textureDiffuse->name;
-	specularTextureName = textureSpecular->name;
-	bumpTextureName = textureBump->name;
+	diffuseTextureName = "diffuse";
+	specularTextureName = "specular";
+	bumpTextureName = "bump";
 
 	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
 	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
@@ -485,22 +487,20 @@ void MaterialTerrainEdition::drawUI()
 	*/
 }
 
-MaterialDrawOnTexture::MaterialDrawOnTexture(GLuint _glProgram)
+MaterialDrawOnTexture::MaterialDrawOnTexture(GLuint _glProgram) : Material(_glProgram)
 {
-	glProgram = glProgram;
-
 	uniform_colorToDraw = glGetUniformLocation(_glProgram, "DrawColor");
 	uniform_drawPosition = glGetUniformLocation(_glProgram, "DrawPosition");
 	uniform_drawRadius = glGetUniformLocation(_glProgram, "DrawRadius");
 	uniform_textureToDrawOn = glGetUniformLocation(_glProgram, "Texture");
 }
 
-void MaterialDrawOnTexture::setUniformDrawPosition(glm::vec3 position)
+void MaterialDrawOnTexture::setUniformDrawPosition(const glm::vec2& position)
 {
-	glUniform3fv(uniform_drawPosition, 1, glm::value_ptr(position));
+	glUniform2fv(uniform_drawPosition, 1, glm::value_ptr(position));
 }
 
-void MaterialDrawOnTexture::setUniformColorToDraw(glm::vec4 color)
+void MaterialDrawOnTexture::setUniformColorToDraw(const glm::vec4& color)
 {
 	glUniform4fv(uniform_colorToDraw, 1, glm::value_ptr(color));
 }

@@ -11,6 +11,9 @@
 #include "Materials.h"
 #include "PerlinNoise.h"
 
+//forwards : 
+class Ray;
+
 class Terrain
 {
 private:
@@ -72,6 +75,8 @@ private:
 
 	//for UI : 
 	char m_newLayoutName[30];
+	int m_currentMaterialToDrawIdx;
+	float m_drawRadius;
 
 
 public:
@@ -96,5 +101,8 @@ public:
 	void generateTerrainTexture();
 
 	void drawMaterialOnTerrain(glm::vec3 position, float radius, int textureIdx);
+	void drawMaterialOnTerrain(glm::vec3 position);
+
+	bool isIntersectedByRay(const Ray& ray, CollisionInfo& collisionInfo) const;
 };
 

@@ -213,8 +213,8 @@ int main( int argc, char **argv )
 
 	//////////////////// TERRAIN shaders ////////////////////////
 	// Try to load and compile shaders
-	GLuint vertShaderId_terrain = compile_shader_from_file(GL_VERTEX_SHADER, "terrainEdition.vert");
-	GLuint fragShaderId_terrain = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrainEdition.frag");
+	GLuint vertShaderId_terrain = compile_shader_from_file(GL_VERTEX_SHADER, "terrain.vert");
+	GLuint fragShaderId_terrain = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrain.frag");
 
 	GLuint programObject_terrain = glCreateProgram();
 	glAttachShader(programObject_terrain, vertShaderId_terrain);
@@ -227,7 +227,41 @@ int main( int argc, char **argv )
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
+
+	//////////////////// TERRAIN EDITION shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_terrainEdition = compile_shader_from_file(GL_VERTEX_SHADER, "terrainEdition.vert");
+	GLuint fragShaderId_terrainEdition = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrainEdition.frag");
+
+	GLuint programObject_terrainEdition = glCreateProgram();
+	glAttachShader(programObject_terrainEdition, vertShaderId_terrainEdition);
+	glAttachShader(programObject_terrainEdition, fragShaderId_terrainEdition);
+
+	glLinkProgram(programObject_terrainEdition);
+	if (check_link_error(programObject_terrainEdition) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
 	
+	//////////////////// DRAW ON TEXTURE shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_drawOnTexture = compile_shader_from_file(GL_VERTEX_SHADER, "drawOnTexture.vert");
+	GLuint fragShaderId_drawOnTexture = compile_shader_from_file(GL_FRAGMENT_SHADER, "drawOnTexture.frag");
+
+	GLuint programObject_drawOnTexture = glCreateProgram();
+	glAttachShader(programObject_drawOnTexture, vertShaderId_drawOnTexture);
+	glAttachShader(programObject_drawOnTexture, fragShaderId_drawOnTexture);
+
+	glLinkProgram(programObject_drawOnTexture);
+	if (check_link_error(programObject_drawOnTexture) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 
 	// cube and plane ;
 
@@ -374,6 +408,8 @@ int main( int argc, char **argv )
 	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
 	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
 	ProgramFactory::get().add("defaultTerrain", programObject_terrain);
+	ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
+	ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
 
 	///////////////////// END RESSOURCES 
 

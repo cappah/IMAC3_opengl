@@ -37,10 +37,11 @@ uniform float specularPower;
 void main()
 {
 
-	outColor = vec4( texture(Diffuse, In.TexCoord).rgb, texture(Specular, In.TexCoord).r );
+	outColor = vec4( texture(Diffuse, In.TexCoord).rgb, 1);// texture(Specular, In.TexCoord).r );
 
 	vec3 bumpNormal = texture(Bump, In.TexCoord).rgb;
 	bumpNormal = normalize(bumpNormal * 2.0 - 1.0);
 	bumpNormal = normalize(In.TBN * bumpNormal);
+
 	outNormal = vec4( bumpNormal*0.5+0.5, specularPower/100.0 );
 }

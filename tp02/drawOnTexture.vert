@@ -7,7 +7,7 @@ layout(location = POSITION) in vec2 Position;
 out block
 {
     vec2 Texcoord;
-	vec3 Position;
+	vec2 Position;
 } Out;
 
 void main()

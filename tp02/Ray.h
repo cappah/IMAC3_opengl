@@ -11,6 +11,9 @@
 
 #include "Collider.h"
 
+//forwards :
+class Terrain;
+
 //small struct to store infos about a collision
 struct CollisionInfo {
 	glm::vec3 normal;
@@ -31,6 +34,7 @@ public:
 	bool intersectPlane(const glm::vec3& anchor, const glm::vec3& normal, float* t = nullptr) const;
 	bool intersectTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, CollisionInfo& collisionInfo) const;
 	bool intersectMesh(const Mesh& mesh, CollisionInfo& collisionInfo) const;
+	bool intersectTerrain(const Terrain& terrain, CollisionInfo& collisionInfo) const;
 	glm::vec3 getDirection() const;
 	glm::vec3 getOrigin() const;
 	float getLength() const;

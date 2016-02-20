@@ -1039,6 +1039,29 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 
 void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler )
 {
+	float screenWidth = Application::get().getWindowWidth();
+	float screenHeight = Application::get().getWindowHeight();
+
+	//update tools : 
+	if (m_terrainToolVisible) // for terrain
+	{
+		if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_1) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
+		{
+			glm::vec3 origin = m_camera->eye;
+			double mouseX, mouseY;
+			glfwGetCursorPos(window, &mouseX, &mouseY);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
+
+			Ray ray(origin, direction, 1000.f);
+			CollisionInfo collisionInfo;
+
+			if (ray.intersectTerrain(scene.getTerrain(), collisionInfo))
+			{
+				scene.getTerrain().drawMaterialOnTerrain(collisionInfo.point);
+			}
+		}
+	}
+
 	//update gizmo
 	float distanceToCamera = glm::length(m_camera->eye - m_gizmo->getPosition());
 	m_gizmo->setScale(distanceToCamera*0.1f);
@@ -1081,8 +1104,6 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 		if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
 			&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
 		{
-			float screenWidth = Application::get().getWindowWidth();
-			float screenHeight = Application::get().getWindowHeight();
 
 			glm::vec3 origin = m_camera->eye;
 			double mouseX, mouseY;

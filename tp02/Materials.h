@@ -160,8 +160,6 @@ struct MaterialTerrain : public Material3DObject
 
 	MaterialTerrain();
 	MaterialTerrain(GLuint _glProgram);
-	
-	void setUniformDiffuse(int textureId);
 
 	virtual void use() override;
 
@@ -219,8 +217,8 @@ private:
 public : 
 	MaterialDrawOnTexture(GLuint _glProgram);
 
-	void setUniformDrawPosition(glm::vec3 position);
-	void setUniformColorToDraw(glm::vec4 color);
+	void setUniformDrawPosition(const glm::vec2& position);
+	void setUniformColorToDraw(const glm::vec4& color);
 	void setUniformDrawRadius(float radius);
 	void setUniformTextureToDrawOn(int textureId);
 
