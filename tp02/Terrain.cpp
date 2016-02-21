@@ -1,11 +1,245 @@
 #include "Terrain.h"
 //forwards
+#include "Application.h"
 #include "Factories.h" 
 #include "Ray.h"
+
+
+GrassField::GrassField()
+{
+	grassTexture = TextureFactory::get().get("default");
+
+	float pi_3 = glm::pi<float>() / 3.f;
+
+	//uvs
+	for (int i = 0; i < 3; i++)
+	{
+		//a
+		uvs.push_back(0);
+		uvs.push_back(0);
+		//b
+		uvs.push_back(1);
+		uvs.push_back(0);
+		//c
+		uvs.push_back(1);
+		uvs.push_back(1);
+		//d
+		uvs.push_back(0);
+		uvs.push_back(1);
+	}
+
+	//index
+	for (int i = 0; i < 3; i++)
+	{
+		//a
+		triangleIndex.push_back(0 + 4 * i);
+		triangleIndex.push_back(1 + 4 * i);
+		triangleIndex.push_back(2 + 4 * i);
+		//b
+		triangleIndex.push_back(0 + 4 * i);
+		triangleIndex.push_back(2 + 4 * i);
+		triangleIndex.push_back(3 + 4 * i);
+
+	}
+
+	//vertices
+	for (int i = 0; i < 3; i++)
+	{
+		//a
+		vertices.push_back(cos(i*pi_3)*(-0.5f));
+		vertices.push_back(0.f);
+		vertices.push_back(sin(i*pi_3)*(-0.5f));
+		//b
+		vertices.push_back(cos(i*pi_3)*(0.5f));
+		vertices.push_back(0.f);
+		vertices.push_back(sin(i*pi_3)*(0.5f));
+		//c
+		vertices.push_back(cos(i*pi_3)*(0.5f));
+		vertices.push_back(1.f);
+		vertices.push_back(sin(i*pi_3)*(0.5f));
+		//d
+		vertices.push_back(cos(i*pi_3)*-(0.5f));
+		vertices.push_back(1.f);
+		vertices.push_back(sin(i*pi_3)*(-0.5f));
+	}
+
+	//normals
+	for (int i = 0; i < 3; i++)
+	{
+		//a 
+		normals.push_back(0);
+		normals.push_back(1);
+		normals.push_back(0);
+		//b
+		normals.push_back(0);
+		normals.push_back(1);
+		normals.push_back(0);
+		//c 
+		normals.push_back(0);
+		normals.push_back(1);
+		normals.push_back(0);
+		//d 
+		normals.push_back(0);
+		normals.push_back(1);
+		normals.push_back(0);
+	}
+
+	triangleCount = triangleIndex.size() / 3;
+
+	//for (int i = 0; i < 10; i++)
+	//{
+	//	positions.push_back(i);
+	//	positions.push_back(0);
+	//	positions.push_back(i);
+	//}
+
+	initGl();
+}
+
+GrassField::~GrassField()
+{
+	if (vbo_index != 0)
+		glDeleteBuffers(1, &vbo_index);
+
+	if (vbo_vertices != 0)
+		glDeleteBuffers(1, &vbo_vertices);
+
+	if (vbo_uvs != 0)
+		glDeleteBuffers(1, &vbo_uvs);
+
+	if (vbo_normals != 0)
+		glDeleteBuffers(1, &vbo_normals);
+
+	if (vbo_pos != 0)
+		glDeleteBuffers(1, &vbo_pos);
+
+	glDeleteVertexArrays(1, &vao);
+}
+
+//initialize vbos and vao, based on the informations of the mesh.
+void GrassField::initGl()
+{
+	triangleCount = triangleIndex.size() / 3;
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+
+	glGenBuffers(1, &vbo_index);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_index);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangleIndex.size()*sizeof(int), &triangleIndex[0], GL_STATIC_DRAW);
+
+
+	glGenBuffers(1, &vbo_vertices);
+	glEnableVertexAttribArray(VERTICES);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(VERTICES, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+
+
+	glGenBuffers(1, &vbo_normals);
+	glEnableVertexAttribArray(NORMALS);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
+	glBufferData(GL_ARRAY_BUFFER, normals.size()*sizeof(float), &normals[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(NORMALS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+
+
+	glGenBuffers(1, &vbo_uvs);
+	glEnableVertexAttribArray(UVS);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_uvs);
+	glBufferData(GL_ARRAY_BUFFER, uvs.size()*sizeof(float), &uvs[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(UVS, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
+
+
+	glGenBuffers(1, &vbo_pos);
+	glEnableVertexAttribArray(POSITIONS);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
+	glBufferData(GL_ARRAY_BUFFER, 10, nullptr, GL_STATIC_DRAW);
+	glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void GrassField::addGrass(GrassKey grassKey, const glm::vec3 & position)
+{
+	grassKeys.push_back(grassKey);
+	positions.push_back(position.x);
+	positions.push_back(position.y);
+	positions.push_back(position.z);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
+	glBufferData(GL_ARRAY_BUFFER, positions.size()*sizeof(float), &positions[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void GrassField::remove(GrassKey grassKey)
+{
+	auto findIt = std::find(grassKeys.begin(), grassKeys.end(), grassKey);
+	if (findIt == grassKeys.end())
+		return;
+
+	int idx = findIt - grassKeys.begin();
+	idx * 3;
+
+	grassKeys.erase(findIt);
+	positions.erase(positions.begin() + idx);
+	positions.erase(positions.begin() + (idx + 1));
+	positions.erase(positions.begin() + (idx + 2));
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
+	glBufferData(GL_ARRAY_BUFFER, positions.size()*sizeof(float), &positions[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void GrassField::draw()
+{
+	if (positions.size() == 0)
+		return;
+
+	glBindVertexArray(vao);
+
+	glVertexAttribDivisor(VERTICES, 0);
+	glVertexAttribDivisor(NORMALS, 0);
+	glVertexAttribDivisor(UVS, 0);
+	glVertexAttribDivisor(POSITIONS, 1);
+
+	glDrawElementsInstanced(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0, positions.size());
+
+	glBindVertexArray(0);
+}
+
+void GrassField::render(const glm::mat4 & projection, const glm::mat4 & view)
+{
+	glm::mat4 VP = projection * view;
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, grassTexture->glId);
+
+	materialGrassField.use();
+	materialGrassField.setUniformTime(0); //TODO : ADD TIME
+	materialGrassField.setUniformTexture(0);
+	materialGrassField.setUniformVP(VP);
+
+	draw();
+}
+
+void GrassField::updateVBOPositions()
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
+	glBufferData(GL_ARRAY_BUFFER, positions.size()*sizeof(float), &positions[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+////////////////// TERRAIN ///////////////////
 
 Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), //terrain properties
 			m_noiseMin(0.f), m_noiseMax(1.f), m_seed(0), //perlin properties
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
+			m_maxGrassDensity(10), m_grassDensity(0), m_grassLayoutDelta(0.1f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
 			m_material(ProgramFactory::get().get("defaultTerrain")), m_terrainMaterial(ProgramFactory::get().get("defaultTerrainEdition")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
@@ -14,6 +248,13 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 {
 	// initialyze the texture name : 
 	m_newLayoutName[0] = '\0';
+	m_newGrassTextureName[0] = '\0';
+
+	//grass layout initialization : 
+	int grassLayoutWidth = m_width / (float)m_grassLayoutDelta;
+	int grassLayoutDepth = m_depth / (float)m_grassLayoutDelta;
+	for (int i = 0; i < grassLayoutWidth*grassLayoutDepth; i++)
+		m_grassLayout.push_back(0);
 
 	//push terrain texture to GPU
 	//bump
@@ -346,11 +587,14 @@ void Terrain::applyNoise(Perlin2D& perlin2D, bool _computeNoiseTexture)
 	m_noiseMin = 1.f;
 	m_noiseMax = 0.f;
 
+	float deltaWidth = m_width / (float)m_subdivision;
+	float deltaDepth = m_depth / (float)m_subdivision;
+
 	for (int j = 0, k = 1, l = 0; j < m_subdivision; j++)
 	{
 		for (int i = 0; i < m_subdivision; i++, k += 3, l++)
 		{
-			float noiseValue = perlin2D.getNoiseValue(i, j);
+			float noiseValue = perlin2D.getNoiseValue(i*deltaWidth, j*deltaDepth);
 
 			if (noiseValue < m_noiseMin)
 				m_noiseMin = noiseValue;
@@ -509,6 +753,62 @@ void Terrain::initGl()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void Terrain::drawGrassOnTerrain(const glm::vec3 position)
+{
+	drawGrassOnTerrain(position, m_drawRadius * m_width*0.5f, m_grassDensity, m_maxGrassDensity);
+}
+
+void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int density, int maxDensity)
+{
+
+	int px = position.x / m_grassLayoutDelta;
+	int pz = position.z / m_grassLayoutDelta;
+	glm::vec2 p(px, pz);
+
+	int maxDensityMinusDensity = maxDensity - density;
+	int grassLayoutWidth = m_width / m_grassLayoutDelta;
+	int grassLayoutDepth = m_depth / m_grassLayoutDelta;
+
+	for (int j = std::max(0, (int)(-radius + pz)); j <= std::min((int)(radius + pz), grassLayoutDepth - 1); j+= maxDensityMinusDensity)
+	{
+		for (int i = std::max(0, (int)(-radius + px)); i <= std::min( (int)(radius + px), grassLayoutWidth - 1); i += maxDensityMinusDensity)
+		{
+			if (glm::length(glm::vec2(i, j) - p) <= radius && m_grassLayout[grassLayoutWidth*j + i] == 0)
+			{
+				float posX = i * m_grassLayoutDelta;
+				float posZ = j * m_grassLayoutDelta;
+				float posY = getHeight(posX, posZ);
+				m_grassField.addGrass(GrassKey(i,j), glm::vec3(posX, posY, posZ));
+				m_grassLayout[grassLayoutWidth*j + i] = 1; //this layout controls the density of the grassField.
+			}
+		}
+	}
+}
+
+void Terrain::updateGrassPositions()
+{
+	for (int i = 1; i < m_grassField.positions.size(); i+=3)
+	{
+		//update height : 
+		float posY = getHeight(m_grassField.positions[i-1], m_grassField.positions[i+1]);
+		m_grassField.positions[i] = posY;
+	}
+	m_grassField.updateVBOPositions();
+}
+
+Terrain::TerrainTools Terrain::getCurrentTerrainTool() const
+{
+	return m_currentTerrainTool;
+}
+
+//get terrain height at a given point
+float Terrain::getHeight(float x, float y)
+{
+	float noiseValue = m_terrainNoise.generatePerlin2D().getNoiseValue(x, y); /// TODO : modify perlin access.
+
+	return (noiseValue * 2.f - 1.f) * m_height + m_offset.y;
+}
+
 // simply draw the vertices, using vao.
 void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 {
@@ -526,9 +826,28 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 	glBindVertexArray(0);
 }
 
+void Terrain::renderGrassField(const glm::mat4 & projection, const glm::mat4& view)
+{
+	m_grassField.render(projection, view);
+}
+
 void Terrain::drawUI()
 {
-	if (ImGui::CollapsingHeader("perlin height tool"))
+	if (ImGui::Button("Parameter"))
+		m_currentTerrainTool = TerrainTools::PARAMETER;
+	ImGui::SameLine();
+	if (ImGui::Button("Perlin"))
+		m_currentTerrainTool = TerrainTools::PERLIN;
+	ImGui::SameLine();
+	if (ImGui::Button("Draw Materials"))
+		m_currentTerrainTool = TerrainTools::DRAW_MATERIAL;
+	ImGui::SameLine();
+	if (ImGui::Button("Draw grass"))
+		m_currentTerrainTool = TerrainTools::DRAW_GRASS;
+
+
+	//if (ImGui::CollapsingHeader("perlin height tool"))
+	if(m_currentTerrainTool == TerrainTools::PERLIN)
 	{
 		if (ImGui::InputInt("terrain seed", &m_seed))
 		{
@@ -583,14 +902,15 @@ void Terrain::drawUI()
 		//	generateTerrainTexture();
 		//}
 	}
-
-	if (ImGui::CollapsingHeader("terrain material"))
+	//if (ImGui::CollapsingHeader("terrain material"))
+	else if(m_currentTerrainTool == TerrainTools::PARAMETER)
 	{
 		ImGui::PushID("terrainMaterial");
 		m_material.drawUI();
 		ImGui::PopID();
 	}
-	if (ImGui::CollapsingHeader("draw material tool"))
+	//if (ImGui::CollapsingHeader("draw material tool"))
+	else if (m_currentTerrainTool == TerrainTools::DRAW_MATERIAL)
 	{
 		std::string currentMatName("no selected material");
 		if(m_currentMaterialToDrawIdx >= 0 && m_currentMaterialToDrawIdx < m_terrainLayouts.size())
@@ -666,6 +986,25 @@ void Terrain::drawUI()
 				generateTerrainTexture();
 			}
 			ImGui::PopID();
+		}
+	}
+	else if (m_currentTerrainTool == TerrainTools::DRAW_GRASS)
+	{
+		if (ImGui::Button("update heights"))
+		{
+			updateGrassPositions();
+		}
+
+		ImGui::SliderFloat("draw radius", &m_drawRadius, 0.f, 1.f);
+		ImGui::SliderInt("grass density", &m_grassDensity, 0, m_maxGrassDensity);
+
+		if (ImGui::InputText("grass texture name", m_newGrassTextureName, 30))
+		{
+			if (TextureFactory::get().contains(m_newGrassTextureName))
+			{
+				//set the texture used by the grass field : 
+				m_grassField.grassTexture = TextureFactory::get().get(m_newGrassTextureName);
+			}
 		}
 	}
 

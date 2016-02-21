@@ -300,6 +300,8 @@
     <None Include="blit.vert" />
     <None Include="drawOnTexture.frag" />
     <None Include="drawOnTexture.vert" />
+    <None Include="grassField.frag" />
+    <None Include="grassField.vert" />
     <None Include="shadowPass.frag" />
     <None Include="shadowPass.vert" />
     <None Include="shadowPassOmni.frag" />

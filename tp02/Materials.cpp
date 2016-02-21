@@ -524,3 +524,47 @@ void MaterialDrawOnTexture::drawUI()
 {
 	//not displayed in UI
 }
+
+////////////////////////// GRASS FIELD //////////////////
+
+MaterialGrassField::MaterialGrassField(): Material(ProgramFactory::get().get("defaultGrassField"))
+{
+	if (glProgram == 0)
+		std::cerr << "wrong initialization of material of type MaterialGrassField, program with name defaultGrassField doesn't exist in ProgramFactory." << std::endl;
+
+	uniform_time = glGetUniformLocation(glProgram, "Time");
+	uniform_Texture = glGetUniformLocation(glProgram, "Texture");
+	uniform_VP = glGetUniformLocation(glProgram, "VP");
+}
+
+MaterialGrassField::MaterialGrassField(GLuint _glProgram) : Material(_glProgram)
+{
+	uniform_time = glGetUniformLocation(glProgram, "Time");
+	uniform_Texture = glGetUniformLocation(glProgram, "Texture");
+	uniform_VP = glGetUniformLocation(glProgram, "VP");
+}
+
+void MaterialGrassField::setUniformTime(float time)
+{
+	glUniform1f(uniform_time, time);
+}
+
+void MaterialGrassField::setUniformTexture(int texId)
+{
+	glUniform1i(uniform_Texture, texId);
+}
+
+void MaterialGrassField::setUniformVP(const glm::mat4 & VP)
+{
+	glUniformMatrix4fv(uniform_VP, 1, false, glm::value_ptr(VP));
+}
+
+void MaterialGrassField::use()
+{
+	glUseProgram(glProgram);
+}
+
+void MaterialGrassField::drawUI()
+{
+	//nothing
+}

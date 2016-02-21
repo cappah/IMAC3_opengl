@@ -509,8 +509,10 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 		flags[i]->render(projection, worldToView);
 	}
 
-	//render terrain : 
+	//render terrain :
 	terrain.render(projection, worldToView);
+	//render grass :
+	terrain.renderGrassField(projection, worldToView);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -667,7 +669,11 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	
+	//blending turn on for grass rendering
+	//glEnable(GL_BLEND);
+	//terrain.renderGrassField(projection, worldToView);
+	//glDisable(GL_BLEND);
+
 	//rander skybox : 
 	skybox.render(projection, worldToView);
 }

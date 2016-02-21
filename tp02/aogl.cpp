@@ -262,6 +262,23 @@ int main( int argc, char **argv )
 	if (!checkError("Uniforms"))
 		exit(1);
 
+	//////////////////// GRASS FIELD shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_grassField = compile_shader_from_file(GL_VERTEX_SHADER, "grassField.vert");
+	GLuint fragShaderId_grassField = compile_shader_from_file(GL_FRAGMENT_SHADER, "grassField.frag");
+
+	GLuint programObject_grassField = glCreateProgram();
+	glAttachShader(programObject_grassField, vertShaderId_grassField);
+	glAttachShader(programObject_grassField, fragShaderId_grassField);
+
+	glLinkProgram(programObject_grassField);
+	if (check_link_error(programObject_grassField) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 
 	// cube and plane ;
 
@@ -390,11 +407,13 @@ int main( int argc, char **argv )
 	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
+	MaterialGrassField grassFieldMaterial(programObject_grassField);
 
 	//material factories : 
 	MaterialFactory::get().add("default", &defaultMaterial);
 	MaterialFactory::get().add("brick", &brickMaterial);
 	MaterialFactory::get().add("wireframe", &wireframeMaterial);
+	MaterialFactory::get().add("grassField", &grassFieldMaterial);
 
 	//mesh factories : 
 	MeshFactory::get().add("cube", &cube);
@@ -410,6 +429,7 @@ int main( int argc, char **argv )
 	ProgramFactory::get().add("defaultTerrain", programObject_terrain);
 	ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
 	ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
+	ProgramFactory::get().add("defaultGrassField", programObject_grassField);
 
 	///////////////////// END RESSOURCES 
 

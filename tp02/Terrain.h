@@ -14,8 +14,70 @@
 //forwards : 
 class Ray;
 
+struct GrassKey
+{
+	int i;
+	int j;
+
+	inline GrassKey(int _i, int _j) : i(_i), j(_j)
+	{}
+
+	inline bool operator==(const GrassKey& other)
+	{
+		return i == other.i && j == other.j;
+	}
+};
+
+//structure which store infos to render grass in instanced mode
+struct GrassField {
+
+	enum VboTypes {VERTICES = 0, NORMALS, UVS, POSITIONS};
+	
+	MaterialGrassField materialGrassField;
+
+	Texture* grassTexture;
+
+	GLuint vao;
+	
+	int triangleCount;
+
+	std::vector<int> triangleIndex;
+	std::vector<float> vertices;
+	std::vector<float> normals;
+	std::vector<float> uvs;
+	std::vector<float> positions; //grass positions
+	std::vector<GrassKey> grassKeys; //keys to identity grass
+
+	GLuint vbo_index;
+	GLuint vbo_vertices;
+	GLuint vbo_uvs;
+	GLuint vbo_normals;
+
+	//additional vbos for instantiation : 
+	GLuint vbo_pos;
+
+	GrassField();
+	~GrassField();
+	void initGl();
+
+	void addGrass(GrassKey grassKey, const glm::vec3& position);
+	void remove(GrassKey grassKey);
+
+	//draw all grass with instantiation : 
+	void draw();
+
+	//render all grass with instantiation : 
+	void render(const glm::mat4& projection, const glm::mat4& view);
+
+	void updateVBOPositions();
+};
+
+
 class Terrain
 {
+public : 
+	enum TerrainTools { PARAMETER = 0, DRAW_MATERIAL, DRAW_GRASS, PERLIN };
+
 private:
 	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS };
 
@@ -73,10 +135,19 @@ private:
 	float m_noiseMax;
 	float m_noiseMin;
 
+	//grass Management :
+	GrassField m_grassField;
+	std::vector<int> m_grassLayout;
+	float m_grassLayoutDelta; //the delta between two grass
+
 	//for UI : 
+	TerrainTools m_currentTerrainTool;
 	char m_newLayoutName[30];
 	int m_currentMaterialToDrawIdx;
 	float m_drawRadius;
+	int m_maxGrassDensity;
+	int m_grassDensity;
+	char m_newGrassTextureName[30];
 
 
 public:
@@ -88,6 +159,8 @@ public:
 
 	// simply draw the vertices, using vao.
 	void render(const glm::mat4& projection, const glm::mat4& view);
+	//a simple shortcut for this->m_grassField.render(projection, view)
+	void renderGrassField(const glm::mat4& projection, const glm::mat4& view);
 
 	void drawUI();
 
@@ -104,5 +177,14 @@ public:
 	void drawMaterialOnTerrain(glm::vec3 position);
 
 	bool isIntersectedByRay(const Ray& ray, CollisionInfo& collisionInfo) const;
+
+	//get terrain height at a given point
+	float getHeight(float x, float y);
+
+	void drawGrassOnTerrain(const glm::vec3 position);
+	void drawGrassOnTerrain(const glm::vec3 position, float radius, int density, int maxDensity);
+	void updateGrassPositions();
+
+	TerrainTools getCurrentTerrainTool() const;
 };
 

@@ -226,3 +226,22 @@ public :
 	virtual void drawUI() override;
 };
 
+class MaterialGrassField : public Material
+{
+private:
+	GLuint uniform_time;
+	GLuint uniform_Texture;
+	GLuint uniform_VP;
+
+public:
+	MaterialGrassField();
+	MaterialGrassField(GLuint _glProgram);
+
+	void setUniformTime(float time);
+	void setUniformTexture(int texId);
+	void setUniformVP(const glm::mat4& VP);
+
+	virtual void use() override;
+	virtual void drawUI() override;
+};
+

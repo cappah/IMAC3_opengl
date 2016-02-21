@@ -1057,7 +1057,10 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 
 			if (ray.intersectTerrain(scene.getTerrain(), collisionInfo))
 			{
-				scene.getTerrain().drawMaterialOnTerrain(collisionInfo.point);
+				if(scene.getTerrain().getCurrentTerrainTool() == Terrain::DRAW_MATERIAL)
+					scene.getTerrain().drawMaterialOnTerrain(collisionInfo.point);
+				else if(scene.getTerrain().getCurrentTerrainTool() == Terrain::DRAW_GRASS)
+					scene.getTerrain().drawGrassOnTerrain(collisionInfo.point);
 			}
 		}
 	}
