@@ -511,8 +511,9 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 	//render terrain :
 	terrain.render(projection, worldToView);
-	//render grass :
+
 	terrain.renderGrassField(projection, worldToView);
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

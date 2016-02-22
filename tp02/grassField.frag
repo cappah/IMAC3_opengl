@@ -33,8 +33,10 @@ in block
 void main()
 {
 	vec4 tmpColor = texture(Texture, In.TexCoord);
-	if(tmpColor.a <= 0.001)
+	if(tmpColor.a <= 0.1)
+	{
 		discard;
+	}
 	else
 	{
 		outColor = vec4( tmpColor.rgb, 0.5 ); //specular color at 0.5

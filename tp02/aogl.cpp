@@ -383,6 +383,10 @@ int main( int argc, char **argv )
 	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
 	Texture* bumpTexture = new Texture("textures/spnza_bricks_a_normal.png");
 
+	Texture* grassTextureDiffuse = new Texture("textures/grass/grass01.png", true);
+	grassTextureDiffuse->textureWrapping_u = GL_CLAMP_TO_EDGE;
+	grassTextureDiffuse->textureWrapping_v = GL_CLAMP_TO_EDGE;
+
 	std::vector<std::string> skyboxTexturePaths = {"textures/skyboxes/right.png", "textures/skyboxes/left.png", 
 												   "textures/skyboxes/top.png", "textures/skyboxes/top.png",
 													"textures/skyboxes/front.png","textures/skyboxes/back.png" };
@@ -393,6 +397,7 @@ int main( int argc, char **argv )
 	diffuseTexture->initGL();
 	specularTexture->initGL();
 	bumpTexture->initGL();
+	grassTextureDiffuse->initGL();
 
 	//////////////////// BEGIN RESSOURCES : 
 	//the order between resource initialization and factories initialisation is important, indeed it's the factory which set set name of the different ressources when they are added to the factories.
@@ -402,6 +407,7 @@ int main( int argc, char **argv )
 	TextureFactory::get().add("brickDiffuse", diffuseTexture);
 	TextureFactory::get().add("brickSpecular", specularTexture);
 	TextureFactory::get().add("brickBump", bumpTexture);
+	TextureFactory::get().add("grass01Diffuse", grassTextureDiffuse);
 
 	// materials : 
 	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);

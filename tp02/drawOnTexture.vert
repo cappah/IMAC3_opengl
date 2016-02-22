@@ -2,6 +2,9 @@
 
 #define POSITION 0
 
+precision highp float;
+precision highp int;
+
 layout(location = POSITION) in vec2 Position;
 
 out block

@@ -16,16 +16,16 @@ GrassField::GrassField()
 	{
 		//a
 		uvs.push_back(0);
-		uvs.push_back(0);
+		uvs.push_back(1);
 		//b
 		uvs.push_back(1);
-		uvs.push_back(0);
+		uvs.push_back(1);
 		//c
 		uvs.push_back(1);
-		uvs.push_back(1);
+		uvs.push_back(0);
 		//d
 		uvs.push_back(0);
-		uvs.push_back(1);
+		uvs.push_back(0);
 	}
 
 	//index
@@ -154,7 +154,7 @@ void GrassField::initGl()
 	glGenBuffers(1, &vbo_pos);
 	glEnableVertexAttribArray(POSITIONS);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
-	glBufferData(GL_ARRAY_BUFFER, 10, nullptr, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STATIC_DRAW);
 	glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
 
@@ -199,6 +199,8 @@ void GrassField::draw()
 	if (positions.size() == 0)
 		return;
 
+	int instanceCount = positions.size()/3.f;
+
 	glBindVertexArray(vao);
 
 	glVertexAttribDivisor(VERTICES, 0);
@@ -206,7 +208,7 @@ void GrassField::draw()
 	glVertexAttribDivisor(UVS, 0);
 	glVertexAttribDivisor(POSITIONS, 1);
 
-	glDrawElementsInstanced(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0, positions.size());
+	glDrawElementsInstanced(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0, instanceCount);
 
 	glBindVertexArray(0);
 }
@@ -239,7 +241,7 @@ void GrassField::updateVBOPositions()
 Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), //terrain properties
 			m_noiseMin(0.f), m_noiseMax(1.f), m_seed(0), //perlin properties
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
-			m_maxGrassDensity(10), m_grassDensity(0), m_grassLayoutDelta(0.1f), //draw grass properties
+			m_maxGrassDensity(30), m_grassDensity(0), m_grassLayoutDelta(0.1f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
 			m_material(ProgramFactory::get().get("defaultTerrain")), m_terrainMaterial(ProgramFactory::get().get("defaultTerrainEdition")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
@@ -262,19 +264,35 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_terrainBump.internalFormat = GL_RGBA16;
 	m_terrainBump.format = GL_RGBA;
 	m_terrainBump.type = GL_FLOAT;
+	m_terrainBump.textureWrapping_u = GL_CLAMP_TO_EDGE;
+	m_terrainBump.textureWrapping_v = GL_CLAMP_TO_EDGE;
+	m_terrainBump.minFilter = GL_LINEAR;
+	m_terrainBump.magFilter = GL_LINEAR;
 	m_terrainBump.generateMipMap = false;
 	m_terrainBump.initGL();
 	//specular
 	m_terrainSpecular.name = "terrainTextureSpecular";
 	m_terrainSpecular.internalFormat = GL_RGBA8;
+	m_terrainSpecular.format = GL_RGBA;
+	m_terrainSpecular.type = GL_UNSIGNED_BYTE;
+	m_terrainSpecular.textureWrapping_u = GL_CLAMP_TO_EDGE;
+	m_terrainSpecular.textureWrapping_v = GL_CLAMP_TO_EDGE;
+	m_terrainSpecular.minFilter = GL_LINEAR;
+	m_terrainSpecular.magFilter = GL_LINEAR;
 	m_terrainSpecular.generateMipMap = false;
 	m_terrainSpecular.initGL();
 	//diffuse
 	m_terrainDiffuse.name = "terrainTextureDiffuse";
 	m_terrainDiffuse.internalFormat = GL_RGBA8;
-	m_terrainDiffuse.type = GL_FLOAT;
+	m_terrainDiffuse.format = GL_RGBA;
+	m_terrainDiffuse.type = GL_UNSIGNED_BYTE;
+	m_terrainDiffuse.textureWrapping_u = GL_CLAMP_TO_EDGE;
+	m_terrainDiffuse.textureWrapping_v = GL_CLAMP_TO_EDGE;
+	m_terrainDiffuse.minFilter = GL_LINEAR;
+	m_terrainDiffuse.magFilter = GL_LINEAR;
 	m_terrainDiffuse.generateMipMap = false;
 	m_terrainDiffuse.initGL();
+
 	//depth
 	//m_terrainDepth.name = "terrainTextureDepth";
 	//m_terrainDepth.internalFormat = GL_DEPTH_COMPONENT24;
@@ -452,6 +470,8 @@ void Terrain::generateTerrainTexture()
 
 	for (int i = 0; i < m_terrainLayouts.size(); i++)
 	{
+
+
 		//diffuse
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getDiffuse()->glId);
@@ -480,6 +500,22 @@ void Terrain::generateTerrainTexture()
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	//UPDATE MIPMAP ???
+
+	//glBindTexture(GL_TEXTURE_2D, m_terrainBump.glId);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//glGenerateMipmap(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	//glBindTexture(GL_TEXTURE_2D, m_terrainDiffuse.glId);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//glGenerateMipmap(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	//glBindTexture(GL_TEXTURE_2D, m_terrainSpecular.glId);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//glGenerateMipmap(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, 0);
 	
 }
 
@@ -769,19 +805,35 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int den
 	int grassLayoutWidth = m_width / m_grassLayoutDelta;
 	int grassLayoutDepth = m_depth / m_grassLayoutDelta;
 
-	for (int j = std::max(0, (int)(-radius + pz)); j <= std::min((int)(radius + pz), grassLayoutDepth - 1); j+= maxDensityMinusDensity)
+	std::vector<glm::vec2> potentialPositionIndex;
+	int currentGrassCount = 0;
+
+	for (int j = std::max(0, (int)(-radius + pz)); j <= std::min((int)(radius + pz), grassLayoutDepth - 1); j++)
 	{
-		for (int i = std::max(0, (int)(-radius + px)); i <= std::min( (int)(radius + px), grassLayoutWidth - 1); i += maxDensityMinusDensity)
+		for (int i = std::max(0, (int)(-radius + px)); i <= std::min( (int)(radius + px), grassLayoutWidth - 1); i ++)
 		{
-			if (glm::length(glm::vec2(i, j) - p) <= radius && m_grassLayout[grassLayoutWidth*j + i] == 0)
+			if (glm::length(glm::vec2(i, j) - p) <= radius)
 			{
-				float posX = i * m_grassLayoutDelta;
-				float posZ = j * m_grassLayoutDelta;
-				float posY = getHeight(posX, posZ);
-				m_grassField.addGrass(GrassKey(i,j), glm::vec3(posX, posY, posZ));
-				m_grassLayout[grassLayoutWidth*j + i] = 1; //this layout controls the density of the grassField.
+				if (m_grassLayout[j*grassLayoutWidth + i] == 0)
+				{
+					potentialPositionIndex.push_back(glm::vec2(i, j));
+					currentGrassCount++;
+				}
 			}
 		}
+	}
+
+	for (int i = 0; i < (density - currentGrassCount); i++)
+	{
+		int randomIndex = rand() % potentialPositionIndex.size();
+		glm::vec2 pointIndex = potentialPositionIndex[randomIndex];
+
+		float posX = pointIndex.x * m_grassLayoutDelta;
+		float posZ = pointIndex.y * m_grassLayoutDelta;
+		float posY = getHeight(posX, posZ);
+
+		m_grassField.addGrass(GrassKey(pointIndex.x, pointIndex.y), glm::vec3(posX, posY, posZ));
+		m_grassLayout[grassLayoutWidth*pointIndex.y + pointIndex.x] = 1; //this layout controls the density of the grassField.
 	}
 }
 
@@ -983,7 +1035,20 @@ void Terrain::drawUI()
 			if (ImGui::InputFloat2("texture repetition", &(tmpVec2)[0]))
 			{
 				m_textureRepetitions[i] = tmpVec2;
+
+				//glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getDiffuse()->glId);
+				//glGenerateMipmap(GL_TEXTURE_2D);
+				//glBindTexture(GL_TEXTURE_2D, 0);
+				//glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getBump()->glId);
+				//glGenerateMipmap(GL_TEXTURE_2D);
+				//glBindTexture(GL_TEXTURE_2D, 0);
+				//glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getSpecular()->glId);
+				//glGenerateMipmap(GL_TEXTURE_2D);
+				//glBindTexture(GL_TEXTURE_2D, 0);
+
+
 				generateTerrainTexture();
+
 			}
 			ImGui::PopID();
 		}

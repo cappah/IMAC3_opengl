@@ -1,5 +1,8 @@
 #version 410 core
 
+precision highp float;
+precision highp int;
+
 // Inputs : 
 in block
 {
