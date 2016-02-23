@@ -74,6 +74,12 @@ Scene & Scene::add(Camera * camera)
 	return *this;
 }
 
+Scene & Scene::add(Physic::WindZone * windZone)
+{
+	m_windZones.push_back(windZone);
+	return *this;
+}
+
 Scene& Scene::erase(Entity * entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
@@ -184,6 +190,7 @@ Scene & Scene::erase(PathPoint * pathPoint)
 	return *this;
 }
 
+
 Scene & Scene::erase(Camera * camera)
 {
 	auto findIt = std::find(m_cameras.begin(), m_cameras.end(), camera);
@@ -192,6 +199,19 @@ Scene & Scene::erase(Camera * camera)
 	{
 		delete camera;
 		m_cameras.erase(findIt);
+	}
+
+	return *this;
+}
+
+Scene & Scene::erase(Physic::WindZone * windZone)
+{
+	auto findIt = std::find(m_windZones.begin(), m_windZones.end(), windZone);
+
+	if (findIt != m_windZones.end())
+	{
+		delete windZone;
+		m_windZones.erase(findIt);
 	}
 
 	return *this;
@@ -227,7 +247,7 @@ void Scene::renderPaths(const BaseCamera& camera)
 
 void Scene::updatePhysic(float deltaTime)
 {
-	m_physicManager.update(deltaTime, m_flags);
+	m_physicManager.update(deltaTime, m_flags, m_windZones);
 }
 
 void Scene::toggleColliderVisibility()

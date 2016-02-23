@@ -20,6 +20,7 @@
 #include "ParticleEmitter.h"
 #include "PathPoint.h"
 #include "Camera.h"
+#include "WindZone.h"
 
 #include "glm/gtc/quaternion.hpp"
 
@@ -120,6 +121,8 @@ public:
 	Entity& add(PathPoint* pathPoint);
 	// function to add a component. 
 	Entity& add(Camera* camera);
+	// function to add a component. 
+	Entity& add(Physic::WindZone* windZone);
 
 	// function to erase a component.
 	Entity& erase(PointLight* pointLight);
@@ -139,6 +142,8 @@ public:
 	Entity& erase(PathPoint* pathPoint);
 	// function to erase a component.
 	Entity& erase(Camera* camera);
+	// function to erase a component.
+	Entity& erase(Physic::WindZone* windZone);
 
 	//finalyze the creation of the entity, should be called after all components has been added to the entity : 
 	//One of the goal of this function is to properly set up the collider such that it cover well all the components of the entity.

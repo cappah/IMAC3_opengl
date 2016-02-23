@@ -43,6 +43,10 @@ namespace Physic {
 		float m_height;
 		int m_subdivision;
 
+		float m_mass;
+		float m_viscosity;
+		float m_rigidity;
+
 	public:
 		Flag(Material3DObject* material, int subdivision = 10, float width = 10.f, float height = 10.f);
 		~Flag();
@@ -75,9 +79,26 @@ namespace Physic {
 		//Return the origin of the flag, which is normaly also the origin of the flag mesh.
 		glm::vec3 getOrigin() const;
 
+		float getMass() const;
+		float getRigidity() const;
+		float getViscosity() const;
+		void setMass(float mass);
+		void setRigidity(float rigidity);
+		void setViscosity(float viscosity);
+
+		void setSubdivision(int subdivision);
+		int getSubdivision() const;
+
+		void updatePhysic();
+
+		void restartSimulation();
+
 	private : 
+		//completly free memory allocate for the flag and then reconstruct the flag
+		void regenerateFlag();
 		//simply generate the model, don't destroy or allocate memory, we have to do it manually before and after calling this function
 		void generateMesh();
+		void generatePoints(); 
 		//update all normals such that they follow the shape
 		void updateNormals();
 		//initialyze and place the physic points and links

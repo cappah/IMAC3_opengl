@@ -1,4 +1,5 @@
 #include "PhysicManager.h"
+#include "Application.h"
 
 namespace Physic {
 
@@ -21,10 +22,15 @@ namespace Physic {
 		return m_gravity;
 	}
 
-	void PhysicManager::update(float deltaTime, std::vector<Flag*>& flags)
+	void PhysicManager::update(float deltaTime, std::vector<Flag*>& flags, std::vector<WindZone*>& windZones)
 	{
 		for (int i = 0; i < flags.size(); i++)
 		{
+			for (int j = 0; j < windZones.size(); j++)
+			{
+				flags[i]->applyForce(windZones[i]->getForce(Application::get().getTime()));
+			}
+
 			flags[i]->applyGravity(m_gravity);
 			flags[i]->update(deltaTime);
 		}
