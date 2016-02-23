@@ -1018,7 +1018,7 @@ void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>&
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
 
-		if (!(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
+		if (!(cameraPosition.x > bottomLeft.x && cameraPosition.x < topRight.x && cameraPosition.y > bottomLeft.y && cameraPosition.y < topRight.y && cameraPosition.z > bottomLeft.z && cameraPosition.z < topRight.z))
 		{
 			//compute 8 points of 3D collider : 
 

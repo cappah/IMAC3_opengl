@@ -26,6 +26,6 @@ public:
 	void add(PathPoint* pathPoint);
 	void erase(PathPoint* pathPoint);
 
-	void render(const Camera& camera);
+	void render(const BaseCamera& camera);
 };
 

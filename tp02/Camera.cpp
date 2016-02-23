@@ -31,7 +31,7 @@ void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & sca
 	m_viewMatrix = glm::lookAt(m_position, m_lookPosition, m_up);
 }
 
-void Camera::drawUI()
+void Camera::drawUI(Scene& scene)
 {
 	if (ImGui::CollapsingHeader("camera"))
 	{

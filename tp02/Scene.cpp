@@ -220,7 +220,7 @@ void Scene::renderDebugLights(const BaseCamera & camera)
 		m_renderer->debugDrawLights(camera, m_pointLights, m_spotLights);
 }
 
-void Scene::renderPaths(const Camera& camera)
+void Scene::renderPaths(const BaseCamera& camera)
 {
 	m_pathManager.render(camera);
 }
@@ -275,10 +275,9 @@ void Scene::setAreLightsBoundingBoxVisible(bool value)
 	m_areLightsBoundingBoxVisible = value;
 }
 
-void Scene::culling(const Camera & camera)
+void Scene::culling(const BaseCamera & camera)
 {
 	//m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
-	m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
 }
 
 Terrain& Scene::getTerrain()

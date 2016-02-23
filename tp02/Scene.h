@@ -96,7 +96,7 @@ public:
 	void renderColliders(const BaseCamera& camera);
 	void renderDebugDeferred();
 	void renderDebugLights(const BaseCamera& camera);
-	void renderPaths(const Camera& camera);
+	void renderPaths(const BaseCamera& camera);
 
 	void updatePhysic(float deltaTime);
 
@@ -110,7 +110,7 @@ public:
 	void setIsDebugDeferredVisible(bool value);
 	void setAreLightsBoundingBoxVisible(bool value);
 
-	void culling(const Camera& camera);
+	void culling(const BaseCamera& camera);
 
 	Terrain& getTerrain();
 	Skybox& getSkybox();
