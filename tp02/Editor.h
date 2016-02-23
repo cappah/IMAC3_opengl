@@ -105,16 +105,18 @@ private:
 
 	GUIStates m_guiStates;
 
-	Camera* m_camera;
+	CameraEditor* m_camera;
 	bool m_cameraFPS;
+	float m_cameraBaseSpeed;
+	float m_cameraBoostSpeed;
 
 	bool m_hideCursorWhenMovingCamera;
 
-	int m_windowWidth;
-	int m_windowHeight;
-	glm::vec2 m_panelsDecal;
-	int m_leftPanelwidth;
-	int m_leftPanelHeight;
+	glm::vec2 m_windowDecal;
+	glm::vec4 m_windowRect;
+	glm::vec4 m_topLeftPanelRect;
+	glm::vec4 m_bottomLeftPanelRect;
+	glm::vec4 m_bottomPanelRect;
 
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
@@ -131,6 +133,9 @@ public:
 	void displayMenuBar(Scene& scene);
 	void displayTopLeftWindow(Scene& scene);
 	void displayBottomWindow(Scene& scene);
+	void displayBottomLeftWindow(Scene& scene);
+	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
+	void onResizeWindow();
 	void renderUI(Scene& scene);
 
 	bool testGizmoIntersection(const Ray& ray);
@@ -150,7 +155,7 @@ public:
 
 	void update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler);
 
-	Camera& getCamera();
+	CameraEditor& getCamera();
 
 	void updateGuiStates(GLFWwindow* window);
 	void updateCameraMovement_editor(GLFWwindow* window);

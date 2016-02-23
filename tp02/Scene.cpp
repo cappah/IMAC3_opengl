@@ -68,6 +68,12 @@ Scene & Scene::add(PathPoint * pathPoint)
 	return *this;
 }
 
+Scene & Scene::add(Camera * camera)
+{
+	m_cameras.push_back(camera);
+	return *this;
+}
+
 Scene& Scene::erase(Entity * entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
@@ -178,12 +184,25 @@ Scene & Scene::erase(PathPoint * pathPoint)
 	return *this;
 }
 
-void Scene::render(const Camera& camera)
+Scene & Scene::erase(Camera * camera)
+{
+	auto findIt = std::find(m_cameras.begin(), m_cameras.end(), camera);
+
+	if (findIt != m_cameras.end())
+	{
+		delete camera;
+		m_cameras.erase(findIt);
+	}
+
+	return *this;
+}
+
+void Scene::render(const BaseCamera& camera)
 {
 	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags);
 }
 
-void Scene::renderColliders(const Camera& camera)
+void Scene::renderColliders(const BaseCamera & camera)
 {
 	if(m_areCollidersVisible)
 		m_renderer->debugDrawColliders(camera, m_entities);
@@ -195,7 +214,7 @@ void Scene::renderDebugDeferred()
 		m_renderer->debugDrawDeferred();
 }
 
-void Scene::renderDebugLights(const Camera& camera)
+void Scene::renderDebugLights(const BaseCamera & camera)
 {
 	if(m_areLightsBoundingBoxVisible)
 		m_renderer->debugDrawLights(camera, m_pointLights, m_spotLights);
@@ -259,6 +278,7 @@ void Scene::setAreLightsBoundingBoxVisible(bool value)
 void Scene::culling(const Camera & camera)
 {
 	//m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
+	m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
 }
 
 Terrain& Scene::getTerrain()

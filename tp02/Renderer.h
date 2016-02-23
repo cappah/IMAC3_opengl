@@ -97,16 +97,16 @@ public:
 	void renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, MeshRenderer & meshRenderer);
 
 	//render all entities of the scene, using deferred shading.
-	void render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags);
+	void render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags);
 
 	//draw colliders on scene.
-	void debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities);
+	void debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities);
 
 	//draw textures of gPass.
 	void debugDrawDeferred();
 
 	//draw lights bounding box.
-	void debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights);
+	void debugDrawLights(const BaseCamera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights);
 
 	//check if a light bounding box has to be drawn, in that case it scales the blit quad to render only what is influenced by the light.
 	bool passCullingTest(glm::vec4& viewport, const glm::mat4& projection, const glm::mat4& view, const glm::vec3 cameraPosition, BoxCollider& collider);
@@ -115,6 +115,6 @@ public:
 	void resizeBlitQuad(const glm::vec4& viewport = glm::vec4(-1,-1,2,2));
 
 	// Camera culling for light
-	void updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos);
+	void updateCulling(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos);
 };
 

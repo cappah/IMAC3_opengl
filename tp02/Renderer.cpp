@@ -374,7 +374,7 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 }
 
 
-void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags)
+void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
@@ -478,10 +478,11 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	////// begin matrix updates
 
 	// update values
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix();//glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 worldToView = camera.getViewMatrix();//glm::lookAt(camera.eye, camera.o, camera.up);
 	glm::mat4 camera_mvp = projection * worldToView;
 	glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
+	glm::vec3 cameraPosition = camera.getCameraPosition();
 	
 	///// end matrix updates
 
@@ -540,7 +541,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 	// send screen to world matrix : 
 	glUniformMatrix4fv(unformScreenToWorld[POINT], 1, false, glm::value_ptr(screenToWorld));
-	glUniform3fv(uniformCameraPosition[POINT], 1, glm::value_ptr(camera.eye));
+	glUniform3fv(uniformCameraPosition[POINT], 1, glm::value_ptr(camera.getCameraPosition()));
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
@@ -585,7 +586,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 	// send screen to world matrix : 
 	glUniformMatrix4fv(unformScreenToWorld[SPOT], 1, false, glm::value_ptr(screenToWorld));
-	glUniform3fv(uniformCameraPosition[SPOT], 1, glm::value_ptr(camera.eye));
+	glUniform3fv(uniformCameraPosition[SPOT], 1, glm::value_ptr(cameraPosition));
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
@@ -640,7 +641,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUseProgram(glProgram_lightPass_directionalLight);
 	// send screen to world matrix : 
 	glUniformMatrix4fv(unformScreenToWorld[DIRECTIONAL], 1, false, glm::value_ptr(screenToWorld));
-	glUniform3fv(uniformCameraPosition[DIRECTIONAL], 1, glm::value_ptr(camera.eye));
+	glUniform3fv(uniformCameraPosition[DIRECTIONAL], 1, glm::value_ptr(cameraPosition));
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
@@ -698,12 +699,12 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	skybox.render(projection, worldToView);
 }
 
-void Renderer::debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities)
+void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix();//glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = camera.getViewMatrix();// glm::lookAt(camera.eye, camera.o, camera.up);
 	glm::mat4 vp = projection * view;
 	glm::mat4 screenToWorld = glm::transpose(glm::inverse(vp));
 
@@ -760,13 +761,13 @@ void Renderer::debugDrawDeferred()
 	///////////// end draw blit quad
 }
 
-void Renderer::debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
+void Renderer::debugDrawLights(const BaseCamera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
 {
 	int width = Application::get().getWindowWidth();
 	int height = Application::get().getWindowHeight();
 
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);
 
 	for (auto& light : pointLights)
 	{
@@ -907,8 +908,10 @@ void Renderer::resizeBlitQuad(const glm::vec4 & viewport)
 
 
 
-void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos )
+void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos )
 {
+	glm::vec3 cameraPosition = camera.getCameraPosition();
+
 
 	if (!pointLightCullingInfos.empty())
 		pointLightCullingInfos.clear();
@@ -928,8 +931,8 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 	int width = Application::get().getWindowWidth();
 	int height = Application::get().getWindowHeight();
 
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);
 
 	int lastId = pointLights.size() - 1;;
 	for (int i = 0; i < pointLights.size(); i++)
@@ -940,7 +943,7 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
 
-		if (!(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
+		if (!(cameraPosition.x > bottomLeft.x && cameraPosition.x < topRight.x && cameraPosition.y > bottomLeft.y && cameraPosition.y < topRight.y && cameraPosition.z > bottomLeft.z && cameraPosition.z < topRight.z))
 		{
 
 			//compute 8 points of 3D collider : 

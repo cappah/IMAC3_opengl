@@ -479,8 +479,7 @@ int main( int argc, char **argv )
 		if (Application::get().getWindowResize())
 		{
 			renderer.onResizeWindow();
-			//TODO : 
-			//editor.onResizeWindow();
+			editor.onResizeWindow();
 
 			Application::get().setWindowResize(false);
 		}
@@ -494,7 +493,8 @@ int main( int argc, char **argv )
 		inputHandler.synchronize(window);
 
 		//get active camera before render scene : 
-		Camera& currentCamera = editor.getCamera();
+		BaseCamera& currentCamera = editor.getCamera();
+		//currentCamera.updateScreenSize(width, height);
 		//scene.culling(currentCamera);
 
 		//rendering : 

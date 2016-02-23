@@ -1,5 +1,427 @@
-
 #include "Camera.h"
+#include "Scene.h"
+#include "Entity.h"
+#include "Factories.h"
+
+BaseCamera::BaseCamera()
+{
+}
+
+////////////////////////////
+
+
+Camera::Camera() : Component(ComponentType::CAMERA),
+	m_lookPosition(0,0,0), m_position(0,0,-1), m_up(0,1,0), m_forward(0,0,1),
+	m_cameraMode(CameraMode::PERSPECTIVE), m_fovy(45.0f), m_aspect(16.f / 9.f), m_zNear(0.1f), m_zFar(100.f), m_left(-10.f), m_top(10.f), m_right(10.f), m_bottom(-10.f)
+	
+{
+	m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
+}
+
+void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
+{
+
+	m_forward = rotation * glm::vec3(0, 0, 1);
+	m_forward = glm::normalize(m_forward);
+
+	m_up = rotation * glm::vec3(0, 1, 0);
+
+	m_lookPosition = m_position + m_forward;
+
+	m_viewMatrix = glm::lookAt(m_position, m_lookPosition, m_up);
+}
+
+void Camera::drawUI()
+{
+	if (ImGui::CollapsingHeader("camera"))
+	{
+		if (ImGui::RadioButton("perspective", (m_cameraMode == CameraMode::PERSPECTIVE)))
+		{
+			m_cameraMode = CameraMode::PERSPECTIVE;
+		}
+		if(ImGui::RadioButton("orthographic", (m_cameraMode == CameraMode::ORTHOGRAPHIC)))
+		{
+			m_cameraMode = CameraMode::ORTHOGRAPHIC;
+		}
+		if (ImGui::SliderFloat("fov", &(m_fovy), 0.f, glm::pi<float>()))
+		{
+			updateProjection();
+		}
+		if (ImGui::SliderFloat("near", &(m_zNear), 0.001f, 5.f))
+		{
+			updateProjection();
+		}
+		if (ImGui::SliderFloat("far", &(m_zFar), 0.01f, 1000.f))
+		{
+			updateProjection();
+		}
+		if (ImGui::SliderFloat("aspect", &(m_aspect), 0.01f, 10.f))
+		{
+			updateProjection();
+		}
+	}
+}
+
+void Camera::eraseFromScene(Scene & scene)
+{
+	scene.erase(this);
+}
+
+void Camera::addToScene(Scene & scene)
+{
+	scene.add(this);
+}
+
+Component * Camera::clone(Entity * entity)
+{
+	Camera* camera = new Camera(*this);
+
+	camera->attachToEntity(entity);
+
+	return camera;
+}
+
+void Camera::updateScreenSize(float screenWidth, float screenHeight)
+{
+	m_aspect = screenWidth / screenHeight;
+	
+	//TODO 
+	//also resize orthographic frustum ?
+
+	updateProjection();
+}
+
+void Camera::setPerspectiveInfos(float fovy, float aspect, float zNear, float zFar)
+{
+	m_fovy = fovy;
+	m_aspect = aspect;
+	m_zNear = zNear;
+	m_zFar = zFar;
+
+	updateProjection();
+}
+
+void Camera::setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar)
+{
+	m_left = left;
+	m_right = right;
+	m_top = top;
+	m_bottom = bottom;
+	m_zNear = zNear;
+	m_zFar = zFar;
+
+	updateProjection();
+}
+
+void Camera::setCameraMode(CameraMode cameraMode)
+{
+	m_cameraMode = cameraMode;
+	updateProjection();
+}
+
+glm::mat4 Camera::getViewMatrix() const
+{
+	return m_viewMatrix;
+}
+
+glm::mat4 Camera::getProjectionMatrix() const
+{
+	return m_projectionMatrix;
+}
+
+glm::vec3 Camera::getCameraPosition() const
+{
+	return m_position;
+}
+
+glm::vec3 Camera::getCameraForward() const
+{
+	return m_forward;
+}
+
+void Camera::setFOV(float fov)
+{
+	m_fovy = fov;
+}
+
+void Camera::setNear(float near)
+{
+	m_zNear = near;
+}
+
+void Camera::setFar(float far)
+{
+	m_zFar = far;
+}
+
+void Camera::setAspect(float aspect)
+{
+	m_aspect = aspect;
+}
+
+float Camera::getFOV() const
+{
+	return m_fovy;
+}
+
+float Camera::getNear() const
+{
+	return m_zNear;
+}
+
+float Camera::getFar() const
+{
+	return m_zNear;
+}
+
+float Camera::getAspect() const
+{
+	return m_aspect;
+}
+
+void Camera::updateProjection()
+{
+	if (m_cameraMode == CameraMode::PERSPECTIVE)
+		m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
+	else
+		m_projectionMatrix = glm::ortho(m_left, m_right, m_bottom, m_top, m_zNear, m_zFar);
+}
+
+
+//////////////////////////////////
+
+
+CameraEditor::CameraEditor() : BaseCamera(), isFPSMode(false), radius(3.f), theta(0), phi(glm::pi<float>()*0.5f),
+	o(0, 0, 0), eye(0, 0, -1), up(0, 1, 0), forward(0, 0, 1), right(1, 0, 0),
+	m_fovy(45.0f), m_aspect(16.f / 9.f), m_zNear(0.1f), m_zFar(100.f)
+{
+	updateProjection();
+	updateTransform();
+}
+
+void CameraEditor::setTranslationLocal(glm::vec3 pos)
+{
+	if (isFPSMode)
+	{
+		eye = glm::vec3(0, 0, 0);
+		eye += up * pos.y;
+		eye += right * pos.x;
+		eye += forward * pos.z;
+	}
+	else
+	{
+		o = glm::vec3(0, 0, 0);
+		o = up * pos.y * radius * 2.f;
+		o = -right * pos.x * radius * 2.f;
+		o = forward * pos.z * radius * 2.f;
+	}
+
+	updateTransform();
+}
+
+void CameraEditor::translateLocal(glm::vec3 pos)
+{
+
+	if (isFPSMode)
+	{
+		eye += up * pos.y;
+		eye += right * pos.x;
+		eye += forward * pos.z;
+	}
+	else
+	{
+		o += up * pos.y * radius * 2.f;
+		o += -right * pos.x * radius * 2.f;
+		o += forward * pos.z * radius * 2.f;
+	}
+
+	updateTransform();
+}
+
+void CameraEditor::setDirection(glm::vec3 dir)
+{
+	forward = dir;
+
+	updateTransform();
+}
+
+void CameraEditor::setRotation(float _phi, float _theta)
+{
+	theta = 1.f * _theta;
+	phi = 1.f * _phi;
+
+	if (phi >= (2 * glm::pi<float>()) - 0.1)
+		phi = 0.00001;
+	else if (phi <= 0)
+		phi = 2 * glm::pi<float>() - 0.1;
+
+	forward.x = cos(theta) * sin(phi);
+	forward.y = cos(phi);
+	forward.z = sin(theta) * sin(phi);
+
+	updateTransform();
+}
+
+void CameraEditor::setTranslation(glm::vec3 pos)
+{
+	if (isFPSMode)
+		eye = pos;
+	else
+		o = pos;
+
+	updateTransform();
+}
+
+void CameraEditor::translate(glm::vec3 pos)
+{
+	if (isFPSMode)
+		eye += pos;
+	else
+		o += pos;
+
+	updateTransform();
+}
+
+void CameraEditor::rotate(float deltaX, float deltaY)
+{
+	theta += 1.f * deltaX;
+	phi += 1.f * deltaY;
+	if (phi >= (2 * glm::pi<float>()) - 0.1)
+		phi = 0.00001;
+	else if (phi <= 0)
+		phi = 2 * glm::pi<float>() - 0.1;
+
+
+	forward.x = cos(theta) * sin(phi);
+	forward.y = cos(phi);
+	forward.z = sin(theta) * sin(phi);
+
+	updateTransform();
+}
+
+void CameraEditor::updateTransform()
+{
+	forward = glm::normalize(forward);
+
+	up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	right = glm::normalize(glm::cross(forward, up));
+	up = glm::normalize(glm::cross(right, forward));
+
+	if (isFPSMode)
+		o = eye + forward;
+	else
+		eye = o - forward*radius;
+
+	m_viewMatrix = glm::lookAt(eye, o, up);
+}
+
+void CameraEditor::setFPSMode(bool fpsMode)
+{
+	isFPSMode = fpsMode;
+	if (isFPSMode)
+		o = eye + forward;
+	else
+		eye = o - forward*radius;
+}
+
+void CameraEditor::updateProjection()
+{
+	m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
+}
+
+void CameraEditor::updateScreenSize(float screenWidth, float screenHeight)
+{
+	m_aspect = screenWidth / screenHeight;
+
+	m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
+}
+
+void CameraEditor::setPerspectiveInfos(float fovy, float aspect, float zNear , float zFar)
+{
+	m_fovy = fovy;
+	m_aspect = aspect;
+	m_zNear = zNear;
+	m_zFar = zFar;
+
+	m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
+}
+
+void CameraEditor::setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar)
+{
+	//nothing
+}
+
+void CameraEditor::setCameraMode(CameraMode cameraMode)
+{
+	//nothing
+}
+
+glm::mat4 CameraEditor::getViewMatrix() const
+{
+	return m_viewMatrix;
+}
+
+glm::mat4 CameraEditor::getProjectionMatrix() const
+{
+	return m_projectionMatrix;
+}
+
+glm::vec3 CameraEditor::getCameraPosition() const
+{
+	return eye;
+}
+
+glm::vec3 CameraEditor::getCameraForward() const
+{
+	return forward;
+}
+
+void CameraEditor::setFOV(float fov)
+{
+	m_fovy = fov;
+	updateProjection();
+}
+
+void CameraEditor::setNear(float near)
+{
+	m_zNear = near;
+	updateProjection();
+}
+
+void CameraEditor::setFar(float far)
+{
+	m_zFar = far;
+	updateProjection();
+}
+
+void CameraEditor::setAspect(float aspect)
+{
+	m_aspect = aspect;
+	updateProjection();
+}
+
+float CameraEditor::getFOV() const
+{
+	return m_fovy;
+}
+
+float CameraEditor::getNear() const
+{
+	return m_zNear;
+}
+
+float CameraEditor::getFar() const
+{
+	return m_zFar;
+}
+
+float CameraEditor::getAspect() const
+{
+	return m_aspect;
+}
+
+//////////////////////////////////
+/*
 
 void camera_compute(Camera & c)
 {
@@ -81,17 +503,17 @@ void camera_translate(Camera & c, float x, float y, float z)
 	glm::vec3 side = glm::normalize(glm::cross(fwd, up));
 	c.up = glm::normalize(glm::cross(side, fwd));
 
-	c.eye[0] += up[0] * y * c.radius * 2;
-	c.eye[1] += up[1] * y * c.radius * 2;
-	c.eye[2] += up[2] * y * c.radius * 2;
+	c.eye[0] += up[0] * y;
+	c.eye[1] += up[1] * y;
+	c.eye[2] += up[2] * y;
 
-	c.eye[0] += side[0] * x * c.radius * 2;
-	c.eye[1] += side[1] * x * c.radius * 2;
-	c.eye[2] += side[2] * x * c.radius * 2;
+	c.eye[0] += side[0] * x;
+	c.eye[1] += side[1] * x;
+	c.eye[2] += side[2] * x;
 
-	c.eye[0] += fwd[0] * z * c.radius * 2;
-	c.eye[1] += fwd[1] * z * c.radius * 2;
-	c.eye[2] += fwd[2] * z * c.radius * 2;
+	c.eye[0] += fwd[0] * z;
+	c.eye[1] += fwd[1] * z;
+	c.eye[2] += fwd[2] * z;
 
 	camera_compute_fps(c);
 }
@@ -99,5 +521,146 @@ void camera_translate(Camera & c, float x, float y, float z)
 void toogleCamera(Camera& c)
 {
 	c.theta += glm::pi<float>();
-	c.phi = glm::pi<float>() - c.phi ;
+	c.phi = glm::pi<float>() - c.phi;
 }
+*/
+
+
+
+///////////////////////////
+
+/*
+CameraFPS::CameraFPS() : Camera()
+{
+updateTransform();
+}
+
+CameraFPS::CameraFPS(const Camera & cam) : Camera(cam)
+{
+}
+
+
+void CameraFPS::setTranslation(glm::vec3 pos)
+{
+eye = pos;
+
+updateTransform();
+}
+
+void CameraFPS::translate(glm::vec3 pos)
+{
+eye += pos;
+
+updateTransform();
+}
+
+void CameraFPS::rotate(float deltaX, float deltaY)
+{
+theta += 1.f * deltaX;
+phi += 1.f * deltaY;
+if (phi >= (2 * glm::pi<float>()) - 0.1)
+phi = 0.00001;
+else if (phi <= 0)
+phi = 2 * glm::pi<float>() - 0.1;
+
+forward.x = cos(theta) * sin(phi);
+forward.y = cos(phi);
+forward.z = sin(theta) * sin(phi);
+
+updateTransform();
+}
+
+void CameraFPS::setTranslationLocal(glm::vec3 pos)
+{
+eye = glm::vec3(0, 0, 0);
+
+eye += up * pos.y;
+eye += right * pos.x;
+eye += forward * pos.z;
+
+updateTransform();
+}
+
+void CameraFPS::translateLocal(glm::vec3 pos)
+{
+//glm::vec3 up(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+//glm::vec3 fwd = glm::normalize(o - eye);
+//glm::vec3 side = glm::normalize(glm::cross(fwd, up));
+//up = glm::normalize(glm::cross(side, fwd));
+
+eye += up * pos.y;
+eye += right * pos.x;
+eye += forward * pos.z;
+
+updateTransform();
+}
+
+void CameraFPS::setDirection(glm::vec3 _dir)
+{
+//forward = glm::normalize(_dir);
+
+//float r = std::sqrt(forward.x*forward.x + forward.z*forward.z);
+//phi = atan2(r, forward.y) + glm::pi<float>();
+//theta = atan2(forward.z, forward.x) + glm::pi<float>();
+
+//if (phi >= (2 * glm::pi<float>()) - 0.1)
+//	phi = 0.00001;
+//else if (phi <= 0)
+//	phi = 2 * glm::pi<float>() - 0.1;
+
+//o = eye + forward;
+
+//up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+
+forward = _dir;
+
+updateTransform();
+}
+
+void CameraFPS::setRotation(float _phi, float _theta)
+{
+theta = 1.f * theta;
+phi = 1.f * phi;
+if (phi >= (2 * glm::pi<float>()) - 0.1)
+phi = 0.00001;
+else if (phi <= 0)
+phi = 2 * glm::pi<float>() - 0.1;
+
+forward.x = cos(theta) * sin(phi);
+forward.y = cos(phi);
+forward.z = sin(theta) * sin(phi);
+
+updateTransform();
+}
+
+void CameraFPS::updateTransform()
+{
+forward = glm::normalize(forward);
+
+up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+right = glm::normalize(glm::cross(forward, up));
+up = glm::normalize(glm::cross(right, forward));
+
+o = forward + eye;
+}
+
+void CameraFPS::switchFromCameraEditor(const Camera & other)
+{
+eye = other.o;
+
+theta += glm::pi<float>();
+phi = glm::pi<float>() - phi;
+
+updateTransform();
+}
+
+Component * CameraFPS::clone(Entity * entity)
+{
+CameraFPS* camera = new CameraFPS(*this);
+
+camera->attachToEntity(entity);
+
+return camera;
+}
+
+*/
