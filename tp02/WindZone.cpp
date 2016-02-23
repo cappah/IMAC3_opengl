@@ -5,8 +5,14 @@
 
 namespace Physic {
 
-	WindZone::WindZone() : Component(ComponentType::WIND_ZONE), m_direction(0, 0, 1), m_amplitude(1), m_frequency(1), m_randomFactor(0)
+	WindZone::WindZone() : Component(ComponentType::WIND_ZONE), m_direction(0, 0, 1), m_amplitude(1), m_frequency(1), m_randomFactor(0), m_emissionType(EmissionType::DIRECTIONNAL), m_isAttenuated(false), m_radius(1.f)
 	{
+		//for UI : 
+		m_emissionTypeNames = new const char*[2];
+		for (int i = 0; i < 2; i++)
+			m_emissionTypeNames[i] = new char[30];
+
+
 		for (int i = 0; i < 10; i++)
 		{
 			float direction = (i % 2 == 0) ? 1 : -1;
@@ -18,8 +24,12 @@ namespace Physic {
 
 	WindZone::~WindZone()
 	{
+		for (int i = 0; i < 2; i++)
+			delete[] m_emissionTypeNames[i];
+		delete[] m_emissionTypeNames;
 	}
 
+	//Warning : bypass the attenuation, force emissionType to be directional : 
 	glm::vec3 WindZone::getForce(float t)
 	{
 		t *= m_frequency;
@@ -27,6 +37,21 @@ namespace Physic {
 		t = ((int)t) % 1000;
 		t *= 0.001f;
 		return m_direction * m_cspline.get(t);
+	}
+
+	glm::vec3 WindZone::getForce(float t, glm::vec3 position)
+	{
+		t *= m_frequency;
+		t *= 1000.f;
+		t = ((int)t) % 1000;
+		t *= 0.001f;
+		float distance = glm::length(position - m_position) + 0.000001f;
+		
+		float attenuation = m_isAttenuated ? (1 - distance / (m_radius + 0.0000001f)) : 1;
+
+		glm::vec3 direction = (m_emissionType == EmissionType::DIRECTIONNAL) ? m_direction : glm::normalize(position - m_position);
+
+		return direction * m_cspline.get(t);
 	}
 
 	void WindZone::updateSpline()
@@ -81,6 +106,7 @@ namespace Physic {
 
 	void WindZone::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 	{
+		m_position = translation;
 		m_direction = rotation * glm::vec3(0, 0, 1);
 	}
 
@@ -94,6 +120,11 @@ namespace Physic {
 				updateSpline();
 			if (ImGui::InputFloat("random factor", &m_randomFactor))
 				updateSpline();
+			int currentItemTypeEmission = (int)m_emissionType;
+			if (ImGui::ListBox("emission type", &currentItemTypeEmission, m_emissionTypeNames, 2))
+				m_emissionType = (EmissionType)currentItemTypeEmission;
+			ImGui::RadioButton("attenuation", &m_isAttenuated);
+			ImGui::SliderFloat("radius", &m_radius, 0.1f, 500.f);
 		}
 	}
 

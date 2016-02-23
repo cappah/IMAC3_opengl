@@ -10,18 +10,28 @@ namespace Physic {
 
 	class WindZone : public Component
 	{
+	public:
+		enum EmissionType {DIRECTIONNAL = 0, RADIAL = 1};
 	private:
 		Math::CSpline<float> m_cspline;
+		glm::vec3 m_position;
 		glm::vec3 m_direction;
 		float m_amplitude;
 		float m_randomFactor;
 		float m_frequency;
+		EmissionType m_emissionType;
+		bool m_isAttenuated;
+		float m_radius;
+
+		//for UI : 
+		const char** m_emissionTypeNames;
 
 	public:
 		WindZone();
 		~WindZone();
 
 		glm::vec3 getForce(float t);
+		glm::vec3 WindZone::getForce(float t, glm::vec3 position);
 
 		void updateSpline();
 
