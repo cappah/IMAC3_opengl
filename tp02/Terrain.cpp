@@ -230,6 +230,9 @@ void GrassField::render(const glm::mat4 & projection, const glm::mat4 & view)
 
 void GrassField::updateVBOPositions()
 {
+	if (positions.size() <= 0)
+		return;
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
 	glBufferData(GL_ARRAY_BUFFER, positions.size()*sizeof(float), &positions[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -815,10 +818,9 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int den
 			if (glm::length(glm::vec2(i, j) - p) <= radius)
 			{
 				if (m_grassLayout[j*grassLayoutWidth + i] == 0)
-				{
 					potentialPositionIndex.push_back(glm::vec2(i, j));
+				else
 					currentGrassCount++;
-				}
 			}
 		}
 	}

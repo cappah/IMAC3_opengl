@@ -530,7 +530,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add Camera"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto camera = new Camera();
 				newEntity->add(newCollider).add(camera);
@@ -542,16 +542,16 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add flag"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
-				auto flag = new Physic::Flag(MaterialFactory::get().get("default"), 10);
+				auto flag = new Physic::Flag(MaterialFactory::get().get<Material3DObject>("default"), 10);
 				newEntity->add(newCollider).add(flag);
 			}
 
 			if (ImGui::Button("add path point"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto pathPoint = new PathPoint();
 				newEntity->add(newCollider).add(pathPoint);
@@ -1218,7 +1218,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	{
 		if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_1) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
 		{
-			glm::vec3 origin = m_camera->eye;
+			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
 			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);

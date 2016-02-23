@@ -4,7 +4,7 @@
 
 PathManager::PathManager()
 {
-	m_material = MaterialFactory::get().get("wireframe");
+	m_material = MaterialFactory::get().get<Material3DObject>("wireframe");
 }
 
 PathManager::~PathManager()

@@ -9,7 +9,7 @@
 class PathManager
 {
 private:
-	Material* m_material;
+	Material3DObject* m_material;
 	std::vector<Path*> m_paths;
 
 public:
