@@ -47,7 +47,7 @@ void Skybox::render(const glm::mat4& projection, const glm::mat4& view)
 	glm::mat4 vp = projection * glm::mat4(glm::mat3(view));
 
 	material.use();
-	material.setUniform_MVP(vp);
+	material.setUniform_VP(vp);
 
 	mesh.draw();
 

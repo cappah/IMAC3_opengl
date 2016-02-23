@@ -1,4 +1,6 @@
 #include "Mesh.h"
+#include "Ray.h"
+#include "Utils.h"
 
 Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage)
 {
@@ -177,6 +179,22 @@ void Mesh::computeBoundingBox()
 	}
 
 	origin = - glm::normalize(topRight - bottomLeft) * 0.5f;
+}
+
+bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) const
+{
+	bool isColliding = false;
+
+	for (int i = 0; i < triangleIndex.size(); i+=3)
+	{
+		glm::vec3 a = vertexFrom3Floats(vertices, i);
+		glm::vec3 b = vertexFrom3Floats(vertices, i+1);
+		glm::vec3 c = vertexFrom3Floats(vertices, i+2);
+		isColliding = ray.intersectTriangle(a, b, c, collisionInfo);
+		if (isColliding)
+			return true;
+	}
+	return false;
 }
 
 

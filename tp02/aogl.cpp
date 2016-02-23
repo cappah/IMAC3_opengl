@@ -210,7 +210,75 @@ int main( int argc, char **argv )
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
+
+	//////////////////// TERRAIN shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_terrain = compile_shader_from_file(GL_VERTEX_SHADER, "terrain.vert");
+	GLuint fragShaderId_terrain = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrain.frag");
+
+	GLuint programObject_terrain = glCreateProgram();
+	glAttachShader(programObject_terrain, vertShaderId_terrain);
+	glAttachShader(programObject_terrain, fragShaderId_terrain);
+
+	glLinkProgram(programObject_terrain);
+	if (check_link_error(programObject_terrain) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// TERRAIN EDITION shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_terrainEdition = compile_shader_from_file(GL_VERTEX_SHADER, "terrainEdition.vert");
+	GLuint fragShaderId_terrainEdition = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrainEdition.frag");
+
+	GLuint programObject_terrainEdition = glCreateProgram();
+	glAttachShader(programObject_terrainEdition, vertShaderId_terrainEdition);
+	glAttachShader(programObject_terrainEdition, fragShaderId_terrainEdition);
+
+	glLinkProgram(programObject_terrainEdition);
+	if (check_link_error(programObject_terrainEdition) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
 	
+	//////////////////// DRAW ON TEXTURE shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_drawOnTexture = compile_shader_from_file(GL_VERTEX_SHADER, "drawOnTexture.vert");
+	GLuint fragShaderId_drawOnTexture = compile_shader_from_file(GL_FRAGMENT_SHADER, "drawOnTexture.frag");
+
+	GLuint programObject_drawOnTexture = glCreateProgram();
+	glAttachShader(programObject_drawOnTexture, vertShaderId_drawOnTexture);
+	glAttachShader(programObject_drawOnTexture, fragShaderId_drawOnTexture);
+
+	glLinkProgram(programObject_drawOnTexture);
+	if (check_link_error(programObject_drawOnTexture) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// GRASS FIELD shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_grassField = compile_shader_from_file(GL_VERTEX_SHADER, "grassField.vert");
+	GLuint fragShaderId_grassField = compile_shader_from_file(GL_FRAGMENT_SHADER, "grassField.frag");
+
+	GLuint programObject_grassField = glCreateProgram();
+	glAttachShader(programObject_grassField, vertShaderId_grassField);
+	glAttachShader(programObject_grassField, fragShaderId_grassField);
+
+	glLinkProgram(programObject_grassField);
+	if (check_link_error(programObject_grassField) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 
 	// cube and plane ;
 
@@ -315,6 +383,10 @@ int main( int argc, char **argv )
 	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
 	Texture* bumpTexture = new Texture("textures/spnza_bricks_a_normal.png");
 
+	Texture* grassTextureDiffuse = new Texture("textures/grass/grass01.png", true);
+	grassTextureDiffuse->textureWrapping_u = GL_CLAMP_TO_EDGE;
+	grassTextureDiffuse->textureWrapping_v = GL_CLAMP_TO_EDGE;
+
 	std::vector<std::string> skyboxTexturePaths = {"textures/skyboxes/right.png", "textures/skyboxes/left.png", 
 												   "textures/skyboxes/top.png", "textures/skyboxes/top.png",
 													"textures/skyboxes/front.png","textures/skyboxes/back.png" };
@@ -325,6 +397,7 @@ int main( int argc, char **argv )
 	diffuseTexture->initGL();
 	specularTexture->initGL();
 	bumpTexture->initGL();
+	grassTextureDiffuse->initGL();
 
 	//////////////////// BEGIN RESSOURCES : 
 	//the order between resource initialization and factories initialisation is important, indeed it's the factory which set set name of the different ressources when they are added to the factories.
@@ -334,16 +407,19 @@ int main( int argc, char **argv )
 	TextureFactory::get().add("brickDiffuse", diffuseTexture);
 	TextureFactory::get().add("brickSpecular", specularTexture);
 	TextureFactory::get().add("brickBump", bumpTexture);
+	TextureFactory::get().add("grass01Diffuse", grassTextureDiffuse);
 
 	// materials : 
 	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
+	MaterialGrassField grassFieldMaterial(programObject_grassField);
 
 	//material factories : 
 	MaterialFactory::get().add("default", &defaultMaterial);
 	MaterialFactory::get().add("brick", &brickMaterial);
 	MaterialFactory::get().add("wireframe", &wireframeMaterial);
+	MaterialFactory::get().add("grassField", &grassFieldMaterial);
 
 	//mesh factories : 
 	MeshFactory::get().add("cube", &cube);
@@ -356,6 +432,10 @@ int main( int argc, char **argv )
 	ProgramFactory::get().add("defaultLit", programObject_gPass);
 	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
 	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
+	ProgramFactory::get().add("defaultTerrain", programObject_terrain);
+	ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
+	ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
+	ProgramFactory::get().add("defaultGrassField", programObject_grassField);
 
 	///////////////////// END RESSOURCES 
 
@@ -402,7 +482,7 @@ int main( int argc, char **argv )
 	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
 	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
 	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
-	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
 	newEntity->add(boxColliderLight).add(pointLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 
@@ -452,7 +532,7 @@ int main( int argc, char **argv )
 	*/
 
 	//flage entity : 
-	Material* tmpMat = MaterialFactory::get().get("default");
+	Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>("default");
 	Physic::Flag* flag = new Physic::Flag(tmpMat);
 
 	Entity* entity_flag = new Entity(&scene);
@@ -518,7 +598,7 @@ int main( int argc, char **argv )
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
 		*/
-
+		
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI(scene);
 

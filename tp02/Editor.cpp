@@ -155,9 +155,9 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 	{
 		for (auto& meshRenderer : meshRenderers)
 		{
-			if (MaterialFactory::get().contains(textValue))
+			if (MaterialFactory::get().contains<Material3DObject>(textValue))
 			{
-				meshRenderer->setMaterial( MaterialFactory::get().get(textValue) );
+				meshRenderer->setMaterial( MaterialFactory::get().get<Material3DObject>(textValue) );
 			}
 		}
 	}
@@ -469,7 +469,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add empty entity"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				newEntity->add(newCollider);
 
@@ -480,10 +480,10 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add pointLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto light = new PointLight();
-				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
 				newEntity->add(newCollider).add(light);
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
@@ -493,7 +493,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add directionalLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto light = new DirectionalLight();
 				newEntity->add(newCollider).add(light);
@@ -505,10 +505,10 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add spotLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto light = new SpotLight();
-				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
+				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
 				newEntity->add(newCollider).add(light);
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
@@ -518,9 +518,9 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add cube"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
-				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get("brick"));
+				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get<Material3DObject>("brick"));
 				newEntity->add(newCollider).add(meshRenderer);
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
@@ -1210,6 +1210,32 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 
 void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler )
 {
+	float screenWidth = Application::get().getWindowWidth();
+	float screenHeight = Application::get().getWindowHeight();
+
+	//update tools : 
+	if (m_terrainToolVisible) // for terrain
+	{
+		if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_1) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
+		{
+			glm::vec3 origin = m_camera->eye;
+			double mouseX, mouseY;
+			glfwGetCursorPos(window, &mouseX, &mouseY);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
+
+			Ray ray(origin, direction, 1000.f);
+			CollisionInfo collisionInfo;
+
+			if (ray.intersectTerrain(scene.getTerrain(), collisionInfo))
+			{
+				if(scene.getTerrain().getCurrentTerrainTool() == Terrain::DRAW_MATERIAL)
+					scene.getTerrain().drawMaterialOnTerrain(collisionInfo.point);
+				else if(scene.getTerrain().getCurrentTerrainTool() == Terrain::DRAW_GRASS)
+					scene.getTerrain().drawGrassOnTerrain(collisionInfo.point);
+			}
+		}
+	}
+
 	//update gizmo
 	float distanceToCamera = glm::length(m_camera->getCameraPosition() - m_gizmo->getPosition());
 	m_gizmo->setScale(distanceToCamera*0.1f);
@@ -1252,8 +1278,6 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 		if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
 			&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
 		{
-			float screenWidth = Application::get().getWindowWidth();
-			float screenHeight = Application::get().getWindowHeight();
 
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;

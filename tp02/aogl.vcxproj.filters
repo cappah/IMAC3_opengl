@@ -282,5 +282,17 @@
     <None Include="terrain.vert">
       <Filter>shaders</Filter>
     </None>
+    <None Include="drawOnTexture.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="drawOnTexture.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="grassField.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="grassField.vert">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@
 #include "Entity.h"
 #include "Factories.h"
 
-MeshRenderer::MeshRenderer(Mesh* _mesh, Material* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material), meshName(""), materialName("")
+MeshRenderer::MeshRenderer(Mesh* _mesh, Material3DObject* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material), meshName(""), materialName("")
 {
 	if (_mesh != nullptr)
 		meshName = _mesh->name;
@@ -30,9 +30,11 @@ void MeshRenderer::drawUI(Scene& scene)
 		{
 			materialName = tmpMaterialName;
 
-			if (MaterialFactory::get().contains(materialName))
+			if (MaterialFactory::get().contains<Material3DObject>(materialName))
 			{
-				material = MaterialFactory::get().get(materialName);
+				Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
+				if (tmpMat != nullptr)
+					material = tmpMat;
 			}
 		}
 
@@ -86,7 +88,7 @@ void MeshRenderer::setMesh(Mesh * _mesh)
 	}
 }
 
-void MeshRenderer::setMaterial(Material * _material)
+void MeshRenderer::setMaterial(Material3DObject * _material)
 {
 	if (_material != nullptr)
 		materialName = _material->name;
@@ -94,7 +96,7 @@ void MeshRenderer::setMaterial(Material * _material)
 	material = _material;
 }
 
-Material * MeshRenderer::getMaterial() const
+Material3DObject * MeshRenderer::getMaterial() const
 {
 	return material;
 }

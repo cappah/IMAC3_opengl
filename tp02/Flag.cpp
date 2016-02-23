@@ -5,7 +5,7 @@
 
 namespace Physic {
 
-	Flag::Flag(Material* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1) 
+	Flag::Flag(Material3DObject* material, int subdivision, float width, float height) : Component(FLAG), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height)
 	{
 		modelMatrix = glm::mat4(1);
 
@@ -440,9 +440,9 @@ namespace Physic {
 		glm::mat4 mvp = projection * view * modelMatrix;
 		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
+		m_material->use();
 		m_material->setUniform_MVP(mvp);
 		m_material->setUniform_normalMatrix(normalMatrix);
-		m_material->use();
 
 		m_mesh.draw();
 	}
@@ -459,9 +459,9 @@ namespace Physic {
 			{
 				m_materialName = tmpMaterialName;
 
-				if (MaterialFactory::get().contains(m_materialName))
+				if (MaterialFactory::get().contains<Material3DObject>(m_materialName))
 				{
-					m_material = MaterialFactory::get().get(m_materialName);
+					m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
 				}
 			}
 

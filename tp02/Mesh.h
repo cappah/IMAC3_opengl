@@ -13,6 +13,10 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+//forwards : 
+class Ray;
+class CollisionInfo;
+
 struct Mesh
 {
 	std::string name;
@@ -63,6 +67,8 @@ struct Mesh
 	void draw();
 
 	void computeBoundingBox();
+
+	bool isIntersectedByRay(const Ray& ray, CollisionInfo& collisionInfo) const;
 
 private:
 	bool initFromScene(const aiScene* pScene, const std::string& Filename);
