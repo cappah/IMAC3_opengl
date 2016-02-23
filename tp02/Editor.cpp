@@ -560,7 +560,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add wind zone"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
+				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto windZone = new Physic::WindZone();
 				newEntity->add(newCollider).add(windZone);
