@@ -1,5 +1,6 @@
 #include "PhysicManager.h"
 #include "Application.h"
+#include "Entity.h" // TODO remove 
 
 namespace Physic {
 
@@ -28,7 +29,8 @@ namespace Physic {
 		{
 			for (int j = 0; j < windZones.size(); j++)
 			{
-				flags[i]->applyForce(windZones[i]->getForce(Application::get().getTime()));
+				// TODO replace by flags[i]->getTransform().position...
+				flags[i]->applyForce(windZones[j]->getForce(Application::get().getTime(), flags[i]->entity()->getTranslation() ));
 			}
 
 			flags[i]->applyGravity(m_gravity);

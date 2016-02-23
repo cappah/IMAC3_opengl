@@ -35,6 +35,7 @@ namespace Physic {
 
 		void updateSpline();
 
+		glm::vec3 getPosition() const;
 		float getAmplitude() const;
 		glm::vec3 getDirection() const;
 		float getRandomFactor() const;

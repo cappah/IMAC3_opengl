@@ -9,8 +9,8 @@ namespace Physic {
 	{
 		//for UI : 
 		m_emissionTypeNames = new const char*[2];
-		for (int i = 0; i < 2; i++)
-			m_emissionTypeNames[i] = new char[30];
+		m_emissionTypeNames[0] = "directionnal";
+		m_emissionTypeNames[1] = "radial";
 
 
 		for (int i = 0; i < 10; i++)
@@ -47,11 +47,11 @@ namespace Physic {
 		t *= 0.001f;
 		float distance = glm::length(position - m_position) + 0.000001f;
 		
-		float attenuation = m_isAttenuated ? (1 - distance / (m_radius + 0.0000001f)) : 1;
+		float attenuation = m_isAttenuated ? std::max(0.f, (1 - distance / (m_radius + 0.0000001f))) : 1;
 
 		glm::vec3 direction = (m_emissionType == EmissionType::DIRECTIONNAL) ? m_direction : glm::normalize(position - m_position);
 
-		return direction * m_cspline.get(t);
+		return direction * m_cspline.get(t) * attenuation;
 	}
 
 	void WindZone::updateSpline()
@@ -62,6 +62,11 @@ namespace Physic {
 			float newPoint = m_amplitude - m_randomFactor * direction * (float)(rand() % 100) / 100.f;
 			m_cspline[i] = (newPoint);
 		}
+	}
+
+	glm::vec3 WindZone::getPosition() const
+	{
+		return m_position;
 	}
 
 	float WindZone::getAmplitude() const
@@ -123,7 +128,8 @@ namespace Physic {
 			int currentItemTypeEmission = (int)m_emissionType;
 			if (ImGui::ListBox("emission type", &currentItemTypeEmission, m_emissionTypeNames, 2))
 				m_emissionType = (EmissionType)currentItemTypeEmission;
-			ImGui::RadioButton("attenuation", &m_isAttenuated);
+			if (ImGui::RadioButton("attenuation", m_isAttenuated))
+				m_isAttenuated = !m_isAttenuated;
 			ImGui::SliderFloat("radius", &m_radius, 0.1f, 500.f);
 		}
 	}
