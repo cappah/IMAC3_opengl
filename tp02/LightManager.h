@@ -63,6 +63,10 @@ private:
 	std::vector<ShadowMap> directional_shadowMaps;
 	std::vector<OmniShadowMap> point_shadowMaps;
 
+	float directionalShadowMapViewportSize;
+	float directionalShadowMapViewportNear;
+	float directionalShadowMapViewportFar;
+
 
 public:
 	LightManager();
@@ -80,5 +84,9 @@ public:
 	void uniformPointLight(PointLight& light);
 	void uniformDirectionalLight(DirectionalLight& light);
 	void uniformSpotLight(SpotLight& light);
+
+	float getDirectionalShadowMapViewportSize() const;
+	float getDirectionalShadowMapViewportNear() const;
+	float getDirectionalShadowMapViewportFar() const;
 };
 

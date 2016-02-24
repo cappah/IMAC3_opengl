@@ -98,7 +98,7 @@ OmniShadowMap::~OmniShadowMap()
 
 ///////////////////////////////////////////////////////
 
-LightManager::LightManager() //: globalIntensity(0.f)
+LightManager::LightManager() : directionalShadowMapViewportSize(64), directionalShadowMapViewportNear(0.1f), directionalShadowMapViewportFar(100.f)
 {
 
 }
@@ -128,7 +128,7 @@ void LightManager::setShadowMapCount(LightType lightType, unsigned int count)
 	}
 	else if (lightType == LightType::DIRECTIONAL)
 	{
-		directional_shadowMaps.resize(count);
+		directional_shadowMaps.resize(count);// , ShadowMap(2048, 2048)); // set texture size to 2048 for better precision with directional shadow maps.
 	}
 	else
 	{
@@ -220,4 +220,19 @@ void LightManager::uniformSpotLight(SpotLight & light)
 	glUniform1f(uniform_spotLight_int, light.intensity);
 	glUniform3fv(uniform_spotLight_pos, 1, glm::value_ptr(light.position));
 	glUniform1f(uniform_spotLight_angle, light.angle);
+}
+
+float LightManager::getDirectionalShadowMapViewportSize() const
+{
+	return directionalShadowMapViewportSize;
+}
+
+float LightManager::getDirectionalShadowMapViewportNear() const
+{
+	return directionalShadowMapViewportNear;
+}
+
+float LightManager::getDirectionalShadowMapViewportFar() const
+{
+	return directionalShadowMapViewportFar;
 }

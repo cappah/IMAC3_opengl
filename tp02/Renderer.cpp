@@ -377,7 +377,8 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-
+	glm::vec3 cameraPosition = camera.getCameraPosition();
+	glm::vec3 cameraForward = camera.getCameraForward();
 
 	////////////////////////// begin scene rendering 
 
@@ -421,8 +422,13 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 		{
 			lightManager->bindShadowMapFBO(LightManager::DIRECTIONAL, lightIdx);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			glm::mat4 lightProjection = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
-			glm::mat4 lightView = glm::lookAt(-directionalLights[lightIdx]->direction*2.f , glm::vec3(0,0,0) , directionalLights[lightIdx]->up);
+			float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
+			float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
+			float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
+			glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalShadowMapFar*0.5f, cameraPosition.z);
+			glm::vec3 eye = -directionalLights[lightIdx]->direction + orig;
+			glm::mat4 lightProjection = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
+			glm::mat4 lightView = glm::lookAt(eye, orig, directionalLights[lightIdx]->up);
 
 			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
 			{
@@ -482,7 +488,6 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	glm::mat4 worldToView = camera.getViewMatrix();//glm::lookAt(camera.eye, camera.o, camera.up);
 	glm::mat4 camera_mvp = projection * worldToView;
 	glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
-	glm::vec3 cameraPosition = camera.getCameraPosition();
 	
 	///// end matrix updates
 
@@ -667,8 +672,16 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 			glUniform1i(uniformTextureShadow[DIRECTIONAL], 3); // send shadow texture
 		}
 
-		glm::mat4 projectionDirectionalLight = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
-		glm::mat4 worldToLightDirectionalLight = glm::lookAt(-directionalLights[i]->direction*2.f ,  glm::vec3(0, 0, 0) , directionalLights[i]->up);
+		//glm::mat4 projectionDirectionalLight = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
+		//glm::mat4 worldToLightDirectionalLight = glm::lookAt(-directionalLights[i]->direction*2.f ,  glm::vec3(0, 0, 0) , directionalLights[i]->up);
+
+		float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
+		float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
+		float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
+		glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalShadowMapFar*0.5f, cameraPosition.z);
+		glm::vec3 eye = -directionalLights[i]->direction + orig;
+		glm::mat4 projectionDirectionalLight = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
+		glm::mat4 worldToLightDirectionalLight = glm::lookAt(eye, orig, directionalLights[i]->up);
 		glm::mat4 WorldToLightScreen = projectionDirectionalLight * worldToLightDirectionalLight;
 		glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
 
