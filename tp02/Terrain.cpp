@@ -157,6 +157,12 @@ void GrassField::initGl()
 	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STATIC_DRAW);
 	glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
+	//for physic simulation : 
+	glGenBuffers(1, &vbo_animPos);
+	glEnableVertexAttribArray(ANIM_POS);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_animPos);
+	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STREAM_DRAW);
+	glVertexAttribPointer(ANIM_POS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -853,6 +859,13 @@ void Terrain::updateGrassPositions()
 Terrain::TerrainTools Terrain::getCurrentTerrainTool() const
 {
 	return m_currentTerrainTool;
+}
+
+void Terrain::updatePhysic(std::vector<Physic::WindZone*>& windZones)
+{
+	//apply physic on grassField : 
+	m_grassField.updatePhysic(windZones);
+	//TODO : trees,...
 }
 
 //get terrain height at a given point

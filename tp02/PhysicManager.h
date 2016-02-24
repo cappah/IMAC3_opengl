@@ -2,8 +2,13 @@
 
 #include "Flag.h"
 #include "WindZone.h"
+#include "Terrain.h"
 
 namespace Physic {
+	
+	void computeLinks(float deltaTime, Link* link);
+	void computePoints(float deltaTime, Point* point);
+	
 	class PhysicManager
 	{
 	private:
@@ -16,7 +21,7 @@ namespace Physic {
 		void setGravity(const glm::vec3& g);
 		glm::vec3 getGravity() const;
 
-		void update(float deltaTime, std::vector<Flag*>& flags, std::vector<WindZone*>& windZones);
+		void update(float deltaTime, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones);
 	};
 }
 

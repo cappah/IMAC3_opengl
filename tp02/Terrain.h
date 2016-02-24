@@ -11,6 +11,10 @@
 #include "Materials.h"
 #include "PerlinNoise.h"
 
+#include "Point.h"
+#include "Link.h"
+#include "WindZone.h"
+
 //forwards : 
 class Ray;
 
@@ -31,7 +35,7 @@ struct GrassKey
 //structure which store infos to render grass in instanced mode
 struct GrassField {
 
-	enum VboTypes {VERTICES = 0, NORMALS, UVS, POSITIONS};
+	enum VboTypes {VERTICES = 0, NORMALS, UVS, POSITIONS, ANIM_POS};
 	
 	MaterialGrassField materialGrassField;
 
@@ -47,11 +51,16 @@ struct GrassField {
 	std::vector<float> uvs;
 	std::vector<float> positions; //grass positions
 	std::vector<GrassKey> grassKeys; //keys to identity grass
+	//for physic simulation : 
+	std::vector<Physic::Point> physicPoints;
+	std::vector<Physic::Link> physicLinks;
 
 	GLuint vbo_index;
 	GLuint vbo_vertices;
 	GLuint vbo_uvs;
 	GLuint vbo_normals;
+	//for physic simulation : 
+	GLuint vbo_animPos;
 
 	//additional vbos for instantiation : 
 	GLuint vbo_pos;
@@ -68,6 +77,9 @@ struct GrassField {
 
 	//render all grass with instantiation : 
 	void render(const glm::mat4& projection, const glm::mat4& view);
+
+	//update physic : 
+	void updatePhysic(std::vector<Physic::WindZone*>& windZones); //TODO
 
 	void updateVBOPositions();
 };
@@ -186,5 +198,8 @@ public:
 	void updateGrassPositions();
 
 	TerrainTools getCurrentTerrainTool() const;
+
+	//update physic : 
+	void updatePhysic(std::vector<Physic::WindZone*>& windZones);
 };
 
