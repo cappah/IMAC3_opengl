@@ -473,7 +473,6 @@ void Editor::displayMenuBar(Scene& scene)
 				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				newEntity->add(newCollider);
-				newEntity->setName("collider");
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
 				changeCurrentSelected(newEntity);
