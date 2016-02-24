@@ -96,11 +96,8 @@ void Transform::updateModelMatrix()
 
 //////////////////////////////
 
-Entity::Entity(Scene* scene) : Transform(), m_scene(scene), m_isSelected(false)
+Entity::Entity(Scene* scene) : Transform(), m_scene(scene), m_isSelected(false), m_name("default_entity")
 {
-	m_name.reserve(100);
-	m_name[0] = '\0';
-
 	scene->add(this);
 }
 

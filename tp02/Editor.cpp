@@ -228,11 +228,12 @@ void init_gui_states(GUIStates & guiStates)
 
 /////////////////////////////////// EDITOR
 
-Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(false), m_cameraBaseSpeed(0.05f), m_cameraBoostSpeed(0.1f)
+Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f)
 {
 	m_gizmo = new Gizmo(_unlitMaterial, this);
 
 	m_camera = new CameraEditor();
+	m_camera->setFPSMode(m_cameraFPS);
 	//camera_defaults(*m_camera);
 
 	init_gui_states(m_guiStates);
@@ -472,6 +473,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
 				auto newCollider = new BoxCollider(colliderRenderer);
 				newEntity->add(newCollider);
+				newEntity->setName("collider");
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
 				changeCurrentSelected(newEntity);
@@ -485,6 +487,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto light = new PointLight();
 				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
 				newEntity->add(newCollider).add(light);
+				newEntity->setName("point light");
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
 				changeCurrentSelected(newEntity);
@@ -497,6 +500,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto light = new DirectionalLight();
 				newEntity->add(newCollider).add(light);
+				newEntity->setName("directional light");
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
 				changeCurrentSelected(newEntity);
@@ -510,6 +514,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto light = new SpotLight();
 				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
 				newEntity->add(newCollider).add(light);
+				newEntity->setName("spot light");
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
 				changeCurrentSelected(newEntity);
@@ -522,6 +527,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get<Material3DObject>("brick"));
 				newEntity->add(newCollider).add(meshRenderer);
+				newEntity->setName("cube");
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
 				changeCurrentSelected(newEntity);
@@ -534,6 +540,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto camera = new Camera();
 				newEntity->add(newCollider).add(camera);
+				newEntity->setName("camera");
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
 				changeCurrentSelected(newEntity);
@@ -546,6 +553,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto flag = new Physic::Flag(MaterialFactory::get().get<Material3DObject>("default"), 10);
 				newEntity->add(newCollider).add(flag);
+				newEntity->setName("flag");
 			}
 
 			if (ImGui::Button("add path point"))
@@ -555,6 +563,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto pathPoint = new PathPoint();
 				newEntity->add(newCollider).add(pathPoint);
+				newEntity->setName("path point");
 			}
 
 			if (ImGui::Button("add wind zone"))
@@ -564,6 +573,7 @@ void Editor::displayMenuBar(Scene& scene)
 				auto newCollider = new BoxCollider(colliderRenderer);
 				auto windZone = new Physic::WindZone();
 				newEntity->add(newCollider).add(windZone);
+				newEntity->setName("wind zone");
 			}
 
 			ImGui::EndMenu();
@@ -687,6 +697,8 @@ void Editor::displayBottomLeftWindow(Scene& scene)
 		{
 			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
 			m_camera->setTranslation(cameraFinalPosition);
+
+			changeCurrentSelected(entity);
 		}
 		ImGui::PopID();
 		entityId++;

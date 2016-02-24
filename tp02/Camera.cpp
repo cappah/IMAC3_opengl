@@ -193,7 +193,7 @@ void Camera::updateProjection()
 
 CameraEditor::CameraEditor() : BaseCamera(), isFPSMode(false), radius(3.f), theta(0), phi(glm::pi<float>()*0.5f),
 	o(0, 0, 0), eye(0, 0, -1), up(0, 1, 0), forward(0, 0, 1), right(1, 0, 0),
-	m_fovy(45.0f), m_aspect(16.f / 9.f), m_zNear(0.1f), m_zFar(100.f)
+	m_fovy(45.0f), m_aspect(16.f / 9.f), m_zNear(0.1f), m_zFar(1000.f)
 {
 	updateProjection();
 	updateTransform();

@@ -485,6 +485,7 @@ int main( int argc, char **argv )
 	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
 	newEntity->add(boxColliderLight).add(pointLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
+	newEntity->setName("point light");
 
 
 	//renderers : 
@@ -507,11 +508,13 @@ int main( int argc, char **argv )
 	Entity* entity_cube01 = new Entity(&scene);
 	entity_cube01->add(cubeRenderer01);
 	entity_cube01->add(boxCollider01);
+	newEntity->setName("cube");
 	entity_cube01->setTranslation( glm::vec3(3, 0, 0) );
 	//cube entity 02
 	Entity* entity_cube02 = new Entity(&scene);
 	entity_cube02->add(cubeRenderer02);
 	entity_cube02->add(boxCollider02);
+	newEntity->setName("cube");
 	entity_cube02->setTranslation(glm::vec3(3, -2, 0));
 	entity_cube02->setScale(glm::vec3(10, 1, 10));
 	/*
@@ -538,6 +541,7 @@ int main( int argc, char **argv )
 	Entity* entity_flag = new Entity(&scene);
 	entity_flag->add(new BoxCollider(&cubeWireFrameRenderer));
 	entity_flag->add(flag);
+	newEntity->setName("flag");
 	entity_flag->endCreation();
 
 
