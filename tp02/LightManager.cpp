@@ -173,7 +173,7 @@ OmniShadowMap::~OmniShadowMap()
 
 ///////////////////////////////////////////////////////
 
-LightManager::LightManager() : directionalShadowMapViewportSize(128), directionalShadowMapViewportNear(0.1f), directionalShadowMapViewportFar(20.f)
+LightManager::LightManager() : directionalShadowMapViewportSize(128), directionalShadowMapViewportNear(0.1f), directionalShadowMapViewportFar(200.f)
 {
 
 }

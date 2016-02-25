@@ -481,9 +481,10 @@ int main( int argc, char **argv )
 	Entity* newEntity = new Entity(&scene);
 	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
 	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
-	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
-	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
-	newEntity->add(boxColliderLight).add(pointLight);
+	//PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
+	DirectionalLight* directionalLight = new DirectionalLight(1, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f));
+	//boxColliderLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
+	newEntity->add(boxColliderLight).add(directionalLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 	newEntity->setName("point light");
 

@@ -56,3 +56,35 @@ namespace Physic {
 	void computePoint(float deltaTime, Point* point);
 }
 
+//resize a 2D vector without losing information already stored in it
+template<typename T>
+inline void resize2DArray(std::vector<T>& container, int width, int height, int newWidth, int newHeight)
+{
+	if (newWidth == width)
+	{
+		container.resize(newWidth * newHeight);
+		return;
+	}
+
+	if (newWidth > width)
+	{
+		container.resize(newWidth*newHeight);
+		for (int i = ((newWidth - width) + (std::abs(newHeight - height)*width)); i > (newWidth - width); i--)
+		{
+			for (int k = 0; k < width; k++, i--)
+				container[i] = container[i - width];
+			i -= (newWidth - width);
+		}
+	}
+	else
+	{
+		for (int i = newWidth; i < newWidth * newHeight; i++)
+		{
+			for (int k = 0; k < newWidth; k++, i++)
+				container[i] = container[i + (width - newWidth)];
+			i += (width - newWidth);
+		}
+		container.resize(newWidth*newHeight);
+	}
+}
+

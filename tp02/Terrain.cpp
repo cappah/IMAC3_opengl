@@ -420,7 +420,7 @@ void GrassField::updateVBOAnimPos()
 Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), //terrain properties
 			m_noiseMin(0.f), m_noiseMax(1.f), m_seed(0), //perlin properties
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
-			m_maxGrassDensity(30), m_grassDensity(0), m_grassLayoutDelta(0.1f), //draw grass properties
+			m_maxGrassDensity(1000), m_grassDensity(0), m_grassLayoutDelta(0.3f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
 			m_material(ProgramFactory::get().get("defaultTerrain")), m_terrainMaterial(ProgramFactory::get().get("defaultTerrainEdition")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
@@ -432,9 +432,9 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_newGrassTextureName[0] = '\0';
 
 	//grass layout initialization : 
-	int grassLayoutWidth = m_width / (float)m_grassLayoutDelta;
-	int grassLayoutDepth = m_depth / (float)m_grassLayoutDelta;
-	for (int i = 0; i < grassLayoutWidth*grassLayoutDepth; i++)
+	m_grassLayoutWidth = m_width / (float)m_grassLayoutDelta;
+	m_grassLayoutDepth = m_depth / (float)m_grassLayoutDelta;
+	for (int i = 0; i < m_grassLayoutWidth*m_grassLayoutDepth; i++)
 		m_grassLayout.push_back(0);
 
 	//push terrain texture to GPU
@@ -510,7 +510,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_terrainNoise.seed = m_seed;
 
 	generateTerrain();
-	//applyNoise(m_terrainNoise.generatePerlin2D());
+	applyNoise(m_terrainNoise.generatePerlin2D(), false);
 
 
 	//generate material layout FBO : 
@@ -923,6 +923,14 @@ void Terrain::updateTerrain()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
 	glBufferData(GL_ARRAY_BUFFER, m_vertices.size()*sizeof(float), &m_vertices[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	//update grass layout size : 
+	int grassLayoutOldWidth = m_grassLayoutWidth;
+	int grassLayoutOldDepth = m_grassLayoutDepth;
+	m_grassLayoutWidth = m_width / (float)m_grassLayoutDelta;
+	m_grassLayoutDepth = m_depth / (float)m_grassLayoutDelta;
+	resize2DArray<int>(m_grassLayout, grassLayoutOldWidth, grassLayoutOldDepth, m_grassLayoutWidth, m_grassLayoutDepth);
+	//TODO resize grass field
 }
 
 //initialize vbos and vao, based on the informations of the mesh.
@@ -992,7 +1000,7 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int den
 
 	for (int j = std::max(0, (int)(-radius + pz)); j <= std::min((int)(radius + pz), grassLayoutDepth - 1); j++)
 	{
-		for (int i = std::max(0, (int)(-radius + px)); i <= std::min( (int)(radius + px), grassLayoutWidth - 1); i ++)
+		for (int i = std::max(0, (int)(-radius + px)); i <= std::min( (int)(radius + px), grassLayoutWidth - 1); i++)
 		{
 			if (glm::length(glm::vec2(i, j) - p) <= radius)
 			{
@@ -1016,6 +1024,8 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int den
 
 		m_grassField.addGrass(GrassKey(pointIndex.x, pointIndex.y), glm::vec3(posX, posY, posZ));
 		m_grassLayout[grassLayoutWidth*pointIndex.y + pointIndex.x] = 1; //this layout controls the density of the grassField.
+
+		potentialPositionIndex.erase(potentialPositionIndex.begin() + randomIndex);
 	}
 }
 
@@ -1098,21 +1108,6 @@ void Terrain::drawUI()
 			applyNoise(m_terrainNoise.generatePerlin2D(), false);
 		}
 
-		if (ImGui::InputFloat3("terrain offset", &m_offset[0]))
-		{
-			updateTerrain();
-		}
-
-		glm::vec3 terrainDim(m_width, m_height, m_depth);
-		if (ImGui::InputFloat3("terrain dimensions", &terrainDim[0]))
-		{
-			m_width = terrainDim.x;
-			m_height = terrainDim.y;
-			m_depth = terrainDim.z;
-
-			updateTerrain();
-		}
-
 		if (ImGui::InputInt("terrain subdivision", &m_subdivision))
 		{
 			generateTerrain();
@@ -1146,6 +1141,21 @@ void Terrain::drawUI()
 	//if (ImGui::CollapsingHeader("terrain material"))
 	else if(m_currentTerrainTool == TerrainTools::PARAMETER)
 	{
+		if (ImGui::InputFloat3("terrain offset", &m_offset[0]))
+		{
+			updateTerrain();
+		}
+
+		glm::vec3 terrainDim(m_width, m_height, m_depth);
+		if (ImGui::InputFloat3("terrain dimensions", &terrainDim[0]))
+		{
+			m_width = terrainDim.x;
+			m_height = terrainDim.y;
+			m_depth = terrainDim.z;
+
+			updateTerrain();
+		}
+		
 		ImGui::PushID("terrainMaterial");
 		m_material.drawUI();
 		ImGui::PopID();

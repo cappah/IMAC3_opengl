@@ -183,6 +183,8 @@ private:
 	GrassField m_grassField;
 	std::vector<int> m_grassLayout;
 	float m_grassLayoutDelta; //the delta between two grass
+	int m_grassLayoutWidth;
+	int m_grassLayoutDepth;
 
 	//for UI : 
 	TerrainTools m_currentTerrainTool;
@@ -196,7 +198,7 @@ private:
 
 public:
 
-	Terrain(float width = 100, float height = 30, float depth = 100, int subdivision = 10, glm::vec3 offset = glm::vec3(0,0,0));
+	Terrain(float width = 100, float height = 10, float depth = 100, int subdivision = 30, glm::vec3 offset = glm::vec3(0,0,0));
 	~Terrain();
 	//initialize vbos and vao, based on the informations of the mesh.
 	void initGl();
