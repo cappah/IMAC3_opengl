@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <time.h>
 
 #include "glew/glew.h"
 
@@ -17,6 +18,15 @@
 
 //forwards : 
 class Ray;
+
+struct GrassPhysicLink {
+	int p1_idx;
+	glm::vec3 p2_pos;
+	float l;
+
+	GrassPhysicLink(int _p1_idx, glm::vec3 _p2_pos, float _l) : p1_idx(_p1_idx), p2_pos(_p2_pos), l(_l)
+	{}
+};
 
 struct GrassKey
 {
@@ -52,8 +62,14 @@ struct GrassField {
 	std::vector<float> positions; //grass positions
 	std::vector<GrassKey> grassKeys; //keys to identity grass
 	//for physic simulation : 
-	std::vector<Physic::Point> physicPoints;
-	std::vector<Physic::Link> physicLinks;
+	std::vector<float> offsets;
+	std::vector<float> forces;
+	std::vector<float> speeds;
+	std::vector<GrassPhysicLink> links;
+	//global parameter for grass :
+	float mass;
+	float viscosity;
+	float rigidity;
 
 	GLuint vbo_index;
 	GLuint vbo_vertices;
@@ -79,9 +95,25 @@ struct GrassField {
 	void render(const glm::mat4& projection, const glm::mat4& view);
 
 	//update physic : 
-	void updatePhysic(std::vector<Physic::WindZone*>& windZones); //TODO
+	void updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones); //TODO
 
 	void updateVBOPositions();
+	void updateVBOAnimPos();
+
+	void computePoint(float deltaTime, int index);
+	void computeLink(float deltaTime, int index);
+
+	void resetPhysic();
+
+	void setViscosity(float _viscosity);
+	void setRigidity(float _rigidity);
+	void setMass(float _mass);
+	float getViscosity() const;
+	float getRigidity() const;
+	float getMass() const;
+
+	void drawUI();
+
 };
 
 
@@ -200,6 +232,6 @@ public:
 	TerrainTools getCurrentTerrainTool() const;
 
 	//update physic : 
-	void updatePhysic(std::vector<Physic::WindZone*>& windZones);
+	void updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones);
 };
 

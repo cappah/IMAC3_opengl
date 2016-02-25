@@ -549,6 +549,7 @@ int main( int argc, char **argv )
 	Editor editor(&wireframeMaterial);
 
 	float deltaTime = 0.f;
+	float fixedDeltaTime = 1.f / 60.f;
 
 	//main loop
     do
@@ -557,7 +558,7 @@ int main( int argc, char **argv )
         ImGui_ImplGlfwGL3_NewFrame();
 
 		//Physics : 
-		scene.updatePhysic(deltaTime);
+		scene.updatePhysic(fixedDeltaTime);
 
 		//check if window has been resized by user
 		if (Application::get().getWindowResize())

@@ -5,27 +5,20 @@
 
 namespace Physic {
 
-	WindZone::WindZone() : Component(ComponentType::WIND_ZONE), m_direction(0, 0, 1), m_amplitude(1), m_frequency(1), m_randomFactor(0), m_emissionType(EmissionType::DIRECTIONNAL), m_isAttenuated(false), m_radius(1.f)
+	WindZone::WindZone() : Component(ComponentType::WIND_ZONE), m_direction(0, 0, 1), m_amplitude(1), m_frequency(1), m_randomFactor(0), m_offset(0), m_emissionType(EmissionType::DIRECTIONNAL), m_isAttenuated(false), m_radius(1.f)
 	{
 		//for UI : 
 		m_emissionTypeNames = new const char*[2];
 		m_emissionTypeNames[0] = "directionnal";
 		m_emissionTypeNames[1] = "radial";
 
-
-		for (int i = 0; i < 10; i++)
-		{
-			float direction = (i % 2 == 0) ? 1 : -1;
-			float newPoint = direction*m_amplitude*0.5f - m_randomFactor * direction * (float)(rand() % 100) / 100.f;
-			m_cspline.push_back(newPoint);
-		}
+		m_cspline.resize(10);
+		updateSpline();
 	}
 
 
 	WindZone::~WindZone()
 	{
-		for (int i = 0; i < 2; i++)
-			delete[] m_emissionTypeNames[i];
 		delete[] m_emissionTypeNames;
 	}
 
@@ -56,10 +49,10 @@ namespace Physic {
 
 	void WindZone::updateSpline()
 	{
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < m_cspline.size(); i++)
 		{
 			float direction = (i % 2 == 0) ? 1 : -1;
-			float newPoint = m_amplitude - m_randomFactor * direction * (float)(rand() % 100) / 100.f;
+			float newPoint = m_amplitude - m_offset * direction + m_randomFactor * (float)(rand() % 100) / 100.f;
 			m_cspline[i] = (newPoint);
 		}
 	}
@@ -122,6 +115,8 @@ namespace Physic {
 			if (ImGui::InputFloat("amplitude", &m_amplitude))
 				updateSpline();
 			if (ImGui::InputFloat("frequency", &m_frequency))
+				updateSpline();
+			if (ImGui::InputFloat("offset", &m_offset))
 				updateSpline();
 			if (ImGui::InputFloat("random factor", &m_randomFactor))
 				updateSpline();

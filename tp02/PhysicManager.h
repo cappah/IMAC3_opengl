@@ -6,9 +6,6 @@
 
 namespace Physic {
 	
-	void computeLinks(float deltaTime, Link* link);
-	void computePoints(float deltaTime, Point* point);
-	
 	class PhysicManager
 	{
 	private:

@@ -19,6 +19,7 @@ namespace Physic {
 		float m_amplitude;
 		float m_randomFactor;
 		float m_frequency;
+		float m_offset;
 		EmissionType m_emissionType;
 		bool m_isAttenuated;
 		float m_radius;

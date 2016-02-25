@@ -13,6 +13,8 @@
 #include <sstream>
 
 #include "Camera.h"
+#include "Point.h"
+#include "Link.h"
 
 namespace patch
 {
@@ -47,4 +49,10 @@ int idx2DToIdx1D(int i, int j, int array2DWidth);
 //physic : 
 bool rayOBBoxIntersect(glm::vec3 Start, glm::vec3 Dir, glm::vec3 P, glm::vec3 H[3], glm::vec3 E, float* t);
 bool raySlabIntersect(float start, float dir, float min, float max, float* tfirst, float* tlast);
+
+namespace Physic {
+
+	void computeLink(float deltaTime, Link* link);
+	void computePoint(float deltaTime, Point* point);
+}
 

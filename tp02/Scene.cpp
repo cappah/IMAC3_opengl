@@ -247,7 +247,7 @@ void Scene::renderPaths(const BaseCamera& camera)
 
 void Scene::updatePhysic(float deltaTime)
 {
-	m_physicManager.update(deltaTime, m_flags, m_windZones);
+	m_physicManager.update(deltaTime, m_flags, m_terrain, m_windZones);
 }
 
 void Scene::toggleColliderVisibility()

@@ -19,6 +19,7 @@ namespace Math {
 		void insert(int idx, T p);
 		void pop_back();
 		void remove(int idx);
+		void resize(int _size);
 
 		void clear();
 		void append(const std::vector<T>& points);
@@ -76,6 +77,12 @@ namespace Math
 	void CSpline<T>::remove(int idx)
 	{
 		m_points.erase(m_points.begin() + idx);
+	}
+
+	template<typename T>
+	inline void CSpline<T>::resize(int _size)
+	{
+		m_points.resize(_size);
 	}
 
 	template<typename T>
