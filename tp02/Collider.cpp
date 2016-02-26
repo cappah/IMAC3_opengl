@@ -3,7 +3,7 @@
 #include "Scene.h"
 #include "Entity.h"
 
-Collider::Collider(MeshRenderer* _visual) : Component(COLLIDER), visual(_visual), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1), origin(0,0,0)
+Collider::Collider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial) : Component(COLLIDER), visualMesh(_visualMesh), visualMaterial(_visualMaterial), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1), origin(0,0,0)
 {
 
 }
@@ -13,9 +13,10 @@ Collider::~Collider()
 
 }
 
-void Collider::setVisual(MeshRenderer* _visual)
+void Collider::setVisual(Mesh* _visualMesh, MaterialUnlit* _visualMaterial)
 {
-	visual = _visual;
+	visualMesh = _visualMesh;
+	visualMaterial = _visualMaterial;
 }
 
 void Collider::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -142,7 +143,7 @@ void Collider::drawUI(Scene& scene)
 
 ///////////////////////////////////////////
 
-BoxCollider::BoxCollider(MeshRenderer* _visual) : Collider(_visual)
+BoxCollider::BoxCollider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial): Collider(_visualMesh, _visualMaterial)
 {
 	localTopRight = glm::vec3(0.5f, 0.5f, 0.5f);
 	localBottomLeft = glm::vec3(-0.5f, -0.5f, -0.5f);
@@ -161,19 +162,19 @@ void BoxCollider::updateModelMatrix()
 
 void BoxCollider::render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color)
 {
-	if (visual == nullptr)
+	if (visualMesh == nullptr || visualMaterial == nullptr)
 		return;
 
 	glm::mat4 mvp = projection * view * modelMatrix;
 
-	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visual->getMaterial());
+	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visualMaterial);
 
 	unlitMat->use();
 	unlitMat->setUniform_MVP(mvp);
 	unlitMat->setUniform_normalMatrix(glm::mat4(1)); //no need normals
 	unlitMat->setUniform_color(color);
 
-	visual->getMesh()->draw();
+	visualMesh->draw();
 }
 
 void BoxCollider::debugLog()
@@ -293,7 +294,17 @@ void BoxCollider::addToScene(Scene& scene)
 	scene.add(this);
 }
 
-void BoxCollider::coverMesh(Mesh & mesh)
+void BoxCollider::addToEntity(Entity & entity)
+{
+	entity.add(this);
+}
+
+void BoxCollider::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void BoxCollider::coverMesh(Mesh& mesh)
 {
 	origin = mesh.origin;
 	glm::vec3 dimensions = mesh.topRight - mesh.bottomLeft;

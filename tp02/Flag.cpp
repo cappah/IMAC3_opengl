@@ -633,9 +633,19 @@ namespace Physic {
 		scene.add(this);
 	}
 
-	Component * Flag::clone(Entity * entity)
+	Component * Flag::clone(Entity* entity)
 	{
 		return nullptr;
+	}
+
+	void Flag::addToEntity(Entity& entity)
+	{
+		entity.add(this);
+	}
+
+	void Flag::eraseFromEntity(Entity& entity)
+	{
+		entity.erase(this);
 	}
 
 	Mesh & Flag::getMesh() 

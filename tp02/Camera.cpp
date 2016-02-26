@@ -81,6 +81,16 @@ Component * Camera::clone(Entity * entity)
 	return camera;
 }
 
+void Camera::eraseFromEntity(Entity & entity)
+{
+	entity.erase(this);
+}
+
+void Camera::addToEntity(Entity & entity)
+{
+	entity.add(this);
+}
+
 void Camera::updateScreenSize(float screenWidth, float screenHeight)
 {
 	m_aspect = screenWidth / screenHeight;

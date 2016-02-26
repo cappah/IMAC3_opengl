@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClCompile Include="aogl.cpp" />
     <ClCompile Include="Ray.cpp" />
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Link.cpp">
       <Filter>Physic</Filter>
     </ClCompile>
@@ -90,14 +89,22 @@
     <ClCompile Include="ParticleEmitter.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="WindZone.cpp" />
     <ClCompile Include="CSpline.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="TransformNode.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WindZone.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="Link.h">
       <Filter>Physic</Filter>
     </ClInclude>
@@ -184,10 +191,19 @@
     <ClInclude Include="ParticleEmitter.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="WindZone.h" />
     <ClInclude Include="CSpline.h">
       <Filter>Math</Filter>
     </ClInclude>
+    <ClInclude Include="TransformNode.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WindZone.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

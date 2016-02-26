@@ -479,10 +479,10 @@ int main( int argc, char **argv )
 
 	// an entity with a light : 
 	Entity* newEntity = new Entity(&scene);
-	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrame, &wireframeMaterial);
 	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
 	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
-	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
+	pointLight->setBoundingBoxVisual(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 	newEntity->add(boxColliderLight).add(pointLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 	newEntity->setName("point light");
@@ -499,8 +499,8 @@ int main( int argc, char **argv )
 	MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
 
 	//colliders : 
-	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
-	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrame, &wireframeMaterial);
+	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrame, &wireframeMaterial);
 
 	//entities : 
 	
@@ -539,7 +539,7 @@ int main( int argc, char **argv )
 	Physic::Flag* flag = new Physic::Flag(tmpMat);
 
 	Entity* entity_flag = new Entity(&scene);
-	entity_flag->add(new BoxCollider(&cubeWireFrameRenderer));
+	entity_flag->add(new BoxCollider(&cubeWireFrame, &wireframeMaterial));
 	entity_flag->add(flag);
 	entity_flag->setName("flag");
 	entity_flag->endCreation();

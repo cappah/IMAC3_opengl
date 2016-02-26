@@ -24,8 +24,6 @@ namespace Physic {
 
 	WindZone::~WindZone()
 	{
-		for (int i = 0; i < 2; i++)
-			delete[] m_emissionTypeNames[i];
 		delete[] m_emissionTypeNames;
 	}
 
@@ -151,5 +149,13 @@ namespace Physic {
 		windZone->attachToEntity(entity);
 
 		return windZone;
+	}
+	void WindZone::eraseFromEntity(Entity & entity)
+	{
+		entity.erase(this);
+	}
+	void WindZone::addToEntity(Entity & entity)
+	{
+		entity.add(this);
 	}
 }

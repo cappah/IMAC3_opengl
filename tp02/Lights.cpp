@@ -100,9 +100,19 @@ void PointLight::addToScene(Scene& scene)
 	scene.add(this);
 }
 
-void PointLight::setBoundingBoxVisual(MeshRenderer * visual)
+void PointLight::addToEntity(Entity& entity)
 {
-	boundingBox.setVisual(visual);
+	entity.add(this);
+}
+
+void PointLight::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void PointLight::setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial)
+{
+	boundingBox.setVisual(visualMesh, visualMaterial);
 }
 
 void PointLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color)
@@ -156,6 +166,16 @@ Component* DirectionalLight::clone(Entity* entity)
 void DirectionalLight::addToScene(Scene& scene)
 {
 	scene.add(this);
+}
+
+void DirectionalLight::addToEntity(Entity& entity)
+{
+	entity.add(this);
+}
+
+void DirectionalLight::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
 }
 
 ////////////////////////////////////
@@ -223,9 +243,19 @@ void SpotLight::addToScene(Scene& scene)
 	scene.add(this);
 }
 
-void SpotLight::setBoundingBoxVisual(MeshRenderer * visual)
+void SpotLight::addToEntity(Entity& entity)
 {
-	boundingBox.setVisual(visual);
+	entity.add(this);
+}
+
+void SpotLight::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void SpotLight::setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial)
+{
+	boundingBox.setVisual(visualMesh, visualMaterial);
 }
 
 void SpotLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color)

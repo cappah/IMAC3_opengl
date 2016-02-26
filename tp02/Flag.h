@@ -69,6 +69,8 @@ namespace Physic {
 		virtual void eraseFromScene(Scene & scene) override;
 		virtual void addToScene(Scene & scene) override;
 		virtual Component * clone(Entity * entity) override;
+		virtual void addToEntity(Entity& entity) override;
+		virtual void eraseFromEntity(Entity& entity) override;
 
 		//return the flag mesh
 		Mesh& getMesh();

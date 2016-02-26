@@ -53,21 +53,31 @@ void PathPoint::drawUI(Scene& scene)
 	}
 }
 
-void PathPoint::eraseFromScene(Scene & scene)
+void PathPoint::eraseFromScene(Scene& scene)
 {
 	scene.erase(this);
 }
 
-void PathPoint::addToScene(Scene & scene)
+void PathPoint::addToScene(Scene& scene)
 {
 	scene.add(this);
 }
 
-Component* PathPoint::clone(Entity * entity)
+Component* PathPoint::clone(Entity* entity)
 {
 	PathPoint* pathPoint = new PathPoint(*this);
 
 	pathPoint->attachToEntity(entity);
 
 	return pathPoint;
+}
+
+void PathPoint::addToEntity(Entity& entity)
+{
+	entity.add(this);
+}
+
+void PathPoint::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
 }

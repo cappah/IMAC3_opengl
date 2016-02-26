@@ -470,8 +470,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add empty entity"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				newEntity->add(newCollider);
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
@@ -481,10 +480,9 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add pointLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto light = new PointLight();
-				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
+				light->setBoundingBoxVisual( MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("point light");
 
@@ -495,8 +493,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add directionalLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto light = new DirectionalLight();
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("directional light");
@@ -508,10 +505,9 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add spotLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto light = new SpotLight();
-				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
+				light->setBoundingBoxVisual(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("spot light");
 
@@ -522,8 +518,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add cube"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get<Material3DObject>("brick"));
 				newEntity->add(newCollider).add(meshRenderer);
 				newEntity->setName("cube");
@@ -535,8 +530,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add Camera"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto camera = new Camera();
 				newEntity->add(newCollider).add(camera);
 				newEntity->setName("camera");
@@ -548,8 +542,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add flag"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto flag = new Physic::Flag(MaterialFactory::get().get<Material3DObject>("default"), 10);
 				newEntity->add(newCollider).add(flag);
 				newEntity->setName("flag");
@@ -558,8 +551,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add path point"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto pathPoint = new PathPoint();
 				newEntity->add(newCollider).add(pathPoint);
 				newEntity->setName("path point");
@@ -568,8 +560,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add wind zone"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto windZone = new Physic::WindZone();
 				newEntity->add(newCollider).add(windZone);
 				newEntity->setName("wind zone");

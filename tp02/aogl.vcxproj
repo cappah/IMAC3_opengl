@@ -223,6 +223,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="ComponentFactory.cpp" />
     <ClCompile Include="CSpline.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -249,6 +250,7 @@
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TransformNode.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="WindZone.cpp" />
   </ItemGroup>
@@ -273,6 +275,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="ComponentFactory.h" />
     <ClInclude Include="CSpline.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="Entity.h" />
@@ -299,6 +302,7 @@
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TransformNode.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="WindZone.h" />
   </ItemGroup>

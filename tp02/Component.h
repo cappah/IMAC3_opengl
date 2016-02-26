@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "glm/glm.hpp"
 #include "glm/vec3.hpp" // glm::vec3
 #include "glm/vec4.hpp" // glm::vec4, glm::ivec4
@@ -14,8 +16,8 @@ class Scene;
 class Component
 {
 public:
-	enum ComponentType {COLLIDER, MESH_RENDERER, LIGHT, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, COMPONENT_COUNT, FLAG, PARTICLE_EMITTER, PATH_POINT, CAMERA, WIND_ZONE};
-
+	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, CAMERA, WIND_ZONE, COMPONENT_COUNT, LIGHT };
+	static const std::vector<std::string> ComponentTypeName;
 protected:
 	Entity* m_entity;
 	ComponentType m_type;
@@ -48,6 +50,9 @@ public:
 	//You normally don't have to directly call this function
 	//to add a component to the scene, call entity.add(component).
 	virtual void addToScene(Scene& scene) = 0;
+
+	virtual void eraseFromEntity(Entity& entity) = 0;
+	virtual void addToEntity(Entity& entity) = 0;
 
 	//clone a component, and attach it to the given entity
 	//This function is internally called by the copy contructor and operator=() of entity, to properly copy the entity.

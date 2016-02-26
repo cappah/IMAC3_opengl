@@ -73,7 +73,17 @@ void MeshRenderer::addToScene(Scene& scene)
 	scene.add(this);
 }
 
-void MeshRenderer::setMesh(Mesh * _mesh)
+void MeshRenderer::addToEntity(Entity& entity)
+{
+	entity.add(this);
+}
+
+void MeshRenderer::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void MeshRenderer::setMesh(Mesh* _mesh)
 {
 	if(_mesh != nullptr)
 		meshName = _mesh->name;

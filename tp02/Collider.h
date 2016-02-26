@@ -22,7 +22,8 @@ class Entity;
 
 struct Collider : public Component
 {
-	MeshRenderer* visual;
+	MaterialUnlit* visualMaterial;
+	Mesh* visualMesh;
 
 	//the offsetPosition is an offset added to the position of the collider
 	glm::vec3 offsetPosition;
@@ -35,11 +36,11 @@ struct Collider : public Component
 	glm::quat rotation;
 	glm::mat4 modelMatrix;
 
-	Collider(MeshRenderer* _visual);
+	Collider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial);
 	virtual ~Collider();
 
 	//add a visual representation to this collider
-	void setVisual(MeshRenderer* _visual);
+	void setVisual(Mesh* _visualMesh, MaterialUnlit* _visualMaterial);
 
 	//apply transform operation to this collider
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale, const glm::quat& rotation) override;
@@ -115,7 +116,7 @@ struct BoxCollider : public Collider
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
 
-	BoxCollider(MeshRenderer* _visual = nullptr);
+	BoxCollider(Mesh* _visualMesh = nullptr, MaterialUnlit* _visualMaterial = nullptr);
 
 	virtual void updateModelMatrix() override;
 	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1,0,0)) override;
@@ -124,6 +125,8 @@ struct BoxCollider : public Collider
 	virtual void drawUI(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+	virtual void addToEntity(Entity& entity) override;
+	virtual void eraseFromEntity(Entity& entity) override;
 	virtual void coverMesh(Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
 };

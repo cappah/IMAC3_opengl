@@ -25,23 +25,33 @@ namespace Physic {
 		}
 	}
 
-	void ParticleEmitter::eraseFromScene(Scene & scene)
+	void ParticleEmitter::eraseFromScene(Scene& scene)
 	{
 		scene.erase(this);
 	}
 
-	void ParticleEmitter::addToScene(Scene & scene)
+	void ParticleEmitter::addToScene(Scene& scene)
 	{
 		scene.add(this);
 	}
 
-	Component * ParticleEmitter::clone(Entity * entity)
+	Component * ParticleEmitter::clone(Entity* entity)
 	{
 		ParticleEmitter* newParticleEmitter = new ParticleEmitter(*this);
 
 		newParticleEmitter->attachToEntity(entity);
 
 		return newParticleEmitter;
+	}
+
+	void ParticleEmitter::addToEntity(Entity& entity)
+	{
+		entity.add(this);
+	}
+
+	void ParticleEmitter::eraseFromEntity(Entity& entity)
+	{
+		entity.erase(this);
 	}
 
 }

@@ -22,7 +22,6 @@ private:
 
 	Mesh mesh;
 	MaterialUnlit* material;
-	MeshRenderer meshRenderer;
 	BoxCollider collider[3];
 
 public:

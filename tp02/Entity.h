@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "glm/glm.hpp"
@@ -24,10 +25,13 @@
 
 #include "glm/gtc/quaternion.hpp"
 
+#include "TransformNode.h"
+
 //forward
 class Component;
 class Scene;
 
+/*
 class Transform
 {
 protected :
@@ -60,9 +64,9 @@ public :
 
 	virtual void onChangeModelMatrix() = 0;
 
-};
+};*/
 
-class Entity : public Transform
+class Entity : public TransformNode
 {
 private:
 
@@ -71,6 +75,9 @@ private:
 	std::string m_name;
 
 	std::vector<Component*> m_components;
+
+	std::vector<Entity*> m_childs;
+	Entity* m_parent;
 
 	//for editing : 
 	bool m_isSelected;
@@ -85,7 +92,9 @@ public:
 	virtual void onChangeModelMatrix() override;
 
 	//apply transform on this entity, and apply transform on all its components.
-	void applyTransform();
+	virtual void applyTransform() override;
+	//function to apply transform to all children.
+	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 
 	//draw the entity UI
 	void drawUI(Scene& scene);
@@ -154,5 +163,16 @@ public:
 
 	// function to get component.
 	Component* getComponent(Component::ComponentType type);
+
+	Entity* getChild(int idx);
+	Entity* getParent();
+	void setParent(Entity* child);
+	void addChild(Entity* child);
+	void removeChild(Entity* child);
+
+private:
+	void removeParent();
+	void addChildAtomic(Entity* child);
+	void setParentAtomic(Entity* parent);
 
 };

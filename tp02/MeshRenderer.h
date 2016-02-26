@@ -28,6 +28,8 @@ public:
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+	virtual void addToEntity(Entity& entity) override;
+	virtual void eraseFromEntity(Entity& entity) override;
 
 	void setMesh(Mesh* _mesh);
 	void setMaterial(Material3DObject* _material);
