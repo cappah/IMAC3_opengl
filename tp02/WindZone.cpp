@@ -115,21 +115,18 @@ namespace Physic {
 
 	void WindZone::drawUI(Scene & scene)
 	{
-		if (ImGui::CollapsingHeader("wind zone"))
-		{
-			if (ImGui::InputFloat("amplitude", &m_amplitude))
-				updateSpline();
-			if (ImGui::InputFloat("frequency", &m_frequency))
-				updateSpline();
-			if (ImGui::InputFloat("random factor", &m_randomFactor))
-				updateSpline();
-			int currentItemTypeEmission = (int)m_emissionType;
-			if (ImGui::ListBox("emission type", &currentItemTypeEmission, m_emissionTypeNames, 2))
-				m_emissionType = (EmissionType)currentItemTypeEmission;
-			if (ImGui::RadioButton("attenuation", m_isAttenuated))
-				m_isAttenuated = !m_isAttenuated;
-			ImGui::SliderFloat("radius", &m_radius, 0.1f, 500.f);
-		}
+		if (ImGui::InputFloat("amplitude", &m_amplitude))
+			updateSpline();
+		if (ImGui::InputFloat("frequency", &m_frequency))
+			updateSpline();
+		if (ImGui::InputFloat("random factor", &m_randomFactor))
+			updateSpline();
+		int currentItemTypeEmission = (int)m_emissionType;
+		if (ImGui::ListBox("emission type", &currentItemTypeEmission, m_emissionTypeNames, 2))
+			m_emissionType = (EmissionType)currentItemTypeEmission;
+		if (ImGui::RadioButton("attenuation", m_isAttenuated))
+			m_isAttenuated = !m_isAttenuated;
+		ImGui::SliderFloat("radius", &m_radius, 0.1f, 500.f);
 	}
 
 	void WindZone::eraseFromScene(Scene & scene)

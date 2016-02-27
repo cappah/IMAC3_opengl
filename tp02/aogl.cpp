@@ -44,6 +44,8 @@
 #include "Flag.h"
 #include "Scene.h"
 
+#include "jsoncpp/json/json.h"
+
 #ifndef DEBUG_PRINT
 #define DEBUG_PRINT 1
 #endif
@@ -81,6 +83,16 @@ void window_size_callback(GLFWwindow* window, int width, int height)
 
 int main( int argc, char **argv )
 {
+
+	Json::Value root;
+	root["keyString"] = "value";
+	root["keyInt"] = 1;
+	root["keyFloat"] = 1.2f;
+	root["keyBool"] = true;
+	Json::StyledWriter writer;
+	std::string output = writer.write(root);
+	std::cout << output << std::endl;
+
     //int width = 1024, height= 768;
 	int width = 1024, height = 680;
     float widthf = (float) width, heightf = (float) height;

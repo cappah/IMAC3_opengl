@@ -232,6 +232,7 @@
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="imgui_extension.cpp" />
     <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="lib\jsoncpp\jsoncpp.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Lights.cpp" />
     <ClCompile Include="Link.cpp" />
@@ -285,6 +286,8 @@
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="imgui_extension.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="lib\jsoncpp\json\json-forwards.h" />
+    <ClInclude Include="lib\jsoncpp\json\json.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Link.h" />

@@ -86,18 +86,50 @@ void Entity::applyTransform()
 	for (auto& e : m_childs)
 	{
 		e->applyTransform(m_translation, m_scale, m_rotation);
+		//e->applyTransform(); //recursivity on all childs
 	}
 }
 
 void Entity::applyTransform(const glm::vec3 & parentTranslation, const glm::vec3 & parentScale, const glm::quat & parentRotation)
 {
-	m_translation = m_localTranslation + parentTranslation;
+	m_translation = parentRotation * m_localTranslation + parentTranslation;
 	m_scale = m_localScale * parentScale;
 	m_rotation = m_localRotation * parentRotation;
 
-	//combine transforms to get world model matrix of the model
-	//and make the child launch applyTransform recursivly
+	//glm::mat4 updateMatrix = glm::translate(glm::mat4(1), parentTranslation);// *glm::mat4_cast(parentRotation);// *glm::scale(glm::mat4(1), parentScale);
+
+	////combine transforms to get world model matrix of the model
+	////and make the child launch applyTransform recursivly
+	setParentTransform(parentTranslation, parentScale, parentRotation);
 	updateModelMatrix();
+}
+
+
+void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId)
+{
+	bool nodeOpen = false;
+
+	ImVec2 itemPos;
+	ImVec2 itemSize;
+	if (ImGui::MyTreeNode("", itemPos, itemSize))
+		nodeOpen = true;
+	ImGui::SameLine();
+
+
+	ImGui::Text(Component::ComponentTypeName[component->type()].c_str());//, ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
+
+	ImGui::SameLine();
+	if (ImGui::Button("remove"))
+	{
+		hasToRemoveComponent = true;
+		removeId = id;
+	}
+
+	if(nodeOpen)
+		component->drawUI(scene);
+
+	if (nodeOpen)
+		ImGui::TreePop();
 }
 
 void Entity::drawUI(Scene& scene)
@@ -111,7 +143,7 @@ void Entity::drawUI(Scene& scene)
 		m_name = tmpName;
 	}
 
-	TransformNode::drawUI();
+	TransformNode::drawUI(hasParent());
 
 	bool hasToRemoveComponent = false;
 	int removeId = 0;
@@ -119,26 +151,27 @@ void Entity::drawUI(Scene& scene)
 	for (int i = 0; i < m_components.size(); i++)
 	{
 		ImGui::PushID(i);
-		ImGui::Separator();
-		/*const float frame_height = 10;
-		ImRect bb = ImRect(ImGui::GetCurrentWindow()->DC.CursorPos, ImVec2(ImGui::GetCurrentWindow()->Pos.x + ImGui::GetContentRegionMax().x, ImGui::GetCurrentWindow()->DC.CursorPos.y + frame_height));
-		bool hovered, held;
-		const ImGuiID id = ImGui::GetCurrentWindow()->DC. ->GetID(str_id);
-		bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoKeyModifiers);
-		ImGui::RenderCollapseTriangle(bb.Min, false);*/
-		if (ImGui::Button("expend"))
-			expendComponent = true;
-		ImGui::SameLine();
-		ImGui::Text(Component::ComponentTypeName[m_components[i]->type()].c_str());
-		ImGui::SameLine();
-		if (ImGui::Button("remove"))
-		{
-			hasToRemoveComponent = true;
-			removeId = i;
-		}	
-		ImGui::Separator();
-		if(expendComponent)
-			m_components[i]->drawUI(scene);
+		//ImGui::Separator();
+		///*const float frame_height = 10;
+		//ImRect bb = ImRect(ImGui::GetCurrentWindow()->DC.CursorPos, ImVec2(ImGui::GetCurrentWindow()->Pos.x + ImGui::GetContentRegionMax().x, ImGui::GetCurrentWindow()->DC.CursorPos.y + frame_height));
+		//bool hovered, held;
+		//const ImGuiID id = ImGui::GetCurrentWindow()->DC. ->GetID(str_id);
+		//bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoKeyModifiers);
+		//ImGui::RenderCollapseTriangle(bb.Min, false);*/
+		//if (ImGui::Button("expend"))
+		//	expendComponent = true;
+		//ImGui::SameLine();
+		//ImGui::Text(Component::ComponentTypeName[m_components[i]->type()].c_str());
+		//ImGui::SameLine();
+		//if (ImGui::Button("remove"))
+		//{
+		//	hasToRemoveComponent = true;
+		//	removeId = i;
+		//}	
+		//ImGui::Separator();
+		//if(expendComponent)
+		//	m_components[i]->drawUI(scene);
+		displayTreeNodeInspector(scene, m_components[i], i, hasToRemoveComponent, removeId);
 
 		ImGui::PopID();
 
@@ -493,7 +526,7 @@ void Entity::setParent(Entity* parent)
 	if (m_parent != nullptr)
 		removeParent();
 
-	m_parent = parent;
+	setParentAtomic(parent);
 	if(m_parent != nullptr)
 		m_parent->addChildAtomic(this);
 }
@@ -546,4 +579,9 @@ void Entity::addChildAtomic(Entity* child)
 void Entity::setParentAtomic(Entity* parent)
 {
 	m_parent = parent;
+
+	if (m_parent == nullptr)
+		setParentTransform();
+	else
+		setParentTransform(*m_parent);
 }

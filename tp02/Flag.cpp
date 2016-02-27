@@ -574,41 +574,38 @@ namespace Physic {
 
 	void Flag::drawUI(Scene& scene)
 	{
-		if (ImGui::CollapsingHeader("flag"))
+		if (ImGui::InputFloat("mass", &m_mass))
+			updatePhysic();
+		if(ImGui::InputFloat("viscosity", &m_viscosity))
+			updatePhysic();
+		if(ImGui::InputFloat("rigidity", &m_rigidity))
+			updatePhysic();
+
+		int tmpSub = m_subdivision;
+		if (ImGui::InputInt("subdivision", &m_subdivision))
 		{
-			if (ImGui::InputFloat("mass", &m_mass))
-				updatePhysic();
-			if(ImGui::InputFloat("viscosity", &m_viscosity))
-				updatePhysic();
-			if(ImGui::InputFloat("rigidity", &m_rigidity))
-				updatePhysic();
-
-			int tmpSub = m_subdivision;
-			if (ImGui::InputInt("subdivision", &m_subdivision))
-			{
-				m_mass *= ((m_subdivision * m_subdivision) / (float)(tmpSub*tmpSub)); // change mass because we add matter, otherwise the system isn't stable
-				regenerateFlag();
-			}
-
-			if (ImGui::Button("restart simulation"))
-				restartSimulation();
-
-			char tmpMaterialName[20];
-			m_materialName.copy(tmpMaterialName, m_materialName.size());
-			tmpMaterialName[m_materialName.size()] = '\0';
-
-			if (ImGui::InputText("materialName", tmpMaterialName, 20))
-			{
-				m_materialName = tmpMaterialName;
-
-				if (MaterialFactory::get().contains<Material3DObject>(m_materialName))
-				{
-					m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
-				}
-			}
-
-			m_material->drawUI();
+			m_mass *= ((m_subdivision * m_subdivision) / (float)(tmpSub*tmpSub)); // change mass because we add matter, otherwise the system isn't stable
+			regenerateFlag();
 		}
+
+		if (ImGui::Button("restart simulation"))
+			restartSimulation();
+
+		char tmpMaterialName[20];
+		m_materialName.copy(tmpMaterialName, m_materialName.size());
+		tmpMaterialName[m_materialName.size()] = '\0';
+
+		if (ImGui::InputText("materialName", tmpMaterialName, 20))
+		{
+			m_materialName = tmpMaterialName;
+
+			if (MaterialFactory::get().contains<Material3DObject>(m_materialName))
+			{
+				m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
+			}
+		}
+
+		m_material->drawUI();
 	}
 
 	void Flag::applyForce(const glm::vec3 & force)

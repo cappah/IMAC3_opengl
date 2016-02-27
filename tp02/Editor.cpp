@@ -127,7 +127,7 @@ void Inspector::drawUI(const std::vector<Entity*>& entities)
 		{
 			entity->setEulerRotation(vector3Value);
 			//entity->setRotation(glm::quat(vector3Value));
-			entity->applyTransform();
+			//entity->applyTransform();
 		}
 	}
 
@@ -137,7 +137,7 @@ void Inspector::drawUI(const std::vector<Entity*>& entities)
 		for (auto& entity : entities)
 		{
 			entity->setScale(vector3Value);
-			entity->applyTransform();
+			//entity->applyTransform();
 		}
 	}
 }
@@ -672,59 +672,89 @@ void Editor::displayTopLeftWindow(Scene& scene)
 }
 
 
+
+
 void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected)
 {
 	ImGui::PushID(entityId);
+	bool nodeOpen = false;
 
-	if (ImGui::TreeNode(""))
+	bool isSelected = entity->getIsSelected();
+	if (isSelected)
 	{
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		//ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1, 1, 0, 1));
+		//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0, 0, 1));
+		//ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0.8, 0.8, 1));
+	}
 
-		bool isSelected = entity->getIsSelected();
+	ImVec2 itemPos;
+	ImVec2 itemSize;
+	if (ImGui::MyTreeNode( std::to_string(entityId).c_str(), itemPos, itemSize))
+		nodeOpen = true;
+	ImGui::SameLine();
 
+
+	if (ImGui::Button(entity->getName().c_str(), ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
+	{
 		if (isSelected)
 		{
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 1, 1, 1));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0.2, 0.2, 1));
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0.8, 0.8, 1));
+			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
+			m_camera->setTranslation(cameraFinalPosition);
 		}
+		else
+			changeCurrentSelected(entity);
+	}
 
-		if (ImGui::Button(entity->getName().c_str(), ImVec2(m_bottomLeftPanelRect.z - 105.f, 16.f)))
-		{
-			if (isSelected)
-			{
-				glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
-				m_camera->setTranslation(cameraFinalPosition);
-			}
-			else
-				changeCurrentSelected(entity);
-		}
+	ImGui::SameLine();
+
+	if (ImGui::Button("<"))
+	{
+		setParenting = true;
+		parentToAttachSelected = entity;
+	}
+
+	if (nodeOpen)
+	{
 		if (isSelected)
 		{
-			ImGui::PopStyleColor();
-			ImGui::PopStyleColor();
-			ImGui::PopStyleColor();
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("<"))
-		{
-			setParenting = true;
-			parentToAttachSelected = entity;
+			//ImGui::PopStyleColor();
+			//ImGui::PopStyleColor();
+			//ImGui::PopStyleColor();
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
 		}
 
 		for (int c = 0; c < entity->getChildCount(); c++)
+		{
+			entityId++;
 			displayTreeEntityNode(entity->getChild(c), entityId, setParenting, parentToAttachSelected);
-
-		ImGui::TreePop();
+		}
 	}
+
+	if(nodeOpen)
+		ImGui::TreePop();
+
+	if (isSelected && !nodeOpen)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
+		//ImGui::PopStyleColor();
+		//ImGui::PopStyleColor();
+		//ImGui::PopStyleColor();
+	}
+
 	ImGui::PopID();
 	entityId++;
 }
 
 void Editor::displayBottomLeftWindow(Scene& scene)
 {
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4, 0.4, 0.4, 0.2));
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2) );
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
 
@@ -892,14 +922,14 @@ void Editor::renderUI(Scene& scene)
 			ImGui::EndChild();
 
 
-				ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
-				if (ImGui::IsItemActive())
-				{
-					m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
-					if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
-					else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
-					updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
-				}
+				//ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
+				//if (ImGui::IsItemActive())
+				//{
+				//	m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
+				//	if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
+				//	else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
+				//	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+				//}
 			ImGui::Separator();
 				ImGui::InvisibleButton("hSplitter1", ImVec2(m_topLeftPanelRect.z, 8.f));
 				if (ImGui::IsItemActive())
@@ -909,6 +939,7 @@ void Editor::renderUI(Scene& scene)
 					else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
 					updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
 				}
+			ImGui::Separator();
 
 			ImGui::BeginChild("bottomLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_bottomLeftPanelRect.w - 16.f));
 				displayBottomLeftWindow(scene);
@@ -937,6 +968,7 @@ void Editor::renderUI(Scene& scene)
 	ImGui::Begin("bottomWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
 	
 	ImGui::InvisibleButton("hsplitter", ImVec2(m_bottomPanelRect.z, 20.f));
+	//ImGui::Separator();
 	if (ImGui::IsItemActive())
 	{
 		m_bottomPanelRect.w -= ImGui::GetIO().MouseDelta.y;

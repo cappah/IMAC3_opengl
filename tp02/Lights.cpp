@@ -64,13 +64,10 @@ void PointLight::updateBoundingBox()
 
 void PointLight::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("point light"))
-	{
-		if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
-			updateBoundingBox();
-		if (ImGui::ColorEdit3("light color", &color[0]))
-			updateBoundingBox();
-	}
+	if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
+		updateBoundingBox();
+	if (ImGui::ColorEdit3("light color", &color[0]))
+		updateBoundingBox();
 }
 
 void PointLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)

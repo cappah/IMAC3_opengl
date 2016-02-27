@@ -33,32 +33,29 @@ void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & sca
 
 void Camera::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("camera"))
+	if (ImGui::RadioButton("perspective", (m_cameraMode == CameraMode::PERSPECTIVE)))
 	{
-		if (ImGui::RadioButton("perspective", (m_cameraMode == CameraMode::PERSPECTIVE)))
-		{
-			m_cameraMode = CameraMode::PERSPECTIVE;
-		}
-		if(ImGui::RadioButton("orthographic", (m_cameraMode == CameraMode::ORTHOGRAPHIC)))
-		{
-			m_cameraMode = CameraMode::ORTHOGRAPHIC;
-		}
-		if (ImGui::SliderFloat("fov", &(m_fovy), 0.f, glm::pi<float>()))
-		{
-			updateProjection();
-		}
-		if (ImGui::SliderFloat("near", &(m_zNear), 0.001f, 5.f))
-		{
-			updateProjection();
-		}
-		if (ImGui::SliderFloat("far", &(m_zFar), 0.01f, 1000.f))
-		{
-			updateProjection();
-		}
-		if (ImGui::SliderFloat("aspect", &(m_aspect), 0.01f, 10.f))
-		{
-			updateProjection();
-		}
+		m_cameraMode = CameraMode::PERSPECTIVE;
+	}
+	if(ImGui::RadioButton("orthographic", (m_cameraMode == CameraMode::ORTHOGRAPHIC)))
+	{
+		m_cameraMode = CameraMode::ORTHOGRAPHIC;
+	}
+	if (ImGui::SliderFloat("fov", &(m_fovy), 0.f, glm::pi<float>()))
+	{
+		updateProjection();
+	}
+	if (ImGui::SliderFloat("near", &(m_zNear), 0.001f, 5.f))
+	{
+		updateProjection();
+	}
+	if (ImGui::SliderFloat("far", &(m_zFar), 0.01f, 1000.f))
+	{
+		updateProjection();
+	}
+	if (ImGui::SliderFloat("aspect", &(m_aspect), 0.01f, 10.f))
+	{
+		updateProjection();
 	}
 }
 

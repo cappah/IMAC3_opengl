@@ -6,6 +6,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
+#include "imgui_extension.h"
 
 #include "glm/glm.hpp"
 #include "glm/vec3.hpp" // glm::vec3
@@ -96,6 +97,8 @@ public:
 	//function to apply transform to all children.
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 
+	//helper to draw UI : 
+	void displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId);
 	//draw the entity UI
 	void drawUI(Scene& scene);
 

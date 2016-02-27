@@ -1,9 +1,10 @@
 #include "TransformNode.h"
 
 
-TransformNode::TransformNode() : m_translation(0, 0, 0), m_scale(1, 1, 1)
+TransformNode::TransformNode() : m_translation(0, 0, 0), m_scale(1, 1, 1), m_eulerRotation(0, 0, 0), m_localEulerRotation(0, 0, 0), m_localScale(1, 1, 1), m_localTranslation(0, 0, 0)
 {
-
+	//init parent transform to identity
+	setParentTransform();
 }
 
 TransformNode::~TransformNode()
@@ -36,9 +37,30 @@ glm::vec3 TransformNode::getEulerRotation()
 	return m_eulerRotation;
 }
 
+glm::vec3 TransformNode::getLocalTranslation()
+{
+	return m_localTranslation;
+}
+
+glm::vec3 TransformNode::getLocalScale()
+{
+	return m_localScale;
+}
+
+glm::quat TransformNode::getLocalRotation()
+{
+	return m_localRotation;
+}
+
+glm::vec3 TransformNode::getLocalEulerRotation()
+{
+	return m_localEulerRotation;
+}
+
 void TransformNode::translate(glm::vec3 const& t)
 {
 	m_translation += t;
+	m_localTranslation += t;
 
 	updateModelMatrix();
 }
@@ -46,6 +68,7 @@ void TransformNode::translate(glm::vec3 const& t)
 void TransformNode::setTranslation(glm::vec3 const& t)
 {
 	m_translation = t;
+	m_localTranslation = t;
 
 	updateModelMatrix();
 }
@@ -53,6 +76,7 @@ void TransformNode::setTranslation(glm::vec3 const& t)
 void TransformNode::scale(glm::vec3 const& s)
 {
 	m_scale *= s;
+	m_localScale *= s;
 
 	updateModelMatrix();
 }
@@ -60,6 +84,7 @@ void TransformNode::scale(glm::vec3 const& s)
 void TransformNode::setScale(glm::vec3 const& s)
 {
 	m_scale = s;
+	m_localScale = s;
 
 	updateModelMatrix();
 }
@@ -67,6 +92,7 @@ void TransformNode::setScale(glm::vec3 const& s)
 void TransformNode::rotate(glm::quat const& q)
 {
 	m_rotation *= q;
+	m_localRotation *= q;
 
 	updateModelMatrix();
 }
@@ -74,6 +100,7 @@ void TransformNode::rotate(glm::quat const& q)
 void TransformNode::setRotation(glm::quat const& q)
 {
 	m_rotation = q;
+	m_localRotation = q;
 
 	updateModelMatrix();
 }
@@ -81,33 +108,118 @@ void TransformNode::setRotation(glm::quat const& q)
 void TransformNode::setEulerRotation(glm::vec3 const & q)
 {
 	m_eulerRotation = q;
+	m_localEulerRotation = q;
 	setRotation(glm::quat(m_eulerRotation));
 
 	updateModelMatrix();
 }
 
+void TransformNode::localTranslate(glm::vec3 const & t)
+{
+	m_localTranslation += t;
+
+	updateModelMatrix();
+}
+
+void TransformNode::setLocalTranslation(glm::vec3 const & t)
+{
+	m_localTranslation = t;
+
+	updateModelMatrix();
+}
+
+void TransformNode::localScale(glm::vec3 const & s)
+{
+	m_localScale += s;
+
+	updateModelMatrix();
+}
+
+void TransformNode::setLocalScale(glm::vec3 const & s)
+{
+	m_localScale = s;
+
+	updateModelMatrix();
+}
+
+void TransformNode::localRotate(glm::quat const & q)
+{
+	m_localRotation *= q;
+
+	updateModelMatrix();
+}
+
+void TransformNode::setLocalRotation(glm::quat const & q)
+{
+	m_localRotation = q;
+
+	updateModelMatrix();
+}
+
+void TransformNode::setLocalEulerRotation(glm::vec3 const & q)
+{
+	m_localEulerRotation = q;
+	setLocalRotation(glm::quat(m_localEulerRotation));
+}
+
+void TransformNode::setParentTransform(const glm::vec3& parentTranslation, const glm::vec3& parentScale, const glm::quat& parentRotation)
+{
+	m_parentRotation = parentRotation;
+	m_parentTranslation = parentTranslation;
+	m_parentScale = parentScale;
+}
+
+void TransformNode::setParentTransform(const TransformNode & parentTransform)
+{
+	setParentTransform(m_translation, m_scale, m_rotation);
+}
+
 void TransformNode::updateModelMatrix()
 {
+	m_translation = m_parentRotation * m_localTranslation + m_parentTranslation;
+	m_scale = m_localScale * m_parentScale;
+	m_rotation = m_localRotation * m_parentRotation;
+
 	m_modelMatrix = glm::translate(glm::mat4(1), m_translation) * glm::mat4_cast(m_rotation) * glm::scale(glm::mat4(1), m_scale);
 
 	onChangeModelMatrix();
 }
 
-void TransformNode::drawUI()
+void TransformNode::drawUI(bool local)
 {
-	glm::vec3 tmpRot = m_eulerRotation * (180.f / glm::pi<float>());
-	if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 360))
+	if (!local)
 	{
-		//m_eulerRotation = tmpRot * glm::pi<float>() / 180.f;
-		//setRotation(glm::quat(m_eulerRotation));
-		setEulerRotation(tmpRot * glm::pi<float>() / 180.f);
-		applyTransform();
-	}
+		glm::vec3 tmpRot = m_eulerRotation * (180.f / glm::pi<float>());
+		if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 360))
+		{
+			//m_eulerRotation = tmpRot * glm::pi<float>() / 180.f;
+			//setRotation(glm::quat(m_eulerRotation));
 
-	glm::vec3 tmpScale = m_scale;
-	if (ImGui::InputFloat3("scale", &tmpScale[0]))
+			setEulerRotation(tmpRot * glm::pi<float>() / 180.f);
+			applyTransform();
+		}
+
+		glm::vec3 tmpScale = m_scale;
+		if (ImGui::InputFloat3("scale", &tmpScale[0]))
+		{
+			setScale(tmpScale);
+			applyTransform();
+		}
+	}
+	else
 	{
-		setScale(tmpScale);
-		applyTransform();
+		glm::vec3 tmpRot = m_localEulerRotation * (180.f / glm::pi<float>());
+		if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 360))
+		{
+			setLocalEulerRotation(tmpRot * glm::pi<float>() / 180.f);
+			applyTransform();
+		}
+
+		glm::vec3 tmpScale = m_localScale;
+		if (ImGui::InputFloat3("scale", &tmpScale[0]))
+		{
+			setLocalScale(tmpScale);
+			applyTransform();
+		}
 	}
 }

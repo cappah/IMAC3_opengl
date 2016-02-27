@@ -19,10 +19,7 @@ namespace Physic {
 
 	void ParticleEmitter::drawUI(Scene& scene)
 	{
-		if (ImGui::CollapsingHeader("particle emitter"))
-		{
-			//TODO
-		}
+		//TODO
 	}
 
 	void ParticleEmitter::eraseFromScene(Scene& scene)

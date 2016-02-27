@@ -35,21 +35,18 @@ int PathPoint::getPathId() const
 
 void PathPoint::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("Path point"))
+	int oldPathId = m_pathId;
+	if (ImGui::InputInt("path id", &m_pathId))
 	{
-		int oldPathId = m_pathId;
-		if (ImGui::InputInt("path id", &m_pathId))
-		{
-			scene.getPathManager().updatePathId(m_pathId, oldPathId, this);
-		}
-		if (ImGui::InputInt("point index", &m_pointIdx))
-		{
-			scene.getPathManager().updatePointIdx(m_pathId);
-		}
-		if (ImGui::Button("update visual"))
-		{
-			scene.getPathManager().updateVisual(m_pathId);
-		}
+		scene.getPathManager().updatePathId(m_pathId, oldPathId, this);
+	}
+	if (ImGui::InputInt("point index", &m_pointIdx))
+	{
+		scene.getPathManager().updatePointIdx(m_pathId);
+	}
+	if (ImGui::Button("update visual"))
+	{
+		scene.getPathManager().updateVisual(m_pathId);
 	}
 }
 

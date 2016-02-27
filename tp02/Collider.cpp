@@ -274,10 +274,7 @@ bool BoxCollider::isIntersectedByRay(const Ray& ray, float* t)
 
 void BoxCollider::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("collider"))
-	{
-		Collider::drawUI(scene);
-	}
+	Collider::drawUI(scene);
 }
 
 Component* BoxCollider::clone(Entity* entity)
