@@ -164,11 +164,15 @@ public:
 	// function to get component.
 	Component* getComponent(Component::ComponentType type);
 
+	bool hasParent() const;
+	bool hasChild() const;
 	Entity* getChild(int idx);
 	Entity* getParent();
 	void setParent(Entity* child);
 	void addChild(Entity* child);
 	void removeChild(Entity* child);
+	void eraseAllChilds();
+	int getChildCount() const;
 
 private:
 	void removeParent();

@@ -133,6 +133,7 @@ public:
 	void displayMenuBar(Scene& scene);
 	void displayTopLeftWindow(Scene& scene);
 	void displayBottomWindow(Scene& scene);
+	void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
 	void displayBottomLeftWindow(Scene& scene);
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();

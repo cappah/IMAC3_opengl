@@ -671,6 +671,57 @@ void Editor::displayTopLeftWindow(Scene& scene)
 	}
 }
 
+
+void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected)
+{
+	ImGui::PushID(entityId);
+
+	if (ImGui::TreeNode(""))
+	{
+
+		bool isSelected = entity->getIsSelected();
+
+		if (isSelected)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 1, 1, 1));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0.2, 0.2, 1));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0.8, 0.8, 1));
+		}
+
+		if (ImGui::Button(entity->getName().c_str(), ImVec2(m_bottomLeftPanelRect.z - 105.f, 16.f)))
+		{
+			if (isSelected)
+			{
+				glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
+				m_camera->setTranslation(cameraFinalPosition);
+			}
+			else
+				changeCurrentSelected(entity);
+		}
+		if (isSelected)
+		{
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("<"))
+		{
+			setParenting = true;
+			parentToAttachSelected = entity;
+		}
+
+		for (int c = 0; c < entity->getChildCount(); c++)
+			displayTreeEntityNode(entity->getChild(c), entityId, setParenting, parentToAttachSelected);
+
+		ImGui::TreePop();
+	}
+	ImGui::PopID();
+	entityId++;
+}
+
 void Editor::displayBottomLeftWindow(Scene& scene)
 {
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4, 0.4, 0.4, 0.2));
@@ -680,18 +731,27 @@ void Editor::displayBottomLeftWindow(Scene& scene)
 	auto entities = scene.getEntities();
 
 	int entityId = 0;
+	bool setParenting = false;
+	Entity* parentToAttachSelected = nullptr;
 	for (auto& entity : entities)
 	{
-		ImGui::PushID(entityId);
-		if (ImGui::Button(entity->getName().c_str(), ImVec2(m_bottomLeftPanelRect.z - 35.f, 16.f)))
+		if (!entity->hasParent())
 		{
-			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
-			m_camera->setTranslation(cameraFinalPosition);
-
-			changeCurrentSelected(entity);
+			displayTreeEntityNode(entity, entityId, setParenting, parentToAttachSelected);
 		}
-		ImGui::PopID();
-		entityId++;
+	}
+
+	if (setParenting)
+	{
+		if (parentToAttachSelected->getIsSelected())
+			parentToAttachSelected->setParent(nullptr);
+		else
+		{
+			for (int i = 0; i < m_currentSelected.size(); i++)
+			{
+				m_currentSelected[i]->setParent(parentToAttachSelected);
+			}
+		}
 	}
 
 	ImGui::PopStyleColor();

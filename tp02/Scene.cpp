@@ -74,20 +74,20 @@ Scene & Scene::add(Camera * camera)
 	return *this;
 }
 
-Scene & Scene::add(Physic::WindZone * windZone)
+Scene & Scene::add(Physic::WindZone* windZone)
 {
 	m_windZones.push_back(windZone);
 	return *this;
 }
 
-Scene& Scene::erase(Entity * entity)
+Scene& Scene::erase(Entity* entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
 
 	if (findIt != m_entities.end())
 	{
-		delete *findIt;
 		m_entities.erase(findIt);
+		delete entity;
 	}
 
 	return *this;

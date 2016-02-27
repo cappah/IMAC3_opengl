@@ -3,12 +3,12 @@
 #include "Scene.h"
 #include "ComponentFactory.h"
 
-Entity::Entity(Scene* scene) : TransformNode(), m_scene(scene), m_isSelected(false), m_name("default_entity")
+Entity::Entity(Scene* scene) : TransformNode(), m_scene(scene), m_isSelected(false), m_name("default_entity"), m_parent(nullptr)
 {
 	scene->add(this);
 }
 
-Entity::Entity(const Entity& other) : TransformNode(other), m_isSelected(other.m_isSelected), m_name(other.m_name), m_scene(other.m_scene)
+Entity::Entity(const Entity& other) : TransformNode(other), m_isSelected(other.m_isSelected), m_name(other.m_name), m_scene(other.m_scene), m_parent(other.m_parent)
 {
 	m_scene->add(this);
 
@@ -21,6 +21,12 @@ Entity::Entity(const Entity& other) : TransformNode(other), m_isSelected(other.m
 		//add to entity
 		m_components.push_back(newComponent);
 	}
+	eraseAllChilds();
+	for (int i = 0; i < other.m_childs.size(); i++)
+	{
+		auto newEntity = new Entity(*other.m_childs[i]);
+		m_childs.push_back(newEntity);
+	}
 
 	updateModelMatrix();
 }
@@ -32,6 +38,7 @@ Entity& Entity::operator=(const Entity& other)
 	m_isSelected = other.m_isSelected;
 	m_name = other.m_name;
 	m_scene = other.m_scene;
+	m_parent = other.m_parent;
 
 	m_scene->add(this);
 
@@ -45,13 +52,21 @@ Entity& Entity::operator=(const Entity& other)
 		//add to entity
 		m_components.push_back(newComponent);
 	}
+	eraseAllChilds();
+	for (int i = 0; i < other.m_childs.size(); i++)
+	{
+		auto newEntity = new Entity(*other.m_childs[i]);
+		m_childs.push_back(newEntity);
+	}
 
 	return *this;
 }
 
 Entity::~Entity()
 {
+	setParent(nullptr);
 	eraseAllComponents();
+	eraseAllChilds();
 }
 
 void Entity::onChangeModelMatrix()
@@ -453,6 +468,16 @@ Component* Entity::getComponent(Component::ComponentType type)
 	return nullptr;
 }
 
+bool Entity::hasParent() const
+{
+	return m_parent != nullptr;
+}
+
+bool Entity::hasChild() const
+{
+	return m_childs.size() > 0;
+}
+
 Entity* Entity::getChild(int idx)
 {
 	return m_childs[idx];
@@ -469,7 +494,8 @@ void Entity::setParent(Entity* parent)
 		removeParent();
 
 	m_parent = parent;
-	m_parent->addChildAtomic(this);
+	if(m_parent != nullptr)
+		m_parent->addChildAtomic(this);
 }
 
 void Entity::addChild(Entity* child)
@@ -488,9 +514,28 @@ void Entity::removeParent()
 
 void Entity::removeChild(Entity* child)
 {
-	auto findIt = std::find(m_childs.begin(), m_childs.end(), child);
-	if (findIt != m_childs.end())
-		m_childs.erase(findIt);
+	if (m_childs.size() > 0) //has childs ?
+	{
+		auto findIt = std::find(m_childs.begin(), m_childs.end(), child);
+		if (findIt != m_childs.end())
+			m_childs.erase(findIt);
+	}
+}
+
+void Entity::eraseAllChilds()
+{
+	while(m_childs.size() > 0)
+	{
+		m_scene->erase(m_childs.back());
+		//m_childs[i] = nullptr;
+	}
+	if(m_childs.size() > 0)
+		m_childs.clear();
+}
+
+int Entity::getChildCount() const
+{
+	return m_childs.size();
 }
 
 void Entity::addChildAtomic(Entity* child)

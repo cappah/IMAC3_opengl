@@ -230,6 +230,7 @@
     <ClCompile Include="Factories.cpp" />
     <ClCompile Include="Flag.cpp" />
     <ClCompile Include="Gizmo.cpp" />
+    <ClCompile Include="imgui_extension.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Lights.cpp" />
@@ -282,6 +283,7 @@
     <ClInclude Include="Factories.h" />
     <ClInclude Include="Flag.h" />
     <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="imgui_extension.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Lights.h" />

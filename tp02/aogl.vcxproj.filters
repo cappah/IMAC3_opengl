@@ -102,6 +102,9 @@
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="ComponentFactory.cpp" />
+    <ClCompile Include="imgui_extension.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -204,6 +207,9 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="ComponentFactory.h" />
+    <ClInclude Include="imgui_extension.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
