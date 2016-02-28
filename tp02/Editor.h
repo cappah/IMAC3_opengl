@@ -119,6 +119,9 @@ private:
 	glm::vec4 m_bottomLeftPanelRect;
 	glm::vec4 m_bottomPanelRect;
 
+	char m_savePath[60];
+	char m_loadPath[60];
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 

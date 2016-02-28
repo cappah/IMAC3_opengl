@@ -101,12 +101,14 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="ComponentFactory.cpp" />
     <ClCompile Include="imgui_extension.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="lib\jsoncpp\jsoncpp.cpp">
       <Filter>JsonCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentFactory.cpp">
+      <Filter>Resources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -209,7 +211,6 @@
     <ClInclude Include="Camera.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="ComponentFactory.h" />
     <ClInclude Include="imgui_extension.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -218,6 +219,9 @@
     </ClInclude>
     <ClInclude Include="lib\jsoncpp\json\json-forwards.h">
       <Filter>JsonCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentFactory.h">
+      <Filter>Resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

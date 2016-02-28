@@ -48,3 +48,100 @@ int idx2DToIdx1D(int i, int j, int array2DWidth);
 bool rayOBBoxIntersect(glm::vec3 Start, glm::vec3 Dir, glm::vec3 P, glm::vec3 H[3], glm::vec3 E, float* t);
 bool raySlabIntersect(float start, float dir, float min, float max, float* tfirst, float* tlast);
 
+Json::Value& toJsonValue(const glm::vec2& vec)
+{
+	return Json::Value(Json::arrayValue).append(vec.x).append(vec.y);
+}
+
+Json::Value& toJsonValue(const glm::vec3& vec)
+{
+	return Json::Value(Json::arrayValue).append(vec.x).append(vec.y).append(vec.z);
+}
+
+Json::Value& toJsonValue(const glm::vec4& vec)
+{
+	return Json::Value(Json::arrayValue).append(vec.x).append(vec.y).append(vec.z).append(vec.w);
+}
+
+Json::Value& toJsonValue(const glm::quat& quat)
+{
+	return Json::Value(Json::arrayValue).append(quat.x).append(quat.y).append(quat.z).append(quat.w);
+}
+
+Json::Value& toJsonValue(const glm::mat3& mat)
+{
+	Json::Value formatedValue(Json::arrayValue);
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			formatedValue.append(mat[i][j]);
+		}
+	}
+	return formatedValue;
+}
+
+Json::Value& toJsonValue(const glm::mat4& mat)
+{
+	Json::Value formatedValue(Json::arrayValue);
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			formatedValue.append(mat[i][j]);
+		}
+	}
+	return formatedValue;
+}
+
+template<typename T = glm::quat>
+T& fromJsonValue(const Json::Value& value)
+{
+	return glm::quat(value[3].asFloat(), value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
+}
+
+template<typename T = glm::vec2>
+T& fromJsonValue(const Json::Value& value)
+{
+	return glm::vec3(value[0].asFloat(), value[1].asFloat());
+}
+
+template<typename T = glm::vec3>
+T& fromJsonValue(const Json::Value& value)
+{
+	return glm::vec3(value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
+}
+
+template<typename T = glm::vec4>
+T& fromJsonValue(const Json::Value& value)
+{
+	return glm::vec4(value[0].asFloat(), value[1].asFloat(), value[2].asFloat(), value[3].asFloat());
+}
+
+template<typename T = glm::mat3>
+T& fromJsonValue(const Json::Value& value)
+{
+	glm::mat3 matrix;
+	for (int i = 0, k = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++, k++)
+		{
+			matrix[i][j] = value[k].asFloat():
+		}
+	}
+	return matrix;
+}
+
+template<typename T = glm::mat4>
+T& fromJsonValue(const Json::Value& value)
+{
+	glm::mat3 matrix;
+	for (int i = 0, k = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++, k++)
+		{
+			matrix[i][j] = value[k].asFloat() :
+		}
+	}
+	return matrix;
+}

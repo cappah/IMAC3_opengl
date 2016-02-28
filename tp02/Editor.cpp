@@ -230,6 +230,9 @@ void init_gui_states(GUIStates & guiStates)
 
 Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f)
 {
+	m_savePath[0] = '\0';
+	m_loadPath[0] = '\0';
+
 	m_gizmo = new Gizmo(_unlitMaterial, this);
 
 	m_camera = new CameraEditor();
@@ -406,8 +409,26 @@ void Editor::hideAllToolsUI()
 
 void Editor::displayMenuBar(Scene& scene)
 {
+	bool saveWindowOpen = false;
+	bool loadWindowOpen = false;
+
 	if (ImGui::BeginMainMenuBar())
 	{
+		if (ImGui::BeginMenu("options"))
+		{
+			if (ImGui::Selectable("save"))
+			{
+				saveWindowOpen = true;
+				//ImGui::OpenPopup("save window");
+			}
+			if(ImGui::Selectable("load"))
+			{
+				loadWindowOpen = false;
+				//ImGui::OpenPopup("load window");
+			}
+
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginMenu("toggle visibility"))
 		{
 			if (ImGui::RadioButton("colliders visibility", scene.getAreCollidersVisible()))
@@ -432,39 +453,6 @@ void Editor::displayMenuBar(Scene& scene)
 
 			ImGui::EndMenu();
 		}
-		/*if (ImGui::BeginMenu("tools"))
-		{
-			if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
-			{
-				m_terrainToolVisible = !m_terrainToolVisible;
-			}
-			if (ImGui::RadioButton("skybox tool", m_skyboxToolVisible))
-			{
-				m_skyboxToolVisible = !m_skyboxToolVisible;
-			}
-			if (ImGui::RadioButton("texture factory", m_textureFactoryVisible))
-			{
-				m_textureFactoryVisible = !m_textureFactoryVisible;
-			}
-			if (ImGui::RadioButton("cube texture factory", m_cubeTextureFactoryVisible))
-			{
-				m_cubeTextureFactoryVisible = !m_cubeTextureFactoryVisible;
-			}
-			if (ImGui::RadioButton("mesh factory", m_meshFactoryVisible))
-			{
-				m_meshFactoryVisible = !m_meshFactoryVisible;
-			}
-			if (ImGui::RadioButton("program factory", m_programFactoryVisible))
-			{
-				m_programFactoryVisible = !m_programFactoryVisible;
-			}
-			if (ImGui::RadioButton("material factory", m_materialFactoryVisible))
-			{
-				m_materialFactoryVisible = !m_materialFactoryVisible;
-			}
-
-			ImGui::EndMenu();
-		}*/
 		if (ImGui::BeginMenu("Add default entities"))
 		{
 			if (ImGui::Button("add empty entity"))
@@ -624,6 +612,45 @@ void Editor::displayMenuBar(Scene& scene)
 		ImGui::Text("                                 Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 		ImGui::EndMainMenuBar();
+	}
+
+	//modal windows : 
+	if(saveWindowOpen)
+		ImGui::OpenPopup("save window");
+	if (loadWindowOpen)
+		ImGui::OpenPopup("load window");
+
+	//load : 
+	bool loadModalWindowOpen = true;
+	if (ImGui::BeginPopupModal("load window", &loadModalWindowOpen))
+	{
+		ImGui::InputText("path", &m_loadPath[0], 60);
+		if (ImGui::Button("save"))
+		{
+			std::string loadPath = ("save/" + std::string(m_loadPath));
+			//TODO verify the validity of path
+			scene.clear(); //clear the previous scene
+			scene.load(loadPath);
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+
+	//save
+	bool saveModalWindowOpen = true;
+	if (ImGui::BeginPopupModal("save window", &saveModalWindowOpen))
+	{
+		ImGui::InputText("path", m_savePath, 60);
+		if (ImGui::Button("save"))
+		{
+			std::string savePath = ("save/"+std::string(m_savePath));
+			//TODO verify the validity of path
+			scene.save(savePath);
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
 	}
 
 

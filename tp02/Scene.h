@@ -16,6 +16,10 @@
 #include "Terrain.h"
 #include "Skybox.h"
 
+#include "jsoncpp/json/json.h"
+#include <iostream>
+#include <fstream>
+
 class Scene
 {
 private:
@@ -71,6 +75,8 @@ public:
 	Scene(Renderer * renderer);
 	~Scene();
 
+	void clear();
+
 	std::vector<Entity*>& getEntities();
 
 	Scene& add(Entity* entity);
@@ -120,5 +126,9 @@ public:
 	Terrain& getTerrain();
 	Skybox& getSkybox();
 	PathManager& getPathManager();
+
+	void save(const std::string& path);
+	void load(const std::string& path);
+
 };
 

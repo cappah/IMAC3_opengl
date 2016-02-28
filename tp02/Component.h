@@ -9,6 +9,8 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
+#include "jsoncpp/json/json.h"
+
 //forward
 class Entity;
 class Scene;
@@ -16,7 +18,7 @@ class Scene;
 class Component
 {
 public:
-	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, CAMERA, WIND_ZONE, COMPONENT_COUNT, LIGHT };
+	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, CAMERA, WIND_ZONE, COMPONENT_COUNT, LIGHT, NONE };
 	static const std::vector<std::string> ComponentTypeName;
 protected:
 	Entity* m_entity;
@@ -57,5 +59,8 @@ public:
 	//clone a component, and attach it to the given entity
 	//This function is internally called by the copy contructor and operator=() of entity, to properly copy the entity.
 	virtual Component* clone(Entity* entity) = 0;
+
+	virtual void save(Json::Value& componentRoot);
+	virtual void load(Json::Value& componentRoot);
 };
 

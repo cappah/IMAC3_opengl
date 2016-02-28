@@ -130,6 +130,45 @@ void Collider::eraseFromScene(Scene & scene)
 	scene.erase(this);
 }
 
+void Collider::save(Json::Value & rootComponent)
+{
+	Component::save(rootComponent);
+ 
+	rootComponent["visualMaterialName"] = visualMaterial == nullptr ? "" : visualMaterial->name;
+	rootComponent["visualMeshName"] =  visualMesh == nullptr ? "" : visualMesh->name;
+
+	rootComponent["offsetPosition"] = toJsonValue(offsetPosition);
+	rootComponent["offsetScale"] = toJsonValue(offsetScale);
+	rootComponent["origin"] = toJsonValue(origin);
+	rootComponent["translation"] = toJsonValue(translation);
+	rootComponent["scale"] = toJsonValue(scale);
+	rootComponent["rotation"] = toJsonValue(rotation);
+	rootComponent["modelMatrix"] = toJsonValue(modelMatrix);
+}
+
+void Collider::load(Json::Value & rootComponent)
+{
+	Component::load(rootComponent);
+
+	std::string visualMaterialName = rootComponent.get("visualMaterialName", "").asString();
+	if (visualMaterialName != "")
+		visualMaterial = MaterialFactory::get().get<MaterialUnlit>(visualMaterialName);
+
+	std::string visualMeshName = rootComponent.get("visualMeshName", "").asString();
+	if (visualMeshName != "")
+		visualMesh = MeshFactory::get().get(visualMeshName);
+
+	/*offsetPosition = rootComponent.get("offsetPosition");
+
+	rootComponent["offsetPosition"] = toJsonValue(offsetPosition);
+	rootComponent["offsetScale"] = toJsonValue(offsetScale);
+	rootComponent["origin"] = toJsonValue(origin);
+	rootComponent["translation"] = toJsonValue(translation);
+	rootComponent["scale"] = toJsonValue(scale);
+	rootComponent["rotation"] = toJsonValue(rotation);
+	rootComponent["modelMatrix"] = toJsonValue(modelMatrix);*/
+}
+
 void Collider::drawUI(Scene& scene)
 {
 	glm::vec3 tmpOffset = offsetPosition;

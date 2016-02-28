@@ -1,7 +1,7 @@
 #include "Component.h"
 #include "Entity.h"
 
-const std::vector<std::string> Component::ComponentTypeName = { "collider", "mesh renderer", "point light", "directional light", "spot light", "flag", "particle emitter", "path point", "camera", "wind zone" };
+const std::vector<std::string> Component::ComponentTypeName = { "collider", "mesh renderer", "point light", "directional light", "spot light", "flag", "particle emitter", "path point", "camera", "wind zone", "componentCount", "light", "none" };
 
 
 Component::Component(Component::ComponentType type) : m_entity(nullptr), m_type(type)
@@ -44,4 +44,16 @@ Component::ComponentType Component::type() const
 void Component::applyTransform(const glm::vec3& translation, const glm::vec3& scale, const glm::quat& rotation)
 {
 	//to override
+}
+
+void Component::save(Json::Value & componentRoot)
+{
+	//m_entity already set
+	componentRoot["type"] = (int)m_type;
+}
+
+void Component::load(Json::Value & componentRoot)
+{
+	//m_entity already set
+	m_type = (ComponentType)componentRoot.get("type", "NONE").asInt();
 }

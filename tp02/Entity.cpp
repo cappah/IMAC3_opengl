@@ -571,6 +571,44 @@ int Entity::getChildCount() const
 	return m_childs.size();
 }
 
+void Entity::save(Json::Value& entityRoot)
+{
+	//Scene* m_scene; scene is already set by constructor 
+	entityRoot["name"] = m_name;
+
+	//std::vector<Entity*> m_childs; TODO
+	//Entity* m_parent; TODO
+
+	//bool m_isSelected; selected information isn't serialized
+
+	entityRoot["componentCount"] = m_components.size();
+	for (int i = 0; i < m_components.size(); i++)
+	{
+		m_components[i]->save(entityRoot["components"][i]);
+	}
+}
+
+void Entity::load(Json::Value& entityRoot)
+{
+	//Scene* m_scene; scene is already set by constructor 
+	m_name = entityRoot.get("name", "defaultEntity").asString();
+
+	//std::vector<Entity*> m_childs; TODO
+	//Entity* m_parent; TODO
+
+	//bool m_isSelected; selected information isn't serialized
+
+	int componentCount = entityRoot.get("componentCount", 0).asInt();
+	for (int i = 0; i < m_components.size(); i++)
+	{
+		Component::ComponentType type = (Component::ComponentType)entityRoot["components"][i].get("type", "NONE").asInt();
+		m_components[i] = ComponentFactory::get().getInstance(type);
+		m_components[i]->load(entityRoot["components"][i]);
+
+		m_components[i]->addToEntity(*this);
+	}
+}
+
 void Entity::addChildAtomic(Entity* child)
 {
 	m_childs.push_back(child);
