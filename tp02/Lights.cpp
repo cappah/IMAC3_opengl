@@ -41,6 +41,22 @@ void Light::updateBoundingBox()
 	//nothing by default
 }
 
+void Light::save(Json::Value & rootComponent)
+{
+	Component::save(rootComponent);
+
+	rootComponent["intensity"] = intensity;
+	rootComponent["color"] = toJsonValue(color);
+}
+
+void Light::load(Json::Value & rootComponent)
+{
+	Component::load(rootComponent);
+
+	intensity = rootComponent.get("intensity", 1).asFloat();
+	color = fromJsonValue<glm::vec3>(rootComponent, glm::vec3(1,1,1));
+}
+
 ///////////////////////////////
 
 PointLight::PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) : Light(_intensity, _color), position(_position)
@@ -117,6 +133,22 @@ void PointLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4&
 	boundingBox.render(projectile, view, color);
 }
 
+void PointLight::save(Json::Value & rootComponent)
+{
+	Light::save(rootComponent);
+
+	rootComponent["position"] = toJsonValue(position);
+	rootComponent["boundingBox"] = toJsonValue(boundingBox);
+}
+
+void PointLight::load(Json::Value & rootComponent)
+{
+	Light::load(rootComponent);
+
+	position = fromJsonValue<glm::vec3>(rootComponent["position"]);
+	boundingBox = fromJsonValue<BoxCollider>(rootComponent["boundingBox"]);
+}
+
 
 ////////////////////////////////
 
@@ -173,6 +205,22 @@ void DirectionalLight::addToEntity(Entity& entity)
 void DirectionalLight::eraseFromEntity(Entity& entity)
 {
 	entity.erase(this);
+}
+
+void DirectionalLight::save(Json::Value & rootComponent)
+{
+	Light::save(rootComponent);
+
+	rootComponent["up"] = toJsonValue(up);
+	rootComponent["direction"] = toJsonValue(direction);
+}
+
+void DirectionalLight::load(Json::Value & rootComponent)
+{
+	Light::load(rootComponent);
+
+	up = fromJsonValue<glm::vec3>(rootComponent["up"]);
+	direction = fromJsonValue<glm::vec3>(rootComponent["direction"]);
 }
 
 ////////////////////////////////////
@@ -258,4 +306,26 @@ void SpotLight::setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMate
 void SpotLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color)
 {
 	boundingBox.render(projectile, view, color);
+}
+
+void SpotLight::save(Json::Value & rootComponent)
+{
+	Light::save(rootComponent);
+
+	rootComponent["up"] = toJsonValue(up);
+	rootComponent["position"] = toJsonValue(position);
+	rootComponent["direction"] = toJsonValue(direction);
+	rootComponent["angle"] = toJsonValue(angle);
+	rootComponent["boundingBox"] = toJsonValue(boundingBox);
+}
+
+void SpotLight::load(Json::Value & rootComponent)
+{
+	Light::load(rootComponent);
+
+	up = fromJsonValue<glm::vec3>(rootComponent["up"]);
+	position = fromJsonValue<glm::vec3>(rootComponent["position"]);
+	direction = fromJsonValue<glm::vec3>(rootComponent["direction"]);
+	angle = rootComponent.get("angle", glm::pi<float>() / 4.f).asFloat();
+	boundingBox = fromJsonValue<BoxCollider>(rootComponent["boundingBox"]);
 }

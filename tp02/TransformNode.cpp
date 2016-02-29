@@ -223,3 +223,41 @@ void TransformNode::drawUI(bool local)
 		}
 	}
 }
+
+void TransformNode::save(Json::Value & entityRoot)
+{
+	entityRoot["translation"] = toJsonValue(m_translation);
+	entityRoot["scale"] = toJsonValue(m_scale);
+	entityRoot["rotation"] = toJsonValue(m_rotation);
+	entityRoot["eulerRotation"] = toJsonValue(m_eulerRotation);
+
+	entityRoot["localTranslation"] = toJsonValue(m_localTranslation);
+	entityRoot["localScale"] = toJsonValue(m_localScale);
+	entityRoot["localRotation"] = toJsonValue(m_localRotation);
+	entityRoot["localEulerRotation"] = toJsonValue(m_localEulerRotation);
+
+	entityRoot["parentTranslation"] = toJsonValue(m_parentTranslation);
+	entityRoot["parentScale"] = toJsonValue(m_parentScale);
+	entityRoot["parentRotation"] = toJsonValue(m_parentRotation);
+	
+	entityRoot["modelMatrix"] = toJsonValue(m_modelMatrix);
+}
+
+void TransformNode::load(Json::Value & entityRoot)
+{
+	m_translation = fromJsonValue<glm::vec3>(entityRoot["translation"]);
+	m_scale = fromJsonValue<glm::vec3>(entityRoot["scale"]);
+	m_rotation = fromJsonValue<glm::quat>(entityRoot["rotation"]);
+	m_eulerRotation = fromJsonValue<glm::vec3>(entityRoot["eulerRotation"]);
+
+	m_localTranslation = fromJsonValue<glm::vec3>(entityRoot["localTranslation"]);
+	m_localScale = fromJsonValue<glm::vec3>(entityRoot["localScale"]);
+	m_localRotation = fromJsonValue<glm::quat>(entityRoot["localRotation"]);
+	m_localEulerRotation = fromJsonValue<glm::vec3>(entityRoot["localEulerRotation"]);
+
+	m_parentTranslation = fromJsonValue<glm::vec3>(entityRoot["parentTranslation"]);
+	m_parentScale = fromJsonValue<glm::vec3>(entityRoot["parentScale"]);
+	m_parentRotation = fromJsonValue<glm::quat>(entityRoot["parentRotation"]);
+
+	m_modelMatrix = fromJsonValue<glm::mat4>(entityRoot["modelMatrix"]);
+}

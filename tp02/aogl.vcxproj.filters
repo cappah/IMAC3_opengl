@@ -223,6 +223,9 @@
     <ClInclude Include="ComponentFactory.h">
       <Filter>Resources</Filter>
     </ClInclude>
+    <ClInclude Include="ISerializable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -254,6 +257,9 @@
     </Filter>
     <Filter Include="JsonCpp">
       <UniqueIdentifier>{3ddb2fb6-320c-461f-861c-f054c8b8e0b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{f9d16c95-f06d-4e9b-b3db-7ab4d3406483}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

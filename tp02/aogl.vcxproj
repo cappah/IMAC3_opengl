@@ -286,6 +286,7 @@
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="imgui_extension.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="ISerializable.h" />
     <ClInclude Include="lib\jsoncpp\json\json-forwards.h" />
     <ClInclude Include="lib\jsoncpp\json\json.h" />
     <ClInclude Include="LightManager.h" />

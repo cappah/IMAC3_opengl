@@ -28,8 +28,6 @@
 
 #include "TransformNode.h"
 
-#include "jsoncpp/json/json.h"
-
 //forward
 class Component;
 class Scene;
@@ -179,8 +177,8 @@ public:
 	void eraseAllChilds();
 	int getChildCount() const;
 
-	void save(Json::Value& entityRoot);
-	void load(Json::Value& entityRoot);
+	virtual void save(Json::Value& entityRoot) override;
+	virtual void load(Json::Value& entityRoot) override;
 
 private:
 	void removeParent();

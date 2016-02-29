@@ -450,6 +450,52 @@ namespace Physic {
 
 	}
 
+	void Flag::save(Json::Value & rootComponent)
+	{
+		Component::save(rootComponent);
+
+		rootComponent["origin"] = toJsonValue(origin);
+		rootComponent["translation"] = toJsonValue(translation);
+		rootComponent["scale"] = toJsonValue(scale);
+		rootComponent["rotation"] = toJsonValue(rotation);
+		rootComponent["modelMatrix"] = toJsonValue(modelMatrix);
+		
+		rootComponent["materialName"] = m_materialName;
+
+		rootComponent["width"] = m_width;
+		rootComponent["height"] = m_height;
+		rootComponent["subdivision"] = m_subdivision;
+
+		rootComponent["mass"] = m_mass;
+		rootComponent["viscosity"] = m_viscosity;
+		rootComponent["rigidity"] = m_rigidity;
+	}
+
+	void Flag::load(Json::Value & rootComponent)
+	{
+		Component::load(rootComponent);
+
+		origin = fromJsonValue<glm::vec3>(rootComponent["origin"]);
+		translation = fromJsonValue<glm::vec3>(rootComponent["translation"]);
+		scale = fromJsonValue<glm::vec3>(rootComponent["scale"]);
+		rotation = fromJsonValue<glm::quat>(rootComponent["rotation"]);
+		modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"]);
+
+		m_materialName = rootComponent.get("materialName", "default").asString();
+		m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
+
+		m_width = rootComponent.get("width", 10).asFloat();
+		m_height = rootComponent.get("height", 10).asFloat();
+		m_subdivision = rootComponent.get("subdivision", 10).asInt();
+
+		m_mass = rootComponent.get("mass", 0.1).asFloat();
+		m_viscosity = rootComponent.get("viscosity", 0.01).asFloat();
+		m_rigidity = rootComponent.get("rigidity", 0.001).asFloat();
+
+		//no need to save physic infos because we rebuild it in initialisation
+		regenerateFlag();
+	}
+
 	void Physic::Flag::update(float deltaTime)
 	{
 		//points : 

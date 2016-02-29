@@ -10,8 +10,13 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
+#include "jsoncpp/json/json.h"
 
-class TransformNode
+#include "Utils.h"
+#include "ISerializable.h"
+
+
+class TransformNode : public ISerializable
 {
 protected:
 	glm::vec3 m_translation;
@@ -74,5 +79,8 @@ public:
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) = 0;
 
 	void drawUI(bool local = false);
+
+	virtual void save(Json::Value& entityRoot) override;
+	virtual void load(Json::Value& entityRoot) override;
 };
 

@@ -158,15 +158,14 @@ void Collider::load(Json::Value & rootComponent)
 	if (visualMeshName != "")
 		visualMesh = MeshFactory::get().get(visualMeshName);
 
-	/*offsetPosition = rootComponent.get("offsetPosition");
 
-	rootComponent["offsetPosition"] = toJsonValue(offsetPosition);
-	rootComponent["offsetScale"] = toJsonValue(offsetScale);
-	rootComponent["origin"] = toJsonValue(origin);
-	rootComponent["translation"] = toJsonValue(translation);
-	rootComponent["scale"] = toJsonValue(scale);
-	rootComponent["rotation"] = toJsonValue(rotation);
-	rootComponent["modelMatrix"] = toJsonValue(modelMatrix);*/
+	offsetPosition = fromJsonValue<glm::vec3>(rootComponent["offsetPosition"]);
+	offsetScale = fromJsonValue<glm::vec3>(rootComponent["offsetScale"]);
+	origin = fromJsonValue<glm::vec3>(rootComponent["origin"]);
+	translation = fromJsonValue<glm::vec3>(rootComponent["translation"]);
+	scale = fromJsonValue<glm::vec3>(rootComponent["scale"]);
+	rotation = fromJsonValue<glm::quat>(rootComponent["rotation"]);
+	modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"]);
 }
 
 void Collider::drawUI(Scene& scene)
@@ -360,5 +359,25 @@ void BoxCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin)
 	offsetPosition = dimensions * 0.5f + origin*dimensions + min;
 
 	updateModelMatrix();
+}
+
+void BoxCollider::save(Json::Value & rootComponent)
+{
+	Collider::save(rootComponent);
+
+	rootComponent["localTopRight"] = toJsonValue(localTopRight);
+	rootComponent["localBottomLeft"] = toJsonValue(localBottomLeft);
+	rootComponent["topRight"] = toJsonValue(topRight);
+	rootComponent["bottomLeft"] = toJsonValue(bottomLeft);
+}
+
+void BoxCollider::load(Json::Value & rootComponent)
+{
+	Collider::load(rootComponent);
+
+	localTopRight = fromJsonValue<glm::vec3>(rootComponent["localTopRight"]);
+	localBottomLeft = fromJsonValue<glm::vec3>(rootComponent["localBottomLeft"]);
+	topRight = fromJsonValue<glm::vec3>(rootComponent["topRight"]);
+	bottomLeft = fromJsonValue<glm::vec3>(rootComponent["bottomLeft"]);
 }
 

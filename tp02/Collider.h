@@ -132,4 +132,7 @@ struct BoxCollider : public Collider
 	virtual void eraseFromEntity(Entity& entity) override;
 	virtual void coverMesh(Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
+
+	virtual void save(Json::Value& rootComponent) override;
+	virtual void load(Json::Value& rootComponent) override;
 };

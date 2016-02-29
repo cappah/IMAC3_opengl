@@ -11,11 +11,13 @@
 
 #include "jsoncpp/json/json.h"
 
+#include "ISerializable.h"
+
 //forward
 class Entity;
 class Scene;
 
-class Component
+class Component : public ISerializable
 {
 public:
 	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, CAMERA, WIND_ZONE, COMPONENT_COUNT, LIGHT, NONE };
@@ -60,7 +62,7 @@ public:
 	//This function is internally called by the copy contructor and operator=() of entity, to properly copy the entity.
 	virtual Component* clone(Entity* entity) = 0;
 
-	virtual void save(Json::Value& componentRoot);
-	virtual void load(Json::Value& componentRoot);
+	virtual void save(Json::Value& componentRoot) override;
+	virtual void load(Json::Value& componentRoot) override;
 };
 
