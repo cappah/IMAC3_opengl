@@ -130,7 +130,7 @@ void Collider::eraseFromScene(Scene & scene)
 	scene.erase(this);
 }
 
-void Collider::save(Json::Value & rootComponent)
+void Collider::save(Json::Value & rootComponent) const
 {
 	Component::save(rootComponent);
  
@@ -159,13 +159,13 @@ void Collider::load(Json::Value & rootComponent)
 		visualMesh = MeshFactory::get().get(visualMeshName);
 
 
-	offsetPosition = fromJsonValue<glm::vec3>(rootComponent["offsetPosition"]);
-	offsetScale = fromJsonValue<glm::vec3>(rootComponent["offsetScale"]);
-	origin = fromJsonValue<glm::vec3>(rootComponent["origin"]);
-	translation = fromJsonValue<glm::vec3>(rootComponent["translation"]);
-	scale = fromJsonValue<glm::vec3>(rootComponent["scale"]);
-	rotation = fromJsonValue<glm::quat>(rootComponent["rotation"]);
-	modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"]);
+	offsetPosition = fromJsonValue<glm::vec3>(rootComponent["offsetPosition"], glm::vec3());
+	offsetScale = fromJsonValue<glm::vec3>(rootComponent["offsetScale"], glm::vec3());
+	origin = fromJsonValue<glm::vec3>(rootComponent["origin"], glm::vec3());
+	translation = fromJsonValue<glm::vec3>(rootComponent["translation"], glm::vec3());
+	scale = fromJsonValue<glm::vec3>(rootComponent["scale"], glm::vec3());
+	rotation = fromJsonValue<glm::quat>(rootComponent["rotation"], glm::quat());
+	modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"], glm::mat4());
 }
 
 void Collider::drawUI(Scene& scene)
@@ -361,7 +361,7 @@ void BoxCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin)
 	updateModelMatrix();
 }
 
-void BoxCollider::save(Json::Value & rootComponent)
+void BoxCollider::save(Json::Value & rootComponent) const
 {
 	Collider::save(rootComponent);
 
@@ -375,9 +375,9 @@ void BoxCollider::load(Json::Value & rootComponent)
 {
 	Collider::load(rootComponent);
 
-	localTopRight = fromJsonValue<glm::vec3>(rootComponent["localTopRight"]);
-	localBottomLeft = fromJsonValue<glm::vec3>(rootComponent["localBottomLeft"]);
-	topRight = fromJsonValue<glm::vec3>(rootComponent["topRight"]);
-	bottomLeft = fromJsonValue<glm::vec3>(rootComponent["bottomLeft"]);
+	localTopRight = fromJsonValue<glm::vec3>(rootComponent["localTopRight"], glm::vec3());
+	localBottomLeft = fromJsonValue<glm::vec3>(rootComponent["localBottomLeft"], glm::vec3());
+	topRight = fromJsonValue<glm::vec3>(rootComponent["topRight"], glm::vec3());
+	bottomLeft = fromJsonValue<glm::vec3>(rootComponent["bottomLeft"], glm::vec3());
 }
 

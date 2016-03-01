@@ -41,5 +41,8 @@ public:
 	std::string getMeshName() const;
 
 	glm::vec3 getOrigin() const;
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 };
 

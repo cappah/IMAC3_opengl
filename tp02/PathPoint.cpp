@@ -78,3 +78,19 @@ void PathPoint::eraseFromEntity(Entity& entity)
 {
 	entity.erase(this);
 }
+
+void PathPoint::save(Json::Value & rootComponent) const
+{
+	Component::save(rootComponent);
+
+	rootComponent["pathId"] = m_pathId;
+	rootComponent["pointIdx"] = m_pointIdx;
+}
+
+void PathPoint::load(Json::Value & rootComponent)
+{
+	Component::load(rootComponent);
+
+	m_pathId = rootComponent.get("pathId", 0).asInt();
+	m_pointIdx = rootComponent.get("pointIdx", 0).asInt();
+}

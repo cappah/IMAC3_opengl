@@ -127,3 +127,21 @@ glm::vec3 MeshRenderer::getOrigin() const
 {
 	return mesh->origin;
 }
+
+void MeshRenderer::save(Json::Value & rootComponent) const
+{
+	Component::save(rootComponent);
+
+	rootComponent["meshName"] = meshName;
+	rootComponent["materialName"] = materialName;
+}
+
+void MeshRenderer::load(Json::Value & rootComponent)
+{
+	Component::load(rootComponent);
+
+	meshName = rootComponent.get("meshName", "").asString();
+	mesh = MeshFactory::get().get(meshName);
+	materialName = rootComponent.get("materialName", "").asString();
+	material = MaterialFactory::get().get<Material3DObject>(materialName);
+}

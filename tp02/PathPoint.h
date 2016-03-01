@@ -27,4 +27,7 @@ public:
 	virtual Component * clone(Entity * entity) override;
 	virtual void addToEntity(Entity& entity) override;
 	virtual void eraseFromEntity(Entity& entity) override;
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 };

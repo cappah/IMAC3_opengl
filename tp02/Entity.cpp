@@ -571,7 +571,7 @@ int Entity::getChildCount() const
 	return m_childs.size();
 }
 
-void Entity::save(Json::Value& entityRoot)
+void Entity::save(Json::Value& entityRoot) const
 {
 	//Scene* m_scene; scene is already set by constructor 
 	entityRoot["name"] = m_name;

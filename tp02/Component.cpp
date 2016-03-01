@@ -46,7 +46,7 @@ void Component::applyTransform(const glm::vec3& translation, const glm::vec3& sc
 	//to override
 }
 
-void Component::save(Json::Value & componentRoot)
+void Component::save(Json::Value & componentRoot) const
 {
 	//m_entity already set
 	componentRoot["type"] = (int)m_type;

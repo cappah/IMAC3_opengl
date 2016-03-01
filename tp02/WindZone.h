@@ -53,6 +53,9 @@ namespace Physic {
 		virtual Component * clone(Entity * entity) override;
 		virtual void eraseFromEntity(Entity& entity) override;
 		virtual void addToEntity(Entity& entity) override;
+
+		virtual void save(Json::Value& componentRoot) const override;
+		virtual void load(Json::Value& componentRoot) override;
 	};
 }
 

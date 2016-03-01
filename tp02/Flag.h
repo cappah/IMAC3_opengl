@@ -95,7 +95,7 @@ namespace Physic {
 
 		void restartSimulation();
 
-		virtual void save(Json::Value& rootComponent) override;
+		virtual void save(Json::Value& rootComponent) const override;
 		virtual void load(Json::Value& rootComponent) override;
 
 	private : 

@@ -110,6 +110,9 @@
     <ClCompile Include="ComponentFactory.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
+    <ClCompile Include="SerializeUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -225,6 +228,9 @@
     </ClInclude>
     <ClInclude Include="ISerializable.h">
       <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializeUtils.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -106,7 +106,7 @@ struct Collider : public Component
 	//Cover something which have a bottomLeft/min and topRight/max points and an origin
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) = 0;
 
-	virtual void save(Json::Value& rootComponent) override;
+	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(Json::Value& rootComponent) override;
 
 };
@@ -133,6 +133,6 @@ struct BoxCollider : public Collider
 	virtual void coverMesh(Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
 
-	virtual void save(Json::Value& rootComponent) override;
+	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(Json::Value& rootComponent) override;
 };

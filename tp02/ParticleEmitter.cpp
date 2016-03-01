@@ -51,4 +51,14 @@ namespace Physic {
 		entity.erase(this);
 	}
 
+	void ParticleEmitter::save(Json::Value & rootComponent) const
+	{
+		//TODO
+	}
+
+	void ParticleEmitter::load(Json::Value & rootComponent)
+	{
+		//TODO
+	}
+
 }

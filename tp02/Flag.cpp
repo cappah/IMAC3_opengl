@@ -450,7 +450,7 @@ namespace Physic {
 
 	}
 
-	void Flag::save(Json::Value & rootComponent)
+	void Flag::save(Json::Value & rootComponent) const
 	{
 		Component::save(rootComponent);
 
@@ -475,11 +475,11 @@ namespace Physic {
 	{
 		Component::load(rootComponent);
 
-		origin = fromJsonValue<glm::vec3>(rootComponent["origin"]);
-		translation = fromJsonValue<glm::vec3>(rootComponent["translation"]);
-		scale = fromJsonValue<glm::vec3>(rootComponent["scale"]);
-		rotation = fromJsonValue<glm::quat>(rootComponent["rotation"]);
-		modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"]);
+		origin = fromJsonValue<glm::vec3>(rootComponent["origin"], glm::vec3());
+		translation = fromJsonValue<glm::vec3>(rootComponent["translation"], glm::vec3());
+		scale = fromJsonValue<glm::vec3>(rootComponent["scale"], glm::vec3());
+		rotation = fromJsonValue<glm::quat>(rootComponent["rotation"], glm::quat());
+		modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"], glm::mat4());
 
 		m_materialName = rootComponent.get("materialName", "default").asString();
 		m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);

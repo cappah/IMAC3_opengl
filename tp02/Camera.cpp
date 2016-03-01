@@ -194,7 +194,7 @@ void Camera::updateProjection()
 		m_projectionMatrix = glm::ortho(m_left, m_right, m_bottom, m_top, m_zNear, m_zFar);
 }
 
-void Camera::save(Json::Value & rootComponent)
+void Camera::save(Json::Value & rootComponent) const
 {
 	Component::save(rootComponent);
 
@@ -220,12 +220,12 @@ void Camera::load(Json::Value& rootComponent)
 	Component::load(rootComponent);
 
 	m_cameraMode = (CameraMode)rootComponent.get("cameraMode", CameraMode::PERSPECTIVE).asInt();
-	m_lookPosition = fromJsonValue<glm::vec3>(rootComponent["lookPosition"]);
-	m_position = fromJsonValue<glm::vec3>(rootComponent["position"]);
-	m_up = fromJsonValue<glm::vec3>(rootComponent["up"]);
-	m_forward = fromJsonValue<glm::vec3>(rootComponent["forward"]);
-	m_viewMatrix = fromJsonValue<glm::mat4>(rootComponent["viewMatrix"]);
-	m_projectionMatrix = fromJsonValue<glm::mat4>(rootComponent["projectionMatrix"]);
+	m_lookPosition = fromJsonValue<glm::vec3>(rootComponent["lookPosition"], glm::vec3());
+	m_position = fromJsonValue<glm::vec3>(rootComponent["position"], glm::vec3());
+	m_up = fromJsonValue<glm::vec3>(rootComponent["up"], glm::vec3());
+	m_forward = fromJsonValue<glm::vec3>(rootComponent["forward"], glm::vec3());
+	m_viewMatrix = fromJsonValue<glm::mat4>(rootComponent["viewMatrix"], glm::mat4());
+	m_projectionMatrix = fromJsonValue<glm::mat4>(rootComponent["projectionMatrix"], glm::mat4());
 	m_fovy = rootComponent.get("fovy", 45).asFloat();
 	m_aspect = rootComponent.get("aspect", 16.f/9.f).asFloat();
 	m_zNear = rootComponent.get("zNear", 0.1f).asFloat();

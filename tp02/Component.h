@@ -62,7 +62,7 @@ public:
 	//This function is internally called by the copy contructor and operator=() of entity, to properly copy the entity.
 	virtual Component* clone(Entity* entity) = 0;
 
-	virtual void save(Json::Value& componentRoot) override;
+	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(Json::Value& componentRoot) override;
 };
 
