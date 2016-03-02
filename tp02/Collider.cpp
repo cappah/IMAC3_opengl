@@ -310,6 +310,43 @@ bool BoxCollider::isIntersectedByRay(const Ray& ray, float* t)
 	return false;*/
 }
 
+bool BoxCollider::isIntersectedByPoint(const glm::vec3 & point, glm::vec3 & repulsion)
+{
+	//Center of this collider : 
+	glm::vec3 center = (topRight + bottomLeft) * 0.5f;
+
+	//Local axis of this collider : 
+	glm::vec3 xl = rotation*glm::vec3(1, 0, 0);
+	glm::vec3 yl = rotation*glm::vec3(0, 1, 0);
+	glm::vec3 zl = rotation*glm::vec3(0, 0, 1);
+	glm::vec3* axisl[3] = { &xl, &yl, &zl };
+
+	//The point express in local position :
+	glm::vec3 pl;
+	pl[0] = glm::dot(point, xl);
+	pl[1] = glm::dot(point, yl);
+	pl[2] = glm::dot(point, zl);
+
+	glm::vec3 dim = scale*0.5f; //The half dimensions of each size of the collider
+	int axis = 0; //The idx of axis choosen for collision 0 == x, 1 == y, 2 == z.
+	//Find the distance between the clothest collider face and the point : 
+	float d = 0.f;
+	for (int i = 1; i < 3; i++)
+	{
+		if (dim[i] > dim[i - 1])
+			axis = i;
+	}
+	d = glm::abs(pl[axis] - center[axis]);
+
+	//Out of bounds : 
+	if (d > dim[axis])
+		return false;
+	
+	//Inside collider : 
+	repulsion = (*axisl[axis]) * ((dim[axis] / (float)d) - 1.f);
+	return true;
+}
+
 void BoxCollider::drawUI(Scene& scene)
 {
 	Collider::drawUI(scene);
