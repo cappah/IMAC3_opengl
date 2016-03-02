@@ -54,7 +54,7 @@ void Light::load(Json::Value & rootComponent)
 	Component::load(rootComponent);
 
 	intensity = rootComponent.get("intensity", 1).asFloat();
-	color = fromJsonValue<glm::vec3>(rootComponent, glm::vec3(1,1,1));
+	color = fromJsonValue<glm::vec3>(rootComponent["color"], glm::vec3(1,1,1));
 }
 
 ///////////////////////////////
@@ -164,11 +164,8 @@ DirectionalLight::~DirectionalLight()
 
 void DirectionalLight::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("directional light"))
-	{
-		ImGui::SliderFloat("light intensity", &intensity, 0.f, 10.f);
-		ImGui::ColorEdit3("light color", &color[0]);
-	}
+	ImGui::SliderFloat("light intensity", &intensity, 0.f, 10.f);
+	ImGui::ColorEdit3("light color", &color[0]);
 }
 
 void DirectionalLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -247,15 +244,12 @@ void SpotLight::updateBoundingBox()
 
 void SpotLight::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("spot light"))
-	{
-		if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
-			updateBoundingBox();
-		if (ImGui::ColorEdit3("light color", &color[0]))
-			updateBoundingBox();
+	if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
+		updateBoundingBox();
+	if (ImGui::ColorEdit3("light color", &color[0]))
+		updateBoundingBox();
 
-		ImGui::SliderFloat("light angles", &angle, 0.f, glm::pi<float>());
-	}
+	ImGui::SliderFloat("light angles", &angle, 0.f, glm::pi<float>());
 }
 
 void SpotLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)

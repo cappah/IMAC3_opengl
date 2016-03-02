@@ -13,7 +13,7 @@ Scene::~Scene()
 void Scene::clear()
 {
 	//Components : 
-
+	/*
 	//Cameras : 
 	for (int i = 0; i < m_cameras.size(); i++)
 	{
@@ -67,14 +67,14 @@ void Scene::clear()
 	{
 		delete m_windZones[i];
 		m_windZones.clear();
-	}
+	}*/
 
 	//Entities : 
 	for (int i = 0; i < m_entities.size(); i++)
 	{
 		delete m_entities[i];
-		m_entities.clear();
 	}
+	m_entities.clear();
 }
 
 std::vector<Entity*>& Scene::getEntities()

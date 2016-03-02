@@ -484,7 +484,7 @@ void Entity::eraseAllComponents()
 	for (int i = 0; i < m_components.size(); i++)
 	{
 		m_components[i]->eraseFromScene(*m_scene);
-		m_components[i] = nullptr;
+		//m_components[i] = nullptr;
 	}
 	m_components.clear();
 }
@@ -573,6 +573,8 @@ int Entity::getChildCount() const
 
 void Entity::save(Json::Value& entityRoot) const
 {
+	TransformNode::save(entityRoot);
+
 	//Scene* m_scene; scene is already set by constructor 
 	entityRoot["name"] = m_name;
 
@@ -590,6 +592,8 @@ void Entity::save(Json::Value& entityRoot) const
 
 void Entity::load(Json::Value& entityRoot)
 {
+	TransformNode::load(entityRoot);
+
 	//Scene* m_scene; scene is already set by constructor 
 	m_name = entityRoot.get("name", "defaultEntity").asString();
 
@@ -599,13 +603,15 @@ void Entity::load(Json::Value& entityRoot)
 	//bool m_isSelected; selected information isn't serialized
 
 	int componentCount = entityRoot.get("componentCount", 0).asInt();
-	for (int i = 0; i < m_components.size(); i++)
+	for (int i = 0; i < componentCount; i++)
 	{
+		Component* newComponent;
 		Component::ComponentType type = (Component::ComponentType)entityRoot["components"][i].get("type", "NONE").asInt();
-		m_components[i] = ComponentFactory::get().getInstance(type);
-		m_components[i]->load(entityRoot["components"][i]);
+		ComponentFactory& tmpDebug = ComponentFactory::get();
+		newComponent = ComponentFactory::get().getInstance(type);
+		newComponent->load(entityRoot["components"][i]);
 
-		m_components[i]->addToEntity(*this);
+		newComponent->addToEntity(*this);
 	}
 }
 

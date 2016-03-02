@@ -5,10 +5,18 @@
 
 namespace Physic {
 
+	Flag::Flag() : Flag(MaterialFactory::get().get<Material3DObject>("default"))
+	{
+
+	}
+
 	Flag::Flag(Material3DObject* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1),
-		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f)
+		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f),
+		m_materialName("default")
 	{
 		modelMatrix = glm::mat4(1);
+
+		m_materialName = m_material->name;
 
 		//don't forget to change the origin to have the right pivot rotation
 		origin = glm::vec3(-0.5f, -0.5f, 0.f);
@@ -561,14 +569,17 @@ namespace Physic {
 		//update bounds : 
 		m_mesh.bottomLeft = min;
 		m_mesh.topRight = max;
-		auto collider = static_cast<BoxCollider*>(m_entity->getComponent(Component::ComponentType::COLLIDER));
-		if (collider != nullptr)
+		if (m_entity != nullptr)
 		{
-			//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
-			collider->scale = glm::vec3(1, 1, 1); 
-			collider->rotation = glm::quat(0, 0, 0, 0);
-			collider->translation = glm::vec3(0, 0, 0);
-			collider->coverMesh(m_mesh);
+			auto collider = static_cast<BoxCollider*>(m_entity->getComponent(Component::ComponentType::COLLIDER));
+			if (collider != nullptr)
+			{
+				//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
+				collider->scale = glm::vec3(1, 1, 1); 
+				collider->rotation = glm::quat(0, 0, 0, 0);
+				collider->translation = glm::vec3(0, 0, 0);
+				collider->coverMesh(m_mesh);
+			}
 		}
 	}
 
@@ -676,9 +687,13 @@ namespace Physic {
 		scene.add(this);
 	}
 
-	Component * Flag::clone(Entity* entity)
+	Component* Flag::clone(Entity* entity)
 	{
-		return nullptr;
+		Flag* newFlag = new Flag(*this);
+
+		newFlag->attachToEntity(entity);
+
+		return newFlag;
 	}
 
 	void Flag::addToEntity(Entity& entity)

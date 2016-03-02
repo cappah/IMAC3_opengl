@@ -48,6 +48,7 @@ namespace Physic {
 		float m_rigidity;
 
 	public:
+		Flag();
 		Flag(Material3DObject* material, int subdivision = 10, float width = 10.f, float height = 10.f);
 		~Flag();
 

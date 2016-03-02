@@ -21,7 +21,8 @@ private:
 	Material3DObject* material;
 
 public:
-	MeshRenderer(Mesh* _mesh = nullptr, Material3DObject* _material = nullptr);
+	MeshRenderer();
+	MeshRenderer(Mesh* _mesh, Material3DObject* _material);
 	virtual ~MeshRenderer();
 
 	virtual void drawUI(Scene& scene) override;

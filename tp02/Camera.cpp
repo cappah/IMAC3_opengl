@@ -59,17 +59,17 @@ void Camera::drawUI(Scene& scene)
 	}
 }
 
-void Camera::eraseFromScene(Scene & scene)
+void Camera::eraseFromScene(Scene& scene)
 {
 	scene.erase(this);
 }
 
-void Camera::addToScene(Scene & scene)
+void Camera::addToScene(Scene& scene)
 {
 	scene.add(this);
 }
 
-Component * Camera::clone(Entity * entity)
+Component * Camera::clone(Entity* entity)
 {
 	Camera* camera = new Camera(*this);
 

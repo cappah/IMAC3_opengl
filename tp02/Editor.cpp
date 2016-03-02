@@ -423,7 +423,7 @@ void Editor::displayMenuBar(Scene& scene)
 			}
 			if(ImGui::Selectable("load"))
 			{
-				loadWindowOpen = false;
+				loadWindowOpen = true;
 				//ImGui::OpenPopup("load window");
 			}
 
@@ -625,7 +625,7 @@ void Editor::displayMenuBar(Scene& scene)
 	if (ImGui::BeginPopupModal("load window", &loadModalWindowOpen))
 	{
 		ImGui::InputText("path", &m_loadPath[0], 60);
-		if (ImGui::Button("save"))
+		if (ImGui::Button("load"))
 		{
 			std::string loadPath = ("save/" + std::string(m_loadPath));
 			//TODO verify the validity of path

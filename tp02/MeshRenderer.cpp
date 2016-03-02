@@ -3,7 +3,16 @@
 #include "Entity.h"
 #include "Factories.h"
 
-MeshRenderer::MeshRenderer(Mesh* _mesh, Material3DObject* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material), meshName(""), materialName("")
+MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), mesh(MeshFactory::get().get("default")), material(MaterialFactory::get().get<Material3DObject>("default")), meshName("default"), materialName("default")
+{
+	if (mesh != nullptr)
+		meshName = mesh->name;
+
+	if (material != nullptr)
+		materialName = material->name;
+}
+
+MeshRenderer::MeshRenderer(Mesh* _mesh, Material3DObject* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material), meshName("default"), materialName("default")
 {
 	if (_mesh != nullptr)
 		meshName = _mesh->name;
