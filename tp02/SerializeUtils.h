@@ -56,6 +56,35 @@ Json::Value toJsonValue(const std::map<T, U>& map)
 	return serializedValue;
 }
 
+template<typename T>
+std::vector<T> fromJsonValues_vector(Json::Value& value)
+{
+	std::vector<T> loadedValues;
+	int size = value.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		loadedValues[i] = fromJsonValue<T>(value["data"][i]);
+	}
+	return loadedValues;
+}
+
+template<typename T, typename U>
+std::map<T, U> fromJsonValues_map(Json::Value& value)
+{
+	std::map<T> loadedValues;
+	int size = value.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		std::pair<T, U> newPair;
+		newPair.first = fromJsonValue<T>(value["keys"][i]);
+		newPair.second = fromJsonValue<T>(value["values"][i]);
+		loadedValues.insert(newPair);
+	}
+	return loadedValues;
+}
+
+
+
 // FROM JSON : 
 
 template<typename T>
@@ -73,6 +102,13 @@ T fromJsonValue(Json::Value& value, const T& default)
 
 
 // TO JSON : 
+
+template<>
+inline Json::Value toJsonValue<GLuint>(const GLuint& value)
+{
+	return Json::Value((int)value);
+}
+
 
 template<>
 inline Json::Value toJsonValue<float>(const float& value)
@@ -176,6 +212,12 @@ inline float fromJsonValue<float>(Json::Value& value, const float& default)
 }
 
 template<>
+inline GLuint fromJsonValue<GLuint>(Json::Value& value, const GLuint& default)
+{
+	return (GLuint)value.asInt();
+}
+
+template<>
 inline int fromJsonValue<int>(Json::Value& value, const int& default)
 {
 	return value.asInt();
@@ -268,34 +310,4 @@ inline glm::mat4 fromJsonValue<glm::mat4>(Json::Value& value, const glm::mat4& d
 }
 
 
-
-
-/*
-template<typename T>
-std::vector<T>& fromJsonValues_vector(Json::Value& value)
-{
-std::vector<T> loadedValues;
-int size = value.get("size", 0).asInt();
-for (int i = 0; i < size; i++)
-{
-loadedValues[i] = fromJsonValue<T>(value["data"][i]);
-}
-return loadedValues;
-}
-
-template<typename T, typename U>
-std::map<T, U>& fromJsonValues_map(Json::Value& value)
-{
-std::map<T> loadedValues;
-int size = value.get("size", 0).asInt();
-for (int i = 0; i < size; i++)
-{
-std::pair<T, U> newPair;
-newPair.first = fromJsonValue<T>(value["keys"][i]);
-newPair.second = fromJsonValue<T>(value["values"][i]);
-loadedValues.insert(newPair);
-}
-return loadedValues;
-}
-*/
 

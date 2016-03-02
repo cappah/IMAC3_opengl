@@ -8,8 +8,10 @@
 #include "Materials.h"
 #include "Texture.h"
 
+#include "ISerializable.h"
 
-class ProgramFactory
+
+class ProgramFactory : public ISerializable
 {
 
 private:
@@ -20,6 +22,8 @@ public:
 	GLuint get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+
+
 
 	// singleton implementation :
 private:
@@ -38,12 +42,15 @@ public:
 
 	ProgramFactory(const ProgramFactory& other) = delete;
 	void operator=(const ProgramFactory& other) = delete;
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 };
 
 
 //////////////////////////////////////
 
-class TextureFactory
+class TextureFactory : public ISerializable
 {
 
 private:
@@ -59,6 +66,9 @@ public:
 	Texture* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 	// singleton implementation :
 private:
@@ -80,7 +90,7 @@ public:
 ///////////////////////////////
 
 
-class CubeTextureFactory
+class CubeTextureFactory : public ISerializable
 {
 
 private:
@@ -96,6 +106,9 @@ public:
 	CubeTexture* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 	// singleton implementation :
 private:
@@ -118,7 +131,7 @@ public:
 
 ///////////////////////////////
 
-class MeshFactory
+class MeshFactory : public ISerializable
 {
 
 private:
@@ -134,6 +147,9 @@ public:
 	Mesh* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 	// singleton implementation :
 private:
@@ -156,7 +172,7 @@ public:
 
 ////////////////////////////////
 
-class MaterialFactory
+class MaterialFactory : public ISerializable
 {
 
 private:
@@ -172,6 +188,9 @@ public:
 	template<typename T>
 	bool contains(const std::string& name);
 	void drawUI();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 	// singleton implementation :
 private:

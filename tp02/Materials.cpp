@@ -175,6 +175,41 @@ void MaterialLit::drawUI()
 	}
 }
 
+void MaterialLit::save(Json::Value & objectRoot) const
+{
+	objectRoot["textureDiffuseName"] = textureDiffuse->name;
+	objectRoot["textureSpecularName"] = textureSpecular->name;
+	objectRoot["textureBumpName"] = textureBump->name;
+	objectRoot["specularPower"] = specularPower;
+}
+
+void MaterialLit::load(Json::Value & objectRoot)
+{
+	glProgram = ProgramFactory::get().get("defaultLit");
+	std::string textureDiffuseName = objectRoot.get("textureDiffuseName", "default").asString();
+	textureDiffuse = TextureFactory::get().get(textureDiffuseName);
+	std::string textureSpecularName = objectRoot.get("textureSpecularName", "default").asString();
+	textureSpecular = TextureFactory::get().get(textureSpecularName);
+	std::string textureBumpName = objectRoot.get("textureBumpName", "default").asString();
+	textureBump = TextureFactory::get().get(textureBumpName);
+	specularPower = objectRoot.get("specularPower", 10).asFloat();
+
+
+	diffuseTextureName = textureDiffuse->name;
+	specularTextureName = textureSpecular->name;
+	bumpTextureName = textureBump->name;
+
+	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
+	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
+	uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
+	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+}
+
 
 //////////////////////////////////////////////////
 

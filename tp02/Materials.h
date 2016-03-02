@@ -15,6 +15,8 @@
 #include "Utils.h"
 #include "Texture.h"
 
+#include "ISerializable.h"
+
 struct Material
 {
 	std::string name;
@@ -37,7 +39,7 @@ struct Material3DObject : public Material
 };
 
 
-class MaterialLit : public Material3DObject
+class MaterialLit : public Material3DObject, public ISerializable
 {
 private:
 	std::string diffuseTextureName;
@@ -79,6 +81,10 @@ public:
 	virtual void use() override;
 
 	virtual void drawUI() override;
+
+	// Hérité via ISerializable
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 };
 
 

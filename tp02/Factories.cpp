@@ -27,6 +27,29 @@ void ProgramFactory::drawUI()
 	ImGui::PopID();
 }
 
+void ProgramFactory::save(Json::Value & objectRoot) const
+{
+	objectRoot["size"] = m_programs.size();
+	int i = 0;
+	for (auto it = m_programs.begin(); it != m_programs.end(); it++)
+	{
+		objectRoot["keys"][i] = it->first;
+		objectRoot["values"][i] = it->second;
+		i++;
+	}
+}
+
+void ProgramFactory::load(Json::Value & entityRoot)
+{
+	int size = entityRoot.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		std::string key = entityRoot["keys"][i].asString();
+		GLuint glId = entityRoot["values"][i].asInt();
+		m_programs[key] = glId;
+	}
+}
+
 ///////////////////////////////////////
 
 TextureFactory::TextureFactory()
@@ -94,6 +117,29 @@ void TextureFactory::drawUI()
 	}
 
 	ImGui::PopID();
+}
+
+void TextureFactory::save(Json::Value & entityRoot) const
+{
+	entityRoot["size"] = m_textures.size();
+	int i = 0;
+	for (auto it = m_textures.begin(); it != m_textures.end(); it++)
+	{
+		entityRoot["keys"][i] = it->first;
+		entityRoot["values"][i] = it->second->path;
+		i++;
+	}
+}
+
+void TextureFactory::load(Json::Value & entityRoot)
+{
+	int size = entityRoot.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		std::string textureName = entityRoot["keys"][i].asString();
+		std::string texturePath = entityRoot["values"][i].asString();
+		add(textureName, texturePath);
+	}
 }
 
 /////////////////////////////////////////
@@ -173,6 +219,38 @@ void CubeTextureFactory::drawUI()
 	ImGui::PopID();
 }
 
+void CubeTextureFactory::save(Json::Value & entityRoot) const
+{
+	entityRoot["size"] = m_textures.size();
+	int i = 0;
+	for (auto it = m_textures.begin(); it != m_textures.end(); it++)
+	{
+		entityRoot["keys"][i] = it->first;
+
+		entityRoot["values"][i]["size"] = it->second->paths.size();
+		for (int p = 0; p < it->second->paths.size(); p++)
+			entityRoot["values"][i][p] = it->second->paths[p];
+		i++;
+	}
+}
+
+void CubeTextureFactory::load(Json::Value & entityRoot)
+{
+	int size = entityRoot.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		std::string cubeTextureName = entityRoot["keys"][i].asString();
+
+		int pathSize = entityRoot["values"][i].get("size",0).asInt();
+		std::vector<std::string> cubeTexturePaths;
+		for (int p = 0; p < pathSize; p++)
+			cubeTexturePaths.push_back(entityRoot["values"][i].get(p,"default").asString());
+
+		add(cubeTextureName, cubeTexturePaths);
+	}
+}
+
+
 /////////////////////////////////////////
 
 void MeshFactory::add(const std::string& name, Mesh* mesh)
@@ -233,6 +311,30 @@ void MeshFactory::drawUI()
 	ImGui::PopID();
 }
 
+void MeshFactory::save(Json::Value & entityRoot) const
+{
+	entityRoot["size"] = m_meshes.size();
+	int i = 0;
+	for (auto it = m_meshes.begin(); it != m_meshes.end(); it++)
+	{
+		entityRoot["keys"][i] = it->first;
+		entityRoot["values"][i] = it->second->path;
+		i++;
+	}
+}
+
+void MeshFactory::load(Json::Value & entityRoot)
+{
+	int size = entityRoot.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		std::string meshName = entityRoot["keys"][i].asString();
+		std::string meshPath = entityRoot["values"][i].asString();
+		add(meshName, meshPath);
+	}
+}
+
+
 //////////////////////////////////////////
 
 void MaterialFactory::add(const std::string& name, Material* material)
@@ -266,4 +368,32 @@ void MaterialFactory::drawUI()
 	}
 
 	ImGui::PopID();
+}
+
+void MaterialFactory::save(Json::Value & entityRoot) const
+{
+	entityRoot["size"] = m_materials.size();
+	int i = 0;
+	for (auto it = m_materials.begin(); it != m_materials.end(); it++)
+	{
+		MaterialLit* matLitCasted = dynamic_cast<MaterialLit*>(it->second);
+		if (matLitCasted != nullptr)
+		{
+			entityRoot["keys"][i] = it->first;
+			matLitCasted->save(entityRoot["values"][i]);
+		}
+		i++;
+	}
+}
+
+void MaterialFactory::load(Json::Value & entityRoot)
+{
+	int size = entityRoot.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		std::string materialName = entityRoot["keys"][i].asString();
+		MaterialLit* newMaterial = new MaterialLit();
+		newMaterial->load(entityRoot["values"][i]);
+		add(materialName, newMaterial);
+	}
 }
