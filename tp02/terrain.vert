@@ -22,6 +22,7 @@ layout(location = TANGENT) in vec3 Tangent;
 out block
 {
 	vec2 TexCoord; 
+	vec2 RepeatedTexCoord;
 	vec3 Position;
 	//vec3 Normal;
 	mat3 TBN;
@@ -31,7 +32,8 @@ void main()
 {	
 	vec3 pos = Position;
 
-	Out.TexCoord = TexCoord * TextureRepetition;
+	Out.TexCoord = TexCoord;
+	Out.RepeatedTexCoord = TexCoord * TextureRepetition;
 	Out.Position = pos;
 	//Out.Normal =  normalize( vec3(NormalMatrix * vec4(Normal, 0)) );
 

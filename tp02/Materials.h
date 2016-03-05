@@ -75,6 +75,8 @@ public:
 	Texture* getSpecular() const;
 	Texture* getBump() const;
 
+	float getSpecularPower() const;
+
 	//void setUniform_MVP(glm::mat4& mvp);
 	//void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
@@ -161,8 +163,10 @@ struct MaterialTerrain : public Material3DObject
 	GLuint uniform_textureSpecular;
 	GLuint uniform_textureBump;
 	GLuint uniform_specularPower;
-	GLuint uniform_textureRepetition;
 
+	GLuint uniform_textureRepetition;
+	GLuint uniform_textureFilter;
+	GLuint uniform_filterValues;
 
 	MaterialTerrain();
 	MaterialTerrain(GLuint _glProgram);
@@ -170,6 +174,16 @@ struct MaterialTerrain : public Material3DObject
 	virtual void use() override;
 
 	virtual void drawUI() override;
+
+	void setUniformLayoutOffset(const glm::vec2& layoutOffset);
+	void setUniformFilterTexture(int textureId);
+	void setUniformTextureRepetition(const glm::vec2& textureRepetition);
+
+	void setUniformDiffuseTexture(int textureId);
+	void setUniformBumpTexture(int textureId);
+	void setUniformSpecularTexture(int textureId);
+
+	void setUniformSpecularPower(float specularPower);
 };
 
 

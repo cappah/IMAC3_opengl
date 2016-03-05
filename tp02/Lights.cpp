@@ -173,6 +173,7 @@ void DirectionalLight::applyTransform(const glm::vec3 & translation, const glm::
 	glm::mat3 rotMat = glm::mat3_cast(rotation);
 	up = glm::normalize( rotMat * glm::vec3(1, 0, 0) );
 	direction = glm::normalize( rotMat * glm::vec3(0, -1, 0) );
+	position = translation;
 }
 
 void DirectionalLight::eraseFromScene(Scene & scene)

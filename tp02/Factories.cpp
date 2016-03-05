@@ -303,6 +303,9 @@ void MeshFactory::drawUI()
 
 	for (auto& m : m_meshes)
 	{
+		if (&m == nullptr)
+			continue;
+
 		ImGui::Text(m.first.c_str());
 		ImGui::SameLine();
 		ImGui::Text(m.second->path.c_str());
