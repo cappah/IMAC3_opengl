@@ -5,7 +5,7 @@
 #include "Ray.h"
 
 
-GrassField::GrassField() : mass(0.005f), rigidity(0.05f), viscosity(0.003f)
+GrassField::GrassField() : mass(0.005f), rigidity(0.05f), viscosity(0.003f), lockYPlane(true)
 {
 	grassTexture = TextureFactory::get().get("default");
 
@@ -276,9 +276,10 @@ void GrassField::updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& w
 		for (int i = 0; i < forces.size()/3; i++)
 		{
 			newForce = windZone->getForce(Application::get().getTime(), vertexFrom3Floats(positions, i));
-			forces[i * 3] = newForce.x;
-			forces[i * 3 + 1] = newForce.y;
-			forces[i * 3 + 2] = newForce.z;
+			forces[i * 3] += newForce.x;
+			if(!lockYPlane)
+				forces[i * 3 + 1] += newForce.y;
+			forces[i * 3 + 2] += newForce.z;
 		}
 	}
 
@@ -324,7 +325,7 @@ void GrassField::computeLink(float deltaTime, int index)
 	if (d < 0.00000001f)
 		return;
 
-	float f = rigidity * (1.f - links[index].l / (d*d));
+	float f = rigidity * (1.f - links[index].l / (d));
 	if (std::abs(f) < 0.00000001f)
 		return;
 
@@ -388,6 +389,9 @@ void GrassField::drawUI()
 	ImGui::InputFloat("viscosity", &viscosity);
 	ImGui::InputFloat("mass", &mass);
 
+	if(ImGui::RadioButton("lock Y plane", &lockYPlane))
+		lockYPlane = !lockYPlane;
+
 	if (ImGui::Button("reset physic"))
 	{
 		resetPhysic();
@@ -418,9 +422,9 @@ void GrassField::updateVBOAnimPos()
 ////////////////// TERRAIN ///////////////////
 
 Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), //terrain properties
-			m_noiseMin(0.f), m_noiseMax(1.f), m_seed(0), //perlin properties
+			m_noiseMin(0.f), m_noiseMax(1.f), m_seed(0), m_terrainNoise(512, 64, 3, 0.5f, 0), //perlin properties
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
-			m_maxGrassDensity(1000), m_grassDensity(0), m_grassLayoutDelta(0.3f), //draw grass properties
+			m_maxGrassDensity(1.f), m_grassDensity(0), m_grassLayoutDelta(0.3f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
 			m_material(ProgramFactory::get().get("defaultTerrain")), m_terrainMaterial(ProgramFactory::get().get("defaultTerrainEdition")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
@@ -507,10 +511,10 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_quadMesh.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
 	m_quadMesh.initGl();
 
-	m_terrainNoise.seed = m_seed;
+	m_terrainNoise.setSeed(m_seed);
 
 	generateTerrain();
-	applyNoise(m_terrainNoise.generatePerlin2D(), false);
+	applyNoise(m_terrainNoise, false);
 
 
 	//generate material layout FBO : 
@@ -984,7 +988,7 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position)
 	drawGrassOnTerrain(position, m_drawRadius * m_width*0.5f, m_grassDensity, m_maxGrassDensity);
 }
 
-void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int density, int maxDensity)
+void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, float density, float maxDensity)
 {
 
 	int px = position.x / m_grassLayoutDelta;
@@ -1011,11 +1015,16 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int den
 			}
 		}
 	}
+	
 
-	for (int i = 0; i < (density - currentGrassCount); i++)
+	if(potentialPositionIndex.size() > 0)
+	for (int i = 0; i < (density - currentGrassCount/(float)(4.f*radius*radius)); i++)
 	{
-		srand(time(nullptr));
-		int randomIndex = rand() % potentialPositionIndex.size();
+		//srand(time(nullptr));
+		int randNumber = rand();
+		std::cout << "random number" << randNumber << std::endl;
+		int randomIndex = randNumber % potentialPositionIndex.size();
+		std::cout << "random index" << randomIndex << std::endl;
 		glm::vec2 pointIndex = potentialPositionIndex[randomIndex];
 
 		float posX = pointIndex.x * m_grassLayoutDelta;
@@ -1055,7 +1064,7 @@ void Terrain::updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& wind
 //get terrain height at a given point
 float Terrain::getHeight(float x, float y)
 {
-	float noiseValue = m_terrainNoise.generatePerlin2D().getNoiseValue(x, y); /// TODO : modify perlin access.
+	float noiseValue = m_terrainNoise.getNoiseValue(x, y);
 
 	return (noiseValue * 2.f - 1.f) * m_height + m_offset.y;
 }
@@ -1103,32 +1112,40 @@ void Terrain::drawUI()
 		if (ImGui::InputInt("terrain seed", &m_seed))
 		{
 			// change the seed of the generator
-			m_terrainNoise.seed = m_seed;
+			m_terrainNoise.setSeed(m_seed);
 			//apply new noise to terrain
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
+			applyNoise(m_terrainNoise, false);
 		}
 
 		if (ImGui::InputInt("terrain subdivision", &m_subdivision))
 		{
 			generateTerrain();
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
+			applyNoise(m_terrainNoise, false);
 		}
 
-		if (ImGui::SliderFloat("noise persistence", &m_terrainNoise.persistence, 0.f, 1.f))
+		float tmpFloat = m_terrainNoise.getPersistence();
+		if (ImGui::SliderFloat("noise persistence", &tmpFloat, 0.f, 1.f))
 		{
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
+			m_terrainNoise.setPersistence(tmpFloat);
+			applyNoise(m_terrainNoise, false);
 		}
-		if (ImGui::SliderInt("noise octave count", &m_terrainNoise.octaveCount, 1, 10))
+		int tmpInt = m_terrainNoise.getOctaveCount();
+		if (ImGui::SliderInt("noise octave count", &tmpInt, 1, 10))
 		{
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
+			m_terrainNoise.setOctaveCount(tmpInt);
+			applyNoise(m_terrainNoise, false);
 		}
-		if (ImGui::SliderInt("noise height", &m_terrainNoise.height, 1, 512))
+		tmpInt = m_terrainNoise.getHeight();
+		if (ImGui::SliderInt("noise height", &tmpInt, 1, 512))
 		{
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
+			m_terrainNoise.setHeight(tmpInt);
+			applyNoise(m_terrainNoise, false);
 		}
-		if (ImGui::SliderInt("noise sampling offset", &m_terrainNoise.samplingOffset, 1, 128))
+		tmpInt = m_terrainNoise.getSamplingOffset();
+		if (ImGui::SliderInt("noise sampling offset", &tmpInt, 1, 128))
 		{
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
+			m_terrainNoise.setSamplingOffset(tmpInt);
+			applyNoise(m_terrainNoise, false);
 		}
 
 
@@ -1260,7 +1277,7 @@ void Terrain::drawUI()
 		}
 
 		ImGui::SliderFloat("draw radius", &m_drawRadius, 0.f, 1.f);
-		ImGui::SliderInt("grass density", &m_grassDensity, 0, m_maxGrassDensity);
+		ImGui::SliderFloat("grass density", &m_grassDensity, 0, m_maxGrassDensity);
 
 		if (ImGui::InputText("grass texture name", m_newGrassTextureName, 30))
 		{

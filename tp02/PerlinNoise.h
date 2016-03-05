@@ -23,14 +23,22 @@ struct Perlin2D
 	
 	float getNoiseValue(float x, float y);
 
-	//float getPersistence() const;
-	//void setPersistence(float p);
+	float getPersistence() const;
+	void setPersistence(float p);
 
-	//int getSamplingOffset() const;
-	//void setSamplingOffset(int s);
+	int getSamplingOffset() const;
+	void setSamplingOffset(int s);
 
-	//int getOctaveCount() const;
-	//void setOctaveCount()
+	int getOctaveCount() const;
+	void setOctaveCount(int c);
+
+	int getHeight() const;
+	void setHeight(int height);
+
+	int getSeed() const;
+	void setSeed(int seed);
+
+	void updateNoise();
 
 private :
 	float getValue2D(int i, int j);

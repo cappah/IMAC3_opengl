@@ -52,7 +52,7 @@ namespace Physic {
 		for (int i = 0; i < m_cspline.size(); i++)
 		{
 			float direction = (i % 2 == 0) ? 1 : -1;
-			float newPoint = m_amplitude - m_offset * direction + m_randomFactor * (float)(rand() % 100) / 100.f;
+			float newPoint = m_offset + m_amplitude * direction + m_randomFactor * (float)(rand() % 100) / 100.f;
 			m_cspline[i] = (newPoint);
 		}
 	}

@@ -70,6 +70,7 @@ struct GrassField {
 	float mass;
 	float viscosity;
 	float rigidity;
+	bool lockYPlane;
 
 	GLuint vbo_index;
 	GLuint vbo_vertices;
@@ -153,7 +154,8 @@ private:
 	glm::vec3 m_offset;
 
 	int m_seed;
-	NoiseGenerator m_terrainNoise;
+	//NoiseGenerator m_terrainNoise;
+	Perlin2D m_terrainNoise;
 
 	//texture tool : 
 	Texture m_noiseTexture;
@@ -191,8 +193,8 @@ private:
 	char m_newLayoutName[30];
 	int m_currentMaterialToDrawIdx;
 	float m_drawRadius;
-	int m_maxGrassDensity;
-	int m_grassDensity;
+	float m_maxGrassDensity;
+	float m_grassDensity;
 	char m_newGrassTextureName[30];
 
 
@@ -228,7 +230,7 @@ public:
 	float getHeight(float x, float y);
 
 	void drawGrassOnTerrain(const glm::vec3 position);
-	void drawGrassOnTerrain(const glm::vec3 position, float radius, int density, int maxDensity);
+	void drawGrassOnTerrain(const glm::vec3 position, float radius, float density, float maxDensity);
 	void updateGrassPositions();
 
 	TerrainTools getCurrentTerrainTool() const;
