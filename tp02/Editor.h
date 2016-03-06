@@ -2,7 +2,6 @@
 
 #include "Entity.h"
 #include "Gizmo.h"
-#include "InputHandler.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -158,7 +157,7 @@ public:
 	void toggleDebugVisibility(Scene& scene);
 	void toggleLightsBoundingBoxVisibility(Scene& scene);
 
-	void update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler);
+	void update(/*Camera & camera*/ Scene& scene, GLFWwindow* window);
 
 	CameraEditor& getCamera();
 

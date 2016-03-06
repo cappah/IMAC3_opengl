@@ -246,6 +246,7 @@
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="PhysicManager.cpp" />
     <ClCompile Include="Point.cpp" />
+    <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -303,6 +304,7 @@
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="PhysicManager.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />

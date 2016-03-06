@@ -46,6 +46,8 @@
 
 #include "jsoncpp/json/json.h"
 
+#include "Project.h"
+
 #ifndef DEBUG_PRINT
 #define DEBUG_PRINT 1
 #endif
@@ -71,27 +73,35 @@ extern const unsigned int DroidSans_ttf_len;
 
 
 
-void window_size_callback(GLFWwindow* window, int width, int height)
+//void window_size_callback(GLFWwindow* window, int width, int height)
+//{
+//	Application::get().setWindowResize(true);
+//	Application::get().setWindowWidth(width);
+//	Application::get().setWindowHeight(height);
+//}
+
+
+
+int main(int argc, char** argv)
 {
-	Application::get().setWindowResize(true);
-	Application::get().setWindowWidth(width);
-	Application::get().setWindowHeight(height);
+	//init project : 
+	Project project;
+	project.init();
+
+	//open project : 
+	project.open("defaultProject", "");
+
+	//edit or play project : 
+	//project.play();
+	project.edit();
+
+	//close window : 
+	project.exitApplication();
 }
 
-
-
-
+/*
 int main( int argc, char **argv )
 {
-
-	Json::Value root;
-	root["keyString"] = "value";
-	root["keyInt"] = 1;
-	root["keyFloat"] = 1.2f;
-	root["keyBool"] = true;
-	Json::StyledWriter writer;
-	std::string output = writer.write(root);
-	std::cout << output << std::endl;
 
     //int width = 1024, height= 768;
 	int width = 1024, height = 680;
@@ -139,7 +149,7 @@ int main( int argc, char **argv )
     GLenum err = glewInit();
     if (GLEW_OK != err)
     {
-          /* Problem: glewInit failed, something is seriously wrong. */
+          //Problem: glewInit failed, something is seriously wrong.
           fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
           exit( EXIT_FAILURE );
     }
@@ -171,6 +181,7 @@ int main( int argc, char **argv )
 
 	//////////////////// INPUT HANDLER ///////////////////////////
 	InputHandler inputHandler;
+	inputHandler.attachToWindow(window);
 
 	//////////////////// SKYBOX shaders ////////////////////////
 	// Try to load and compile shaders
@@ -361,35 +372,35 @@ int main( int argc, char **argv )
 	plane.normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
 	plane.initGl();
 
-	/*
-    int x;
-    int y;
-    int comp;
+	
+ //   int x;
+ //   int y;
+ //   int comp;
 
-    unsigned char * diffuse = stbi_load("textures/spnza_bricks_a_diff.tga", &x, &y, &comp, 3);
-    GLuint diffuseTexture;
-    glGenTextures(1, &diffuseTexture);
+ //   unsigned char * diffuse = stbi_load("textures/spnza_bricks_a_diff.tga", &x, &y, &comp, 3);
+ //   GLuint diffuseTexture;
+ //   glGenTextures(1, &diffuseTexture);
 
-    glBindTexture(GL_TEXTURE_2D, diffuseTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, diffuse);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
+ //   glBindTexture(GL_TEXTURE_2D, diffuseTexture);
+ //   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, diffuse);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ //   glGenerateMipmap(GL_TEXTURE_2D);
 
-    unsigned char * specular = stbi_load("textures/spnza_bricks_a_spec.tga", &x, &y, &comp, 3);
-	GLuint specularTexture;
-	glGenTextures(1, &specularTexture);
+ //   unsigned char * specular = stbi_load("textures/spnza_bricks_a_spec.tga", &x, &y, &comp, 3);
+	//GLuint specularTexture;
+	//glGenTextures(1, &specularTexture);
 
-    glBindTexture(GL_TEXTURE_2D, specularTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, specular);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
-	*/
+ //   glBindTexture(GL_TEXTURE_2D, specularTexture);
+ //   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, specular);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ //   glGenerateMipmap(GL_TEXTURE_2D);
+	
 
 	Texture* diffuseTexture = new Texture("textures/spnza_bricks_a_diff.tga");
 	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
@@ -529,22 +540,22 @@ int main( int argc, char **argv )
 	entity_cube02->setName("cube");
 	entity_cube02->setTranslation(glm::vec3(3, -2, 0));
 	entity_cube02->setScale(glm::vec3(10, 1, 10));
-	/*
-	Entity* entity_cube03= new Entity(&scene);
-	entity_cube03->add(cubeRenderer03);
-	entity_cube03->add(boxCollider03);
-	entity_cube03->setScale(glm::vec3(10, 1, 10));
-	entity_cube03->setTranslation(glm::vec3(4, 2, 0));
-	entity_cube03->setRotation( glm::quat( glm::vec3(0, 0, -glm::pi<float>()*0.5f) ));
-	//cube entity 04
-	Entity* entity_cube04 = new Entity(&scene);
-	entity_cube04->add(cubeRenderer04);
-	entity_cube04->add(boxCollider04);
-	entity_cube04->setTranslation(glm::vec3(0, -2, 0));
-	entity_cube04->setScale(glm::vec3(10, 1, 10));
-	entity_cube04->setTranslation(glm::vec3(0, 2, 4));
-	entity_cube04->setRotation(glm::quat(glm::vec3(-glm::pi<float>()*0.5f, 0, 0)));
-	*/
+	
+	//Entity* entity_cube03= new Entity(&scene);
+	//entity_cube03->add(cubeRenderer03);
+	//entity_cube03->add(boxCollider03);
+	//entity_cube03->setScale(glm::vec3(10, 1, 10));
+	//entity_cube03->setTranslation(glm::vec3(4, 2, 0));
+	//entity_cube03->setRotation( glm::quat( glm::vec3(0, 0, -glm::pi<float>()*0.5f) ));
+	////cube entity 04
+	//Entity* entity_cube04 = new Entity(&scene);
+	//entity_cube04->add(cubeRenderer04);
+	//entity_cube04->add(boxCollider04);
+	//entity_cube04->setTranslation(glm::vec3(0, -2, 0));
+	//entity_cube04->setScale(glm::vec3(10, 1, 10));
+	//entity_cube04->setTranslation(glm::vec3(0, 2, 4));
+	//entity_cube04->setRotation(glm::quat(glm::vec3(-glm::pi<float>()*0.5f, 0, 0)));
+	
 
 	//flage entity : 
 	Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>("default");
@@ -586,7 +597,7 @@ int main( int argc, char **argv )
 
 
 		//synchronize input handler : 
-		inputHandler.synchronize(window);
+		inputHandler.synchronize();
 
 		//get active camera before render scene : 
 		BaseCamera& currentCamera = editor.getCamera();
@@ -606,14 +617,14 @@ int main( int argc, char **argv )
 		
 
 #if 1
-		/*
-        ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
-        ImGui::Begin("aogl");
-        ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
-        lightManager.drawUI();
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::End();
-		*/
+		
+        //ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+        //ImGui::Begin("aogl");
+        //ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
+        //lightManager.drawUI();
+        //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        //ImGui::End();
+		
 		
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI(scene);
@@ -642,5 +653,7 @@ int main( int argc, char **argv )
 
     exit( EXIT_SUCCESS );
 }
+
+*/
 
 

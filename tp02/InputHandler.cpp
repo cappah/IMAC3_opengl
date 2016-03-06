@@ -1,54 +1,89 @@
 #include "InputHandler.h"
 
 
-
-InputHandler::InputHandler()
+void InputHandler::synchronize()
 {
+	get()._synchronize();
 }
 
-
-InputHandler::~InputHandler()
+bool InputHandler::getMouseButtonUp(int button)
 {
+	return get()._getMouseButtonUp(button);
 }
 
-void InputHandler::synchronize(GLFWwindow* window)
+bool InputHandler::getMouseButton(int button)
+{
+	return get()._getMouseButton(button);
+}
+
+bool InputHandler::getMouseButtonDown(int button)
+{
+	return get()._getMouseButtonDown(button);
+}
+
+bool InputHandler::getKeyUp(int key)
+{
+	return get()._getKeyUp(key);
+}
+
+bool InputHandler::getKey(int key)
+{
+	return get()._getKey(key);
+}
+
+bool InputHandler::getKeyDown(int key)
+{
+	return get()._getKeyDown(key);
+}
+
+void InputHandler::attachToWindow(GLFWwindow * window)
+{
+	get()._attachToWindow(window);
+}
+
+void InputHandler::_synchronize()
 {
 	for (int i = 0; i < GLFW_MOUSE_BUTTON_LAST; i++)
 	{
-		previousMouseState[i] = glfwGetMouseButton(window, i);
+		previousMouseState[i] = glfwGetMouseButton(m_window, i);
 	}
 	for (int i = 0; i < GLFW_KEY_LAST; i++)
 	{
-		previousKeyboardState[i] = glfwGetKey(window, i);
+		previousKeyboardState[i] = glfwGetKey(m_window, i);
 	}
 }
 
-bool InputHandler::getMouseButtonUp(GLFWwindow* window, int button)
+bool InputHandler::_getMouseButtonUp(int button)
 {
-	return (!glfwGetMouseButton(window, button) && previousMouseState[button]);
+	return (!glfwGetMouseButton(m_window, button) && previousMouseState[button]);
 }
 
-bool InputHandler::getMouseButton(GLFWwindow* window, int button)
+bool InputHandler::_getMouseButton(int button)
 {
-	return glfwGetMouseButton(window, button);
+	return glfwGetMouseButton(m_window, button);
 }
 
-bool InputHandler::getMouseButtonDown(GLFWwindow* window, int button)
+bool InputHandler::_getMouseButtonDown(int button)
 {
-	return (glfwGetMouseButton(window, button) && !previousMouseState[button]);
+	return (glfwGetMouseButton(m_window, button) && !previousMouseState[button]);
 }
 
-bool InputHandler::getKeyUp(GLFWwindow* window, int key)
+bool InputHandler::_getKeyUp(int key)
 {
-	return (!glfwGetKey(window, key) && previousKeyboardState[key]);
+	return (!glfwGetKey(m_window, key) && previousKeyboardState[key]);
 }
 
-bool InputHandler::getKey(GLFWwindow* window, int key)
+bool InputHandler::_getKey(int key)
 {
-	return glfwGetKey(window, key);
+	return glfwGetKey(m_window, key);
 }
 
-bool InputHandler::getKeyDown(GLFWwindow* window, int key)
+bool InputHandler::_getKeyDown(int key)
 {
-	return (glfwGetKey(window, key) && !previousKeyboardState[key]);
+	return (glfwGetKey(m_window, key) && !previousKeyboardState[key]);
+}
+
+void InputHandler::_attachToWindow(GLFWwindow * window)
+{
+	m_window = window;
 }

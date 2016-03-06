@@ -5,14 +5,23 @@
 class Application {
 
 private:
+	GLFWwindow* m_activeWindow;
+
 	int m_windowWidth;
 	int m_windowHeight;
 
 	bool m_windowResize;
 
 	double m_deltaTime;
+	double m_fixedDeltaTime;
+	int m_fps;
 
 public:
+
+	void setActiveWindow(GLFWwindow* activeWindow);
+
+	GLFWwindow* getActiveWindow();
+
 	void setWindowHeight(int height);
 
 	void setWindowWidth(int width);
@@ -32,12 +41,19 @@ public:
 
 	double getDeltaTime() const;
 
+	void setFixedDeltaTime(double deltaTime);
+
+	double getFixedDeltaTime() const;
+
+	void setFPS(double fps);
+
+	double getFPS() const;
+
 
 	// singleton implementation :
 private:
-	Application() {
-
-	}
+	Application() : m_fixedDeltaTime(1.f/60.f)
+	{}
 
 public:
 	inline static Application& get()

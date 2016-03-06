@@ -1,13 +1,14 @@
 #include "Scene.h"
 
 
-Scene::Scene(Renderer * renderer) : m_renderer(renderer), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
+Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
 {
 }
 
 Scene::~Scene()
 {
 	clear();
+	delete m_renderer;
 }
 
 void Scene::clear()
@@ -381,6 +382,16 @@ Skybox& Scene::getSkybox()
 PathManager & Scene::getPathManager()
 {
 	return m_pathManager;
+}
+
+Renderer& Scene::getRenderer()
+{
+	return *m_renderer;
+}
+
+std::string Scene::getName() const
+{
+	return m_name;
 }
 
 void Scene::save(const std::string & path)

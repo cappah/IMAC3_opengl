@@ -1,7 +1,9 @@
 #include "Editor.h"
+//forwards :
 #include "Scene.h"
-#include "Application.h" //forward
-#include "Factories.h" //forward
+#include "Application.h"
+#include "Factories.h"
+#include "InputHandler.h"
 
 
 
@@ -1338,7 +1340,7 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 }
 
 
-void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler )
+void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 {
 	float screenWidth = Application::get().getWindowWidth();
 	float screenHeight = Application::get().getWindowHeight();
@@ -1346,7 +1348,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	//update tools : 
 	if (m_terrainToolVisible) // for terrain
 	{
-		if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_1) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
+		if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_1) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
 		{
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
@@ -1383,19 +1385,19 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	if (!m_guiStates.UICaptureKeyboard)
 	{
 		// ui visibility : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
+		if (InputHandler::getKeyDown(GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
 		{
 			this->toggleDebugVisibility(scene);
 		}
 
 		//entity copy / past : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_D) && m_guiStates.ctrlPressed)
+		if (InputHandler::getKeyDown(GLFW_KEY_D) && m_guiStates.ctrlPressed)
 		{
 			this->duplicateSelected();
 		}
 
 		//delete selected : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_DELETE))
+		if (InputHandler::getKeyDown(GLFW_KEY_DELETE))
 		{
 			this->deleteSelected(scene);
 		}
@@ -1406,7 +1408,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	{
 		//object picking : 
 		if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
-			&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
+			&& InputHandler::getMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
 		{
 
 			glm::vec3 origin = m_camera->getCameraPosition();
@@ -1463,12 +1465,12 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 
 	}
 
-	if (inputHandler.getMouseButtonUp(window, GLFW_MOUSE_BUTTON_LEFT))
+	if (InputHandler::getMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		if (this->isMovingGizmo())
 			this->endMoveGizmo();
 	}
-	if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
+	if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		if (this->isMovingGizmo())
 		{

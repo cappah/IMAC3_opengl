@@ -165,6 +165,11 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	lightManager->setShadowMapCount(LightManager::POINT, 10);
 }
 
+Renderer::~Renderer()
+{
+	delete lightManager;
+}
+
 
 void Renderer::onResizeWindow()
 {
