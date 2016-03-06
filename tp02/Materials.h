@@ -24,6 +24,7 @@ struct Material
 
 
 	Material(GLuint _glProgram = 0);
+	virtual ~Material();
 	virtual void use() = 0;
 	virtual void drawUI() = 0;
 };

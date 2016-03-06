@@ -9,7 +9,7 @@ PathManager::PathManager()
 
 PathManager::~PathManager()
 {
-	delete m_material;
+	
 }
 
 void PathManager::updatePathId(int pathId, int oldPathId, PathPoint* pathPoint)

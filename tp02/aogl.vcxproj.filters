@@ -234,6 +234,9 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Project.h" />
+    <ClInclude Include="dirent.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

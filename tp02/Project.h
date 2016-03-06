@@ -46,6 +46,13 @@ public:
 
 	void loadDefaultScene(Scene* scene);
 
+	void setName(const std::string& name);
+	std::string getName() const;
+
+	void setPath(const std::string& path);
+	std::string getPath() const;
+
+
 private :
 	GLFWwindow* Project::initGLFW(int width, int height);
 	void initGlew();

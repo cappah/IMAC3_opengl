@@ -229,7 +229,7 @@ void CubeTextureFactory::save(Json::Value & entityRoot) const
 
 		entityRoot["values"][i]["size"] = it->second->paths.size();
 		for (int p = 0; p < it->second->paths.size(); p++)
-			entityRoot["values"][i][p] = it->second->paths[p];
+			entityRoot["values"][i]["paths"][p] = it->second->paths[p];
 		i++;
 	}
 }
@@ -244,7 +244,7 @@ void CubeTextureFactory::load(Json::Value & entityRoot)
 		int pathSize = entityRoot["values"][i].get("size",0).asInt();
 		std::vector<std::string> cubeTexturePaths;
 		for (int p = 0; p < pathSize; p++)
-			cubeTexturePaths.push_back(entityRoot["values"][i].get(p,"default").asString());
+			cubeTexturePaths.push_back(entityRoot["values"][i]["paths"].get(p,"default").asString());
 
 		add(cubeTextureName, cubeTexturePaths);
 	}
@@ -252,6 +252,46 @@ void CubeTextureFactory::load(Json::Value & entityRoot)
 
 
 /////////////////////////////////////////
+
+MeshFactory::MeshFactory()
+{
+	//Set the cube as a default mesh
+	Mesh* cube = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_TANGENTS));
+	cube->vertices = { 0.5,0.5,-0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  0.5,-0.5,-0.5,
+		-0.5,0.5,-0.5,  -0.5,0.5,0.5,  -0.5,-0.5,0.5,  -0.5,-0.5,-0.5,
+		-0.5,0.5,0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5,
+		-0.5,0.5,-0.5,  0.5,0.5,-0.5,  0.5,-0.5,-0.5,  -0.5,-0.5,-0.5,
+		0.5,0.5,0.5, -0.5,0.5,0.5, -0.5,0.5,-0.5, 0.5,0.5,-0.5,
+		-0.5,-0.5,-0.5,  0.5,-0.5,-0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5 };
+
+	cube->normals = { 1,0,0,  1,0,0,  1,0,0,  1,0,0,
+		-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0,
+		0,0,1,  0,0,1,  0,0,1,  0,0,1,
+		0,0,-1,  0,0,-1,  0,0,-1,  0,0,-1,
+		0,1,0,  0,1,0,  0,1,0,  0,1,0,
+		0,-1,0,  0,-1,0,  0,-1,0,  0,-1,0 };
+
+	cube->tangents = { 0,0,1,  0,0,1,  0,0,1,  0,0,1,
+		0,0,1,  0,0,1,  0,0,1,  0,0,1,
+		-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0,
+		1,0,0,  1,0,0,  1,0,0,  1,0,0,
+		1,0,0,  1,0,0,  1,0,0,  1,0,0,
+		-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0 };
+
+	cube->uvs = { 0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
+		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0 };
+
+	cube->triangleIndex = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20 };
+
+	cube->initGl();
+
+	cube->name = "default";
+	m_meshes["default"] = cube;
+}
 
 void MeshFactory::add(const std::string& name, Mesh* mesh)
 {
@@ -375,22 +415,30 @@ void MaterialFactory::drawUI()
 
 void MaterialFactory::save(Json::Value & entityRoot) const
 {
-	entityRoot["size"] = m_materials.size();
-	int i = 0;
+
+	//We only save lit materials : 
+	std::vector<MaterialLit*> litMaterials;
 	for (auto it = m_materials.begin(); it != m_materials.end(); it++)
 	{
 		MaterialLit* matLitCasted = dynamic_cast<MaterialLit*>(it->second);
 		if (matLitCasted != nullptr)
 		{
-			entityRoot["keys"][i] = it->first;
-			matLitCasted->save(entityRoot["values"][i]);
+			litMaterials.push_back(matLitCasted);
 		}
-		i++;
+	}
+
+	entityRoot["size"] = litMaterials.size();
+
+	for (int i = 0; i < litMaterials.size(); i++)
+	{
+		entityRoot["keys"][i] = litMaterials[i]->name;
+		litMaterials[i]->save(entityRoot["values"][i]);
 	}
 }
 
 void MaterialFactory::load(Json::Value & entityRoot)
 {
+	//we only load lit materials : 
 	int size = entityRoot.get("size", 0).asInt();
 	for (int i = 0; i < size; i++)
 	{

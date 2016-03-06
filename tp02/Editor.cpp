@@ -4,6 +4,7 @@
 #include "Application.h"
 #include "Factories.h"
 #include "InputHandler.h"
+#include "Project.h"
 
 
 
@@ -409,8 +410,10 @@ void Editor::hideAllToolsUI()
 	m_materialFactoryVisible = false;
 }
 
-void Editor::displayMenuBar(Scene& scene)
+void Editor::displayMenuBar(Project& project)
 {
+	Scene& scene = *project.getActiveScene();
+
 	bool saveWindowOpen = false;
 	bool loadWindowOpen = false;
 
@@ -420,8 +423,15 @@ void Editor::displayMenuBar(Scene& scene)
 		{
 			if (ImGui::Selectable("save"))
 			{
-				saveWindowOpen = true;
+				if (project.getName() == "")
+					saveWindowOpen = true;
+				else
+					project.save();
 				//ImGui::OpenPopup("save window");
+			}
+			if (ImGui::Selectable("save as"))
+			{
+				saveWindowOpen = true;
 			}
 			if(ImGui::Selectable("load"))
 			{
@@ -626,13 +636,25 @@ void Editor::displayMenuBar(Scene& scene)
 	bool loadModalWindowOpen = true;
 	if (ImGui::BeginPopupModal("load window", &loadModalWindowOpen))
 	{
-		ImGui::InputText("path", &m_loadPath[0], 60);
+		ImGui::InputText("project name", &m_loadPath[0], 60);
 		if (ImGui::Button("load"))
 		{
 			std::string loadPath = ("save/" + std::string(m_loadPath));
-			//TODO verify the validity of path
-			scene.clear(); //clear the previous scene
-			scene.load(loadPath);
+
+			//Verify the validity of path :
+			std::vector<std::string> dirNames = getAllDirNames("save/");
+			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_loadPath)) != dirNames.end());
+
+			if (m_loadPath != "" && dirAlreadyExists)
+			{
+				project.open(m_loadPath, loadPath);
+				//scene.clear(); //clear the previous scene
+				//scene.load(loadPath);
+			}
+			else
+			{
+				std::cout << "can't load project with name : " << m_loadPath << " no project found." << std::endl;
+			}
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -643,12 +665,27 @@ void Editor::displayMenuBar(Scene& scene)
 	bool saveModalWindowOpen = true;
 	if (ImGui::BeginPopupModal("save window", &saveModalWindowOpen))
 	{
-		ImGui::InputText("path", m_savePath, 60);
+		ImGui::InputText("set project name", m_savePath, 60);
 		if (ImGui::Button("save"))
 		{
 			std::string savePath = ("save/"+std::string(m_savePath));
-			//TODO verify the validity of path
-			scene.save(savePath);
+
+			//Verify the validity of path :
+			std::vector<std::string> dirNames = getAllDirNames("save/");
+			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_savePath)) != dirNames.end());
+			
+			if (m_savePath != "" && !dirAlreadyExists)
+			{
+				project.setName(m_savePath);
+				project.setPath(savePath);
+				project.save();
+			}
+			else
+			{
+				std::cout << "can't save project with name : " << m_savePath << " a project with the same name was found." << std::endl;
+			}
+
+			//scene.save(savePath);
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -926,13 +963,15 @@ void Editor::onResizeWindow()
 	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
 }
 
-void Editor::renderUI(Scene& scene)
+void Editor::renderUI(Project& project)
 {
+		
+	Scene& scene = *project.getActiveScene();
 
 	if (!m_isUIVisible)
 		return;
 
-	displayMenuBar(scene);
+	displayMenuBar(project);
 
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);

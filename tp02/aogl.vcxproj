@@ -281,6 +281,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentFactory.h" />
     <ClInclude Include="CSpline.h" />
+    <ClInclude Include="dirent.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Factories.h" />

@@ -8,7 +8,6 @@ Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(rend
 Scene::~Scene()
 {
 	clear();
-	delete m_renderer;
 }
 
 void Scene::clear()
@@ -428,6 +427,11 @@ void Scene::load(const std::string & path)
 
 	std::ifstream stream;
 	stream.open(path);
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load scene at path : " << path << std::endl;
+		return;
+	}
 	stream >> root;
 	
 	int entityCount = root.get("entityCount", 0).asInt();

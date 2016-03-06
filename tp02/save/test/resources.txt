@@ -1,0 +1,110 @@
+{
+	"cubeTextureFactory" : 
+	{
+		"keys" : 
+		[
+			"default",
+			"plaineSkybox"
+		],
+		"size" : 2,
+		"values" : 
+		[
+			{
+				"paths" : 
+				[
+					"",
+					"",
+					"",
+					"",
+					"",
+					""
+				],
+				"size" : 6
+			},
+			{
+				"paths" : 
+				[
+					"textures/skyboxes/right.png",
+					"textures/skyboxes/left.png",
+					"textures/skyboxes/top.png",
+					"textures/skyboxes/top.png",
+					"textures/skyboxes/front.png",
+					"textures/skyboxes/back.png"
+				],
+				"size" : 6
+			}
+		]
+	},
+	"materialFactory" : 
+	{
+		"keys" : 
+		[
+			"brick",
+			"default"
+		],
+		"size" : 2,
+		"values" : 
+		[
+			{
+				"specularPower" : 50,
+				"textureBumpName" : "brickBump",
+				"textureDiffuseName" : "brickDiffuse",
+				"textureRepetition" : 
+				[
+					1,
+					1
+				],
+				"textureSpecularName" : "brickSpecular"
+			},
+			{
+				"specularPower" : 50,
+				"textureBumpName" : "default",
+				"textureDiffuseName" : "default",
+				"textureRepetition" : 
+				[
+					1,
+					1
+				],
+				"textureSpecularName" : "default"
+			}
+		]
+	},
+	"meshFactory" : 
+	{
+		"keys" : 
+		[
+			"cube",
+			"cubeWireframe",
+			"default",
+			"plane"
+		],
+		"size" : 4,
+		"values" : 
+		[
+			"",
+			"",
+			"",
+			""
+		]
+	},
+	"textureFactory" : 
+	{
+		"keys" : 
+		[
+			"brickBump",
+			"brickDiffuse",
+			"brickSpecular",
+			"default",
+			"grass01Diffuse"
+		],
+		"size" : 5,
+		"values" : 
+		[
+			"textures/spnza_bricks_a_normal.png",
+			"textures/spnza_bricks_a_diff.tga",
+			"textures/spnza_bricks_a_spec.tga",
+			"",
+			"textures/grass/grass01.png"
+		]
+	}
+}

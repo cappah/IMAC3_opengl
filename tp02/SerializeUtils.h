@@ -139,7 +139,8 @@ template<>
 inline Json::Value toJsonValue<glm::vec2>(const glm::vec2& vec)
 {
 	Json::Value serializedValue;
-	serializedValue.append(vec.x).append(vec.y);
+	serializedValue[0] = vec.x;
+	serializedValue[1] = vec.y;
 	return serializedValue;
 }
 

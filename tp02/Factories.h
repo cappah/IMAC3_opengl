@@ -153,9 +153,7 @@ public:
 
 	// singleton implementation :
 private:
-	MeshFactory() {
-
-	}
+	MeshFactory();
 
 public:
 	inline static MeshFactory& get()

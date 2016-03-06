@@ -1,0 +1,10 @@
+{
+	"activeSceneIdx" : 0,
+	"sceneCount" : 1,
+	"sceneInfos" : 
+	[
+		{
+			"name" : "defaultScene"
+		}
+	]
+}

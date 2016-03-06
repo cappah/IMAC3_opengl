@@ -8,7 +8,7 @@ void onWindowResize(GLFWwindow* window, int width, int height)
 }
 
 
-Project::Project() : m_activeSceneIdx(0)
+Project::Project() : m_activeSceneIdx(0), m_name(""), m_path("")
 {
 }
 
@@ -92,8 +92,11 @@ void Project::open(const std::string & projectName, const std::string & projectP
 void Project::save()
 {
 	Scene* scene = getActiveScene();
-	std::string activeScenePath = m_path + "/scenes/" + scene->getName();
+	std::string activeScenePath = m_path + "/scenes/" + scene->getName() + ".txt";
 	std::string resourcesPath = m_path + "/resources.txt";
+
+	addDirectories(m_path + "/scenes/");
+	addDirectories(m_path);
 
 	std::cout << "begin project save" << std::endl;
 	std::cout << "active scene path : " << activeScenePath << std::endl;
@@ -109,7 +112,7 @@ void Project::save()
 	rootProject["activeSceneIdx"] = m_activeSceneIdx;
 
 	std::ofstream streamProject;
-	streamProject.open(m_path+"projectInfos.txt");
+	streamProject.open(m_path+"/projectInfos.txt");
 	if (!streamProject.is_open())
 	{
 		std::cout << "error, can't save project infos at path : " << m_path << std::endl;
@@ -152,26 +155,12 @@ void Project::load()
 		std::cout << "error, can't load project infos at path : " << projectPath << std::endl;
 		return;
 	}
-	Json::Value rootProject;
-	streamProject >> rootProject;
-
-	//load scenes : 
-	int sceneCount = rootProject.get("sceneCount", 0).asInt();
-	for (int i = 0; i < sceneCount; i++)
-	{
-		std::string sceneName = rootProject["sceneInfos"][i]["name"].asString();
-		std::string scenePath = m_path + "/scenes/" + sceneName;
-		Scene* newScene = new Scene(m_renderer, sceneName);
-		newScene->load(scenePath);
-		m_scenes.push_back(newScene);
-	}
-	m_activeSceneIdx = rootProject.get("activeSceneIdx", 0).asInt();
 
 	//load resources : 
 	std::string resourcePath = m_path + "/resources.txt";
 	std::ifstream streamResources;
 	streamResources.open(resourcePath);
-	if (!streamProject.is_open())
+	if (!streamResources.is_open())
 	{
 		std::cout << "error, can't load project resources at path : " << resourcePath << std::endl;
 		return;
@@ -183,6 +172,21 @@ void Project::load()
 	MaterialFactory::get().load(rootResources["materialFactory"]);
 	TextureFactory::get().load(rootResources["textureFactory"]);
 	CubeTextureFactory::get().load(rootResources["cubeTextureFactory"]);
+
+	//load scenes : 
+	Json::Value rootProject;
+	streamProject >> rootProject;
+
+	int sceneCount = rootProject.get("sceneCount", 0).asInt();
+	for (int i = 0; i < sceneCount; i++)
+	{
+		std::string sceneName = rootProject["sceneInfos"][i]["name"].asString();
+		std::string scenePath = m_path + "/scenes/" + sceneName + ".txt";
+		Scene* newScene = new Scene(m_renderer, sceneName);
+		newScene->load(scenePath);
+		m_scenes.push_back(newScene);
+	}
+	m_activeSceneIdx = rootProject.get("activeSceneIdx", 0).asInt();
 
 }
 
@@ -208,6 +212,8 @@ void Project::edit()
 	//main loop
 	do
 	{
+		scene = getActiveScene();
+
 		t = glfwGetTime();
 		ImGui_ImplGlfwGL3_NewFrame();
 
@@ -259,7 +265,7 @@ void Project::edit()
 		*/
 
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
-		editor.renderUI(*scene);
+		editor.renderUI(*this);
 
 		ImGui::Render();
 
@@ -402,6 +408,26 @@ void Project::loadDefaultScene(Scene* scene)
 	entity_flag->add(flag);
 	entity_flag->setName("flag");
 	entity_flag->endCreation();
+}
+
+void Project::setName(const std::string & name)
+{
+	m_name = name;
+}
+
+std::string Project::getName() const
+{
+	return m_name;
+}
+
+void Project::setPath(const std::string & path)
+{
+	m_path = path;
+}
+
+std::string Project::getPath() const
+{
+	return m_path;
 }
 
 GLFWwindow* Project::initGLFW(int width, int height)

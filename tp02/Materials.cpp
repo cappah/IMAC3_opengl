@@ -6,6 +6,10 @@ Material::Material(GLuint _glProgram) : glProgram(_glProgram)
 
 }
 
+Material::~Material()
+{
+}
+
 
 ///////////////////////////////////////////
 
@@ -186,6 +190,7 @@ void MaterialLit::save(Json::Value & objectRoot) const
 	objectRoot["textureSpecularName"] = textureSpecular->name;
 	objectRoot["textureBumpName"] = textureBump->name;
 	objectRoot["specularPower"] = specularPower;
+	objectRoot["textureRepetition"] = toJsonValue(textureRepetition);
 }
 
 void MaterialLit::load(Json::Value & objectRoot)
@@ -198,7 +203,7 @@ void MaterialLit::load(Json::Value & objectRoot)
 	std::string textureBumpName = objectRoot.get("textureBumpName", "default").asString();
 	textureBump = TextureFactory::get().get(textureBumpName);
 	specularPower = objectRoot.get("specularPower", 10).asFloat();
-
+	textureRepetition = fromJsonValue<glm::vec2>(objectRoot["textureRepetition"], glm::vec2(1,1));
 
 	diffuseTextureName = textureDiffuse->name;
 	specularTextureName = textureSpecular->name;

@@ -10,6 +10,7 @@
 
 //forward
 class Scene;
+class Project;
 
 
 class Inspector
@@ -133,14 +134,14 @@ public:
 	void renderGizmo();
 
 	void hideAllToolsUI();
-	void displayMenuBar(Scene& scene);
+	void displayMenuBar(Project& project);
 	void displayTopLeftWindow(Scene& scene);
 	void displayBottomWindow(Scene& scene);
 	void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
 	void displayBottomLeftWindow(Scene& scene);
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();
-	void renderUI(Scene& scene);
+	void renderUI(Project& project);
 
 	bool testGizmoIntersection(const Ray& ray);
 	void beginMoveGizmo();

@@ -88,8 +88,8 @@ int main(int argc, char** argv)
 	Project project;
 	project.init();
 
-	//open project : 
-	project.open("defaultProject", "");
+	//open default project : 
+	project.open("", "");
 
 	//edit or play project : 
 	//project.play();
