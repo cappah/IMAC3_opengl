@@ -135,10 +135,10 @@ public:
 
 	void hideAllToolsUI();
 	void displayMenuBar(Project& project);
-	void displayTopLeftWindow(Scene& scene);
-	void displayBottomWindow(Scene& scene);
+	void displayTopLeftWindow(Project& project);
+	void displayBottomWindow(Project& project);
 	void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
-	void displayBottomLeftWindow(Scene& scene);
+	void displayBottomLeftWindow(Project& project);
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();
 	void renderUI(Project& project);

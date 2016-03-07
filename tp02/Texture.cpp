@@ -165,7 +165,6 @@ CubeTexture::~CubeTexture()
 	{
 		delete[] pixels[i];
 	}
-	delete[] pixels;
 }
 
 void CubeTexture::setTextureParameters(GLint _internalFormat, GLenum _format, GLenum _type, bool _generateMipMap)

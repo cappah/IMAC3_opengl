@@ -695,8 +695,9 @@ void Editor::displayMenuBar(Project& project)
 
 }
 
-void Editor::displayTopLeftWindow(Scene& scene)
+void Editor::displayTopLeftWindow(Project& project)
 {
+	Scene& scene = *project.getActiveScene();
 
 	int entityId = 0;
 
@@ -818,8 +819,10 @@ void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParen
 	entityId++;
 }
 
-void Editor::displayBottomLeftWindow(Scene& scene)
+void Editor::displayBottomLeftWindow(Project& project)
 {
+	Scene& scene = *project.getActiveScene();
+
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2) );
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
@@ -855,8 +858,10 @@ void Editor::displayBottomLeftWindow(Scene& scene)
 	ImGui::PopStyleColor();
 }
 
-void Editor::displayBottomWindow(Scene& scene)
+void Editor::displayBottomWindow(Project& project)
 {
+	Scene& scene = *project.getActiveScene();
+
 	ImGui::BeginChild("choose tool", ImVec2(200, ImGui::GetWindowHeight()));
 	if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
 	{
@@ -986,7 +991,7 @@ void Editor::renderUI(Project& project)
 		ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z -30, m_windowRect.w));
 
 			ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
-				displayTopLeftWindow(scene);
+				displayTopLeftWindow(project);
 			ImGui::EndChild();
 
 
@@ -1010,7 +1015,7 @@ void Editor::renderUI(Project& project)
 			ImGui::Separator();
 
 			ImGui::BeginChild("bottomLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_bottomLeftPanelRect.w - 16.f));
-				displayBottomLeftWindow(scene);
+				displayBottomLeftWindow(project);
 			ImGui::EndChild();
 
 		ImGui::EndChild();
@@ -1046,7 +1051,7 @@ void Editor::renderUI(Project& project)
 	}
 
 	ImGui::BeginChild("bottomWindowContent");
-		displayBottomWindow(scene);
+		displayBottomWindow(project);
 	ImGui::EndChild();
 
 	ImGui::End();

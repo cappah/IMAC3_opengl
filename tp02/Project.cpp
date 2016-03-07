@@ -8,7 +8,7 @@ void onWindowResize(GLFWwindow* window, int width, int height)
 }
 
 
-Project::Project() : m_activeSceneIdx(0), m_name(""), m_path("")
+Project::Project() : m_activeSceneIdx(0), m_name(""), m_path(""), m_renderer(nullptr)
 {
 }
 
@@ -35,8 +35,10 @@ void Project::init()
 	initGlew();
 	setupWindow(window);
 
+	initProject();
+
 	//add default assets to factories : 
-	initDefaultAssets();
+	//initDefaultAssets();
 
 	// Init viewer structures
 	//Camera camera;
@@ -46,13 +48,13 @@ void Project::init()
 
 
 
-	// create and initialize our light manager
-	LightManager* lightManager = new LightManager();
+	//// create and initialize our light manager
+	//LightManager* lightManager = new LightManager();
 
-	// renderer : 
-	m_renderer = new Renderer(lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
-	m_renderer->initPostProcessQuad("blit.vert", "blit.frag");
-	m_renderer->initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag", "shadowPassOmni.vert", "shadowPassOmni.frag", "shadowPassOmni.geom");
+	//// renderer : 
+	//m_renderer = new Renderer(lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
+	//m_renderer->initPostProcessQuad("blit.vert", "blit.frag");
+	//m_renderer->initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag", "shadowPassOmni.vert", "shadowPassOmni.frag", "shadowPassOmni.geom");
 
 	// Our scene : 
 	//Scene scene(renderer);
@@ -60,19 +62,33 @@ void Project::init()
 
 void Project::clear()
 {
-	for (int i = 0; i < m_scenes.size(); i++)
-	{
-		delete m_scenes[i];
-	}
 	m_scenes.clear();
 	m_name = "";
 	m_path = "";
 	m_activeSceneIdx = 0;
+
+	//clear scens : 
+	for (int i = 0; i < m_scenes.size(); i++)
+	{
+		delete m_scenes[i];
+	}
+
+	//clear systems : 
+	if(m_renderer != nullptr)
+		delete m_renderer;
+
+	//clear all resources : 
+	MeshFactory::get().clear();
+	MaterialFactory::get().clear();
+	TextureFactory::get().clear();
+	CubeTextureFactory::get().clear();
+	ProgramFactory::get().clear();
 }
 
 void Project::open(const std::string & projectName, const std::string & projectPath)
 {
-	clear(); //clear the current project. 
+	clear(); //clear the current project (scenes + resources + systems)
+	initProject(); //init systems and resources
 
 	m_name = projectName;
 	m_path = projectPath;
@@ -786,4 +802,17 @@ void Project::initDefaultAssets()
 
 	///////////////////// END RESSOURCES 
 
+}
+
+void Project::initProject()
+{
+	initDefaultAssets();
+
+	// create and initialize our light manager
+	LightManager* lightManager = new LightManager();
+
+	// renderer : 
+	m_renderer = new Renderer(lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
+	m_renderer->initPostProcessQuad("blit.vert", "blit.frag");
+	m_renderer->initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag", "shadowPassOmni.vert", "shadowPassOmni.frag", "shadowPassOmni.geom");
 }

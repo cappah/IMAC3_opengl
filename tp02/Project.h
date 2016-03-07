@@ -60,5 +60,6 @@ private :
 	void setupWindow(GLFWwindow* window);
 	//void onWindowResize(GLFWwindow* window, int width, int height);
 	void initDefaultAssets();
+	void initProject();
 };
 

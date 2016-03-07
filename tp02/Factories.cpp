@@ -27,6 +27,15 @@ void ProgramFactory::drawUI()
 	ImGui::PopID();
 }
 
+void ProgramFactory::clear()
+{
+	for (auto& it = m_programs.begin(); it != m_programs.end(); it++)
+	{
+		glDeleteProgram(it->second);
+	}
+	m_programs.clear();
+}
+
 void ProgramFactory::save(Json::Value & objectRoot) const
 {
 	objectRoot["size"] = m_programs.size();
@@ -117,6 +126,21 @@ void TextureFactory::drawUI()
 	}
 
 	ImGui::PopID();
+}
+
+void TextureFactory::clear()
+{
+	for (auto& it = m_textures.begin(); it != m_textures.end();)
+	{
+		if (it->first != "default")
+		{
+			it->second->freeGL();
+			delete it->second;
+			it = m_textures.erase(it);
+		}
+		else
+			it++;
+	}
 }
 
 void TextureFactory::save(Json::Value & entityRoot) const
@@ -217,6 +241,21 @@ void CubeTextureFactory::drawUI()
 	}
 
 	ImGui::PopID();
+}
+
+void CubeTextureFactory::clear()
+{
+	for (auto& it = m_textures.begin(); it != m_textures.end();)
+	{
+		if (it->first != "default")
+		{
+			it->second->freeGL();
+			delete it->second;
+			it = m_textures.erase(it);
+		}
+		else
+			it++;
+	}
 }
 
 void CubeTextureFactory::save(Json::Value & entityRoot) const
@@ -354,6 +393,21 @@ void MeshFactory::drawUI()
 	ImGui::PopID();
 }
 
+void MeshFactory::clear()
+{
+	for (auto& it = m_meshes.begin(); it != m_meshes.end();)
+	{
+		if (it->first != "default")
+		{
+			it->second->freeGl();
+			delete it->second;
+			it = m_meshes.erase(it);
+		}
+		else
+			it++;
+	}
+}
+
 void MeshFactory::save(Json::Value & entityRoot) const
 {
 	entityRoot["size"] = m_meshes.size();
@@ -373,7 +427,10 @@ void MeshFactory::load(Json::Value & entityRoot)
 	{
 		std::string meshName = entityRoot["keys"][i].asString();
 		std::string meshPath = entityRoot["values"][i].asString();
-		add(meshName, meshPath);
+		
+		//don't laod mesh without mesh path these meshes are renerated with code : 
+		if(meshPath != "")
+			add(meshName, meshPath);
 	}
 }
 
@@ -411,6 +468,15 @@ void MaterialFactory::drawUI()
 	}
 
 	ImGui::PopID();
+}
+
+void MaterialFactory::clear()
+{
+	for (auto& it = m_materials.begin(); it != m_materials.end(); it++)
+	{
+		delete it->second;
+	}
+	m_materials.clear();
 }
 
 void MaterialFactory::save(Json::Value & entityRoot) const

@@ -22,7 +22,10 @@ public:
 	GLuint get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
 
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 
 	// singleton implementation :
@@ -43,8 +46,6 @@ public:
 	ProgramFactory(const ProgramFactory& other) = delete;
 	void operator=(const ProgramFactory& other) = delete;
 
-	virtual void save(Json::Value & entityRoot) const override;
-	virtual void load(Json::Value & entityRoot) override;
 };
 
 
@@ -66,6 +67,7 @@ public:
 	Texture* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -106,6 +108,7 @@ public:
 	CubeTexture* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -147,6 +150,7 @@ public:
 	Mesh* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -186,6 +190,7 @@ public:
 	template<typename T>
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
