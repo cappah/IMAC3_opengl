@@ -114,6 +114,7 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Project.cpp" />
+    <ClCompile Include="Octree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -237,6 +238,7 @@
     <ClInclude Include="dirent.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Octree.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
