@@ -8,8 +8,9 @@ void onWindowResize(GLFWwindow* window, int width, int height)
 }
 
 
-Project::Project() : m_activeSceneIdx(0), m_name(""), m_path(""), m_renderer(nullptr)
+Project::Project() : m_activeSceneName(""), m_name(""), m_path(""), m_renderer(nullptr), m_activeScene(nullptr)
 {
+	m_newSceneName[0] = '\0';
 }
 
 Project::~Project()
@@ -65,13 +66,13 @@ void Project::clear()
 	m_scenes.clear();
 	m_name = "";
 	m_path = "";
-	m_activeSceneIdx = 0;
+	m_activeSceneName = "";
 
-	//clear scens : 
-	for (int i = 0; i < m_scenes.size(); i++)
-	{
-		delete m_scenes[i];
-	}
+	//clear scene :
+	if(m_activeScene != nullptr)
+		delete m_activeScene;
+	
+	m_scenes.clear();
 
 	//clear systems : 
 	if(m_renderer != nullptr)
@@ -99,16 +100,14 @@ void Project::open(const std::string & projectName, const std::string & projectP
 	//create a default sceen if there are no scene in the project.
 	if (m_scenes.size() == 0)
 	{
-		Scene* scene = new Scene(m_renderer);
-		loadDefaultScene(scene);
-		m_scenes.push_back(scene);
+		m_activeScene = new Scene(m_renderer);
+		loadDefaultScene(m_activeScene);
 	}
 }
 
 void Project::save()
 {
-	Scene* scene = getActiveScene();
-	std::string activeScenePath = m_path + "/scenes/" + scene->getName() + ".txt";
+	std::string activeScenePath = m_path + "/scenes/" + m_activeScene->getName() + ".txt";
 	std::string resourcesPath = m_path + "/resources.txt";
 
 	addDirectories(m_path + "/scenes/");
@@ -121,11 +120,14 @@ void Project::save()
 	//save project infos : 
 	Json::Value rootProject;
 	rootProject["sceneCount"] = m_scenes.size();
-	for (int i = 0; i < m_scenes.size(); i++)
+	int sceneIdx = 0;
+	for (auto& it = m_scenes.begin(); it != m_scenes.end(); it++)
 	{
-		rootProject["sceneInfos"][i]["name"] = m_scenes[i]->getName();
+		rootProject["sceneInfos"][sceneIdx]["name"] = it->first;
+		rootProject["sceneInfos"][sceneIdx]["path"] = it->second;
+		sceneIdx++;
 	}
-	rootProject["activeSceneIdx"] = m_activeSceneIdx;
+	rootProject["activeSceneName"] = m_activeSceneName;
 
 	std::ofstream streamProject;
 	streamProject.open(m_path+"/projectInfos.txt");
@@ -137,9 +139,9 @@ void Project::save()
 	streamProject << rootProject;
 
 	//save current scene : 
-	if (scene != nullptr)
+	if (m_activeScene != nullptr)
 	{
-		scene->save(activeScenePath);
+		m_activeScene->save(activeScenePath);
 	}
 
 	//save resources : 
@@ -198,16 +200,21 @@ void Project::load()
 	{
 		std::string sceneName = rootProject["sceneInfos"][i]["name"].asString();
 		std::string scenePath = m_path + "/scenes/" + sceneName + ".txt";
-		Scene* newScene = new Scene(m_renderer, sceneName);
-		newScene->load(scenePath);
-		m_scenes.push_back(newScene);
+		m_scenes[sceneName] = scenePath;
 	}
-	m_activeSceneIdx = rootProject.get("activeSceneIdx", 0).asInt();
+
+	//load the active scene : 
+	m_activeSceneName = rootProject.get("activeSceneName", "default").asString();
+	if (m_activeScene != nullptr)
+		delete m_activeScene;
+	m_activeScene = new Scene(m_renderer, m_activeSceneName);
+	m_activeScene->load(m_scenes[m_activeSceneName]);
 
 }
 
 void Project::playEdit()
 {
+	//TODO
 }
 
 void Project::play()
@@ -315,20 +322,52 @@ void Project::exitApplication()
 
 Scene* Project::getActiveScene() const
 {
-	assert(m_activeSceneIdx >= 0 && m_activeSceneIdx < m_scenes.size());
-
-	return m_scenes[m_activeSceneIdx];
+	return m_activeScene;
 }
 
-void Project::loadScene(int sceneIdx)
+void Project::loadScene(const std::string& sceneName)
 {
-	//TODO
+	if (m_scenes.find(sceneName) == m_scenes.end())
+		return;
+
+	if (m_activeScene != nullptr)
+	{
+		std::string activeScenePath = m_scenes[m_activeSceneName];// m_path + "/scenes/" + m_activeSceneName + ".txt";
+		addDirectories(m_path + "/scenes/");
+		m_activeScene->save(activeScenePath);
+
+		m_activeScene->clear();
+		//delete m_activeScene;
+	}
+
+	//m_activeScene = new Scene(m_renderer, sceneName);
+	m_activeScene->load(m_scenes[sceneName]);
+	m_activeSceneName = sceneName;
 }
 
-void loadScene(const std::string& sceneName)
+void Project::addScene(const std::string& sceneName)
 {
-	//TODO
+	if (m_scenes.find(sceneName) != m_scenes.end())
+		return;
+
+	std::string scenePath = m_path + "/scenes/" + sceneName + ".txt";
+	m_scenes[sceneName] = scenePath;
+
+	if (m_activeScene != nullptr)
+	{
+		std::string activeScenePath = m_scenes[m_activeSceneName]; // m_path + "/scenes/" + m_activeSceneName + ".txt";
+		addDirectories(m_path + "/scenes/");
+		m_activeScene->save(activeScenePath);
+		
+		m_activeScene->clear();
+		//delete m_activeScene;
+	}
+
+	//m_activeScene = new Scene(m_renderer, sceneName);
+	loadDefaultScene(m_activeScene);
+	m_activeSceneName = sceneName;
 }
+
 
 void Project::loadDefaultScene(Scene* scene)
 {
@@ -446,6 +485,26 @@ std::string Project::getPath() const
 	return m_path;
 }
 
+void Project::drawUI()
+{
+	ImGui::Text(("active scene : " + m_activeSceneName).c_str());
+
+	ImGui::InputText("new scene", m_newSceneName, 30);
+	ImGui::SameLine();
+	if (ImGui::Button("add"))
+		addScene(m_newSceneName);
+
+	for (auto& it = m_scenes.begin(); it != m_scenes.end(); it++)
+	{
+		ImGui::PushID(it->first.c_str());
+		ImGui::Text(it->first.c_str());
+		ImGui::SameLine();
+		if (ImGui::Button("load"))
+			loadScene(it->first);
+		ImGui::PopID();
+	}
+}
+
 GLFWwindow* Project::initGLFW(int width, int height)
 {
 
@@ -523,124 +582,124 @@ void Project::setupWindow(GLFWwindow* window)
 
 void Project::initDefaultAssets()
 {
-	//////////////////// SKYBOX shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_skybox = compile_shader_from_file(GL_VERTEX_SHADER, "skybox.vert");
-	GLuint fragShaderId_skybox = compile_shader_from_file(GL_FRAGMENT_SHADER, "skybox.frag");
+	////////////////////// SKYBOX shaders ////////////////////////
+	//// Try to load and compile shaders
+	//GLuint vertShaderId_skybox = compile_shader_from_file(GL_VERTEX_SHADER, "skybox.vert");
+	//GLuint fragShaderId_skybox = compile_shader_from_file(GL_FRAGMENT_SHADER, "skybox.frag");
 
-	GLuint programObject_skybox = glCreateProgram();
-	glAttachShader(programObject_skybox, vertShaderId_skybox);
-	glAttachShader(programObject_skybox, fragShaderId_skybox);
+	//GLuint programObject_skybox = glCreateProgram();
+	//glAttachShader(programObject_skybox, vertShaderId_skybox);
+	//glAttachShader(programObject_skybox, fragShaderId_skybox);
 
-	glLinkProgram(programObject_skybox);
-	if (check_link_error(programObject_skybox) < 0)
-		exit(1);
+	//glLinkProgram(programObject_skybox);
+	//if (check_link_error(programObject_skybox) < 0)
+	//	exit(1);
 
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
+	////check uniform errors : 
+	//if (!checkError("Uniforms"))
+	//	exit(1);
 
-	//////////////////// 3D Gpass shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_gpass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
-	GLuint fragShaderId_gpass = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl_gPass.frag");
+	////////////////////// 3D Gpass shaders ////////////////////////
+	//// Try to load and compile shaders
+	//GLuint vertShaderId_gpass = compile_shader_from_file(GL_VERTEX_SHADER, "aogl.vert");
+	//GLuint fragShaderId_gpass = compile_shader_from_file(GL_FRAGMENT_SHADER, "aogl_gPass.frag");
 
-	GLuint programObject_gPass = glCreateProgram();
-	glAttachShader(programObject_gPass, vertShaderId_gpass);
-	glAttachShader(programObject_gPass, fragShaderId_gpass);
+	//GLuint programObject_gPass = glCreateProgram();
+	//glAttachShader(programObject_gPass, vertShaderId_gpass);
+	//glAttachShader(programObject_gPass, fragShaderId_gpass);
 
-	glLinkProgram(programObject_gPass);
-	if (check_link_error(programObject_gPass) < 0)
-		exit(1);
+	//glLinkProgram(programObject_gPass);
+	//if (check_link_error(programObject_gPass) < 0)
+	//	exit(1);
 
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
+	////check uniform errors : 
+	//if (!checkError("Uniforms"))
+	//	exit(1);
 
-	//////////////////// WIREFRAME shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_wireframe = compile_shader_from_file(GL_VERTEX_SHADER, "wireframe.vert");
-	GLuint fragShaderId_wireframe = compile_shader_from_file(GL_FRAGMENT_SHADER, "wireframe.frag");
+	////////////////////// WIREFRAME shaders ////////////////////////
+	//// Try to load and compile shaders
+	//GLuint vertShaderId_wireframe = compile_shader_from_file(GL_VERTEX_SHADER, "wireframe.vert");
+	//GLuint fragShaderId_wireframe = compile_shader_from_file(GL_FRAGMENT_SHADER, "wireframe.frag");
 
-	GLuint programObject_wireframe = glCreateProgram();
-	glAttachShader(programObject_wireframe, vertShaderId_wireframe);
-	glAttachShader(programObject_wireframe, fragShaderId_wireframe);
+	//GLuint programObject_wireframe = glCreateProgram();
+	//glAttachShader(programObject_wireframe, vertShaderId_wireframe);
+	//glAttachShader(programObject_wireframe, fragShaderId_wireframe);
 
-	glLinkProgram(programObject_wireframe);
-	if (check_link_error(programObject_wireframe) < 0)
-		exit(1);
+	//glLinkProgram(programObject_wireframe);
+	//if (check_link_error(programObject_wireframe) < 0)
+	//	exit(1);
 
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
+	////check uniform errors : 
+	//if (!checkError("Uniforms"))
+	//	exit(1);
 
-	//////////////////// TERRAIN shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_terrain = compile_shader_from_file(GL_VERTEX_SHADER, "terrain.vert");
-	GLuint fragShaderId_terrain = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrain.frag");
+	////////////////////// TERRAIN shaders ////////////////////////
+	//// Try to load and compile shaders
+	//GLuint vertShaderId_terrain = compile_shader_from_file(GL_VERTEX_SHADER, "terrain.vert");
+	//GLuint fragShaderId_terrain = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrain.frag");
 
-	GLuint programObject_terrain = glCreateProgram();
-	glAttachShader(programObject_terrain, vertShaderId_terrain);
-	glAttachShader(programObject_terrain, fragShaderId_terrain);
+	//GLuint programObject_terrain = glCreateProgram();
+	//glAttachShader(programObject_terrain, vertShaderId_terrain);
+	//glAttachShader(programObject_terrain, fragShaderId_terrain);
 
-	glLinkProgram(programObject_terrain);
-	if (check_link_error(programObject_terrain) < 0)
-		exit(1);
+	//glLinkProgram(programObject_terrain);
+	//if (check_link_error(programObject_terrain) < 0)
+	//	exit(1);
 
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
+	////check uniform errors : 
+	//if (!checkError("Uniforms"))
+	//	exit(1);
 
-	//////////////////// TERRAIN EDITION shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_terrainEdition = compile_shader_from_file(GL_VERTEX_SHADER, "terrainEdition.vert");
-	GLuint fragShaderId_terrainEdition = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrainEdition.frag");
+	////////////////////// TERRAIN EDITION shaders ////////////////////////
+	//// Try to load and compile shaders
+	//GLuint vertShaderId_terrainEdition = compile_shader_from_file(GL_VERTEX_SHADER, "terrainEdition.vert");
+	//GLuint fragShaderId_terrainEdition = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrainEdition.frag");
 
-	GLuint programObject_terrainEdition = glCreateProgram();
-	glAttachShader(programObject_terrainEdition, vertShaderId_terrainEdition);
-	glAttachShader(programObject_terrainEdition, fragShaderId_terrainEdition);
+	//GLuint programObject_terrainEdition = glCreateProgram();
+	//glAttachShader(programObject_terrainEdition, vertShaderId_terrainEdition);
+	//glAttachShader(programObject_terrainEdition, fragShaderId_terrainEdition);
 
-	glLinkProgram(programObject_terrainEdition);
-	if (check_link_error(programObject_terrainEdition) < 0)
-		exit(1);
+	//glLinkProgram(programObject_terrainEdition);
+	//if (check_link_error(programObject_terrainEdition) < 0)
+	//	exit(1);
 
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
+	////check uniform errors : 
+	//if (!checkError("Uniforms"))
+	//	exit(1);
 
-	//////////////////// DRAW ON TEXTURE shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_drawOnTexture = compile_shader_from_file(GL_VERTEX_SHADER, "drawOnTexture.vert");
-	GLuint fragShaderId_drawOnTexture = compile_shader_from_file(GL_FRAGMENT_SHADER, "drawOnTexture.frag");
+	////////////////////// DRAW ON TEXTURE shaders ////////////////////////
+	//// Try to load and compile shaders
+	//GLuint vertShaderId_drawOnTexture = compile_shader_from_file(GL_VERTEX_SHADER, "drawOnTexture.vert");
+	//GLuint fragShaderId_drawOnTexture = compile_shader_from_file(GL_FRAGMENT_SHADER, "drawOnTexture.frag");
 
-	GLuint programObject_drawOnTexture = glCreateProgram();
-	glAttachShader(programObject_drawOnTexture, vertShaderId_drawOnTexture);
-	glAttachShader(programObject_drawOnTexture, fragShaderId_drawOnTexture);
+	//GLuint programObject_drawOnTexture = glCreateProgram();
+	//glAttachShader(programObject_drawOnTexture, vertShaderId_drawOnTexture);
+	//glAttachShader(programObject_drawOnTexture, fragShaderId_drawOnTexture);
 
-	glLinkProgram(programObject_drawOnTexture);
-	if (check_link_error(programObject_drawOnTexture) < 0)
-		exit(1);
+	//glLinkProgram(programObject_drawOnTexture);
+	//if (check_link_error(programObject_drawOnTexture) < 0)
+	//	exit(1);
 
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
+	////check uniform errors : 
+	//if (!checkError("Uniforms"))
+	//	exit(1);
 
-	//////////////////// GRASS FIELD shaders ////////////////////////
-	// Try to load and compile shaders
-	GLuint vertShaderId_grassField = compile_shader_from_file(GL_VERTEX_SHADER, "grassField.vert");
-	GLuint fragShaderId_grassField = compile_shader_from_file(GL_FRAGMENT_SHADER, "grassField.frag");
+	////////////////////// GRASS FIELD shaders ////////////////////////
+	//// Try to load and compile shaders
+	//GLuint vertShaderId_grassField = compile_shader_from_file(GL_VERTEX_SHADER, "grassField.vert");
+	//GLuint fragShaderId_grassField = compile_shader_from_file(GL_FRAGMENT_SHADER, "grassField.frag");
 
-	GLuint programObject_grassField = glCreateProgram();
-	glAttachShader(programObject_grassField, vertShaderId_grassField);
-	glAttachShader(programObject_grassField, fragShaderId_grassField);
+	//GLuint programObject_grassField = glCreateProgram();
+	//glAttachShader(programObject_grassField, vertShaderId_grassField);
+	//glAttachShader(programObject_grassField, fragShaderId_grassField);
 
-	glLinkProgram(programObject_grassField);
-	if (check_link_error(programObject_grassField) < 0)
-		exit(1);
+	//glLinkProgram(programObject_grassField);
+	//if (check_link_error(programObject_grassField) < 0)
+	//	exit(1);
 
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
+	////check uniform errors : 
+	//if (!checkError("Uniforms"))
+	//	exit(1);
 
 
 	// cube and plane ;
@@ -664,7 +723,7 @@ void Project::initDefaultAssets()
 	//				-1, 0, 0, -1, 0, 0, -1, 0, 0, };
 	//cube.initGl();
 
-	Mesh* cube = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_TANGENTS));
+	/*Mesh* cube = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_TANGENTS));
 	cube->vertices = { 0.5,0.5,-0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  0.5,-0.5,-0.5,
 		-0.5,0.5,-0.5,  -0.5,0.5,0.5,  -0.5,-0.5,0.5,  -0.5,-0.5,-0.5,
 		-0.5,0.5,0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5,
@@ -710,7 +769,7 @@ void Project::initDefaultAssets()
 	plane->uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f };
 	plane->vertices = { -5.0, -0.5, 5.0, 5.0, -0.5, 5.0, -5.0, -0.5, -5.0, 5.0, -0.5, -5.0 };
 	plane->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
-	plane->initGl();
+	plane->initGl();*/
 
 	/*
 	int x;
@@ -773,32 +832,32 @@ void Project::initDefaultAssets()
 	TextureFactory::get().add("grass01Diffuse", grassTextureDiffuse);
 
 	// materials : 
-	MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, TextureFactory::get().get("default"), TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
-	MaterialLit* brickMaterial = new MaterialLit(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
-	MaterialUnlit* wireframeMaterial = new MaterialUnlit(programObject_wireframe);
-	MaterialGrassField* grassFieldMaterial = new MaterialGrassField(programObject_grassField);
+	//MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, TextureFactory::get().get("default"), TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
+	MaterialLit* brickMaterial = new MaterialLit(ProgramFactory::get().get("defaultLit") /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
+	//MaterialUnlit* wireframeMaterial = new MaterialUnlit(programObject_wireframe);
+	//MaterialGrassField* grassFieldMaterial = new MaterialGrassField(programObject_grassField);
 
 	////////// INITIALYZE DEFAULT MATERIALS IN FACTORY : 
-	MaterialFactory::get().add("default", defaultMaterial);
+	//MaterialFactory::get().add("default", defaultMaterial);
 	MaterialFactory::get().add("brick", brickMaterial);
-	MaterialFactory::get().add("wireframe", wireframeMaterial);
-	MaterialFactory::get().add("grassField", grassFieldMaterial);
+	//MaterialFactory::get().add("wireframe", wireframeMaterial);
+	//MaterialFactory::get().add("grassField", grassFieldMaterial);
 
 	////////// INITIALYZE DEFAULT MESHES IN FACTORY : 
-	MeshFactory::get().add("cube", cube);
-	MeshFactory::get().add("cubeWireframe", cubeWireFrame);
-	MeshFactory::get().add("plane", plane);
+	//MeshFactory::get().add("cube", cube);
+	//MeshFactory::get().add("cubeWireframe", cubeWireFrame);
+	//MeshFactory::get().add("plane", plane);
 
 	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
 
 	////////// INITIALYZE DEFAULT PROGRAMS IN FACTORY : 
-	ProgramFactory::get().add("defaultLit", programObject_gPass);
-	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
-	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
-	ProgramFactory::get().add("defaultTerrain", programObject_terrain);
-	ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
-	ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
-	ProgramFactory::get().add("defaultGrassField", programObject_grassField);
+	//ProgramFactory::get().add("defaultLit", programObject_gPass);
+	//ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
+	//ProgramFactory::get().add("defaultSkybox", programObject_skybox);
+	//ProgramFactory::get().add("defaultTerrain", programObject_terrain);
+	//ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
+	//ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
+	//ProgramFactory::get().add("defaultGrassField", programObject_grassField);
 
 	///////////////////// END RESSOURCES 
 

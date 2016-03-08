@@ -17,6 +17,8 @@ class ProgramFactory : public ISerializable
 private:
 	std::map<std::string, GLuint> m_programs;
 
+	std::vector<std::string> m_defaults;
+
 public:
 	void add(const std::string& name, GLuint programId);
 	GLuint get(const std::string& name);
@@ -30,9 +32,7 @@ public:
 
 	// singleton implementation :
 private:
-	ProgramFactory() {
-
-	}
+	ProgramFactory();
 
 public:
 	inline static ProgramFactory& get()
@@ -144,6 +144,8 @@ private:
 	char name[20];
 	char path[50];
 
+	std::vector<std::string> m_defaults;
+
 public:
 	void add(const std::string& name, Mesh* mesh);
 	void add(const std::string& name, const std::string& path);
@@ -183,6 +185,8 @@ private:
 	//for UI : 
 	char name[20];
 
+	std::vector<std::string> m_defaults;
+
 public:
 	void add(const std::string& name, Material* material);
 	template<typename T>
@@ -197,9 +201,7 @@ public:
 
 	// singleton implementation :
 private:
-	MaterialFactory() {
-
-	}
+	MaterialFactory();
 
 public:
 	inline static MaterialFactory& get()

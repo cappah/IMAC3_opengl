@@ -259,6 +259,7 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	m_meshFactoryVisible = false;
 	m_programFactoryVisible = false;
 	m_materialFactoryVisible = false;
+	m_sceneManagerVisible = false;
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -408,6 +409,7 @@ void Editor::hideAllToolsUI()
 	m_meshFactoryVisible = false;
 	m_programFactoryVisible = false;
 	m_materialFactoryVisible = false;
+	m_sceneManagerVisible = false;
 }
 
 void Editor::displayMenuBar(Project& project)
@@ -898,6 +900,11 @@ void Editor::displayBottomWindow(Project& project)
 		hideAllToolsUI();
 		m_materialFactoryVisible = true;
 	}
+	if (ImGui::RadioButton("scene manager", m_sceneManagerVisible))
+	{
+		hideAllToolsUI();
+		m_sceneManagerVisible = true;
+	}
 	ImGui::EndChild();
 	
 	ImGui::SameLine();
@@ -948,6 +955,13 @@ void Editor::displayBottomWindow(Project& project)
 	{
 		ImGui::BeginChild("Material factory");
 		MaterialFactory::get().drawUI();
+		ImGui::End();
+	}
+
+	if (m_sceneManagerVisible)
+	{
+		ImGui::BeginChild("Scene manager");
+		project.drawUI();
 		ImGui::End();
 	}
 }

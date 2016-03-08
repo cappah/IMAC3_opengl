@@ -2,6 +2,9 @@
 
 #include "glew/glew.h"
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
+
 #include "Application.h"
 #include "InputHandler.h"
 #include "Factories.h"
@@ -11,14 +14,18 @@
 class Project
 {
 private:
-	std::vector<Scene*> m_scenes;
-	int m_activeSceneIdx;
+	std::map<std::string, std::string> m_scenes;
+	std::string m_activeSceneName;
+	Scene* m_activeScene;
 
 	Renderer* m_renderer;
 
 	//meta : 
 	std::string m_name;
 	std::string m_path;
+
+	//For ui : 
+	char m_newSceneName[30];
 
 public:
 	Project();
@@ -41,8 +48,8 @@ public:
 	void exitApplication();
 
 	Scene* getActiveScene() const;
-	void loadScene(int sceneIdx);
 	void loadScene(const std::string& sceneName);
+	void addScene(const std::string& sceneName);
 
 	void loadDefaultScene(Scene* scene);
 
@@ -51,6 +58,8 @@ public:
 
 	void setPath(const std::string& path);
 	std::string getPath() const;
+
+	void drawUI();
 
 
 private :

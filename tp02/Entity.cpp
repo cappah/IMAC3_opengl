@@ -607,7 +607,6 @@ void Entity::load(Json::Value& entityRoot)
 	{
 		Component* newComponent;
 		Component::ComponentType type = (Component::ComponentType)entityRoot["components"][i].get("type", "NONE").asInt();
-		ComponentFactory& tmpDebug = ComponentFactory::get();
 		newComponent = ComponentFactory::get().getInstance(type);
 		newComponent->load(entityRoot["components"][i]);
 

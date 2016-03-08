@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 	project.init();
 
 	//open default project : 
-	project.open("", "");
+	project.open("", "save/tmp");
 
 	//edit or play project : 
 	//project.play();
