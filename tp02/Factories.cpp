@@ -662,7 +662,10 @@ void MaterialFactory::drawUI()
 
 	for (auto& m : m_materials)
 	{
-		ImGui::Text(m.first.c_str());
+		if (ImGui::CollapsingHeader(m.first.c_str()))
+		{
+			m.second->drawUI();
+		}
 	}
 
 	ImGui::PopID();

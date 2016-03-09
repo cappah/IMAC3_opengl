@@ -548,6 +548,9 @@ void Editor::displayMenuBar(Project& project)
 				auto flag = new Physic::Flag(MaterialFactory::get().get<Material3DObject>("default"), 10);
 				newEntity->add(newCollider).add(flag);
 				newEntity->setName("flag");
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 
 			if (ImGui::Button("add path point"))
@@ -557,6 +560,9 @@ void Editor::displayMenuBar(Project& project)
 				auto pathPoint = new PathPoint();
 				newEntity->add(newCollider).add(pathPoint);
 				newEntity->setName("path point");
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 
 			if (ImGui::Button("add wind zone"))
@@ -566,6 +572,9 @@ void Editor::displayMenuBar(Project& project)
 				auto windZone = new Physic::WindZone();
 				newEntity->add(newCollider).add(windZone);
 				newEntity->setName("wind zone");
+
+				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+				changeCurrentSelected(newEntity);
 			}
 
 			ImGui::EndMenu();

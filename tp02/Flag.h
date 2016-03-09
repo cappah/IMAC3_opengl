@@ -88,6 +88,7 @@ namespace Physic {
 		void setMass(float mass);
 		void setRigidity(float rigidity);
 		void setViscosity(float viscosity);
+		void setDimensions(float width, float height);
 
 		void setSubdivision(int subdivision);
 		int getSubdivision() const;

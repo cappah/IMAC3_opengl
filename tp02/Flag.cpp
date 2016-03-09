@@ -136,7 +136,8 @@ namespace Physic {
 
 		int lineCount = (m_subdivision - 1);
 		int rowCount = (m_subdivision - 1);
-		m_mesh.triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
+		//m_mesh.triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
+		m_mesh.totalTriangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
 
 		// face 1 : 
 		for (int j = 0; j < m_subdivision; j++)
@@ -188,7 +189,7 @@ namespace Physic {
 
 		// face 1 : 
 		int k = 0;
-		for (int i = 0; i < m_mesh.triangleCount; i++)
+		for (int i = 0; i < m_mesh.totalTriangleCount; i++)
 		{
 			if (i % 2 == 0)
 			{
@@ -215,7 +216,7 @@ namespace Physic {
 		k += m_subdivision;
 
 		// face 2 : 
-		for (int i = 0; i < m_mesh.triangleCount; i++)
+		for (int i = 0; i < m_mesh.totalTriangleCount; i++)
 		{
 			if (i % 2 == 0)
 			{
@@ -239,7 +240,7 @@ namespace Physic {
 			}
 		}
 
-		m_mesh.triangleCount *= 2;
+		m_mesh.totalTriangleCount *= 2;
 
 	}
 
@@ -577,7 +578,7 @@ namespace Physic {
 				//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
 				collider->scale = glm::vec3(1, 1, 1); 
 				collider->rotation = glm::quat(0, 0, 0, 0);
-				collider->translation = translation;// glm::vec3(0, 0, 0);
+				collider->translation = glm::vec3(0, 0, 0);
 				collider->coverMesh(m_mesh);
 			}
 		}
@@ -711,7 +712,7 @@ namespace Physic {
 		return m_mesh;
 	}
 
-	void Flag::applyTransform(const glm::vec3 & _translation, const glm::vec3 & _scale, const glm::quat & _rotation)
+	void Flag::applyTransform(const glm::vec3& _translation, const glm::vec3& _scale, const glm::quat& _rotation)
 	{
 		modelMatrix = glm::translate(glm::mat4(1), _translation) * glm::mat4_cast(_rotation) * glm::scale(glm::mat4(1), _scale);
 
@@ -730,6 +731,8 @@ namespace Physic {
 
 		translation = _translation;
 		rotation = _rotation;
+		if (_scale != scale)
+			setDimensions(_scale.x, _scale.y);
 		scale = _scale;
 
 		synchronizeVisual();
@@ -768,6 +771,13 @@ namespace Physic {
 	void Flag::setViscosity(float viscosity)
 	{
 		m_viscosity = viscosity;
+	}
+
+	void Flag::setDimensions(float width, float height)
+	{
+		m_width = width;
+		m_height = height;
+		regenerateFlag();
 	}
 
 	void Flag::setSubdivision(int subdivision)

@@ -2,13 +2,19 @@
 #include "Ray.h"
 #include "Utils.h"
 
-Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage)
+Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage)
 {
-
+	subMeshCount = 1;
+	totalTriangleCount = 0;
+	triangleCount.push_back(0);
 }
 
-Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
+Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
 {
+	subMeshCount = 1;
+	totalTriangleCount = 0;
+	triangleCount.push_back(0);
+
 	bool Ret = false;
 	Assimp::Importer Importer;
 
@@ -30,7 +36,9 @@ Mesh::~Mesh()
 //initialize vbos and vao, based on the informations of the mesh.
 void Mesh::initGl()
 {
-	triangleCount = triangleIndex.size() / 3;
+	totalTriangleCount = triangleIndex.size() / 3;
+	if(triangleCount.size() == 1) //only one mesh, we have to ensure it contains all triangles
+		triangleCount[0] = (vbo_usage & USE_INDEX) ? triangleIndex.size() / 3 : vertices.size() / 9;
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -184,9 +192,19 @@ void Mesh::draw()
 {
 	glBindVertexArray(vao);
 	if (USE_INDEX & vbo_usage)
-		glDrawElements(primitiveType, triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);
+		glDrawElements(primitiveType, totalTriangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);
 	else
 		glDrawArrays(primitiveType, 0, vertices.size() / 3);
+	glBindVertexArray(0);
+}
+
+void Mesh::draw(int idx)
+{
+	glBindVertexArray(vao);
+	if (USE_INDEX & vbo_usage)
+		glDrawElements(primitiveType, triangleCount[idx]*3, GL_UNSIGNED_INT, (GLvoid*)idx);
+	else
+		glDrawArrays(primitiveType, idx, triangleCount[idx] * 3);
 	glBindVertexArray(0);
 }
 
@@ -243,13 +261,17 @@ bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) co
 
 bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 {
-	int numMesh = pScene->mNumMeshes;
-
+	totalTriangleCount = 0;
+	triangleCount.clear();
+	subMeshCount = pScene->mNumMeshes;
+	
 	// Initialize the meshes in the scene one by one
-	for (unsigned int i = 0; i <numMesh; i++)
+	for (unsigned int i = 0; i <subMeshCount; i++)
 	{
 		const aiMesh* paiMesh = pScene->mMeshes[i];
 		initMesh(i, paiMesh);
+		triangleCount.push_back(triangleIndex.size() / 3);
+		totalTriangleCount += triangleCount.back();
 	}
 
 	return true;

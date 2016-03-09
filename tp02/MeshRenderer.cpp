@@ -49,12 +49,11 @@ void MeshRenderer::drawUI(Scene& scene)
 	materialName.copy(tmpMaterialName, materialName.size());
 	tmpMaterialName[materialName.size()] = '\0';
 
-	ImGui::InputText("materialName", tmpMaterialName, 20);
+	if(ImGui::InputText("materialName", tmpMaterialName, 20))
+		materialName = tmpMaterialName;
 	ImGui::SameLine();
 	if (ImGui::Button("add"))
 	{
-		materialName = tmpMaterialName;
-
 		Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
 		if (tmpMat != nullptr)
 			material.push_back(tmpMat);
@@ -64,13 +63,12 @@ void MeshRenderer::drawUI(Scene& scene)
 	{
 		ImGui::PushID(i);
 		ImGui::Text(material[i]->name.c_str());
-		ImGui::SameLine();
-		if(material.size() > 0)
-			if (ImGui::Button("remove"))
-			{
+		if (material.size() > 0){
+			ImGui::SameLine();
+			if (ImGui::Button("remove")){
 				material.erase(material.begin() + i);
 			}
-		
+		}
 		ImGui::PopID();
 	}
 
