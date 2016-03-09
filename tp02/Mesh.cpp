@@ -221,7 +221,7 @@ void Mesh::computeBoundingBox()
 			topRight.z = vertices[i + 2];
 	}
 
-	origin = - glm::normalize(topRight - bottomLeft) * 0.5f;
+	origin = bottomLeft + (topRight - bottomLeft) * 0.5f;
 }
 
 bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) const

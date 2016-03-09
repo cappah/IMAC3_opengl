@@ -342,21 +342,21 @@ void BoxCollider::eraseFromEntity(Entity& entity)
 void BoxCollider::coverMesh(Mesh& mesh)
 {
 	origin = mesh.origin;
-	glm::vec3 dimensions = mesh.topRight - mesh.bottomLeft;
+	glm::vec3 dimensions = (mesh.topRight - mesh.bottomLeft)/scale;
 
 	offsetScale = dimensions;
-	offsetPosition = dimensions * 0.5f + origin*dimensions + mesh.bottomLeft;
+	offsetPosition = dimensions * 0.5f + origin*dimensions + mesh.bottomLeft - translation;
 
 	updateModelMatrix();
 }
 
-void BoxCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin)
+void BoxCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 _origin)
 {
-	origin = origin;
-	glm::vec3 dimensions = min - max;
+	origin = _origin;
+	glm::vec3 dimensions = (min - max)/scale;
 
 	offsetScale = dimensions;
-	offsetPosition = dimensions * 0.5f + origin*dimensions + min;
+	offsetPosition = dimensions * 0.5f + origin*dimensions + min - translation;
 
 	updateModelMatrix();
 }

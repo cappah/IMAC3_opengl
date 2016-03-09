@@ -509,15 +509,16 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	//render meshes
 	for (int i = 0; i < meshRenderers.size(); i++)
 	{
-		glm::mat4 modelMatrix = meshRenderers[i]->entity()->getModelMatrix(); //get modelMatrix
-		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
-		glm::mat4 mvp = projection * worldToView * modelMatrix;
+		//glm::mat4 modelMatrix = meshRenderers[i]->entity()->getModelMatrix(); //get modelMatrix
+		//glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
+		//glm::mat4 mvp = projection * worldToView * modelMatrix;
 
-		meshRenderers[i]->getMaterial()->use();
-		meshRenderers[i]->getMaterial()->setUniform_MVP(mvp);
-		meshRenderers[i]->getMaterial()->setUniform_normalMatrix(normalMatrix);
+		//meshRenderers[i]->getMaterial()->use();
+		//meshRenderers[i]->getMaterial()->setUniform_MVP(mvp);
+		//meshRenderers[i]->getMaterial()->setUniform_normalMatrix(normalMatrix);
 
-		meshRenderers[i]->getMesh()->draw();
+		//meshRenderers[i]->getMesh()->draw();
+		meshRenderers[i]->render(projection, worldToView);
 	}
 
 	//render physic flags : 

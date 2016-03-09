@@ -14,11 +14,12 @@ class Entity;
 class MeshRenderer : public Component
 {
 private:
-	std::string meshName;
 	Mesh* mesh;
+	std::vector<Material3DObject*> material;
 
+	//for UI : 
+	std::string meshName;
 	std::string materialName;
-	Material3DObject* material;
 
 public:
 	MeshRenderer();
@@ -33,15 +34,19 @@ public:
 	virtual void eraseFromEntity(Entity& entity) override;
 
 	void setMesh(Mesh* _mesh);
-	void setMaterial(Material3DObject* _material);
+	void addMaterial(Material3DObject* _material);
+	void removeMaterial(int idx);
+	void setMaterial(Material3DObject* _material, int idx);
 
-	Material3DObject* getMaterial() const;
+	Material3DObject* getMaterial(int idx) const;
 	Mesh* getMesh() const;
 
-	std::string getMaterialName() const;
+	std::string getMaterialName(int idx) const;
 	std::string getMeshName() const;
 
 	glm::vec3 getOrigin() const;
+
+	void render(const glm::mat4& projection, const glm::mat4& view);
 
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(Json::Value& rootComponent) override;

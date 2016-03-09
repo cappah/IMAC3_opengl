@@ -577,7 +577,7 @@ namespace Physic {
 				//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
 				collider->scale = glm::vec3(1, 1, 1); 
 				collider->rotation = glm::quat(0, 0, 0, 0);
-				collider->translation = glm::vec3(0, 0, 0);
+				collider->translation = translation;// glm::vec3(0, 0, 0);
 				collider->coverMesh(m_mesh);
 			}
 		}

@@ -150,22 +150,22 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 	if (meshRenderers.size() == 0)
 		return;
 
-	std::string tmpName = meshRenderers[0]->getMaterialName();
+	std::string tmpName = meshRenderers[0]->getMaterialName(0);
 	tmpName.copy(textValue, tmpName.size(), 0);
 	textValue[tmpName.size()] = '\0';
 
 	if (ImGui::InputText("materialName", textValue, 20))
 	{
-		for (auto& meshRenderer : meshRenderers)
+		if (MaterialFactory::get().contains<Material3DObject>(textValue))
 		{
-			if (MaterialFactory::get().contains<Material3DObject>(textValue))
+			for (auto& meshRenderer : meshRenderers)
 			{
-				meshRenderer->setMaterial( MaterialFactory::get().get<Material3DObject>(textValue) );
+				meshRenderer->setMaterial( MaterialFactory::get().get<Material3DObject>(textValue), 0);
 			}
 		}
 	}
 
-	meshRenderers[0]->getMaterial()->drawUI();
+	//meshRenderers[0]->getMaterial()->drawUI();
 
 	tmpName = meshRenderers[0]->getMeshName();
 	tmpName.copy(textValue, tmpName.size(), 0);
@@ -173,9 +173,9 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 
 	if (ImGui::InputText("meshName", textValue, 20))
 	{
-		for (auto& meshRenderer : meshRenderers)
+		if (MeshFactory::get().contains(textValue))
 		{
-			if (MeshFactory::get().contains(textValue))
+			for (auto& meshRenderer : meshRenderers)
 			{
 				meshRenderer->setMesh( MeshFactory::get().get(textValue) );
 			}

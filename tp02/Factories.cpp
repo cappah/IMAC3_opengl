@@ -474,6 +474,7 @@ MeshFactory::MeshFactory()
 	cube->initGl();
 	cube->name = "cube";
 	cube->path = "";
+	cube->computeBoundingBox();
 
 
 	Mesh* cubeWireFrame = new Mesh(GL_LINE_STRIP, (Mesh::USE_INDEX | Mesh::USE_VERTICES));
@@ -484,6 +485,7 @@ MeshFactory::MeshFactory()
 	cubeWireFrame->initGl();
 	cubeWireFrame->name = "cubeWireframe";
 	cubeWireFrame->path = "";
+	cubeWireFrame->computeBoundingBox();
 
 	Mesh* plane = new Mesh();
 	plane->triangleIndex = { 0, 1, 2, 2, 1, 3 };
@@ -493,6 +495,7 @@ MeshFactory::MeshFactory()
 	plane->initGl();
 	plane->name = "plane";
 	plane->path = "";
+	plane->computeBoundingBox();
 
 	m_meshes["default"] = cube;
 	m_meshes["cube"] = cube;
