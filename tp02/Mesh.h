@@ -50,6 +50,7 @@ struct Mesh
 	int subMeshCount;
 	int totalTriangleCount;
 	std::vector<int> triangleCount;
+	std::vector<GLuint> indexOffsets;
 
 	std::vector<int> triangleIndex;
 	std::vector<float> uvs;

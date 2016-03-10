@@ -7,6 +7,7 @@ Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVer
 	subMeshCount = 1;
 	totalTriangleCount = 0;
 	triangleCount.push_back(0);
+	indexOffsets.push_back(0);
 }
 
 Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
@@ -14,6 +15,7 @@ Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByV
 	subMeshCount = 1;
 	totalTriangleCount = 0;
 	triangleCount.push_back(0);
+	indexOffsets.push_back(0);
 
 	bool Ret = false;
 	Assimp::Importer Importer;
@@ -202,9 +204,9 @@ void Mesh::draw(int idx)
 {
 	glBindVertexArray(vao);
 	if (USE_INDEX & vbo_usage)
-		glDrawElements(primitiveType, triangleCount[idx]*3, GL_UNSIGNED_INT, (GLvoid*)idx);
+		glDrawElements(primitiveType, triangleCount[idx]*3, GL_UNSIGNED_INT, (void*)(indexOffsets[idx]*sizeof(unsigned int)) );
 	else
-		glDrawArrays(primitiveType, idx, triangleCount[idx] * 3);
+		glDrawArrays(primitiveType, indexOffsets[idx], triangleCount[idx] * 3);
 	glBindVertexArray(0);
 }
 
@@ -261,30 +263,34 @@ bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) co
 
 bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 {
-	totalTriangleCount = 0;
-	triangleCount.clear();
-	subMeshCount = pScene->mNumMeshes;
-	
-	// Initialize the meshes in the scene one by one
-	for (unsigned int i = 0; i <subMeshCount; i++)
-	{
-		const aiMesh* paiMesh = pScene->mMeshes[i];
-		initMesh(i, paiMesh);
-		triangleCount.push_back(triangleIndex.size() / 3);
-		totalTriangleCount += triangleCount.back();
-	}
-
-	return true;
-}
-
-void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
-{
 	triangleIndex.clear();
 	uvs.clear();
 	vertices.clear();
 	normals.clear();
 	tangents.clear();
 
+	totalTriangleCount = 0;
+	triangleCount.clear();
+	indexOffsets.clear();
+	subMeshCount = pScene->mNumMeshes;
+	
+	// Initialize the meshes in the scene one by one
+	for (unsigned int i = 0; i <subMeshCount; i++)
+	{
+		indexOffsets.push_back(totalTriangleCount*3);
+		const aiMesh* paiMesh = pScene->mMeshes[i];
+		initMesh(i, paiMesh);
+		triangleCount.push_back((triangleIndex.size() / 3) - totalTriangleCount);
+		totalTriangleCount += triangleCount.back();
+	}
+	initGl(); //don't forget to init mesh for opengl
+	computeBoundingBox();
+
+	return true;
+}
+
+void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
+{
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
 	//bounds init :
@@ -318,7 +324,7 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 		tangents.push_back(pTangent->z);
 
 		//bounds :
-		if (pPos->x > topRight.x)
+		/*if (pPos->x > topRight.x)
 			topRight.x = pPos->x;
 		if (pPos->y > topRight.y)
 			topRight.y = pPos->y;
@@ -332,7 +338,7 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 		if (pPos->z < bottomLeft.z)
 			bottomLeft.z = pPos->z;
 
-		origin = -glm::normalize(topRight - bottomLeft) * 0.5f;
+		origin = -glm::normalize(topRight - bottomLeft) * 0.5f;*/
 	}
 
 	for (unsigned int i = 0; i < paiMesh->mNumFaces; i++) 
@@ -344,5 +350,4 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 		triangleIndex.push_back(Face.mIndices[2]);
 	}
 
-	initGl();
 }

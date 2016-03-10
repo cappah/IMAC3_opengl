@@ -193,11 +193,24 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 	glm::mat4 mvp = projection * view * modelMatrix;
 
-	material[0]->use();
-	material[0]->setUniform_MVP(mvp);
-	material[0]->setUniform_normalMatrix(normalMatrix);
+	int minMatMeshCount = std::min((int)material.size(), mesh->subMeshCount);
+	for (int i = 0; i < minMatMeshCount; i++)
+	{
+		material[i]->use();
+		material[i]->setUniform_MVP(mvp);
+		material[i]->setUniform_normalMatrix(normalMatrix);
 
-	mesh->draw();
+		mesh->draw(i);	
+	}
+	//if there are more sub mesh than materials draw them with the last material
+	for (int i = minMatMeshCount; i < mesh->subMeshCount; i++)
+	{
+		material.back()->use();
+		material.back()->setUniform_MVP(mvp);
+		material.back()->setUniform_normalMatrix(normalMatrix);
+
+		mesh->draw(i);
+	}
 }
 
 void MeshRenderer::save(Json::Value & rootComponent) const
