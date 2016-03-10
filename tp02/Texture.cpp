@@ -92,9 +92,10 @@ void Texture::setTextureParameters(GLint _internalFormat, GLenum _format, GLenum
 void Texture::initGL()
 {
 
-	m_textureUseCounts++;
+	//m_textureUseCounts++;
 
-	if (m_textureUseCounts == 1)
+	//if (m_textureUseCounts == 1)
+	if(glId <= 0)
 	{
 		glGenTextures(1, &glId);
 
@@ -116,9 +117,10 @@ void Texture::initGL()
 
 void Texture::freeGL()
 {
-	m_textureUseCounts--;
+	//m_textureUseCounts--;
 
-	if (m_textureUseCounts <= 0)
+	//if (m_textureUseCounts <= 0)
+	if(glId > 0)
 	{
 		if(glId > 0)
 			glDeleteTextures(1, &glId);

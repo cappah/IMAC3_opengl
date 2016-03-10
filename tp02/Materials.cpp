@@ -147,7 +147,7 @@ void MaterialLit::drawUI()
 
 		if (TextureFactory::get().contains(tmpTxt01))
 		{
-			textureDiffuse->freeGL();
+			//textureDiffuse->freeGL();
 			textureDiffuse = TextureFactory::get().get(diffuseTextureName);
 			textureDiffuse->initGL();
 		}
@@ -162,7 +162,7 @@ void MaterialLit::drawUI()
 
 		if (TextureFactory::get().contains(specularTextureName))
 		{
-			textureSpecular->freeGL();
+			//textureSpecular->freeGL();
 			textureSpecular = TextureFactory::get().get(specularTextureName);
 			textureSpecular->initGL();
 		}
@@ -177,7 +177,7 @@ void MaterialLit::drawUI()
 
 		if (TextureFactory::get().contains(bumpTextureName))
 		{
-			textureBump->freeGL();
+			//textureBump->freeGL();
 			textureBump = TextureFactory::get().get(bumpTextureName);
 			textureBump->initGL();
 		}

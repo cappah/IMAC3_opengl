@@ -50,6 +50,8 @@ namespace Physic {
 	public:
 		Flag();
 		Flag(Material3DObject* material, int subdivision = 10, float width = 10.f, float height = 10.f);
+		Flag(const Flag& other);
+		Flag& operator=(const Flag& other);
 		~Flag();
 
 		//function to call each frame, with deltaTime = frame duration or fixe duration
