@@ -1018,8 +1018,10 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, float d
 	
 
 	if(potentialPositionIndex.size() > 0)
-	for (int i = 0; i < (density - currentGrassCount/(float)(4.f*radius*radius)); i++)
+	for (int i = 0; i < (density - currentGrassCount/(float)(4.f*radius*radius))*10; i++)
 	{
+		std::cout << "grass count" << (density - currentGrassCount / (float)(4.f*radius*radius)) << std::endl;
+
 		//srand(time(nullptr));
 		int randNumber = rand();
 		std::cout << "random number" << randNumber << std::endl;
@@ -1031,10 +1033,13 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, float d
 		float posZ = pointIndex.y * m_grassLayoutDelta;
 		float posY = getHeight(posX, posZ);
 
-		m_grassField.addGrass(GrassKey(pointIndex.x, pointIndex.y), glm::vec3(posX, posY, posZ));
-		m_grassLayout[grassLayoutWidth*pointIndex.y + pointIndex.x] = 1; //this layout controls the density of the grassField.
+		if (m_grassLayout[grassLayoutWidth*pointIndex.y + pointIndex.x] == 0)
+		{
+			m_grassField.addGrass(GrassKey(pointIndex.x, pointIndex.y), glm::vec3(posX, posY, posZ));
+			m_grassLayout[grassLayoutWidth*pointIndex.y + pointIndex.x] = 1; //this layout controls the density of the grassField.
 
-		potentialPositionIndex.erase(potentialPositionIndex.begin() + randomIndex);
+			potentialPositionIndex.erase(potentialPositionIndex.begin() + randomIndex);
+		}
 	}
 }
 
