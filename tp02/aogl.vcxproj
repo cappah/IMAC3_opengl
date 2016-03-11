@@ -239,6 +239,7 @@
     <ClCompile Include="Materials.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
+    <ClCompile Include="Octree.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="Path.cpp" />
     <ClCompile Include="PathManager.cpp" />
@@ -298,6 +299,7 @@
     <ClInclude Include="Materials.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="Octree.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PathManager.h" />
