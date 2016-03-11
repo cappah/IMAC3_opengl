@@ -8,24 +8,31 @@
 #include "Materials.h"
 #include "Texture.h"
 
+#include "ISerializable.h"
 
-class ProgramFactory
+
+class ProgramFactory : public ISerializable
 {
 
 private:
 	std::map<std::string, GLuint> m_programs;
+
+	std::vector<std::string> m_defaults;
 
 public:
 	void add(const std::string& name, GLuint programId);
 	GLuint get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
+
 
 	// singleton implementation :
 private:
-	ProgramFactory() {
-
-	}
+	ProgramFactory();
 
 public:
 	inline static ProgramFactory& get()
@@ -38,12 +45,13 @@ public:
 
 	ProgramFactory(const ProgramFactory& other) = delete;
 	void operator=(const ProgramFactory& other) = delete;
+
 };
 
 
 //////////////////////////////////////
 
-class TextureFactory
+class TextureFactory : public ISerializable
 {
 
 private:
@@ -59,6 +67,10 @@ public:
 	Texture* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 	// singleton implementation :
 private:
@@ -80,7 +92,7 @@ public:
 ///////////////////////////////
 
 
-class CubeTextureFactory
+class CubeTextureFactory : public ISerializable
 {
 
 private:
@@ -96,6 +108,10 @@ public:
 	CubeTexture* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 	// singleton implementation :
 private:
@@ -118,7 +134,7 @@ public:
 
 ///////////////////////////////
 
-class MeshFactory
+class MeshFactory : public ISerializable
 {
 
 private:
@@ -128,18 +144,22 @@ private:
 	char name[20];
 	char path[50];
 
+	std::vector<std::string> m_defaults;
+
 public:
 	void add(const std::string& name, Mesh* mesh);
 	void add(const std::string& name, const std::string& path);
 	Mesh* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 	// singleton implementation :
 private:
-	MeshFactory() {
-
-	}
+	MeshFactory();
 
 public:
 	inline static MeshFactory& get()
@@ -156,7 +176,7 @@ public:
 
 ////////////////////////////////
 
-class MaterialFactory
+class MaterialFactory : public ISerializable
 {
 
 private:
@@ -165,6 +185,8 @@ private:
 	//for UI : 
 	char name[20];
 
+	std::vector<std::string> m_defaults;
+
 public:
 	void add(const std::string& name, Material* material);
 	template<typename T>
@@ -172,12 +194,14 @@ public:
 	template<typename T>
 	bool contains(const std::string& name);
 	void drawUI();
+	void clear();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 
 	// singleton implementation :
 private:
-	MaterialFactory() {
-
-	}
+	MaterialFactory();
 
 public:
 	inline static MaterialFactory& get()

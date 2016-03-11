@@ -3,7 +3,16 @@
 #include "Entity.h"
 #include "Factories.h"
 
-MeshRenderer::MeshRenderer(Mesh* _mesh, Material3DObject* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material), meshName(""), materialName("")
+MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), mesh(MeshFactory::get().get("default")), material(MaterialFactory::get().get<Material3DObject>("default")), meshName("default"), materialName("default")
+{
+	if (mesh != nullptr)
+		meshName = mesh->name;
+
+	if (material != nullptr)
+		materialName = material->name;
+}
+
+MeshRenderer::MeshRenderer(Mesh* _mesh, Material3DObject* _material) : Component(MESH_RENDERER), mesh(_mesh), material(_material), meshName("default"), materialName("default")
 {
 	if (_mesh != nullptr)
 		meshName = _mesh->name;
@@ -20,36 +29,33 @@ MeshRenderer::~MeshRenderer()
 
 void MeshRenderer::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("mesh renderer"))
+	char tmpMaterialName[20];
+	materialName.copy(tmpMaterialName, materialName.size());
+	tmpMaterialName[materialName.size()] = '\0';
+
+	if (ImGui::InputText("materialName", tmpMaterialName, 20))
 	{
-		char tmpMaterialName[20];
-		materialName.copy(tmpMaterialName, materialName.size());
-		tmpMaterialName[materialName.size()] = '\0';
+		materialName = tmpMaterialName;
 
-		if (ImGui::InputText("materialName", tmpMaterialName, 20))
+		if (MaterialFactory::get().contains<Material3DObject>(materialName))
 		{
-			materialName = tmpMaterialName;
-
-			if (MaterialFactory::get().contains<Material3DObject>(materialName))
-			{
-				Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
-				if (tmpMat != nullptr)
-					material = tmpMat;
-			}
+			Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
+			if (tmpMat != nullptr)
+				material = tmpMat;
 		}
+	}
 
-		material->drawUI();
+	material->drawUI();
 
-		char tmpMeshName[20];
-		meshName.copy(tmpMeshName, meshName.size());
-		tmpMeshName[meshName.size()] = '\0';
+	char tmpMeshName[20];
+	meshName.copy(tmpMeshName, meshName.size());
+	tmpMeshName[meshName.size()] = '\0';
 
-		if (ImGui::InputText("meshName", tmpMeshName, 20))
+	if (ImGui::InputText("meshName", tmpMeshName, 20))
+	{
+		if (MeshFactory::get().contains(tmpMeshName))
 		{
-			if (MeshFactory::get().contains(tmpMeshName))
-			{
-				setMesh(MeshFactory::get().get(tmpMeshName));
-			}
+			setMesh(MeshFactory::get().get(tmpMeshName));
 		}
 	}
 }
@@ -73,7 +79,17 @@ void MeshRenderer::addToScene(Scene& scene)
 	scene.add(this);
 }
 
-void MeshRenderer::setMesh(Mesh * _mesh)
+void MeshRenderer::addToEntity(Entity& entity)
+{
+	entity.add(this);
+}
+
+void MeshRenderer::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void MeshRenderer::setMesh(Mesh* _mesh)
 {
 	if(_mesh != nullptr)
 		meshName = _mesh->name;
@@ -119,4 +135,22 @@ std::string MeshRenderer::getMeshName() const
 glm::vec3 MeshRenderer::getOrigin() const
 {
 	return mesh->origin;
+}
+
+void MeshRenderer::save(Json::Value & rootComponent) const
+{
+	Component::save(rootComponent);
+
+	rootComponent["meshName"] = meshName;
+	rootComponent["materialName"] = materialName;
+}
+
+void MeshRenderer::load(Json::Value & rootComponent)
+{
+	Component::load(rootComponent);
+
+	meshName = rootComponent.get("meshName", "").asString();
+	mesh = MeshFactory::get().get(meshName);
+	materialName = rootComponent.get("materialName", "").asString();
+	material = MaterialFactory::get().get<Material3DObject>(materialName);
 }

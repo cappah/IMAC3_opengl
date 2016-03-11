@@ -430,7 +430,7 @@ void Terrain::drawMaterialOnTerrain(glm::vec3 position, float radius, int textur
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	generateTerrainTexture();
+	//generateTerrainTexture();
 }
 
 void Terrain::drawMaterialOnTerrain(glm::vec3 position)
@@ -493,6 +493,7 @@ void Terrain::generateTerrainTexture()
 		m_terrainMaterial.setUniformBumpTexture(2);
 		//specular texture : 
 		m_terrainMaterial.setUniformSpecularTexture(3);
+
 
 		float offsetMin = (i / (float)m_terrainLayouts.size());
 		float offsetMax = ((i + 1) / (float)m_terrainLayouts.size());
@@ -872,12 +873,44 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 
 	m_material.use();
 
-	m_material.setUniform_MVP(mvp);
-	m_material.setUniform_normalMatrix(normalMatrix);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_filterTexture.glId);
 
-	glBindVertexArray(vao);
+	for (int i = 0; i < m_terrainLayouts.size(); i++)
+	{
+		//diffuse
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getDiffuse()->glId);
+		//bump
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getBump()->glId);
+		//specular
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getSpecular()->glId);
+
+		//filter texture : 
+		m_material.setUniformFilterTexture(0);
+		//diffuse texture :
+		m_material.setUniformDiffuseTexture(1);
+		//bump texture : 
+		m_material.setUniformBumpTexture(2);
+		//specular texture : 
+		m_material.setUniformSpecularTexture(3);
+
+		m_material.setUniformSpecularPower(m_terrainLayouts[i]->getSpecularPower());
+
+		float offsetMin = (i / (float)m_terrainLayouts.size());
+		float offsetMax = ((i + 1) / (float)m_terrainLayouts.size());
+		m_material.setUniformLayoutOffset(glm::vec2(offsetMin, offsetMax));
+		m_material.setUniformTextureRepetition(m_textureRepetitions[i]);
+
+		m_material.setUniform_MVP(mvp);
+		m_material.setUniform_normalMatrix(normalMatrix);
+
+		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, m_triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);
-	glBindVertexArray(0);
+		glBindVertexArray(0);
+	}
 }
 
 void Terrain::renderGrassField(const glm::mat4 & projection, const glm::mat4& view)

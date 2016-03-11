@@ -24,8 +24,6 @@ namespace Physic {
 
 	WindZone::~WindZone()
 	{
-		for (int i = 0; i < 2; i++)
-			delete[] m_emissionTypeNames[i];
 		delete[] m_emissionTypeNames;
 	}
 
@@ -117,21 +115,18 @@ namespace Physic {
 
 	void WindZone::drawUI(Scene & scene)
 	{
-		if (ImGui::CollapsingHeader("wind zone"))
-		{
-			if (ImGui::InputFloat("amplitude", &m_amplitude))
-				updateSpline();
-			if (ImGui::InputFloat("frequency", &m_frequency))
-				updateSpline();
-			if (ImGui::InputFloat("random factor", &m_randomFactor))
-				updateSpline();
-			int currentItemTypeEmission = (int)m_emissionType;
-			if (ImGui::ListBox("emission type", &currentItemTypeEmission, m_emissionTypeNames, 2))
-				m_emissionType = (EmissionType)currentItemTypeEmission;
-			if (ImGui::RadioButton("attenuation", m_isAttenuated))
-				m_isAttenuated = !m_isAttenuated;
-			ImGui::SliderFloat("radius", &m_radius, 0.1f, 500.f);
-		}
+		if (ImGui::InputFloat("amplitude", &m_amplitude))
+			updateSpline();
+		if (ImGui::InputFloat("frequency", &m_frequency))
+			updateSpline();
+		if (ImGui::InputFloat("random factor", &m_randomFactor))
+			updateSpline();
+		int currentItemTypeEmission = (int)m_emissionType;
+		if (ImGui::ListBox("emission type", &currentItemTypeEmission, m_emissionTypeNames, 2))
+			m_emissionType = (EmissionType)currentItemTypeEmission;
+		if (ImGui::RadioButton("attenuation", m_isAttenuated))
+			m_isAttenuated = !m_isAttenuated;
+		ImGui::SliderFloat("radius", &m_radius, 0.1f, 500.f);
 	}
 
 	void WindZone::eraseFromScene(Scene & scene)
@@ -151,5 +146,48 @@ namespace Physic {
 		windZone->attachToEntity(entity);
 
 		return windZone;
+	}
+	void WindZone::eraseFromEntity(Entity & entity)
+	{
+		entity.erase(this);
+	}
+	void WindZone::addToEntity(Entity & entity)
+	{
+		entity.add(this);
+	}
+	void WindZone::save(Json::Value & componentRoot) const
+	{
+		Component::save(componentRoot);
+
+		componentRoot["cspline"] = toJsonValue(m_cspline);
+		componentRoot["position"] = toJsonValue(m_position);
+		componentRoot["direction"] = toJsonValue(m_direction);
+		componentRoot["amplitude"] = m_amplitude;
+		componentRoot["randomFactor"] = m_randomFactor;
+		componentRoot["frequency"] = m_frequency;
+		componentRoot["emissionType"] = (int)m_emissionType;
+		componentRoot["isAttenuated"] = m_isAttenuated;
+		componentRoot["radius"] = m_radius;
+
+		//no need to save emissionTypeNames
+	}
+	void WindZone::load(Json::Value & componentRoot)
+	{
+		Component::load(componentRoot);
+
+		m_cspline = fromJsonValue<Math::CSpline<float>>(componentRoot["cspline"], Math::CSpline<float>());
+		m_position = fromJsonValue<glm::vec3>(componentRoot["position"], glm::vec3());
+		m_direction = fromJsonValue<glm::vec3>(componentRoot["direction"], glm::vec3());
+		m_amplitude = componentRoot.get("amplitude", 0).asFloat();
+		m_randomFactor = componentRoot.get("randomFactor", 0).asFloat();
+		m_frequency = componentRoot.get("frequency", 0).asFloat();
+		m_emissionType = (Physic::WindZone::EmissionType)componentRoot.get("emissionType", 0).asInt();
+		m_isAttenuated = componentRoot.get("isAttenuated", 0).asBool();
+		m_radius = componentRoot.get("radius", 0).asFloat();
+
+		//set default values to emissionTypeNames : 
+		m_emissionTypeNames = new const char*[2];
+		m_emissionTypeNames[0] = "directionnal";
+		m_emissionTypeNames[1] = "radial";
 	}
 }

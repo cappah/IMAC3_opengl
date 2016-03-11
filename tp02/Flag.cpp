@@ -5,10 +5,18 @@
 
 namespace Physic {
 
+	Flag::Flag() : Flag(MaterialFactory::get().get<Material3DObject>("default"))
+	{
+
+	}
+
 	Flag::Flag(Material3DObject* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1),
-		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f)
+		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f),
+		m_materialName("default")
 	{
 		modelMatrix = glm::mat4(1);
+
+		m_materialName = m_material->name;
 
 		//don't forget to change the origin to have the right pivot rotation
 		origin = glm::vec3(-0.5f, -0.5f, 0.f);
@@ -450,6 +458,52 @@ namespace Physic {
 
 	}
 
+	void Flag::save(Json::Value & rootComponent) const
+	{
+		Component::save(rootComponent);
+
+		rootComponent["origin"] = toJsonValue(origin);
+		rootComponent["translation"] = toJsonValue(translation);
+		rootComponent["scale"] = toJsonValue(scale);
+		rootComponent["rotation"] = toJsonValue(rotation);
+		rootComponent["modelMatrix"] = toJsonValue(modelMatrix);
+		
+		rootComponent["materialName"] = m_materialName;
+
+		rootComponent["width"] = m_width;
+		rootComponent["height"] = m_height;
+		rootComponent["subdivision"] = m_subdivision;
+
+		rootComponent["mass"] = m_mass;
+		rootComponent["viscosity"] = m_viscosity;
+		rootComponent["rigidity"] = m_rigidity;
+	}
+
+	void Flag::load(Json::Value & rootComponent)
+	{
+		Component::load(rootComponent);
+
+		origin = fromJsonValue<glm::vec3>(rootComponent["origin"], glm::vec3());
+		translation = fromJsonValue<glm::vec3>(rootComponent["translation"], glm::vec3());
+		scale = fromJsonValue<glm::vec3>(rootComponent["scale"], glm::vec3());
+		rotation = fromJsonValue<glm::quat>(rootComponent["rotation"], glm::quat());
+		modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"], glm::mat4());
+
+		m_materialName = rootComponent.get("materialName", "default").asString();
+		m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
+
+		m_width = rootComponent.get("width", 10).asFloat();
+		m_height = rootComponent.get("height", 10).asFloat();
+		m_subdivision = rootComponent.get("subdivision", 10).asInt();
+
+		m_mass = rootComponent.get("mass", 0.1).asFloat();
+		m_viscosity = rootComponent.get("viscosity", 0.01).asFloat();
+		m_rigidity = rootComponent.get("rigidity", 0.001).asFloat();
+
+		//no need to save physic infos because we rebuild it in initialisation
+		regenerateFlag();
+	}
+
 	void Physic::Flag::update(float deltaTime)
 	{
 		//points : 
@@ -515,14 +569,17 @@ namespace Physic {
 		//update bounds : 
 		m_mesh.bottomLeft = min;
 		m_mesh.topRight = max;
-		auto collider = static_cast<BoxCollider*>(m_entity->getComponent(Component::ComponentType::COLLIDER));
-		if (collider != nullptr)
+		if (m_entity != nullptr)
 		{
-			//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
-			collider->scale = glm::vec3(1, 1, 1); 
-			collider->rotation = glm::quat(0, 0, 0, 0);
-			collider->translation = glm::vec3(0, 0, 0);
-			collider->coverMesh(m_mesh);
+			auto collider = static_cast<BoxCollider*>(m_entity->getComponent(Component::ComponentType::COLLIDER));
+			if (collider != nullptr)
+			{
+				//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
+				collider->scale = glm::vec3(1, 1, 1); 
+				collider->rotation = glm::quat(0, 0, 0, 0);
+				collider->translation = glm::vec3(0, 0, 0);
+				collider->coverMesh(m_mesh);
+			}
 		}
 	}
 
@@ -574,41 +631,38 @@ namespace Physic {
 
 	void Flag::drawUI(Scene& scene)
 	{
-		if (ImGui::CollapsingHeader("flag"))
+		if (ImGui::InputFloat("mass", &m_mass))
+			updatePhysic();
+		if(ImGui::InputFloat("viscosity", &m_viscosity))
+			updatePhysic();
+		if(ImGui::InputFloat("rigidity", &m_rigidity))
+			updatePhysic();
+
+		int tmpSub = m_subdivision;
+		if (ImGui::InputInt("subdivision", &m_subdivision))
 		{
-			if (ImGui::InputFloat("mass", &m_mass))
-				updatePhysic();
-			if(ImGui::InputFloat("viscosity", &m_viscosity))
-				updatePhysic();
-			if(ImGui::InputFloat("rigidity", &m_rigidity))
-				updatePhysic();
-
-			int tmpSub = m_subdivision;
-			if (ImGui::InputInt("subdivision", &m_subdivision))
-			{
-				m_mass *= ((m_subdivision * m_subdivision) / (float)(tmpSub*tmpSub)); // change mass because we add matter, otherwise the system isn't stable
-				regenerateFlag();
-			}
-
-			if (ImGui::Button("restart simulation"))
-				restartSimulation();
-
-			char tmpMaterialName[20];
-			m_materialName.copy(tmpMaterialName, m_materialName.size());
-			tmpMaterialName[m_materialName.size()] = '\0';
-
-			if (ImGui::InputText("materialName", tmpMaterialName, 20))
-			{
-				m_materialName = tmpMaterialName;
-
-				if (MaterialFactory::get().contains<Material3DObject>(m_materialName))
-				{
-					m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
-				}
-			}
-
-			m_material->drawUI();
+			m_mass *= ((m_subdivision * m_subdivision) / (float)(tmpSub*tmpSub)); // change mass because we add matter, otherwise the system isn't stable
+			regenerateFlag();
 		}
+
+		if (ImGui::Button("restart simulation"))
+			restartSimulation();
+
+		char tmpMaterialName[20];
+		m_materialName.copy(tmpMaterialName, m_materialName.size());
+		tmpMaterialName[m_materialName.size()] = '\0';
+
+		if (ImGui::InputText("materialName", tmpMaterialName, 20))
+		{
+			m_materialName = tmpMaterialName;
+
+			if (MaterialFactory::get().contains<Material3DObject>(m_materialName))
+			{
+				m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
+			}
+		}
+
+		m_material->drawUI();
 	}
 
 	void Flag::applyForce(const glm::vec3 & force)
@@ -633,9 +687,23 @@ namespace Physic {
 		scene.add(this);
 	}
 
-	Component * Flag::clone(Entity * entity)
+	Component* Flag::clone(Entity* entity)
 	{
-		return nullptr;
+		Flag* newFlag = new Flag(*this);
+
+		newFlag->attachToEntity(entity);
+
+		return newFlag;
+	}
+
+	void Flag::addToEntity(Entity& entity)
+	{
+		entity.add(this);
+	}
+
+	void Flag::eraseFromEntity(Entity& entity)
+	{
+		entity.erase(this);
 	}
 
 	Mesh & Flag::getMesh() 

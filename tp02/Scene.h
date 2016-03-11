@@ -16,9 +16,16 @@
 #include "Terrain.h"
 #include "Skybox.h"
 
+#include "jsoncpp/json/json.h"
+#include <iostream>
+#include <fstream>
+
 class Scene
 {
 private:
+	//scene name :
+	std::string m_name;
+
 	//entities : 
 	std::vector<Entity*> m_entities;
 
@@ -68,8 +75,10 @@ private:
 
 
 public:
-	Scene(Renderer * renderer);
+	Scene(Renderer* renderer, const std::string& sceneName = "defaultScene");
 	~Scene();
+
+	void clear();
 
 	std::vector<Entity*>& getEntities();
 
@@ -120,5 +129,12 @@ public:
 	Terrain& getTerrain();
 	Skybox& getSkybox();
 	PathManager& getPathManager();
+	Renderer& getRenderer();
+
+	std::string getName() const;
+
+	void save(const std::string& path);
+	void load(const std::string& path);
+
 };
 

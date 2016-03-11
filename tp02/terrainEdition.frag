@@ -35,8 +35,8 @@ void main(void)
 		outBump = vec4(texture(Bump, In.RepeatedTexcoord).rgb, 1.0);
 		outSpecular = vec4(texture(Specular, In.RepeatedTexcoord).rgb, 1.0);
 	}
-	//else
-	//{
-	//	discard;
-	//}
+	else
+	{
+		discard;
+	}
 }

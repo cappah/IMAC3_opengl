@@ -8,12 +8,9 @@ Gizmo::Gizmo(MaterialUnlit* _material, Editor* _editor) : position(0,0,0), mater
 	mesh.vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
 	mesh.initGl();
 
-	meshRenderer.setMesh( &mesh );
-	meshRenderer.setMaterial( material );
-
 	for (int i = 0; i < 3; i++)
 	{
-		collider[i].setVisual(&meshRenderer);
+		collider[i].setVisual(&mesh, material);
 	}
 
 	collider[0].applyScale(glm::vec3(2.f, 0.2f, 0.2f)); // x
@@ -106,8 +103,6 @@ void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatri
 	glm::mat4 translation(1);
 
 	translation = glm::translate(glm::mat4(1), position);
-
-	MaterialUnlit* material = static_cast<MaterialUnlit*>(meshRenderer.getMaterial());
 
 	material->use();
 	material->setUniform_normalMatrix(glm::mat4(1));

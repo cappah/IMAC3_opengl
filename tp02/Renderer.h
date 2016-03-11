@@ -81,6 +81,7 @@ private:
 
 public:
 	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight);
+	~Renderer();
 
 	//update deferred textures used by the FBO when we resize the screen.
 	void onResizeWindow();

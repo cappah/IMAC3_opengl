@@ -1,5 +1,15 @@
 #include "Application.h"
 
+void Application::setActiveWindow(GLFWwindow* activeWindow)
+{
+	m_activeWindow = activeWindow;
+}
+
+GLFWwindow* Application::getActiveWindow()
+{
+	return m_activeWindow;
+}
+
 void Application::setWindowHeight(int height)
 {
 	m_windowHeight = height;
@@ -43,5 +53,25 @@ void Application::setDeltaTime(double deltaTime)
 double Application::getDeltaTime() const
 {
 	return m_deltaTime;
+}
+
+void Application::setFixedDeltaTime(double deltaTime)
+{
+	m_fixedDeltaTime = deltaTime;
+}
+
+double Application::getFixedDeltaTime() const
+{
+	return m_fixedDeltaTime;
+}
+
+void Application::setFPS(double fps)
+{
+	m_fps = fps;
+}
+
+double Application::getFPS() const
+{
+	return m_fps;
 }
 

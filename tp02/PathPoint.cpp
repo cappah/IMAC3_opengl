@@ -35,39 +35,62 @@ int PathPoint::getPathId() const
 
 void PathPoint::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("Path point"))
+	int oldPathId = m_pathId;
+	if (ImGui::InputInt("path id", &m_pathId))
 	{
-		int oldPathId = m_pathId;
-		if (ImGui::InputInt("path id", &m_pathId))
-		{
-			scene.getPathManager().updatePathId(m_pathId, oldPathId, this);
-		}
-		if (ImGui::InputInt("point index", &m_pointIdx))
-		{
-			scene.getPathManager().updatePointIdx(m_pathId);
-		}
-		if (ImGui::Button("update visual"))
-		{
-			scene.getPathManager().updateVisual(m_pathId);
-		}
+		scene.getPathManager().updatePathId(m_pathId, oldPathId, this);
+	}
+	if (ImGui::InputInt("point index", &m_pointIdx))
+	{
+		scene.getPathManager().updatePointIdx(m_pathId);
+	}
+	if (ImGui::Button("update visual"))
+	{
+		scene.getPathManager().updateVisual(m_pathId);
 	}
 }
 
-void PathPoint::eraseFromScene(Scene & scene)
+void PathPoint::eraseFromScene(Scene& scene)
 {
 	scene.erase(this);
 }
 
-void PathPoint::addToScene(Scene & scene)
+void PathPoint::addToScene(Scene& scene)
 {
 	scene.add(this);
 }
 
-Component* PathPoint::clone(Entity * entity)
+Component* PathPoint::clone(Entity* entity)
 {
 	PathPoint* pathPoint = new PathPoint(*this);
 
 	pathPoint->attachToEntity(entity);
 
 	return pathPoint;
+}
+
+void PathPoint::addToEntity(Entity& entity)
+{
+	entity.add(this);
+}
+
+void PathPoint::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void PathPoint::save(Json::Value & rootComponent) const
+{
+	Component::save(rootComponent);
+
+	rootComponent["pathId"] = m_pathId;
+	rootComponent["pointIdx"] = m_pointIdx;
+}
+
+void PathPoint::load(Json::Value & rootComponent)
+{
+	Component::load(rootComponent);
+
+	m_pathId = rootComponent.get("pathId", 0).asInt();
+	m_pointIdx = rootComponent.get("pointIdx", 0).asInt();
 }

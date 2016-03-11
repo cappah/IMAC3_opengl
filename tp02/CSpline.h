@@ -3,10 +3,12 @@
 #include <vector>
 #include "glm/common.hpp"
 
+#include "jsoncpp/json/json.h"
+
 namespace Math {
 
 	template<typename T>
-	class CSpline
+	class CSpline : public ISerializable
 	{
 	private:
 		std::vector<T> m_points;
@@ -32,6 +34,9 @@ namespace Math {
 		T get(float t) const;
 
 		T& operator[](int index);
+
+		virtual void save(Json::Value& objectRoot) const override;
+		virtual void load(Json::Value& objectRoot) override;
 
 	};
 
@@ -152,6 +157,28 @@ namespace Math
 
 		return m_points[index];
 	}
+
+	template<typename T>
+	void CSpline<T>::save(Json::Value& objectRoot) const
+	{
+		objectRoot["size"] = m_points.size();
+		for (int i = 0; i < m_points.size(); i++)
+		{
+			objectRoot["data"][i] = toJsonValue(m_points[i]);
+		}
+	}
+
+	template<typename T>
+	void CSpline<T>::load(Json::Value& objectRoot)
+	{
+		int size = objectRoot.get("size", 0).asInt();
+		for (int i = 0; i < size; i++)
+		{
+			m_points.push_back( fromJsonValue<T>(objectRoot["data"][i], T()) );
+		}
+	}
+
+
 
 	template<typename T>
 	T getCSplinePoint(const T& P0, const T& P1, const T& P2, const T& P3, float t)

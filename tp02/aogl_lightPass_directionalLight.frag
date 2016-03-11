@@ -61,6 +61,11 @@ float computeShadow(vec3 p)
 
 	float shadow = 0.0;
 	vec2 texelSize = 1.0 / textureSize(Shadow, 0);
+
+	//test if we are outside the shadow map. 
+	if(lP.x < 0 || lP.x > 1 || lP.y < 0 || lP.y > 1 || lP.z > 1 || lP.z < 0)
+		return 0;
+
 	for(int x = -1; x <= 1; ++x)
 	{
 		for(int y = -1; y <= 1; ++y)

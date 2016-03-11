@@ -1,7 +1,10 @@
 #include "Editor.h"
+//forwards :
 #include "Scene.h"
-#include "Application.h" //forward
-#include "Factories.h" //forward
+#include "Application.h"
+#include "Factories.h"
+#include "InputHandler.h"
+#include "Project.h"
 
 
 
@@ -127,7 +130,7 @@ void Inspector::drawUI(const std::vector<Entity*>& entities)
 		{
 			entity->setEulerRotation(vector3Value);
 			//entity->setRotation(glm::quat(vector3Value));
-			entity->applyTransform();
+			//entity->applyTransform();
 		}
 	}
 
@@ -137,7 +140,7 @@ void Inspector::drawUI(const std::vector<Entity*>& entities)
 		for (auto& entity : entities)
 		{
 			entity->setScale(vector3Value);
-			entity->applyTransform();
+			//entity->applyTransform();
 		}
 	}
 }
@@ -230,6 +233,9 @@ void init_gui_states(GUIStates & guiStates)
 
 Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f)
 {
+	m_savePath[0] = '\0';
+	m_loadPath[0] = '\0';
+
 	m_gizmo = new Gizmo(_unlitMaterial, this);
 
 	m_camera = new CameraEditor();
@@ -253,6 +259,7 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	m_meshFactoryVisible = false;
 	m_programFactoryVisible = false;
 	m_materialFactoryVisible = false;
+	m_sceneManagerVisible = false;
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -402,12 +409,40 @@ void Editor::hideAllToolsUI()
 	m_meshFactoryVisible = false;
 	m_programFactoryVisible = false;
 	m_materialFactoryVisible = false;
+	m_sceneManagerVisible = false;
 }
 
-void Editor::displayMenuBar(Scene& scene)
+void Editor::displayMenuBar(Project& project)
 {
+	Scene& scene = *project.getActiveScene();
+
+	m_saveWindowOpen = false;
+	m_loadWindowOpen = false;
+
 	if (ImGui::BeginMainMenuBar())
 	{
+		if (ImGui::BeginMenu("options"))
+		{
+			if (ImGui::Selectable("save"))
+			{
+				if (project.getName() == "")
+					m_saveWindowOpen = true;
+				else
+					project.save();
+				//ImGui::OpenPopup("save window");
+			}
+			if (ImGui::Selectable("save as"))
+			{
+				m_saveWindowOpen = true;
+			}
+			if(ImGui::Selectable("load"))
+			{
+				m_loadWindowOpen = true;
+				//ImGui::OpenPopup("load window");
+			}
+
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginMenu("toggle visibility"))
 		{
 			if (ImGui::RadioButton("colliders visibility", scene.getAreCollidersVisible()))
@@ -432,46 +467,12 @@ void Editor::displayMenuBar(Scene& scene)
 
 			ImGui::EndMenu();
 		}
-		/*if (ImGui::BeginMenu("tools"))
-		{
-			if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
-			{
-				m_terrainToolVisible = !m_terrainToolVisible;
-			}
-			if (ImGui::RadioButton("skybox tool", m_skyboxToolVisible))
-			{
-				m_skyboxToolVisible = !m_skyboxToolVisible;
-			}
-			if (ImGui::RadioButton("texture factory", m_textureFactoryVisible))
-			{
-				m_textureFactoryVisible = !m_textureFactoryVisible;
-			}
-			if (ImGui::RadioButton("cube texture factory", m_cubeTextureFactoryVisible))
-			{
-				m_cubeTextureFactoryVisible = !m_cubeTextureFactoryVisible;
-			}
-			if (ImGui::RadioButton("mesh factory", m_meshFactoryVisible))
-			{
-				m_meshFactoryVisible = !m_meshFactoryVisible;
-			}
-			if (ImGui::RadioButton("program factory", m_programFactoryVisible))
-			{
-				m_programFactoryVisible = !m_programFactoryVisible;
-			}
-			if (ImGui::RadioButton("material factory", m_materialFactoryVisible))
-			{
-				m_materialFactoryVisible = !m_materialFactoryVisible;
-			}
-
-			ImGui::EndMenu();
-		}*/
 		if (ImGui::BeginMenu("Add default entities"))
 		{
 			if (ImGui::Button("add empty entity"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				newEntity->add(newCollider);
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
@@ -481,10 +482,9 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add pointLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto light = new PointLight();
-				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
+				light->setBoundingBoxVisual( MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("point light");
 
@@ -495,8 +495,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add directionalLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto light = new DirectionalLight();
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("directional light");
@@ -508,10 +507,9 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add spotLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto light = new SpotLight();
-				light->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
+				light->setBoundingBoxVisual(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("spot light");
 
@@ -522,8 +520,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add cube"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get<Material3DObject>("brick"));
 				newEntity->add(newCollider).add(meshRenderer);
 				newEntity->setName("cube");
@@ -535,8 +532,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add Camera"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto camera = new Camera();
 				newEntity->add(newCollider).add(camera);
 				newEntity->setName("camera");
@@ -548,8 +544,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add flag"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto flag = new Physic::Flag(MaterialFactory::get().get<Material3DObject>("default"), 10);
 				newEntity->add(newCollider).add(flag);
 				newEntity->setName("flag");
@@ -558,8 +553,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add path point"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto pathPoint = new PathPoint();
 				newEntity->add(newCollider).add(pathPoint);
 				newEntity->setName("path point");
@@ -568,8 +562,7 @@ void Editor::displayMenuBar(Scene& scene)
 			if (ImGui::Button("add wind zone"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto windZone = new Physic::WindZone();
 				newEntity->add(newCollider).add(windZone);
 				newEntity->setName("wind zone");
@@ -635,11 +628,81 @@ void Editor::displayMenuBar(Scene& scene)
 		ImGui::EndMainMenuBar();
 	}
 
-
 }
 
-void Editor::displayTopLeftWindow(Scene& scene)
+void Editor::displayModals(Project& project)
 {
+	//modal windows : 
+	if (m_saveWindowOpen)
+		ImGui::OpenPopup("save window");
+	if (m_loadWindowOpen)
+		ImGui::OpenPopup("load window");
+
+	//load : 
+	bool loadModalWindowOpen = true;
+	if (ImGui::BeginPopupModal("load window", &loadModalWindowOpen))
+	{
+		ImGui::InputText("project name", &m_loadPath[0], 60);
+		if (ImGui::Button("load"))
+		{
+			std::string loadPath = ("save/" + std::string(m_loadPath));
+
+			//Verify the validity of path :
+			std::vector<std::string> dirNames = getAllDirNames("save/");
+			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_loadPath)) != dirNames.end());
+
+			if (m_loadPath != "" && dirAlreadyExists)
+			{
+				project.open(m_loadPath, loadPath);
+				//scene.clear(); //clear the previous scene
+				//scene.load(loadPath);
+				changeCurrentSelected(nullptr);
+			}
+			else
+			{
+				std::cout << "can't load project with name : " << m_loadPath << " no project found." << std::endl;
+			}
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+
+	//save
+	bool saveModalWindowOpen = true;
+	if (ImGui::BeginPopupModal("save window", &saveModalWindowOpen))
+	{
+		ImGui::InputText("set project name", m_savePath, 60);
+		if (ImGui::Button("save"))
+		{
+			std::string savePath = ("save/" + std::string(m_savePath));
+
+			//Verify the validity of path :
+			std::vector<std::string> dirNames = getAllDirNames("save/");
+			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_savePath)) != dirNames.end());
+
+			if (m_savePath != "" && !dirAlreadyExists)
+			{
+				project.setName(m_savePath);
+				project.setPath(savePath);
+				project.save();
+			}
+			else
+			{
+				std::cout << "can't save project with name : " << m_savePath << " a project with the same name was found." << std::endl;
+			}
+
+			//scene.save(savePath);
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
+void Editor::displayTopLeftWindow(Project& project)
+{
+	Scene& scene = *project.getActiveScene();
 
 	int entityId = 0;
 
@@ -680,27 +743,119 @@ void Editor::displayTopLeftWindow(Scene& scene)
 	}
 }
 
-void Editor::displayBottomLeftWindow(Scene& scene)
+
+
+
+void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected)
 {
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4, 0.4, 0.4, 0.2));
+	ImGui::PushID(entityId);
+	bool nodeOpen = false;
+
+	bool isSelected = entity->getIsSelected();
+	if (isSelected)
+	{
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		//ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1, 1, 0, 1));
+		//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0, 0, 1));
+		//ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0.8, 0.8, 1));
+	}
+
+	ImVec2 itemPos;
+	ImVec2 itemSize;
+	if (ImGui::MyTreeNode( std::to_string(entityId).c_str(), itemPos, itemSize))
+		nodeOpen = true;
+	ImGui::SameLine();
+
+
+	if (ImGui::Button(entity->getName().c_str(), ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
+	{
+		if (isSelected)
+		{
+			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
+			m_camera->setTranslation(cameraFinalPosition);
+		}
+		else
+			changeCurrentSelected(entity);
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("<"))
+	{
+		setParenting = true;
+		parentToAttachSelected = entity;
+	}
+
+	if (nodeOpen)
+	{
+		if (isSelected)
+		{
+			//ImGui::PopStyleColor();
+			//ImGui::PopStyleColor();
+			//ImGui::PopStyleColor();
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
+		}
+
+		for (int c = 0; c < entity->getChildCount(); c++)
+		{
+			entityId++;
+			displayTreeEntityNode(entity->getChild(c), entityId, setParenting, parentToAttachSelected);
+		}
+	}
+
+	if(nodeOpen)
+		ImGui::TreePop();
+
+	if (isSelected && !nodeOpen)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
+		//ImGui::PopStyleColor();
+		//ImGui::PopStyleColor();
+		//ImGui::PopStyleColor();
+	}
+
+	ImGui::PopID();
+	entityId++;
+}
+
+void Editor::displayBottomLeftWindow(Project& project)
+{
+	Scene& scene = *project.getActiveScene();
+
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2) );
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
 
 	auto entities = scene.getEntities();
 
 	int entityId = 0;
+	bool setParenting = false;
+	Entity* parentToAttachSelected = nullptr;
 	for (auto& entity : entities)
 	{
-		ImGui::PushID(entityId);
-		if (ImGui::Button(entity->getName().c_str(), ImVec2(m_bottomLeftPanelRect.z - 35.f, 16.f)))
+		if (!entity->hasParent())
 		{
-			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
-			m_camera->setTranslation(cameraFinalPosition);
-
-			changeCurrentSelected(entity);
+			displayTreeEntityNode(entity, entityId, setParenting, parentToAttachSelected);
 		}
-		ImGui::PopID();
-		entityId++;
+	}
+
+	if (setParenting)
+	{
+		if (parentToAttachSelected->getIsSelected())
+			parentToAttachSelected->setParent(nullptr);
+		else
+		{
+			for (int i = 0; i < m_currentSelected.size(); i++)
+			{
+				m_currentSelected[i]->setParent(parentToAttachSelected);
+			}
+		}
 	}
 
 	ImGui::PopStyleColor();
@@ -708,8 +863,10 @@ void Editor::displayBottomLeftWindow(Scene& scene)
 	ImGui::PopStyleColor();
 }
 
-void Editor::displayBottomWindow(Scene& scene)
+void Editor::displayBottomWindow(Project& project)
 {
+	Scene& scene = *project.getActiveScene();
+
 	ImGui::BeginChild("choose tool", ImVec2(200, ImGui::GetWindowHeight()));
 	if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
 	{
@@ -745,6 +902,11 @@ void Editor::displayBottomWindow(Scene& scene)
 	{
 		hideAllToolsUI();
 		m_materialFactoryVisible = true;
+	}
+	if (ImGui::RadioButton("scene manager", m_sceneManagerVisible))
+	{
+		hideAllToolsUI();
+		m_sceneManagerVisible = true;
 	}
 	ImGui::EndChild();
 	
@@ -798,6 +960,13 @@ void Editor::displayBottomWindow(Scene& scene)
 		MaterialFactory::get().drawUI();
 		ImGui::End();
 	}
+
+	if (m_sceneManagerVisible)
+	{
+		ImGui::BeginChild("Scene manager");
+		project.drawUI();
+		ImGui::End();
+	}
 }
 
 void Editor::updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight)
@@ -816,13 +985,15 @@ void Editor::onResizeWindow()
 	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
 }
 
-void Editor::renderUI(Scene& scene)
+void Editor::renderUI(Project& project)
 {
+		
+	Scene& scene = *project.getActiveScene();
 
 	if (!m_isUIVisible)
 		return;
 
-	displayMenuBar(scene);
+	displayMenuBar(project);
 
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
@@ -837,18 +1008,18 @@ void Editor::renderUI(Scene& scene)
 		ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z -30, m_windowRect.w));
 
 			ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
-				displayTopLeftWindow(scene);
+				displayTopLeftWindow(project);
 			ImGui::EndChild();
 
 
-				ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
-				if (ImGui::IsItemActive())
-				{
-					m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
-					if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
-					else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
-					updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
-				}
+				//ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
+				//if (ImGui::IsItemActive())
+				//{
+				//	m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
+				//	if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
+				//	else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
+				//	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+				//}
 			ImGui::Separator();
 				ImGui::InvisibleButton("hSplitter1", ImVec2(m_topLeftPanelRect.z, 8.f));
 				if (ImGui::IsItemActive())
@@ -858,9 +1029,10 @@ void Editor::renderUI(Scene& scene)
 					else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
 					updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
 				}
+			ImGui::Separator();
 
 			ImGui::BeginChild("bottomLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_bottomLeftPanelRect.w - 16.f));
-				displayBottomLeftWindow(scene);
+				displayBottomLeftWindow(project);
 			ImGui::EndChild();
 
 		ImGui::EndChild();
@@ -886,6 +1058,7 @@ void Editor::renderUI(Scene& scene)
 	ImGui::Begin("bottomWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
 	
 	ImGui::InvisibleButton("hsplitter", ImVec2(m_bottomPanelRect.z, 20.f));
+	//ImGui::Separator();
 	if (ImGui::IsItemActive())
 	{
 		m_bottomPanelRect.w -= ImGui::GetIO().MouseDelta.y;
@@ -895,7 +1068,7 @@ void Editor::renderUI(Scene& scene)
 	}
 
 	ImGui::BeginChild("bottomWindowContent");
-		displayBottomWindow(scene);
+		displayBottomWindow(project);
 	ImGui::EndChild();
 
 	ImGui::End();
@@ -906,6 +1079,8 @@ void Editor::renderUI(Scene& scene)
 
 	//ImGui::BeginChild("bottomWindow", ImVec2(screenWidth, screenHeight - m_leftPanelHeight));
 	//ImGui::EndChild();
+
+	displayModals(project);
 
 }
 
@@ -1228,7 +1403,7 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 }
 
 
-void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler )
+void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 {
 	float screenWidth = Application::get().getWindowWidth();
 	float screenHeight = Application::get().getWindowHeight();
@@ -1236,7 +1411,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	//update tools : 
 	if (m_terrainToolVisible) // for terrain
 	{
-		if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_1) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
+		if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_1) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
 		{
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
@@ -1273,19 +1448,19 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	if (!m_guiStates.UICaptureKeyboard)
 	{
 		// ui visibility : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
+		if (InputHandler::getKeyDown(GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
 		{
 			this->toggleDebugVisibility(scene);
 		}
 
 		//entity copy / past : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_D) && m_guiStates.ctrlPressed)
+		if (InputHandler::getKeyDown(GLFW_KEY_D) && m_guiStates.ctrlPressed)
 		{
 			this->duplicateSelected();
 		}
 
 		//delete selected : 
-		if (inputHandler.getKeyDown(window, GLFW_KEY_DELETE))
+		if (InputHandler::getKeyDown(GLFW_KEY_DELETE))
 		{
 			this->deleteSelected(scene);
 		}
@@ -1296,7 +1471,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 	{
 		//object picking : 
 		if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
-			&& inputHandler.getMouseButtonDown(window, GLFW_MOUSE_BUTTON_LEFT))
+			&& InputHandler::getMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
 		{
 
 			glm::vec3 origin = m_camera->getCameraPosition();
@@ -1353,12 +1528,12 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputH
 
 	}
 
-	if (inputHandler.getMouseButtonUp(window, GLFW_MOUSE_BUTTON_LEFT))
+	if (InputHandler::getMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		if (this->isMovingGizmo())
 			this->endMoveGizmo();
 	}
-	if (inputHandler.getMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
+	if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		if (this->isMovingGizmo())
 		{

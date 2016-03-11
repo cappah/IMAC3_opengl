@@ -21,13 +21,16 @@ private:
 	Material3DObject* material;
 
 public:
-	MeshRenderer(Mesh* _mesh = nullptr, Material3DObject* _material = nullptr);
+	MeshRenderer();
+	MeshRenderer(Mesh* _mesh, Material3DObject* _material);
 	virtual ~MeshRenderer();
 
 	virtual void drawUI(Scene& scene) override;
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+	virtual void addToEntity(Entity& entity) override;
+	virtual void eraseFromEntity(Entity& entity) override;
 
 	void setMesh(Mesh* _mesh);
 	void setMaterial(Material3DObject* _material);
@@ -39,5 +42,8 @@ public:
 	std::string getMeshName() const;
 
 	glm::vec3 getOrigin() const;
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 };
 

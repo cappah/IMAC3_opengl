@@ -6,6 +6,10 @@ Material::Material(GLuint _glProgram) : glProgram(_glProgram)
 
 }
 
+Material::~Material()
+{
+}
+
 
 ///////////////////////////////////////////
 
@@ -102,6 +106,11 @@ Texture * MaterialLit::getBump() const
 	return textureBump;
 }
 
+float MaterialLit::getSpecularPower() const
+{
+	return specularPower;
+}
+
 void MaterialLit::use()
 {
 	//bind shaders
@@ -173,6 +182,42 @@ void MaterialLit::drawUI()
 			textureBump->initGL();
 		}
 	}
+}
+
+void MaterialLit::save(Json::Value & objectRoot) const
+{
+	objectRoot["textureDiffuseName"] = textureDiffuse->name;
+	objectRoot["textureSpecularName"] = textureSpecular->name;
+	objectRoot["textureBumpName"] = textureBump->name;
+	objectRoot["specularPower"] = specularPower;
+	objectRoot["textureRepetition"] = toJsonValue(textureRepetition);
+}
+
+void MaterialLit::load(Json::Value & objectRoot)
+{
+	glProgram = ProgramFactory::get().get("defaultLit");
+	std::string textureDiffuseName = objectRoot.get("textureDiffuseName", "default").asString();
+	textureDiffuse = TextureFactory::get().get(textureDiffuseName);
+	std::string textureSpecularName = objectRoot.get("textureSpecularName", "default").asString();
+	textureSpecular = TextureFactory::get().get(textureSpecularName);
+	std::string textureBumpName = objectRoot.get("textureBumpName", "default").asString();
+	textureBump = TextureFactory::get().get(textureBumpName);
+	specularPower = objectRoot.get("specularPower", 10).asFloat();
+	textureRepetition = fromJsonValue<glm::vec2>(objectRoot["textureRepetition"], glm::vec2(1,1));
+
+	diffuseTextureName = textureDiffuse->name;
+	specularTextureName = textureSpecular->name;
+	bumpTextureName = textureBump->name;
+
+	uniform_textureDiffuse = glGetUniformLocation(glProgram, "Diffuse");
+	uniform_textureSpecular = glGetUniformLocation(glProgram, "Specular");
+	uniform_textureBump = glGetUniformLocation(glProgram, "Bump");
+	uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
+	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
 }
 
 
@@ -300,6 +345,9 @@ MaterialTerrain::MaterialTerrain() : Material3DObject(ProgramFactory::get().get(
 	uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
 	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
 
+	uniform_textureFilter = glGetUniformLocation(glProgram, "FilterTexture");
+	uniform_filterValues = glGetUniformLocation(glProgram, "FilterValues");
+
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
@@ -318,6 +366,9 @@ MaterialTerrain::MaterialTerrain(GLuint _glProgram) :
 	uniform_specularPower = glGetUniformLocation(glProgram, "specularPower");
 	uniform_textureRepetition = glGetUniformLocation(glProgram, "TextureRepetition");
 
+	uniform_textureFilter = glGetUniformLocation(glProgram, "FilterTexture");
+	uniform_filterValues = glGetUniformLocation(glProgram, "FilterValues");
+
 	//check uniform errors : 
 	if (!checkError("Uniforms"))
 		exit(1);
@@ -328,6 +379,7 @@ void MaterialTerrain::use()
 	//bind shaders
 	glUseProgram(glProgram);
 
+	/*
 	//bind textures into texture units
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureDiffuse->glId);
@@ -342,6 +394,7 @@ void MaterialTerrain::use()
 	glUniform1i(uniform_textureSpecular, 1);
 	glUniform1i(uniform_textureBump, 2);
 	glUniform2fv(uniform_textureRepetition, 1, glm::value_ptr(textureRepetition));
+	*/
 }
 
 void MaterialTerrain::drawUI()
@@ -349,6 +402,41 @@ void MaterialTerrain::drawUI()
 	ImGui::InputFloat("specular power", &specularPower);
 
 	ImGui::InputFloat2("texture repetition", &textureRepetition[0]);
+}
+
+void MaterialTerrain::setUniformLayoutOffset(const glm::vec2& layoutOffset)
+{
+	glUniform2fv(uniform_filterValues, 1, glm::value_ptr(layoutOffset));
+}
+
+void MaterialTerrain::setUniformFilterTexture(int textureId)
+{
+	glUniform1i(uniform_textureFilter, textureId);
+}
+
+void MaterialTerrain::setUniformTextureRepetition(const glm::vec2 & textureRepetition)
+{
+	glUniform2fv(uniform_textureRepetition, 1, glm::value_ptr(textureRepetition));
+}
+
+void MaterialTerrain::setUniformDiffuseTexture(int textureId)
+{
+	glUniform1i(uniform_textureDiffuse, textureId);
+}
+
+void MaterialTerrain::setUniformBumpTexture(int textureId)
+{
+	glUniform1i(uniform_textureBump, textureId);
+}
+
+void MaterialTerrain::setUniformSpecularTexture(int textureId)
+{
+	glUniform1i(uniform_textureSpecular, textureId);
+}
+
+void MaterialTerrain::setUniformSpecularPower(float specularPower)
+{
+	glUniform1f(uniform_specularPower, specularPower);
 }
 
 

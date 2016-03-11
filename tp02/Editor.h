@@ -2,14 +2,15 @@
 
 #include "Entity.h"
 #include "Gizmo.h"
-#include "InputHandler.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
+#include "imgui_extension.h"
 #include "GLFW/glfw3.h"
 
 //forward
 class Scene;
+class Project;
 
 
 class Inspector
@@ -98,6 +99,7 @@ private:
 	bool m_meshFactoryVisible;
 	bool m_programFactoryVisible;
 	bool m_materialFactoryVisible;
+	bool m_sceneManagerVisible;
 
 	bool m_multipleEditing;
 
@@ -118,6 +120,12 @@ private:
 	glm::vec4 m_bottomLeftPanelRect;
 	glm::vec4 m_bottomPanelRect;
 
+	char m_savePath[60];
+	char m_loadPath[60];
+
+	bool m_saveWindowOpen;
+	bool m_loadWindowOpen;
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 
@@ -130,13 +138,15 @@ public:
 	void renderGizmo();
 
 	void hideAllToolsUI();
-	void displayMenuBar(Scene& scene);
-	void displayTopLeftWindow(Scene& scene);
-	void displayBottomWindow(Scene& scene);
-	void displayBottomLeftWindow(Scene& scene);
+	void displayMenuBar(Project& project);
+	void displayTopLeftWindow(Project& project);
+	void displayBottomWindow(Project& project);
+	void displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
+	void displayBottomLeftWindow(Project& project);
+	void displayModals(Project& project);
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();
-	void renderUI(Scene& scene);
+	void renderUI(Project& project);
 
 	bool testGizmoIntersection(const Ray& ray);
 	void beginMoveGizmo();
@@ -153,7 +163,7 @@ public:
 	void toggleDebugVisibility(Scene& scene);
 	void toggleLightsBoundingBoxVisibility(Scene& scene);
 
-	void update(/*Camera & camera*/ Scene& scene, GLFWwindow* window, InputHandler& inputHandler);
+	void update(/*Camera & camera*/ Scene& scene, GLFWwindow* window);
 
 	CameraEditor& getCamera();
 

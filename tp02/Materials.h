@@ -15,6 +15,8 @@
 #include "Utils.h"
 #include "Texture.h"
 
+#include "ISerializable.h"
+
 struct Material
 {
 	std::string name;
@@ -22,6 +24,7 @@ struct Material
 
 
 	Material(GLuint _glProgram = 0);
+	virtual ~Material();
 	virtual void use() = 0;
 	virtual void drawUI() = 0;
 };
@@ -37,7 +40,7 @@ struct Material3DObject : public Material
 };
 
 
-class MaterialLit : public Material3DObject
+class MaterialLit : public Material3DObject, public ISerializable
 {
 private:
 	std::string diffuseTextureName;
@@ -73,12 +76,18 @@ public:
 	Texture* getSpecular() const;
 	Texture* getBump() const;
 
+	float getSpecularPower() const;
+
 	//void setUniform_MVP(glm::mat4& mvp);
 	//void setUniform_normalMatrix(glm::mat4& normalMatrix);
 
 	virtual void use() override;
 
 	virtual void drawUI() override;
+
+	// Hérité via ISerializable
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
 };
 
 
@@ -155,8 +164,10 @@ struct MaterialTerrain : public Material3DObject
 	GLuint uniform_textureSpecular;
 	GLuint uniform_textureBump;
 	GLuint uniform_specularPower;
-	GLuint uniform_textureRepetition;
 
+	GLuint uniform_textureRepetition;
+	GLuint uniform_textureFilter;
+	GLuint uniform_filterValues;
 
 	MaterialTerrain();
 	MaterialTerrain(GLuint _glProgram);
@@ -164,6 +175,16 @@ struct MaterialTerrain : public Material3DObject
 	virtual void use() override;
 
 	virtual void drawUI() override;
+
+	void setUniformLayoutOffset(const glm::vec2& layoutOffset);
+	void setUniformFilterTexture(int textureId);
+	void setUniformTextureRepetition(const glm::vec2& textureRepetition);
+
+	void setUniformDiffuseTexture(int textureId);
+	void setUniformBumpTexture(int textureId);
+	void setUniformSpecularTexture(int textureId);
+
+	void setUniformSpecularPower(float specularPower);
 };
 
 

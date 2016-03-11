@@ -1,4 +1,13 @@
 #include "Utils.h"
+//forward
+#include "Camera.h"
+#include "dirent.h"
+
+#ifdef _WIN32 
+#include <Windows.h>
+#endif // _WIN32 
+
+
 
 glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, BaseCamera& camera)
 {
@@ -218,4 +227,126 @@ bool raySlabIntersect(float start, float dir, float min, float max, float* tfirs
 	if (tmin > *tfirst) (*tfirst) = tmin;
 	if (tmax < *tlast)  (*tlast) = tmax;
 	return true;
+}
+
+std::vector<std::string> getAllDirNames(const std::string& path)
+{
+	std::vector<std::string> dirNames;
+
+	DIR *dir;
+	struct dirent *ent;
+
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if(ent->d_type == DT_DIR)
+				dirNames.push_back(ent->d_name);
+		}
+		closedir(dir);
+	}
+	else {
+		//could not open directory
+		std::cout << "error, can't open directory at path : " << path << std::endl;
+	}
+
+	return dirNames;
+}
+
+bool directoryExists(const std::string& name, const std::string& path)
+{
+	DIR *dir;
+	struct dirent *ent;
+
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if (ent->d_type == DT_DIR && std::string(ent->d_name) == name)
+				return true;
+		}
+		closedir(dir);
+	}
+	else {
+		//could not open directory
+		std::cout << "error, can't open directory at path : " << path << std::endl;
+	}
+
+	return false;
+}
+
+bool directoryExists(const std::string& path)
+{
+	return (opendir(path.c_str()) != NULL);
+}
+
+void addDirectories(const std::string& path)
+{
+	if (directoryExists(path))
+		return;
+
+	std::vector<std::string> dirNames = splitString(path, '/', '\\');
+	if (dirNames.size() == 0)
+		return;
+
+	std::string currentPath = "";
+
+	for (int i = 0; i < dirNames.size(); i++)
+	{
+		if (!directoryExists(currentPath, dirNames[i]))
+		{
+			addDirectory(dirNames[i], currentPath);
+		}
+		currentPath += (dirNames[i] + "/");
+	}
+}
+
+void addDirectory(const std::string& name, const std::string& path)
+{
+#ifdef _WIN32
+	if ( path.find_last_of("/") >= path.size() || path.find_last_of("\\") >= path.size() )
+		CreateDirectory( (path + "/" + name).c_str() , NULL);
+	else
+		CreateDirectory( (path + name).c_str(), NULL);
+#endif // _WIN32
+
+#ifdef linux
+	std::cerr << "error : the addDirectory function isn't support on linux platform yet." << std::endl;
+#endif // linux
+
+
+	//TODO add linux support.
+}
+
+std::vector<std::string> splitString(const std::string& s, char delim)
+{
+	std::vector<std::string> elements;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, delim)){
+		elements.push_back(item);
+	}
+	return elements;
+}
+
+std::vector<std::string> splitString(const std::string& s, char delim01, char delim02)
+{
+	std::vector<std::string> tmpElements;
+	std::vector<std::string> elements;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, delim01)) {
+		tmpElements.push_back(item);
+	}
+
+	for (int i = 0; i < tmpElements.size(); i++)
+	{
+		std::stringstream ss2(tmpElements[i]);
+
+		while (std::getline(ss2, item, delim02)) {
+			elements.push_back(item);
+		}
+	}
+
+	return elements;
 }

@@ -48,6 +48,7 @@ namespace Physic {
 		float m_rigidity;
 
 	public:
+		Flag();
 		Flag(Material3DObject* material, int subdivision = 10, float width = 10.f, float height = 10.f);
 		~Flag();
 
@@ -69,6 +70,8 @@ namespace Physic {
 		virtual void eraseFromScene(Scene & scene) override;
 		virtual void addToScene(Scene & scene) override;
 		virtual Component * clone(Entity * entity) override;
+		virtual void addToEntity(Entity& entity) override;
+		virtual void eraseFromEntity(Entity& entity) override;
 
 		//return the flag mesh
 		Mesh& getMesh();
@@ -92,6 +95,9 @@ namespace Physic {
 		void updatePhysic();
 
 		void restartSimulation();
+
+		virtual void save(Json::Value& rootComponent) const override;
+		virtual void load(Json::Value& rootComponent) override;
 
 	private : 
 		//completly free memory allocate for the flag and then reconstruct the flag

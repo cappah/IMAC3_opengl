@@ -165,6 +165,11 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	lightManager->setShadowMapCount(LightManager::POINT, 10);
 }
 
+Renderer::~Renderer()
+{
+	delete lightManager;
+}
+
 
 void Renderer::onResizeWindow()
 {
@@ -425,7 +430,7 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 			float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
 			float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
 			float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
-			glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalShadowMapFar*0.5f, cameraPosition.z);
+			glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalLights[lightIdx]->position.y /*directionalShadowMapFar*0.5f*/, cameraPosition.z);
 			glm::vec3 eye = -directionalLights[lightIdx]->direction + orig;
 			glm::mat4 lightProjection = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
 			glm::mat4 lightView = glm::lookAt(eye, orig, directionalLights[lightIdx]->up);
@@ -678,7 +683,7 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 		float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
 		float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
 		float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
-		glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalShadowMapFar*0.5f, cameraPosition.z);
+		glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalLights[i]->position.y/*directionalShadowMapFar*0.5f*/, cameraPosition.z);
 		glm::vec3 eye = -directionalLights[i]->direction + orig;
 		glm::mat4 projectionDirectionalLight = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
 		glm::mat4 worldToLightDirectionalLight = glm::lookAt(eye, orig, directionalLights[i]->up);

@@ -1,12 +1,80 @@
 #include "Scene.h"
 
 
-Scene::Scene(Renderer * renderer) : m_renderer(renderer), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
+Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
 {
 }
 
 Scene::~Scene()
 {
+	clear();
+}
+
+void Scene::clear()
+{
+	//Components : 
+	/*
+	//Cameras : 
+	for (int i = 0; i < m_cameras.size(); i++)
+	{
+		delete m_cameras[i];
+		m_cameras.clear();
+	}
+	//Colliders : 
+	for (int i = 0; i < m_colliders.size(); i++)
+	{
+		delete m_colliders[i];
+		m_colliders.clear();
+	}
+	//Directionnal lights : 
+	for (int i = 0; i < m_directionalLights.size(); i++)
+	{
+		delete m_directionalLights[i];
+		m_directionalLights.clear();
+	}
+	//Flags : 
+	for (int i = 0; i < m_flags.size(); i++)
+	{
+		delete m_flags[i];
+		m_flags.clear();
+	}
+	//Mesh renderers : 
+	for (int i = 0; i < m_meshRenderers.size(); i++)
+	{
+		delete m_meshRenderers[i];
+		m_meshRenderers.clear();
+	}
+	//Particle emitters : 
+	for (int i = 0; i < m_particleEmitters.size(); i++)
+	{
+		delete m_particleEmitters[i];
+		m_particleEmitters.clear();
+	}
+	//Point lights : 
+	for (int i = 0; i < m_pointLights.size(); i++)
+	{
+		delete m_pointLights[i];
+		m_pointLights.clear();
+	}
+	//Point lights : 
+	for (int i = 0; i < m_spotLights.size(); i++)
+	{
+		delete m_spotLights[i];
+		m_spotLights.clear();
+	}
+	//Wind zones : 
+	for (int i = 0; i < m_windZones.size(); i++)
+	{
+		delete m_windZones[i];
+		m_windZones.clear();
+	}*/
+
+	//Entities : 
+	for (int i = 0; i < m_entities.size(); i++)
+	{
+		delete m_entities[i];
+	}
+	m_entities.clear();
 }
 
 std::vector<Entity*>& Scene::getEntities()
@@ -74,20 +142,20 @@ Scene & Scene::add(Camera * camera)
 	return *this;
 }
 
-Scene & Scene::add(Physic::WindZone * windZone)
+Scene & Scene::add(Physic::WindZone* windZone)
 {
 	m_windZones.push_back(windZone);
 	return *this;
 }
 
-Scene& Scene::erase(Entity * entity)
+Scene& Scene::erase(Entity* entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
 
 	if (findIt != m_entities.end())
 	{
-		delete *findIt;
 		m_entities.erase(findIt);
+		delete entity;
 	}
 
 	return *this;
@@ -313,4 +381,67 @@ Skybox& Scene::getSkybox()
 PathManager & Scene::getPathManager()
 {
 	return m_pathManager;
+}
+
+Renderer& Scene::getRenderer()
+{
+	return *m_renderer;
+}
+
+std::string Scene::getName() const
+{
+	return m_name;
+}
+
+void Scene::save(const std::string & path)
+{
+	Json::Value root;
+
+	root["entityCount"] = m_entities.size();
+	for (int i = 0; i < m_entities.size(); i++)
+	{
+		m_entities[i]->save(root["entities"][i]);
+	}
+
+	//TODO
+	//m_terrain.save(root["terrain"]);
+	//m_skybox.save(root["skybox"]);
+	
+	//DEBUG
+	std::cout << root;
+
+	std::ofstream stream;
+	stream.open(path);
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't save scene at path : " << path << std::endl;
+		return;
+	}
+	//save scene
+	stream << root;
+}
+
+void Scene::load(const std::string & path)
+{
+	Json::Value root;
+
+	std::ifstream stream;
+	stream.open(path);
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load scene at path : " << path << std::endl;
+		return;
+	}
+	stream >> root;
+	
+	int entityCount = root.get("entityCount", 0).asInt();
+	for (int i = 0; i < entityCount; i++)
+		m_entities[i] = new Entity(this);
+	for (int i = 0; i < entityCount; i++)
+		m_entities[i]->load(root["entities"][i]);
+
+	//TODO
+	//m_terrain.save(root["terrain"]);
+	//m_skybox.save(root["skybox"]);
+
 }

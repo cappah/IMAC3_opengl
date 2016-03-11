@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClCompile Include="aogl.cpp" />
     <ClCompile Include="Ray.cpp" />
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Link.cpp">
       <Filter>Physic</Filter>
     </ClCompile>
@@ -90,14 +89,34 @@
     <ClCompile Include="ParticleEmitter.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="WindZone.cpp" />
     <ClCompile Include="CSpline.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="TransformNode.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WindZone.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_extension.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\jsoncpp\jsoncpp.cpp">
+      <Filter>JsonCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentFactory.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="SerializeUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Project.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="Link.h">
       <Filter>Physic</Filter>
     </ClInclude>
@@ -184,9 +203,39 @@
     <ClInclude Include="ParticleEmitter.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="WindZone.h" />
     <ClInclude Include="CSpline.h">
       <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformNode.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WindZone.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_extension.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\jsoncpp\json\json.h">
+      <Filter>JsonCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\jsoncpp\json\json-forwards.h">
+      <Filter>JsonCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentFactory.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ISerializable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializeUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Project.h" />
+    <ClInclude Include="dirent.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -216,6 +265,12 @@
     </Filter>
     <Filter Include="Editor">
       <UniqueIdentifier>{4a01f827-f012-4077-8c2c-69e2c2b42ce2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JsonCpp">
+      <UniqueIdentifier>{3ddb2fb6-320c-461f-861c-f054c8b8e0b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{f9d16c95-f06d-4e9b-b3db-7ab4d3406483}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

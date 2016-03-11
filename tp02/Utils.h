@@ -10,9 +10,11 @@
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
 #include <vector>
+#include <map>
 #include <sstream>
+#include <iostream>
 
-#include "Camera.h"
+class BaseCamera;
 
 namespace patch
 {
@@ -48,3 +50,14 @@ int idx2DToIdx1D(int i, int j, int array2DWidth);
 bool rayOBBoxIntersect(glm::vec3 Start, glm::vec3 Dir, glm::vec3 P, glm::vec3 H[3], glm::vec3 E, float* t);
 bool raySlabIntersect(float start, float dir, float min, float max, float* tfirst, float* tlast);
 
+//fill a vector with all direcctories's names in the directory at given path.
+std::vector<std::string> getAllDirNames(const std::string& path);
+
+bool directoryExists(const std::string& path);
+bool directoryExists(const std::string& name, const std::string& path);
+
+void addDirectories(const std::string& path);
+void addDirectory(const std::string& name, const std::string& path);
+
+std::vector<std::string> splitString(const std::string& s, char delim);
+std::vector<std::string> splitString(const std::string& s, char delim01, char delim02);
