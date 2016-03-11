@@ -15,6 +15,8 @@
 #include <iostream>
 
 class BaseCamera;
+#include "Point.h"
+#include "Link.h"
 
 namespace patch
 {
@@ -49,6 +51,44 @@ int idx2DToIdx1D(int i, int j, int array2DWidth);
 //physic : 
 bool rayOBBoxIntersect(glm::vec3 Start, glm::vec3 Dir, glm::vec3 P, glm::vec3 H[3], glm::vec3 E, float* t);
 bool raySlabIntersect(float start, float dir, float min, float max, float* tfirst, float* tlast);
+
+namespace Physic {
+
+	void computeLink(float deltaTime, Link* link);
+	void computePoint(float deltaTime, Point* point);
+}
+
+//resize a 2D vector without losing information already stored in it
+template<typename T>
+inline void resize2DArray(std::vector<T>& container, int width, int height, int newWidth, int newHeight)
+{
+	if (newWidth == width)
+	{
+		container.resize(newWidth * newHeight);
+		return;
+	}
+
+	if (newWidth > width)
+	{
+		container.resize(newWidth*newHeight);
+		for (int i = ((newWidth - width) + (std::abs(newHeight - height)*width)); i > (newWidth - width); i--)
+		{
+			for (int k = 0; k < width; k++, i--)
+				container[i] = container[i - width];
+			i -= (newWidth - width);
+		}
+	}
+	else
+	{
+		for (int i = newWidth; i < newWidth * newHeight; i++)
+		{
+			for (int k = 0; k < newWidth; k++, i++)
+				container[i] = container[i + (width - newWidth)];
+			i += (width - newWidth);
+		}
+		container.resize(newWidth*newHeight);
+	}
+}
 
 //fill a vector with all direcctories's names in the directory at given path.
 std::vector<std::string> getAllDirNames(const std::string& path);

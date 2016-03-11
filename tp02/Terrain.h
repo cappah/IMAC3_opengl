@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <time.h>
 
 #include "glew/glew.h"
 
@@ -11,8 +12,21 @@
 #include "Materials.h"
 #include "PerlinNoise.h"
 
+#include "Point.h"
+#include "Link.h"
+#include "WindZone.h"
+
 //forwards : 
 class Ray;
+
+struct GrassPhysicLink {
+	int p1_idx;
+	glm::vec3 p2_pos;
+	float l;
+
+	GrassPhysicLink(int _p1_idx, glm::vec3 _p2_pos, float _l) : p1_idx(_p1_idx), p2_pos(_p2_pos), l(_l)
+	{}
+};
 
 struct GrassKey
 {
@@ -31,7 +45,7 @@ struct GrassKey
 //structure which store infos to render grass in instanced mode
 struct GrassField {
 
-	enum VboTypes {VERTICES = 0, NORMALS, UVS, POSITIONS};
+	enum VboTypes {VERTICES = 0, NORMALS, UVS, POSITIONS, ANIM_POS};
 	
 	MaterialGrassField materialGrassField;
 
@@ -47,11 +61,23 @@ struct GrassField {
 	std::vector<float> uvs;
 	std::vector<float> positions; //grass positions
 	std::vector<GrassKey> grassKeys; //keys to identity grass
+	//for physic simulation : 
+	std::vector<float> offsets;
+	std::vector<float> forces;
+	std::vector<float> speeds;
+	std::vector<GrassPhysicLink> links;
+	//global parameter for grass :
+	float mass;
+	float viscosity;
+	float rigidity;
+	bool lockYPlane;
 
 	GLuint vbo_index;
 	GLuint vbo_vertices;
 	GLuint vbo_uvs;
 	GLuint vbo_normals;
+	//for physic simulation : 
+	GLuint vbo_animPos;
 
 	//additional vbos for instantiation : 
 	GLuint vbo_pos;
@@ -69,7 +95,26 @@ struct GrassField {
 	//render all grass with instantiation : 
 	void render(const glm::mat4& projection, const glm::mat4& view);
 
+	//update physic : 
+	void updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones); //TODO
+
 	void updateVBOPositions();
+	void updateVBOAnimPos();
+
+	void computePoint(float deltaTime, int index);
+	void computeLink(float deltaTime, int index);
+
+	void resetPhysic();
+
+	void setViscosity(float _viscosity);
+	void setRigidity(float _rigidity);
+	void setMass(float _mass);
+	float getViscosity() const;
+	float getRigidity() const;
+	float getMass() const;
+
+	void drawUI();
+
 };
 
 
@@ -109,7 +154,8 @@ private:
 	glm::vec3 m_offset;
 
 	int m_seed;
-	NoiseGenerator m_terrainNoise;
+	//NoiseGenerator m_terrainNoise;
+	Perlin2D m_terrainNoise;
 
 	//texture tool : 
 	Texture m_noiseTexture;
@@ -139,20 +185,22 @@ private:
 	GrassField m_grassField;
 	std::vector<int> m_grassLayout;
 	float m_grassLayoutDelta; //the delta between two grass
+	int m_grassLayoutWidth;
+	int m_grassLayoutDepth;
 
 	//for UI : 
 	TerrainTools m_currentTerrainTool;
 	char m_newLayoutName[30];
 	int m_currentMaterialToDrawIdx;
 	float m_drawRadius;
-	int m_maxGrassDensity;
-	int m_grassDensity;
+	float m_maxGrassDensity;
+	float m_grassDensity;
 	char m_newGrassTextureName[30];
 
 
 public:
 
-	Terrain(float width = 100, float height = 30, float depth = 100, int subdivision = 10, glm::vec3 offset = glm::vec3(0,0,0));
+	Terrain(float width = 100, float height = 10, float depth = 100, int subdivision = 30, glm::vec3 offset = glm::vec3(0,0,0));
 	~Terrain();
 	//initialize vbos and vao, based on the informations of the mesh.
 	void initGl();
@@ -182,9 +230,12 @@ public:
 	float getHeight(float x, float y);
 
 	void drawGrassOnTerrain(const glm::vec3 position);
-	void drawGrassOnTerrain(const glm::vec3 position, float radius, int density, int maxDensity);
+	void drawGrassOnTerrain(const glm::vec3 position, float radius, float density, float maxDensity);
 	void updateGrassPositions();
 
 	TerrainTools getCurrentTerrainTool() const;
+
+	//update physic : 
+	void updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones);
 };
 

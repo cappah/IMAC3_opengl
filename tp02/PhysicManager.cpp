@@ -4,6 +4,7 @@
 
 namespace Physic {
 
+
 	PhysicManager::PhysicManager(const glm::vec3& _gravity) : m_gravity(_gravity)
 	{
 	}
@@ -23,7 +24,7 @@ namespace Physic {
 		return m_gravity;
 	}
 
-	void PhysicManager::update(float deltaTime, std::vector<Flag*>& flags, std::vector<WindZone*>& windZones)
+	void PhysicManager::update(float deltaTime, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones)
 	{
 		for (int i = 0; i < flags.size(); i++)
 		{
@@ -36,6 +37,9 @@ namespace Physic {
 			flags[i]->applyGravity(m_gravity);
 			flags[i]->update(deltaTime);
 		}
+
+		//update terrain : 
+		terrain.updatePhysic(deltaTime, windZones);
 	}
 
 }

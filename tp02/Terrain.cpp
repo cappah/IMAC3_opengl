@@ -5,7 +5,7 @@
 #include "Ray.h"
 
 
-GrassField::GrassField()
+GrassField::GrassField() : mass(0.005f), rigidity(0.05f), viscosity(0.003f), lockYPlane(true)
 {
 	grassTexture = TextureFactory::get().get("default");
 
@@ -113,6 +113,9 @@ GrassField::~GrassField()
 	if (vbo_pos != 0)
 		glDeleteBuffers(1, &vbo_pos);
 
+	if (vbo_animPos != 0)
+		glDeleteBuffers(1, &vbo_pos);
+
 	glDeleteVertexArrays(1, &vao);
 }
 
@@ -157,6 +160,12 @@ void GrassField::initGl()
 	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STATIC_DRAW);
 	glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
+	//for physic simulation : 
+	glGenBuffers(1, &vbo_animPos);
+	glEnableVertexAttribArray(ANIM_POS);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_animPos);
+	glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STREAM_DRAW);
+	glVertexAttribPointer(ANIM_POS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -165,14 +174,29 @@ void GrassField::initGl()
 
 void GrassField::addGrass(GrassKey grassKey, const glm::vec3 & position)
 {
+	int currentIdx = grassKeys.size();
 	grassKeys.push_back(grassKey);
+	//positions : 
 	positions.push_back(position.x);
 	positions.push_back(position.y);
 	positions.push_back(position.z);
+	//offsets : 
+	offsets.push_back(0);
+	offsets.push_back(0);
+	offsets.push_back(0);
+	//forces : 
+	forces.push_back(0);
+	forces.push_back(0);
+	forces.push_back(0);
+	//speeds : 
+	speeds.push_back(0);
+	speeds.push_back(0);
+	speeds.push_back(0);
+	//links : 
+	links.push_back(GrassPhysicLink(currentIdx, glm::vec3(0,0,0), 0.5f));
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
-	glBufferData(GL_ARRAY_BUFFER, positions.size()*sizeof(float), &positions[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	updateVBOPositions();
+	updateVBOAnimPos();
 }
 
 void GrassField::remove(GrassKey grassKey)
@@ -182,16 +206,30 @@ void GrassField::remove(GrassKey grassKey)
 		return;
 
 	int idx = findIt - grassKeys.begin();
-	idx * 3;
 
+	//keys : 
 	grassKeys.erase(findIt);
-	positions.erase(positions.begin() + idx);
-	positions.erase(positions.begin() + (idx + 1));
-	positions.erase(positions.begin() + (idx + 2));
+	//positions : 
+	positions.erase(positions.begin() + idx*3);
+	positions.erase(positions.begin() + (idx*3 + 1));
+	positions.erase(positions.begin() + (idx*3 + 2));
+	//offsets :
+	offsets.erase(offsets.begin() + idx*3);
+	offsets.erase(offsets.begin() + (idx*3 + 1));
+	offsets.erase(offsets.begin() + (idx*3 + 2));
+	//forces : 
+	forces.erase(forces.begin() + idx*3);
+	forces.erase(forces.begin() + (idx*3 + 1));
+	forces.erase(forces.begin() + (idx*3 + 2));
+	//speeds : 
+	speeds.erase(speeds.begin() + idx*3);
+	speeds.erase(speeds.begin() + (idx*3 + 1));
+	speeds.erase(speeds.begin() + (idx*3 + 2));
+	//links : 
+	links.erase(links.begin() + idx);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
-	glBufferData(GL_ARRAY_BUFFER, positions.size()*sizeof(float), &positions[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	updateVBOPositions();
+	updateVBOAnimPos();
 }
 
 void GrassField::draw()
@@ -207,6 +245,7 @@ void GrassField::draw()
 	glVertexAttribDivisor(NORMALS, 0);
 	glVertexAttribDivisor(UVS, 0);
 	glVertexAttribDivisor(POSITIONS, 1);
+	glVertexAttribDivisor(ANIM_POS, 1);
 
 	glDrawElementsInstanced(GL_TRIANGLES, triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0, instanceCount);
 
@@ -228,6 +267,137 @@ void GrassField::render(const glm::mat4 & projection, const glm::mat4 & view)
 	draw();
 }
 
+void GrassField::updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones)
+{
+	//apply forces : 
+	glm::vec3 newForce;
+	for (auto& windZone : windZones)
+	{
+		for (int i = 0; i < forces.size()/3; i++)
+		{
+			newForce = windZone->getForce(Application::get().getTime(), vertexFrom3Floats(positions, i));
+			forces[i * 3] += newForce.x;
+			if(!lockYPlane)
+				forces[i * 3 + 1] += newForce.y;
+			forces[i * 3 + 2] += newForce.z;
+		}
+	}
+
+	for (int linkIdx = 0; linkIdx < links.size(); linkIdx++)
+	{
+		computeLink(deltaTime, linkIdx);
+	}
+	//update position based on forces :
+	for (int pointIdx = 0; pointIdx < offsets.size()/3; pointIdx++)
+	{
+		computePoint(deltaTime, pointIdx);
+	}
+	//update vbos : 
+	updateVBOAnimPos();
+}
+
+void GrassField::computePoint(float deltaTime, int index)
+{
+	if (mass < 0.00000001f)
+		return;
+
+	//leapfrog
+	speeds[index * 3] += (deltaTime / mass)*forces[index * 3];
+	speeds[index * 3 + 1] += (deltaTime / mass)*forces[index * 3 + 1];
+	speeds[index * 3 + 2]+= (deltaTime / mass)*forces[index * 3 + 2];
+
+	offsets[index * 3] += deltaTime*speeds[index * 3];
+	offsets[index * 3 + 1] += deltaTime*speeds[index * 3 + 1];
+	offsets[index * 3 + 2] += deltaTime*speeds[index * 3 + 2];
+
+	forces[index * 3] = 0;
+	forces[index * 3 + 1] = 0;
+	forces[index * 3 + 2] = 0;
+}
+
+void GrassField::computeLink(float deltaTime, int index)
+{
+	glm::vec3 p1 = vertexFrom3Floats(offsets, links[index].p1_idx);
+	glm::vec3 p2 = links[index].p2_pos;
+	glm::vec3 v1 = vertexFrom3Floats(speeds, links[index].p1_idx);
+
+	float d = glm::distance(p1, p2);
+	if (d < 0.00000001f)
+		return;
+
+	float f = rigidity * (1.f - links[index].l / (d));
+	if (std::abs(f) < 0.00000001f)
+		return;
+
+	glm::vec3 M1M2 = p2 - p1;
+	glm::normalize(M1M2);
+	if (glm::length(M1M2) < 0.00000001f)
+		return;
+
+	//frein :
+	glm::vec3 frein = viscosity*(-v1);
+
+	glm::vec3 force = (f * M1M2 + frein);
+	forces[links[index].p1_idx * 3] += force.x;
+	forces[links[index].p1_idx * 3 + 1] += force.y;
+	forces[links[index].p1_idx * 3 + 2] += force.z;
+}
+
+void GrassField::resetPhysic()
+{
+	for (int i = 0; i < offsets.size(); i++)
+	{
+		offsets[i] = 0;
+		forces[i] = 0;
+		speeds[i] = 0;
+	}
+}
+
+void GrassField::setViscosity(float _viscosity)
+{
+	viscosity = _viscosity;
+}
+
+void GrassField::setRigidity(float _rigidity)
+{
+	rigidity = _rigidity;
+}
+
+void GrassField::setMass(float _mass)
+{
+	mass = _mass;
+}
+
+float GrassField::getViscosity() const
+{
+	return viscosity;
+}
+
+float GrassField::getRigidity() const
+{
+	return rigidity;
+}
+
+float GrassField::getMass() const
+{
+	return mass;
+}
+
+void GrassField::drawUI()
+{
+	ImGui::InputFloat("rigidity", &rigidity);
+	ImGui::InputFloat("viscosity", &viscosity);
+	ImGui::InputFloat("mass", &mass);
+
+	if(ImGui::RadioButton("lock Y plane", &lockYPlane))
+		lockYPlane = !lockYPlane;
+
+	if (ImGui::Button("reset physic"))
+	{
+		resetPhysic();
+	}
+}
+
 void GrassField::updateVBOPositions()
 {
 	if (positions.size() <= 0)
@@ -238,13 +408,23 @@ void GrassField::updateVBOPositions()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void GrassField::updateVBOAnimPos()
+{
+	if (offsets.size() <= 0)
+		return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_animPos);
+	glBufferData(GL_ARRAY_BUFFER, offsets.size()*sizeof(float), &offsets[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 
 ////////////////// TERRAIN ///////////////////
 
 Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), //terrain properties
-			m_noiseMin(0.f), m_noiseMax(1.f), m_seed(0), //perlin properties
+			m_noiseMin(0.f), m_noiseMax(1.f), m_seed(0), m_terrainNoise(512, 64, 3, 0.5f, 0), //perlin properties
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
-			m_maxGrassDensity(30), m_grassDensity(0), m_grassLayoutDelta(0.1f), //draw grass properties
+			m_maxGrassDensity(1.f), m_grassDensity(0), m_grassLayoutDelta(0.3f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
 			m_material(ProgramFactory::get().get("defaultTerrain")), m_terrainMaterial(ProgramFactory::get().get("defaultTerrainEdition")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
@@ -256,9 +436,9 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_newGrassTextureName[0] = '\0';
 
 	//grass layout initialization : 
-	int grassLayoutWidth = m_width / (float)m_grassLayoutDelta;
-	int grassLayoutDepth = m_depth / (float)m_grassLayoutDelta;
-	for (int i = 0; i < grassLayoutWidth*grassLayoutDepth; i++)
+	m_grassLayoutWidth = m_width / (float)m_grassLayoutDelta;
+	m_grassLayoutDepth = m_depth / (float)m_grassLayoutDelta;
+	for (int i = 0; i < m_grassLayoutWidth*m_grassLayoutDepth; i++)
 		m_grassLayout.push_back(0);
 
 	//push terrain texture to GPU
@@ -331,10 +511,10 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_quadMesh.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
 	m_quadMesh.initGl();
 
-	m_terrainNoise.seed = m_seed;
+	m_terrainNoise.setSeed(m_seed);
 
 	generateTerrain();
-	//applyNoise(m_terrainNoise.generatePerlin2D());
+	applyNoise(m_terrainNoise, false);
 
 
 	//generate material layout FBO : 
@@ -663,6 +843,9 @@ void Terrain::applyNoise(Perlin2D& perlin2D, bool _computeNoiseTexture)
 
 void Terrain::generateTerrain()
 {
+	if (m_subdivision == 0)
+		return;
+
 	float paddingZ = m_depth / (float)m_subdivision;
 	float paddingX = m_width / (float)m_subdivision;
 
@@ -745,6 +928,14 @@ void Terrain::updateTerrain()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
 	glBufferData(GL_ARRAY_BUFFER, m_vertices.size()*sizeof(float), &m_vertices[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	//update grass layout size : 
+	int grassLayoutOldWidth = m_grassLayoutWidth;
+	int grassLayoutOldDepth = m_grassLayoutDepth;
+	m_grassLayoutWidth = m_width / (float)m_grassLayoutDelta;
+	m_grassLayoutDepth = m_depth / (float)m_grassLayoutDelta;
+	resize2DArray<int>(m_grassLayout, grassLayoutOldWidth, grassLayoutOldDepth, m_grassLayoutWidth, m_grassLayoutDepth);
+	//TODO resize grass field
 }
 
 //initialize vbos and vao, based on the informations of the mesh.
@@ -798,7 +989,7 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position)
 	drawGrassOnTerrain(position, m_drawRadius * m_width*0.5f, m_grassDensity, m_maxGrassDensity);
 }
 
-void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int density, int maxDensity)
+void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, float density, float maxDensity)
 {
 
 	int px = position.x / m_grassLayoutDelta;
@@ -814,7 +1005,7 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int den
 
 	for (int j = std::max(0, (int)(-radius + pz)); j <= std::min((int)(radius + pz), grassLayoutDepth - 1); j++)
 	{
-		for (int i = std::max(0, (int)(-radius + px)); i <= std::min( (int)(radius + px), grassLayoutWidth - 1); i ++)
+		for (int i = std::max(0, (int)(-radius + px)); i <= std::min( (int)(radius + px), grassLayoutWidth - 1); i++)
 		{
 			if (glm::length(glm::vec2(i, j) - p) <= radius)
 			{
@@ -825,18 +1016,31 @@ void Terrain::drawGrassOnTerrain(const glm::vec3 position, float radius, int den
 			}
 		}
 	}
+	
 
-	for (int i = 0; i < (density - currentGrassCount); i++)
+	if(potentialPositionIndex.size() > 0)
+	for (int i = 0; i < (density - currentGrassCount/(float)(4.f*radius*radius))*10; i++)
 	{
-		int randomIndex = rand() % potentialPositionIndex.size();
+		std::cout << "grass count" << (density - currentGrassCount / (float)(4.f*radius*radius)) << std::endl;
+
+		//srand(time(nullptr));
+		int randNumber = rand();
+		std::cout << "random number" << randNumber << std::endl;
+		int randomIndex = randNumber % potentialPositionIndex.size();
+		std::cout << "random index" << randomIndex << std::endl;
 		glm::vec2 pointIndex = potentialPositionIndex[randomIndex];
 
 		float posX = pointIndex.x * m_grassLayoutDelta;
 		float posZ = pointIndex.y * m_grassLayoutDelta;
 		float posY = getHeight(posX, posZ);
 
-		m_grassField.addGrass(GrassKey(pointIndex.x, pointIndex.y), glm::vec3(posX, posY, posZ));
-		m_grassLayout[grassLayoutWidth*pointIndex.y + pointIndex.x] = 1; //this layout controls the density of the grassField.
+		if (m_grassLayout[grassLayoutWidth*pointIndex.y + pointIndex.x] == 0)
+		{
+			m_grassField.addGrass(GrassKey(pointIndex.x, pointIndex.y), glm::vec3(posX, posY, posZ));
+			m_grassLayout[grassLayoutWidth*pointIndex.y + pointIndex.x] = 1; //this layout controls the density of the grassField.
+
+			potentialPositionIndex.erase(potentialPositionIndex.begin() + randomIndex);
+		}
 	}
 }
 
@@ -856,10 +1060,17 @@ Terrain::TerrainTools Terrain::getCurrentTerrainTool() const
 	return m_currentTerrainTool;
 }
 
+void Terrain::updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones)
+{
+	//apply physic on grassField : 
+	m_grassField.updatePhysic(deltaTime, windZones);
+	//TODO : trees,...
+}
+
 //get terrain height at a given point
 float Terrain::getHeight(float x, float y)
 {
-	float noiseValue = m_terrainNoise.generatePerlin2D().getNoiseValue(x, y); /// TODO : modify perlin access.
+	float noiseValue = m_terrainNoise.getNoiseValue(x, y);
 
 	return (noiseValue * 2.f - 1.f) * m_height + m_offset.y;
 }
@@ -939,11 +1150,52 @@ void Terrain::drawUI()
 		if (ImGui::InputInt("terrain seed", &m_seed))
 		{
 			// change the seed of the generator
-			m_terrainNoise.seed = m_seed;
+			m_terrainNoise.setSeed(m_seed);
 			//apply new noise to terrain
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
+			applyNoise(m_terrainNoise, false);
 		}
 
+		if (ImGui::InputInt("terrain subdivision", &m_subdivision))
+		{
+			generateTerrain();
+			applyNoise(m_terrainNoise, false);
+		}
+
+		float tmpFloat = m_terrainNoise.getPersistence();
+		if (ImGui::SliderFloat("noise persistence", &tmpFloat, 0.f, 1.f))
+		{
+			m_terrainNoise.setPersistence(tmpFloat);
+			applyNoise(m_terrainNoise, false);
+		}
+		int tmpInt = m_terrainNoise.getOctaveCount();
+		if (ImGui::SliderInt("noise octave count", &tmpInt, 1, 10))
+		{
+			m_terrainNoise.setOctaveCount(tmpInt);
+			applyNoise(m_terrainNoise, false);
+		}
+		tmpInt = m_terrainNoise.getHeight();
+		if (ImGui::SliderInt("noise height", &tmpInt, 1, 512))
+		{
+			m_terrainNoise.setHeight(tmpInt);
+			applyNoise(m_terrainNoise, false);
+		}
+		tmpInt = m_terrainNoise.getSamplingOffset();
+		if (ImGui::SliderInt("noise sampling offset", &tmpInt, 1, 128))
+		{
+			m_terrainNoise.setSamplingOffset(tmpInt);
+			applyNoise(m_terrainNoise, false);
+		}
+
+
+		//if (ImGui::Button("refresh noise texture"))
+		//{
+		//	computeNoiseTexture(m_terrainNoise.generatePerlin2D());
+		//	generateTerrainTexture();
+		//}
+	}
+	//if (ImGui::CollapsingHeader("terrain material"))
+	else if(m_currentTerrainTool == TerrainTools::PARAMETER)
+	{
 		if (ImGui::InputFloat3("terrain offset", &m_offset[0]))
 		{
 			updateTerrain();
@@ -958,40 +1210,7 @@ void Terrain::drawUI()
 
 			updateTerrain();
 		}
-
-		if (ImGui::InputInt("terrain subdivision", &m_subdivision))
-		{
-			generateTerrain();
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
-		}
-
-		if (ImGui::SliderFloat("noise persistence", &m_terrainNoise.persistence, 0.f, 1.f))
-		{
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
-		}
-		if (ImGui::SliderInt("noise octave count", &m_terrainNoise.octaveCount, 1, 10))
-		{
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
-		}
-		if (ImGui::SliderInt("noise height", &m_terrainNoise.height, 1, 512))
-		{
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
-		}
-		if (ImGui::SliderInt("noise sampling offset", &m_terrainNoise.samplingOffset, 1, 128))
-		{
-			applyNoise(m_terrainNoise.generatePerlin2D(), false);
-		}
-
-
-		//if (ImGui::Button("refresh noise texture"))
-		//{
-		//	computeNoiseTexture(m_terrainNoise.generatePerlin2D());
-		//	generateTerrainTexture();
-		//}
-	}
-	//if (ImGui::CollapsingHeader("terrain material"))
-	else if(m_currentTerrainTool == TerrainTools::PARAMETER)
-	{
+		
 		ImGui::PushID("terrainMaterial");
 		m_material.drawUI();
 		ImGui::PopID();
@@ -1096,7 +1315,7 @@ void Terrain::drawUI()
 		}
 
 		ImGui::SliderFloat("draw radius", &m_drawRadius, 0.f, 1.f);
-		ImGui::SliderInt("grass density", &m_grassDensity, 0, m_maxGrassDensity);
+		ImGui::SliderFloat("grass density", &m_grassDensity, 0, m_maxGrassDensity);
 
 		if (ImGui::InputText("grass texture name", m_newGrassTextureName, 30))
 		{
@@ -1106,6 +1325,8 @@ void Terrain::drawUI()
 				m_grassField.grassTexture = TextureFactory::get().get(m_newGrassTextureName);
 			}
 		}
+
+		m_grassField.drawUI();
 	}
 
 }
