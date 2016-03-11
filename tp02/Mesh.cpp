@@ -282,6 +282,7 @@ bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 		initMesh(i, paiMesh);
 		triangleCount.push_back((triangleIndex.size() / 3) - totalTriangleCount);
 		totalTriangleCount += triangleCount.back();
+
 	}
 	initGl(); //don't forget to init mesh for opengl
 	computeBoundingBox();
@@ -341,13 +342,14 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 		origin = -glm::normalize(topRight - bottomLeft) * 0.5f;*/
 	}
 
+	int offsetGlIdx = triangleIndex.size();
 	for (unsigned int i = 0; i < paiMesh->mNumFaces; i++) 
 	{
 		const aiFace& Face = paiMesh->mFaces[i];
 		assert(Face.mNumIndices == 3);
-		triangleIndex.push_back(Face.mIndices[0]);
-		triangleIndex.push_back(Face.mIndices[1]);
-		triangleIndex.push_back(Face.mIndices[2]);
+		triangleIndex.push_back(offsetGlIdx + Face.mIndices[0]);
+		triangleIndex.push_back(offsetGlIdx + Face.mIndices[1]);
+		triangleIndex.push_back(offsetGlIdx + Face.mIndices[2]);
 	}
 
 }
