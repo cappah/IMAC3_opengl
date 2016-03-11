@@ -53,7 +53,7 @@ struct Mesh
 	GLenum drawUsage;
 
 	Mesh(GLenum _primitiveType = GL_TRIANGLES, unsigned int _vbo_usage = (USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS), int _coordCountByVertex = 3, GLenum _drawUsage = GL_STATIC_DRAW);
-	Mesh(const std::string& path);
+	Mesh(const std::string& _path);
 
 	~Mesh();
 

@@ -123,6 +123,9 @@ private:
 	char m_savePath[60];
 	char m_loadPath[60];
 
+	bool m_saveWindowOpen;
+	bool m_loadWindowOpen;
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 
@@ -138,8 +141,9 @@ public:
 	void displayMenuBar(Project& project);
 	void displayTopLeftWindow(Project& project);
 	void displayBottomWindow(Project& project);
-	void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
+	void displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
 	void displayBottomLeftWindow(Project& project);
+	void displayModals(Project& project);
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();
 	void renderUI(Project& project);

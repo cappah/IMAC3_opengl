@@ -71,6 +71,7 @@ void Project::clear()
 	//clear scene :
 	if(m_activeScene != nullptr)
 		delete m_activeScene;
+	m_activeScene = nullptr;
 	
 	m_scenes.clear();
 
@@ -354,17 +355,20 @@ void Project::addScene(const std::string& sceneName)
 	m_scenes[sceneName] = scenePath;
 
 	if (m_activeScene != nullptr)
-	{
-		std::string activeScenePath = m_scenes[m_activeSceneName]; // m_path + "/scenes/" + m_activeSceneName + ".txt";
-		addDirectories(m_path + "/scenes/");
-		m_activeScene->save(activeScenePath);
-		
-		m_activeScene->clear();
-		//delete m_activeScene;
-	}
+		m_activeScene->save(scenePath);
 
-	//m_activeScene = new Scene(m_renderer, sceneName);
-	loadDefaultScene(m_activeScene);
+	//if (m_activeScene != nullptr)
+	//{
+	//	std::string activeScenePath = m_scenes[m_activeSceneName]; // m_path + "/scenes/" + m_activeSceneName + ".txt";
+	//	addDirectories(m_path + "/scenes/");
+	//	m_activeScene->save(activeScenePath);
+	//	
+	//	m_activeScene->clear();
+	//	//delete m_activeScene;
+	//}
+
+	////m_activeScene = new Scene(m_renderer, sceneName);
+	//loadDefaultScene(m_activeScene);
 	m_activeSceneName = sceneName;
 }
 
@@ -491,8 +495,10 @@ void Project::drawUI()
 
 	ImGui::InputText("new scene", m_newSceneName, 30);
 	ImGui::SameLine();
-	if (ImGui::Button("add"))
+	if (ImGui::Button("save"))
+	{
 		addScene(m_newSceneName);
+	}
 
 	for (auto& it = m_scenes.begin(); it != m_scenes.end(); it++)
 	{

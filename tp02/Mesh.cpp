@@ -7,8 +7,10 @@ Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVer
 
 }
 
-Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
+Mesh::Mesh(const std::string& _path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
 {
+	path = _path;
+
 	bool Ret = false;
 	Assimp::Importer Importer;
 

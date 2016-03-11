@@ -76,11 +76,13 @@
 			"cube",
 			"cubeWireframe",
 			"default",
-			"plane"
+			"plane",
+			"tricube"
 		],
-		"size" : 4,
+		"size" : 5,
 		"values" : 
 		[
+			"",
 			"",
 			"",
 			"",
@@ -95,16 +97,18 @@
 			"brickDiffuse",
 			"brickSpecular",
 			"default",
-			"grass01Diffuse"
+			"grass01Diffuse",
+			"ground"
 		],
-		"size" : 5,
+		"size" : 6,
 		"values" : 
 		[
 			"textures/spnza_bricks_a_normal.png",
 			"textures/spnza_bricks_a_diff.tga",
 			"textures/spnza_bricks_a_spec.tga",
 			"",
-			"textures/grass/grass01.png"
+			"textures/grass/grass01.png",
+			"textures/ground/shortGrass.png"
 		]
 	}
 }

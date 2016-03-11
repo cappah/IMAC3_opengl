@@ -416,8 +416,8 @@ void Editor::displayMenuBar(Project& project)
 {
 	Scene& scene = *project.getActiveScene();
 
-	bool saveWindowOpen = false;
-	bool loadWindowOpen = false;
+	m_saveWindowOpen = false;
+	m_loadWindowOpen = false;
 
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -426,18 +426,18 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Selectable("save"))
 			{
 				if (project.getName() == "")
-					saveWindowOpen = true;
+					m_saveWindowOpen = true;
 				else
 					project.save();
 				//ImGui::OpenPopup("save window");
 			}
 			if (ImGui::Selectable("save as"))
 			{
-				saveWindowOpen = true;
+				m_saveWindowOpen = true;
 			}
 			if(ImGui::Selectable("load"))
 			{
-				loadWindowOpen = true;
+				m_loadWindowOpen = true;
 				//ImGui::OpenPopup("load window");
 			}
 
@@ -628,10 +628,14 @@ void Editor::displayMenuBar(Project& project)
 		ImGui::EndMainMenuBar();
 	}
 
+}
+
+void Editor::displayModals(Project& project)
+{
 	//modal windows : 
-	if(saveWindowOpen)
+	if (m_saveWindowOpen)
 		ImGui::OpenPopup("save window");
-	if (loadWindowOpen)
+	if (m_loadWindowOpen)
 		ImGui::OpenPopup("load window");
 
 	//load : 
@@ -652,6 +656,7 @@ void Editor::displayMenuBar(Project& project)
 				project.open(m_loadPath, loadPath);
 				//scene.clear(); //clear the previous scene
 				//scene.load(loadPath);
+				changeCurrentSelected(nullptr);
 			}
 			else
 			{
@@ -670,12 +675,12 @@ void Editor::displayMenuBar(Project& project)
 		ImGui::InputText("set project name", m_savePath, 60);
 		if (ImGui::Button("save"))
 		{
-			std::string savePath = ("save/"+std::string(m_savePath));
+			std::string savePath = ("save/" + std::string(m_savePath));
 
 			//Verify the validity of path :
 			std::vector<std::string> dirNames = getAllDirNames("save/");
 			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_savePath)) != dirNames.end());
-			
+
 			if (m_savePath != "" && !dirAlreadyExists)
 			{
 				project.setName(m_savePath);
@@ -693,8 +698,6 @@ void Editor::displayMenuBar(Project& project)
 
 		ImGui::EndPopup();
 	}
-
-
 }
 
 void Editor::displayTopLeftWindow(Project& project)
@@ -1076,6 +1079,8 @@ void Editor::renderUI(Project& project)
 
 	//ImGui::BeginChild("bottomWindow", ImVec2(screenWidth, screenHeight - m_leftPanelHeight));
 	//ImGui::EndChild();
+
+	displayModals(project);
 
 }
 
