@@ -240,6 +240,7 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
     <ClCompile Include="Octree.cpp" />
+    <ClCompile Include="OctreeDrawer.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="Path.cpp" />
     <ClCompile Include="PathManager.cpp" />
@@ -300,6 +301,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="Octree.h" />
+    <ClInclude Include="OctreeDrawer.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PathManager.h" />
@@ -347,6 +349,8 @@
     <None Include="terrainEdition.vert" />
     <None Include="wireframe.frag" />
     <None Include="wireframe.vert" />
+    <None Include="wireframeInstanced.frag" />
+    <None Include="wireframeInstanced.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

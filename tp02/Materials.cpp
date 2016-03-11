@@ -247,14 +247,20 @@ void MaterialUnlit::drawUI()
 
 //////////////////////////////////////////////////
 
-MaterialInstancedUnlit::MaterialInstancedUnlit(GLuint _glProgram) : Material3DObject(_glProgram)
+MaterialInstancedUnlit::MaterialInstancedUnlit(GLuint _glProgram) : Material(_glProgram)
 {
 	uniform_color = glGetUniformLocation(glProgram, "Color");
+	uniform_VP = glGetUniformLocation(glProgram, "VP");
 }
 
 void MaterialInstancedUnlit::setUniform_color(glm::vec3 color)
 {
 	glUniform3fv(uniform_color, 1, glm::value_ptr(color));
+}
+
+void MaterialInstancedUnlit::setUniform_VP(const glm::mat4& VP)
+{
+	glUniformMatrix4fv(uniform_VP, 1, false, glm::value_ptr(VP));
 }
 
 void MaterialInstancedUnlit::use()

@@ -465,6 +465,11 @@ void Editor::displayMenuBar(Project& project)
 				scene.toggleLightsBoundingBoxVisibility();
 			}
 
+			if (ImGui::RadioButton("octrees visibility", scene.getAreOctreesVisible()))
+			{
+				scene.toggleOctreesVisibility();
+			}
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Add default entities"))

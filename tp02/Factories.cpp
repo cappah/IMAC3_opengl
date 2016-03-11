@@ -121,6 +121,23 @@ ProgramFactory::ProgramFactory()
 	if (!checkError("Uniforms"))
 		exit(1);
 
+	//////////////////// GRASS FIELD shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_wireframeInstanced = compile_shader_from_file(GL_VERTEX_SHADER, "wireframeInstanced.vert");
+	GLuint fragShaderId_wireframeInstanced = compile_shader_from_file(GL_FRAGMENT_SHADER, "wireframeInstanced.frag");
+
+	GLuint programObject_wireframeInstanced = glCreateProgram();
+	glAttachShader(programObject_wireframeInstanced, vertShaderId_wireframeInstanced);
+	glAttachShader(programObject_wireframeInstanced, fragShaderId_wireframeInstanced);
+
+	glLinkProgram(programObject_wireframeInstanced);
+	if (check_link_error(programObject_wireframeInstanced) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 	m_programs["defaultLit"] = programObject_gPass;
 	m_programs["defaultUnlit"] = programObject_wireframe;
 	m_programs["defaultSkybox"] = programObject_skybox;
@@ -128,6 +145,7 @@ ProgramFactory::ProgramFactory()
 	m_programs["defaultTerrainEdition"] = programObject_terrainEdition;
 	m_programs["defaultDrawOnTexture"] = programObject_drawOnTexture;
 	m_programs["defaultGrassField"] = programObject_grassField;
+	m_programs["wireframeInstanced"] = programObject_wireframeInstanced;
 
 	m_defaults.push_back("defaultLit");
 	m_defaults.push_back("defaultUnlit");
@@ -136,6 +154,7 @@ ProgramFactory::ProgramFactory()
 	m_defaults.push_back("defaultTerrainEdition");
 	m_defaults.push_back("defaultDrawOnTexture");
 	m_defaults.push_back("defaultGrassField");
+	m_defaults.push_back("wireframeInstanced");
 }
 
 void ProgramFactory::add(const std::string& name, GLuint programId)
@@ -623,12 +642,17 @@ MaterialFactory::MaterialFactory()
 	newMat->name = "wireframe";
 	m_materials["wireframe"] = newMat;
 
+	newMat = new MaterialInstancedUnlit(ProgramFactory::get().get("wireframeInstanced"));
+	newMat->name = "wireframeInstanced";
+	m_materials["wireframeInstanced"] = newMat;
+
 	newMat = new MaterialGrassField(ProgramFactory::get().get("defaultGrassField"));
 	newMat->name = "grassfield";
 	m_materials["grassfield"] = newMat;
 	
 	m_defaults.push_back("default");
 	m_defaults.push_back("wireframe");
+	m_defaults.push_back("wireframeInstanced");
 	m_defaults.push_back("grassfield");
 }
 

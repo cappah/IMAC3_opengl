@@ -111,13 +111,15 @@ struct MaterialUnlit : public Material3DObject
 };
 
 
-struct MaterialInstancedUnlit : public Material3DObject
+struct MaterialInstancedUnlit : public Material
 {
 	GLuint uniform_color;
+	GLuint uniform_VP;
 
 	MaterialInstancedUnlit(GLuint _glProgram);
 
 	void setUniform_color(glm::vec3 color);
+	void setUniform_VP(const glm::mat4& VP);
 
 	virtual void use() override;
 

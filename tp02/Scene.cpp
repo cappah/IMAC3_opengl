@@ -1,4 +1,6 @@
 #include "Scene.h"
+//forwards :
+#include "OctreeDrawer.h"
 
 
 Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
@@ -313,6 +315,15 @@ void Scene::renderPaths(const BaseCamera& camera)
 	m_pathManager.render(camera);
 }
 
+void Scene::renderDebugOctrees(const BaseCamera & camera)
+{
+	if (m_areOctreesVisible)
+	{
+		OctreeDrawer::get().render(camera.getProjectionMatrix(), camera.getViewMatrix());
+		OctreeDrawer::get().clear();
+	}
+}
+
 void Scene::updatePhysic(float deltaTime)
 {
 	m_physicManager.update(deltaTime, m_flags, m_terrain, m_windZones);
@@ -333,6 +344,11 @@ void Scene::toggleLightsBoundingBoxVisibility()
 	m_areLightsBoundingBoxVisible = !m_areLightsBoundingBoxVisible;
 }
 
+void Scene::toggleOctreesVisibility()
+{
+	m_areOctreesVisible = !m_areOctreesVisible;
+}
+
 bool Scene::getAreCollidersVisible() const
 {
 	return m_areCollidersVisible;
@@ -348,6 +364,11 @@ bool Scene::getAreLightsBoundingBoxVisible() const
 	return m_areLightsBoundingBoxVisible;
 }
 
+bool Scene::getAreOctreesVisible() const
+{
+	return m_areOctreesVisible;
+}
+
 void Scene::setAreCollidersVisible(bool value)
 {
 	m_areCollidersVisible = value;
@@ -361,6 +382,11 @@ void Scene::setIsDebugDeferredVisible(bool value)
 void Scene::setAreLightsBoundingBoxVisible(bool value)
 {
 	m_areLightsBoundingBoxVisible = value;
+}
+
+void Scene::setAreOctreesVisible(bool value)
+{
+	m_areOctreesVisible = value;
 }
 
 void Scene::culling(const BaseCamera & camera)

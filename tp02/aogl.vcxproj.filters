@@ -115,6 +115,7 @@
     </ClCompile>
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Octree.cpp" />
+    <ClCompile Include="OctreeDrawer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -239,6 +240,7 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Octree.h" />
+    <ClInclude Include="OctreeDrawer.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -355,6 +357,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="grassField.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="wireframeInstanced.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="wireframeInstanced.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

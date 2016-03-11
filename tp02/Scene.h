@@ -72,6 +72,7 @@ private:
 	bool m_areCollidersVisible;
 	bool m_isDebugDeferredVisible;
 	bool m_areLightsBoundingBoxVisible;
+	bool m_areOctreesVisible;
 
 
 public:
@@ -111,18 +112,22 @@ public:
 	void renderDebugDeferred();
 	void renderDebugLights(const BaseCamera& camera);
 	void renderPaths(const BaseCamera& camera);
+	void renderDebugOctrees(const BaseCamera& camera);
 
 	void updatePhysic(float deltaTime);
 
 	void toggleColliderVisibility();
 	void toggleDebugDeferredVisibility();
 	void toggleLightsBoundingBoxVisibility();
+	void toggleOctreesVisibility();
 	bool getAreCollidersVisible() const;
 	bool getIsDebugDeferredVisible() const;
 	bool getAreLightsBoundingBoxVisible() const;
+	bool getAreOctreesVisible() const;
 	void setAreCollidersVisible(bool value);
 	void setIsDebugDeferredVisible(bool value);
 	void setAreLightsBoundingBoxVisible(bool value);
+	void setAreOctreesVisible(bool value);
 
 	void culling(const BaseCamera& camera);
 

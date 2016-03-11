@@ -1,7 +1,9 @@
 #include "Flag.h"
+//forwards : 
 #include "Scene.h"
 #include "Entity.h"
 #include "Factories.h"
+#include "OctreeDrawer.h"
 
 namespace Physic {
 
@@ -636,12 +638,12 @@ namespace Physic {
 		glm::vec3 bottomLeft = m_mesh.bottomLeft;
 		glm::vec3 topRight = m_mesh.topRight;
 		glm::vec3 center = bottomLeft + (topRight - bottomLeft)*0.5f;
-		float halfSize = std::max(topRight.x - bottomLeft.x, std::max(topRight.y - bottomLeft.y, topRight.z - bottomLeft.z) );
-		Octree<Point> octree(center, halfSize, 3);
+		float halfSize = std::max(topRight.x - bottomLeft.x, std::max(topRight.y - bottomLeft.y, topRight.z - bottomLeft.z) )*0.5f;
+		Octree<Point> octree(center, halfSize, 4);
 		for (int i = 0; i < pointContainer.size(); i++)
 			octree.add(&pointContainer[i], pointContainer[i].position);
 
-		float maxRadius = std::max(m_width, m_height)/ m_subdivision;
+		float maxRadius = std::max(m_width, m_height)/ (float)m_subdivision;
 
 		std::vector<Point*> neighborPoints;
 		for (int i = 0; i < pointContainer.size(); i++)
@@ -660,6 +662,12 @@ namespace Physic {
 
 			neighborPoints.clear();
 		}
+
+		std::vector<glm::vec3> octreeCenters;
+		std::vector<float> octreeHalfSizes;
+		octree.getAllCenterAndSize(octreeCenters, octreeHalfSizes);
+
+		OctreeDrawer::get().addDrawItems(octreeCenters, octreeHalfSizes);
 	}
 
 	void Physic::Flag::update(float deltaTime)

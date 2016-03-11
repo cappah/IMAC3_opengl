@@ -273,6 +273,7 @@ void Project::edit()
 		scene->renderColliders(currentCamera);
 		scene->renderDebugDeferred();
 		scene->renderDebugLights(currentCamera);
+		scene->renderDebugOctrees(currentCamera);
 
 		glDisable(GL_DEPTH_TEST);
 		editor.renderGizmo();
