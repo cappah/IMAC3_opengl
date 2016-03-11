@@ -1,4 +1,0 @@
-{
-	"activeSceneName" : "",
-	"sceneCount" : 0
-}
