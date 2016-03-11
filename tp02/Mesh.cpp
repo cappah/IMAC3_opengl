@@ -2,14 +2,22 @@
 #include "Ray.h"
 #include "Utils.h"
 
-Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage)
+Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage)
 {
-
+	subMeshCount = 1;
+	totalTriangleCount = 0;
+	triangleCount.push_back(0);
+	indexOffsets.push_back(0);
 }
 
-Mesh::Mesh(const std::string& _path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), triangleCount(0), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
+Mesh::Mesh(const std::string& path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
 {
 	path = _path;
+
+	subMeshCount = 1;
+	totalTriangleCount = 0;
+	triangleCount.push_back(0);
+	indexOffsets.push_back(0);
 
 	bool Ret = false;
 	Assimp::Importer Importer;
@@ -32,7 +40,9 @@ Mesh::~Mesh()
 //initialize vbos and vao, based on the informations of the mesh.
 void Mesh::initGl()
 {
-	triangleCount = triangleIndex.size() / 3;
+	totalTriangleCount = triangleIndex.size() / 3;
+	if(triangleCount.size() == 1) //only one mesh, we have to ensure it contains all triangles
+		triangleCount[0] = (vbo_usage & USE_INDEX) ? triangleIndex.size() / 3 : vertices.size() / 9;
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -186,9 +196,19 @@ void Mesh::draw()
 {
 	glBindVertexArray(vao);
 	if (USE_INDEX & vbo_usage)
-		glDrawElements(primitiveType, triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);
+		glDrawElements(primitiveType, totalTriangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);
 	else
 		glDrawArrays(primitiveType, 0, vertices.size() / 3);
+	glBindVertexArray(0);
+}
+
+void Mesh::draw(int idx)
+{
+	glBindVertexArray(vao);
+	if (USE_INDEX & vbo_usage)
+		glDrawElements(primitiveType, triangleCount[idx]*3, GL_UNSIGNED_INT, (void*)(indexOffsets[idx]*sizeof(unsigned int)) );
+	else
+		glDrawArrays(primitiveType, indexOffsets[idx], triangleCount[idx] * 3);
 	glBindVertexArray(0);
 }
 
@@ -223,7 +243,7 @@ void Mesh::computeBoundingBox()
 			topRight.z = vertices[i + 2];
 	}
 
-	origin = - glm::normalize(topRight - bottomLeft) * 0.5f;
+	origin = bottomLeft + (topRight - bottomLeft) * 0.5f;
 }
 
 bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) const
@@ -245,26 +265,35 @@ bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) co
 
 bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 {
-	int numMesh = pScene->mNumMeshes;
-
-	// Initialize the meshes in the scene one by one
-	for (unsigned int i = 0; i <numMesh; i++)
-	{
-		const aiMesh* paiMesh = pScene->mMeshes[i];
-		initMesh(i, paiMesh);
-	}
-
-	return true;
-}
-
-void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
-{
 	triangleIndex.clear();
 	uvs.clear();
 	vertices.clear();
 	normals.clear();
 	tangents.clear();
 
+	totalTriangleCount = 0;
+	triangleCount.clear();
+	indexOffsets.clear();
+	subMeshCount = pScene->mNumMeshes;
+	
+	// Initialize the meshes in the scene one by one
+	for (unsigned int i = 0; i <subMeshCount; i++)
+	{
+		indexOffsets.push_back(totalTriangleCount*3);
+		const aiMesh* paiMesh = pScene->mMeshes[i];
+		initMesh(i, paiMesh);
+		triangleCount.push_back((triangleIndex.size() / 3) - totalTriangleCount);
+		totalTriangleCount += triangleCount.back();
+
+	}
+	initGl(); //don't forget to init mesh for opengl
+	computeBoundingBox();
+
+	return true;
+}
+
+void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
+{
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
 	//bounds init :
@@ -298,7 +327,7 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 		tangents.push_back(pTangent->z);
 
 		//bounds :
-		if (pPos->x > topRight.x)
+		/*if (pPos->x > topRight.x)
 			topRight.x = pPos->x;
 		if (pPos->y > topRight.y)
 			topRight.y = pPos->y;
@@ -312,17 +341,17 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 		if (pPos->z < bottomLeft.z)
 			bottomLeft.z = pPos->z;
 
-		origin = -glm::normalize(topRight - bottomLeft) * 0.5f;
+		origin = -glm::normalize(topRight - bottomLeft) * 0.5f;*/
 	}
 
+	int offsetGlIdx = triangleIndex.size();
 	for (unsigned int i = 0; i < paiMesh->mNumFaces; i++) 
 	{
 		const aiFace& Face = paiMesh->mFaces[i];
 		assert(Face.mNumIndices == 3);
-		triangleIndex.push_back(Face.mIndices[0]);
-		triangleIndex.push_back(Face.mIndices[1]);
-		triangleIndex.push_back(Face.mIndices[2]);
+		triangleIndex.push_back(offsetGlIdx + Face.mIndices[0]);
+		triangleIndex.push_back(offsetGlIdx + Face.mIndices[1]);
+		triangleIndex.push_back(offsetGlIdx + Face.mIndices[2]);
 	}
 
-	initGl();
 }

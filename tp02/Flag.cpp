@@ -57,6 +57,125 @@ namespace Physic {
 
 	}
 
+	Flag::Flag(const Flag& other) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW)
+	{
+		m_material = other.m_material;
+		m_subdivision = other.m_subdivision;
+		m_width = other.m_width;
+		m_height = other.m_height;
+		translation = other.translation;
+		scale = other.scale;
+		m_mass = other.m_mass;
+		m_rigidity = other.m_rigidity;
+		m_viscosity = other.m_viscosity;
+		m_materialName = other.m_materialName;
+
+
+		modelMatrix = other.modelMatrix;
+
+		//don't forget to change the origin to have the right pivot rotation
+		origin = other.origin;
+		m_mesh.origin = other.m_mesh.origin;
+
+		m_mesh.topRight = other.m_mesh.topRight;
+		m_mesh.bottomLeft = other.m_mesh.bottomLeft;
+
+		m_mesh.vertices.clear();
+		m_mesh.normals.clear();
+		m_mesh.uvs.clear();
+		m_mesh.triangleIndex.clear();
+		m_mesh.tangents.clear();
+
+		localPointPositions.clear();
+		pointContainer.clear();
+		linkShape.clear();
+		linkShearing.clear();
+		linkBlending.clear();
+
+		generatePoints();
+		generateMesh();
+
+		m_mesh.initGl();
+
+		initialyzePhysic();
+
+		//cover the mesh with collider : 
+		if (m_entity != nullptr)
+		{
+			auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+			if (collider != nullptr)
+			{
+				collider->coverMesh(m_mesh);
+				collider->setOffsetScale(glm::vec3(1.f, 1.f, 2.f));
+			}
+		}
+	}
+
+	Flag & Flag::operator=(const Flag& other)
+	{
+		Component::operator=(other);
+
+		m_mesh.freeGl();
+		m_mesh.primitiveType = GL_TRIANGLES;
+		m_mesh.vbo_usage = (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS);
+		m_mesh.coordCountByVertex = 3;
+		m_mesh.drawUsage = GL_STREAM_DRAW;
+
+
+		m_material = other.m_material;
+		m_subdivision = other.m_subdivision;
+		m_width = other.m_width;
+		m_height = other.m_height;
+		translation = other.translation;
+		scale = other.scale;
+		m_mass = other.m_mass;
+		m_rigidity = other.m_rigidity;
+		m_viscosity = other.m_viscosity;
+		m_materialName = other.m_materialName;
+
+
+		modelMatrix = other.modelMatrix;
+
+		//don't forget to change the origin to have the right pivot rotation
+		origin = other.origin;
+		m_mesh.origin = other.m_mesh.origin;
+
+		m_mesh.topRight = other.m_mesh.topRight;
+		m_mesh.bottomLeft = other.m_mesh.bottomLeft;
+
+		m_mesh.vertices.clear();
+		m_mesh.normals.clear();
+		m_mesh.uvs.clear();
+		m_mesh.triangleIndex.clear();
+		m_mesh.tangents.clear();
+
+		localPointPositions.clear();
+		pointContainer.clear();
+		linkShape.clear();
+		linkShearing.clear();
+		linkBlending.clear();
+
+		generatePoints();
+		generateMesh();
+
+		m_mesh.initGl();
+
+		initialyzePhysic();
+
+		//cover the mesh with collider : 
+		if (m_entity != nullptr)
+		{
+			auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+			if (collider != nullptr)
+			{
+				collider->coverMesh(m_mesh);
+				collider->setOffsetScale(glm::vec3(1.f, 1.f, 2.f));
+			}
+		}
+
+		return *this;
+	}
+
 	Flag::~Flag()
 	{
 	}
@@ -136,7 +255,8 @@ namespace Physic {
 
 		int lineCount = (m_subdivision - 1);
 		int rowCount = (m_subdivision - 1);
-		m_mesh.triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
+		//m_mesh.triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
+		m_mesh.totalTriangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
 
 		// face 1 : 
 		for (int j = 0; j < m_subdivision; j++)
@@ -188,7 +308,7 @@ namespace Physic {
 
 		// face 1 : 
 		int k = 0;
-		for (int i = 0; i < m_mesh.triangleCount; i++)
+		for (int i = 0; i < m_mesh.totalTriangleCount; i++)
 		{
 			if (i % 2 == 0)
 			{
@@ -215,7 +335,7 @@ namespace Physic {
 		k += m_subdivision;
 
 		// face 2 : 
-		for (int i = 0; i < m_mesh.triangleCount; i++)
+		for (int i = 0; i < m_mesh.totalTriangleCount; i++)
 		{
 			if (i % 2 == 0)
 			{
@@ -239,7 +359,7 @@ namespace Physic {
 			}
 		}
 
-		m_mesh.triangleCount *= 2;
+		m_mesh.totalTriangleCount *= 2;
 
 	}
 
@@ -711,7 +831,7 @@ namespace Physic {
 		return m_mesh;
 	}
 
-	void Flag::applyTransform(const glm::vec3 & _translation, const glm::vec3 & _scale, const glm::quat & _rotation)
+	void Flag::applyTransform(const glm::vec3& _translation, const glm::vec3& _scale, const glm::quat& _rotation)
 	{
 		modelMatrix = glm::translate(glm::mat4(1), _translation) * glm::mat4_cast(_rotation) * glm::scale(glm::mat4(1), _scale);
 
@@ -730,6 +850,8 @@ namespace Physic {
 
 		translation = _translation;
 		rotation = _rotation;
+		if (_scale != scale)
+			setDimensions(_scale.x, _scale.y);
 		scale = _scale;
 
 		synchronizeVisual();
@@ -768,6 +890,13 @@ namespace Physic {
 	void Flag::setViscosity(float viscosity)
 	{
 		m_viscosity = viscosity;
+	}
+
+	void Flag::setDimensions(float width, float height)
+	{
+		m_width = width;
+		m_height = height;
+		regenerateFlag();
 	}
 
 	void Flag::setSubdivision(int subdivision)

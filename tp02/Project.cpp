@@ -381,7 +381,7 @@ void Project::loadDefaultScene(Scene* scene)
 	// mesh renderer for colliders : 
 	MeshRenderer cubeWireFrameRenderer;
 	cubeWireFrameRenderer.setMesh( MeshFactory::get().get("cubeWireframe") );
-	cubeWireFrameRenderer.setMaterial( MaterialFactory::get().get<Material3DObject>("wireframe") );
+	cubeWireFrameRenderer.setMaterial( MaterialFactory::get().get<Material3DObject>("wireframe"), 0);
 
 	//int r = 5;
 	//float omega = 0;
