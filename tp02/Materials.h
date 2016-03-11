@@ -110,6 +110,20 @@ struct MaterialUnlit : public Material3DObject
 	virtual void drawUI() override;
 };
 
+
+struct MaterialInstancedUnlit : public Material3DObject
+{
+	GLuint uniform_color;
+
+	MaterialInstancedUnlit(GLuint _glProgram);
+
+	void setUniform_color(glm::vec3 color);
+
+	virtual void use() override;
+
+	virtual void drawUI() override;
+};
+
 class MaterialSkybox : public Material
 {
 private:

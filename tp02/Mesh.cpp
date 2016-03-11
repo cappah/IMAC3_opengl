@@ -89,6 +89,27 @@ void Mesh::initGl()
 		glBufferData(GL_ARRAY_BUFFER, uvs.size()*sizeof(float), &uvs[0], GL_STATIC_DRAW);
 		glVertexAttribPointer(UVS, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
 	}
+	/*
+	if (USE_INSTANTIATION & vbo_usage)
+	{
+		glGenBuffers(4, vbo_transforms);
+		glEnableVertexAttribArray(INSTANCE_TRANSFORM);
+		glEnableVertexAttribArray(INSTANCE_TRANSFORM+1);
+		glEnableVertexAttribArray(INSTANCE_TRANSFORM+2);
+		glEnableVertexAttribArray(INSTANCE_TRANSFORM+3);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_transforms[0]);
+		glBufferData(GL_ARRAY_BUFFER, transforms.size()*sizeof(float), &transforms[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_transforms[1]);
+		glBufferData(GL_ARRAY_BUFFER, transforms.size()*sizeof(float), &transforms[1], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_transforms[2]);
+		glBufferData(GL_ARRAY_BUFFER, transforms.size()*sizeof(float), &transforms[2], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_transforms[3]);
+		glBufferData(GL_ARRAY_BUFFER, transforms.size()*sizeof(float), &transforms[3], GL_STATIC_DRAW);
+		glVertexAttribPointer(INSTANCE_TRANSFORM, 4, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 4, (void*)0);
+		glVertexAttribPointer(INSTANCE_TRANSFORM+1, 4, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 4, (void*)0);
+		glVertexAttribPointer(INSTANCE_TRANSFORM+2, 4, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 4, (void*)0);
+		glVertexAttribPointer(INSTANCE_TRANSFORM+3, 4, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 4, (void*)0);
+	}*/
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

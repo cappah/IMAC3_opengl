@@ -45,7 +45,7 @@ template<typename T>
 struct OctreeNode
 {
 	OctreeNode* childs[8];
-	AABB* childBouns[8];
+	AABB* childBounds[8];
 
 	//glm::vec3 center;
 	//float halfSize;
@@ -58,24 +58,24 @@ struct OctreeNode
 		for (int i = 0; i < 8; i++)
 			childs[i] = nullptr;
 
-		childBouns[0] = new AABB(center + glm::vec3(0.5f, 0.5f, 0.5f)*halfSize);
+		childBounds[0] = new AABB(_center + glm::vec3(0.5f, 0.5f, 0.5f)*_halfSize, _halfSize*0.5f);
 
-		childBouns[1] = new AABB(center + glm::vec3(0.5f, 0.5f, -0.5f)*halfSize);
-		childBouns[2] = new AABB(center + glm::vec3(0.5f, -0.5f, 0.5f)*halfSize);
-		childBouns[3] = new AABB(center + glm::vec3(-0.5f, 0.5f, 0.5f)*halfSize);
+		childBounds[1] = new AABB(_center + glm::vec3(0.5f, 0.5f, -0.5f)*_halfSize, _halfSize*0.5f);
+		childBounds[2] = new AABB(_center + glm::vec3(0.5f, -0.5f, 0.5f)*_halfSize, _halfSize*0.5f);
+		childBounds[3] = new AABB(_center + glm::vec3(-0.5f, 0.5f, 0.5f)*_halfSize, _halfSize*0.5f);
 
-		childBouns[4] = new AABB(center + glm::vec3(0.5f, -0.5f, -0.5f)*halfSize);
-		childBouns[5] = new AABB(center + glm::vec3(-0.5f, 0.5f, -0.5f)*halfSize);
-		childBouns[6] = new AABB(center + glm::vec3(-0.5f, -0.5f, 0.5f)*halfSize);
+		childBounds[4] = new AABB(_center + glm::vec3(0.5f, -0.5f, -0.5f)*_halfSize, _halfSize*0.5f);
+		childBounds[5] = new AABB(_center + glm::vec3(-0.5f, 0.5f, -0.5f)*_halfSize, _halfSize*0.5f);
+		childBounds[6] = new AABB(_center + glm::vec3(-0.5f, -0.5f, 0.5f)*_halfSize, _halfSize*0.5f);
 
-		childBouns[7] = new AABB(center + glm::vec3(-0.5f, -0.5f, -0.5f)*halfSize);
+		childBounds[7] = new AABB(_center + glm::vec3(-0.5f, -0.5f, -0.5f)*_halfSize, _halfSize*0.5f);
 	}
 
 	~OctreeNode()
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			delete childBouns[i];
+			delete childBounds[i];
 			if(childs[i] != nullptr)
 				delete childs[i];
 		}
@@ -90,7 +90,22 @@ struct OctreeNode
 	T* find(const glm::vec3& position, int currentDepth, int maxDepth);
 	void findAll(const glm::vec3& position, int currentDepth, int maxDepth, std::vector<T*>& results);
 	void findNeighbors(glm::vec3 position, float radius, int currentDepth, int maxDepth, std::vector<T*>& results);
+	void getAllCenterAndSize(std::vector<glm::vec3>& centers, std::vector<float> halfSizes);
 };
+
+template<typename T>
+void OctreeNode<T>::getAllCenterAndSize(std::vector<glm::vec3>& centers, std::vector<float> halfSizes)
+{
+	for (int i = 0; i < childs.size(); i++)
+	{
+		if (childs[i] != nullptr && childs[i]->elements.size() > 0)
+		{
+			centers.push_back(childBounds[i]->center);
+			halfSizes.push_back(childBounds[i]->halfSize);
+		}
+	}
+}
+
 
 //template<typename T>
 //bool OctreeNode<T>::contains(const glm::vec3& point)
@@ -118,7 +133,7 @@ struct OctreeNode
 //}
 
 template<typename T>
-void OctreeNode<T>::add(T* element, const glm::vec3& positon, int currentDepth, int maxDepth)
+void OctreeNode<T>::add(T* element, const glm::vec3& position, int currentDepth, int maxDepth)
 {
 	//max depth reached, we add the element to the current node : 
 	if (currentDepth >= maxDepth)
@@ -128,15 +143,12 @@ void OctreeNode<T>::add(T* element, const glm::vec3& positon, int currentDepth, 
 	}
 
 	//max depth not reached, we test childs :
-	glm::vec3 nodeCenter = currentNode->center;
-	float nodeHalfSize = currentNode->halfSize;
-
 	for (int i = 0; i < 8; i++)
 	{
 		if ( childBouns[i]->contains(position) )
 		{
 			if (childs[i] == nullptr)
-				childs[i] = new OctreeNode<T>(childBouns[i]->center, childBouns[i]->halfSize);
+				childs[i] = new OctreeNode<T>(childBounds[i]->center, childBounds[i]->halfSize);
 
 			childs[i]->add(element, position, ++currentDepth, maxDepth);
 		}
@@ -144,7 +156,7 @@ void OctreeNode<T>::add(T* element, const glm::vec3& positon, int currentDepth, 
 	//none of childs contains the current position, and max depth not reached (shouldn't happend for insertion based only on position...), 
 	//we add the element to the current node :
 	elements.push_back(element);
-	positions.push_back(positon);
+	positions.push_back(position);
 }
 
 
@@ -196,7 +208,7 @@ void OctreeNode<T>::remove(T* element, int currentDepth, int maxDepth)
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			if (childBouns[i]->contains(element))
+			if (childBounds[i]->contains(element))
 			{
 				childs[i]->remove(element, position, ++currentDepth, maxDepth);
 			}
@@ -223,7 +235,7 @@ T*  OctreeNode<T>::find(const glm::vec3& position, int currentDepth, int maxDept
 
 	for (int i = 0; i < 8; i++)
 	{
-		if (childBouns[i]->contains(position))
+		if (childBounds[i]->contains(position))
 		{
 			return childs[i]->find(position, ++currentDepth, maxDepth);
 		}
@@ -253,7 +265,7 @@ void  OctreeNode<T>::findAll(const glm::vec3& position, int currentDepth, int ma
 
 	for (int i = 0; i < 8; i++)
 	{
-		if (childBouns[i]->contains(position))
+		if (childBounds[i]->contains(position))
 		{
 			return childs[i]->findAll(position, ++currentDepth, maxDepth, results);
 		}
@@ -278,14 +290,11 @@ void OctreeNode<T>::findNeighbors(glm::vec3 position, float radius, int currentD
 	}
 
 	//max depth not reached, we test childs :
-	glm::vec3 nodeCenter = currentNode->center;
-	float nodeHalfSize = currentNode->halfSize;
-
 	for (int i = 0; i < 8; i++)
 	{
-		if (childBouns[i]->containedIn(position, radius))
+		if (childBounds[i]->containedIn(position, radius))
 		{
-			return childs[i]->findNeighbors(position, ++currentDepth, maxDepth, results);
+			return childs[i]->findNeighbors(position, radius, ++currentDepth, maxDepth, results);
 		}
 	}
 	//none of childs contains the current position, and max depth not reached (shouldn't happend for insertion based only on position...) :
@@ -330,19 +339,21 @@ public:
 	float getHalfSize() const;
 	//center of the root : 
 	glm::vec3 getCenter() const;
+
+	void getAllCenterAndSize(std::vector<glm::vec3>& centers, std::vector<float> halfSizes);
 };
 
 
 template<typename T>
 Octree<T>::Octree(glm::vec3 center, float halfSize, int maxDepth) : m_maxDepth(maxDepth)
 {
-	m_root = new OctreeNode(center, halfSize);
+	m_root = new OctreeNode<T>(center, halfSize);
 }
 
 template<typename T>
 Octree<T>::~Octree()
 {
-	delete root;
+	delete m_root;
 }
 
 template<typename T>
@@ -381,7 +392,7 @@ template<typename T>
 const std::vector<T*>& Octree<T>::findNeighbors(glm::vec3 position, float radius)
 {
 	std::vector<T*> results;
-	m_root->findNeighbors(position, 0, m_maxDepth, results);
+	m_root->findNeighbors(position, radius, 0, m_maxDepth, results);
 	return results;
 }
 
@@ -409,4 +420,51 @@ glm::vec3 Octree<T>::getCenter() const
 	else
 		return glm::vec3(0, 0, 0);
 }
+
+template<typename T>
+void Octree<T>::getAllCenterAndSize(std::vector<glm::vec3>& centers, std::vector<float> halfSizes)
+{
+	centers.push_back(childBounds[i]->center);
+	halfSizes.push_back(childBounds[i]->halfSize);
+
+	for (int i = 0; i < childs.size(); i++)
+	{
+		if (childs[i] != nullptr && childs[i]->elements.size() > 0)
+		{
+			centers.push_back(childBounds[i]->center);
+			halfSizes.push_back(childBounds[i]->halfSize);
+		}
+	}
+
+	for (int i = 0; i < childs.size(); i++)
+	{
+		childs[i]->getAllCenterAndSize(centers, halfSizes);
+	}
+}
+
+
+class OctreeDrawer
+{
+	enum VboTypes { VERTICES = 0, NORMALS, UVS, POSITIONS };
+
+	std::vector<int> triangleIndex;
+	std::vector<float> vertices;
+	std::vector<float> normals;
+	std::vector<float> uvs;
+	std::vector<float> positions;
+
+	GLuint vbo_index;
+	GLuint vbo_vertices;
+	GLuint vbo_uvs;
+	GLuint vbo_normals;
+	GLuint vbo_pos;
+	GLuint vao;
+
+	OctreeDrawer();
+	void initGl();
+	void render(const glm::mat4& projection, const glm::mat4& view);
+	void draw();
+
+};
+
 

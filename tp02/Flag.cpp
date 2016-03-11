@@ -11,8 +11,8 @@ namespace Physic {
 	}
 
 	Flag::Flag(Material3DObject* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1),
-		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f),
-		m_materialName("default")
+		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f), m_autoCollisionDistance(0.01f),
+		m_materialName("default"), m_computeAutoCollision(false)
 	{
 		modelMatrix = glm::mat4(1);
 
@@ -69,6 +69,8 @@ namespace Physic {
 		m_rigidity = other.m_rigidity;
 		m_viscosity = other.m_viscosity;
 		m_materialName = other.m_materialName;
+		m_autoCollisionDistance = other.m_autoCollisionDistance;
+		m_computeAutoCollision = other.m_computeAutoCollision;
 
 
 		modelMatrix = other.modelMatrix;
@@ -132,7 +134,8 @@ namespace Physic {
 		m_rigidity = other.m_rigidity;
 		m_viscosity = other.m_viscosity;
 		m_materialName = other.m_materialName;
-
+		m_autoCollisionDistance = other.m_autoCollisionDistance;
+		m_computeAutoCollision = other.m_computeAutoCollision;
 
 		modelMatrix = other.modelMatrix;
 
@@ -597,6 +600,8 @@ namespace Physic {
 		rootComponent["mass"] = m_mass;
 		rootComponent["viscosity"] = m_viscosity;
 		rootComponent["rigidity"] = m_rigidity;
+		rootComponent["autoCollisionDistance"] = m_autoCollisionDistance;
+		rootComponent["computeAutoCollision"] = m_computeAutoCollision;
 	}
 
 	void Flag::load(Json::Value & rootComponent)
@@ -619,9 +624,42 @@ namespace Physic {
 		m_mass = rootComponent.get("mass", 0.1).asFloat();
 		m_viscosity = rootComponent.get("viscosity", 0.01).asFloat();
 		m_rigidity = rootComponent.get("rigidity", 0.001).asFloat();
+		m_autoCollisionDistance = rootComponent.get("autoCollisionDistance", 0.01f).asFloat();
+		m_computeAutoCollision = rootComponent.get("computeAutoCollision", false).asBool();
 
 		//no need to save physic infos because we rebuild it in initialisation
 		regenerateFlag();
+	}
+
+	void Flag::computeAutoCollision()
+	{
+		glm::vec3 bottomLeft = m_mesh.bottomLeft;
+		glm::vec3 topRight = m_mesh.topRight;
+		glm::vec3 center = bottomLeft + (topRight - bottomLeft)*0.5f;
+		float halfSize = std::max(topRight.x - bottomLeft.x, std::max(topRight.y - bottomLeft.y, topRight.z - bottomLeft.z) );
+		Octree<Point> octree(center, halfSize, 3);
+		for (int i = 0; i < pointContainer.size(); i++)
+			octree.add(&pointContainer[i], pointContainer[i].position);
+
+		float maxRadius = std::max(m_width, m_height)/ m_subdivision;
+
+		std::vector<Point*> neighborPoints;
+		for (int i = 0; i < pointContainer.size(); i++)
+		{
+			neighborPoints = octree.findNeighbors(pointContainer[i].position, maxRadius);
+			for (int j = 0; j < neighborPoints.size(); j++)
+			{
+				glm::vec3 pointToNeightbor = neighborPoints[j]->position - pointContainer[i].position;
+				float distancePointToNeightbor = glm::length(pointToNeightbor) < m_autoCollisionDistance;
+				if (distancePointToNeightbor)
+				{
+					glm::vec3 pushBackForce = glm::normalize(pointToNeightbor) * (1.f - distancePointToNeightbor / m_autoCollisionDistance);
+					neighborPoints[j]->setForce(pushBackForce);
+				}
+			}
+
+			neighborPoints.clear();
+		}
 	}
 
 	void Physic::Flag::update(float deltaTime)
@@ -642,8 +680,9 @@ namespace Physic {
 		//blending : 
 		for (int i = 0; i < linkBlending.size(); i++)
 			computeLinks(deltaTime, &linkBlending[i]);
-			
-			
+		
+		if(m_computeAutoCollision)
+			computeAutoCollision();
 
 		synchronizeVisual();
 	}
@@ -709,7 +748,7 @@ namespace Physic {
 		if (d < 0.00000001f)
 			return;
 
-		float f = link->k * (1.f - link->l / d);
+		float f = -link->k * (1.f - d / link->l);
 		if (std::abs(f) < 0.00000001f)
 			return;
 
@@ -767,6 +806,9 @@ namespace Physic {
 
 		if (ImGui::Button("restart simulation"))
 			restartSimulation();
+
+		if (ImGui::RadioButton("computeAutoCollision", m_computeAutoCollision))
+			m_computeAutoCollision = !m_computeAutoCollision;
 
 		char tmpMaterialName[20];
 		m_materialName.copy(tmpMaterialName, m_materialName.size());

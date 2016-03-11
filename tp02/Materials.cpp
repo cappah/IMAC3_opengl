@@ -244,6 +244,30 @@ void MaterialUnlit::drawUI()
 	//nothing
 }
 
+
+//////////////////////////////////////////////////
+
+MaterialInstancedUnlit::MaterialInstancedUnlit(GLuint _glProgram) : Material3DObject(_glProgram)
+{
+	uniform_color = glGetUniformLocation(glProgram, "Color");
+}
+
+void MaterialInstancedUnlit::setUniform_color(glm::vec3 color)
+{
+	glUniform3fv(uniform_color, 1, glm::value_ptr(color));
+}
+
+void MaterialInstancedUnlit::use()
+{
+	//bind shaders
+	glUseProgram(glProgram);
+}
+
+void MaterialInstancedUnlit::drawUI()
+{
+	//nothing
+}
+
 ///////////////////////////////////////////////
 
 MaterialSkybox::MaterialSkybox() : Material(ProgramFactory::get().get("defaultSkybox")), textureDiffuse(CubeTextureFactory::get().get("default"))

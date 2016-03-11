@@ -18,6 +18,8 @@
 #include "Materials.h"
 #include "Component.h"
 
+#include "Octree.h"
+
 namespace Physic {
 
 	class Flag : public Component
@@ -46,6 +48,10 @@ namespace Physic {
 		float m_mass;
 		float m_viscosity;
 		float m_rigidity;
+
+		//for auto collisions : 
+		float m_autoCollisionDistance;
+		bool m_computeAutoCollision;
 
 	public:
 		Flag();
@@ -119,6 +125,8 @@ namespace Physic {
 		void computeLinks(float deltaTime, Link* link);
 		//apply physic simulation on points
 		void computePoints(float deltaTime, Point* point);
+
+		void computeAutoCollision();
 
 	};
 

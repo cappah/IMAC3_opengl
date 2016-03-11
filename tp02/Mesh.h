@@ -44,8 +44,8 @@ struct Mesh
 
 	std::string path;
 
-	enum Vbo_usage { USE_INDEX = 0x01, USE_VERTICES = 0x02, USE_UVS = 0x04, USE_NORMALS = 0x08 , USE_TANGENTS = 0x010};
-	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, INDEX };
+	enum Vbo_usage { USE_INDEX = 1 << 0, USE_VERTICES = 1 << 1, USE_UVS = 1 << 2, USE_NORMALS = 1 << 3, USE_TANGENTS = 1 << 4 /* , USE_INSTANTIATION = 1 << 5 */};
+	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, INDEX, /* INSTANCE_TRANSFORM */};
 
 	int subMeshCount;
 	int totalTriangleCount;
@@ -57,12 +57,14 @@ struct Mesh
 	std::vector<float> vertices;
 	std::vector<float> normals;
 	std::vector<float> tangents;
+	//std::vector<glm::mat4> transforms;
 
 	GLuint vbo_index;
 	GLuint vbo_vertices;
 	GLuint vbo_uvs;
 	GLuint vbo_normals;
 	GLuint vbo_tangents;
+	//GLuint vbo_transforms[4];
 	GLuint vao;
 
 	unsigned int vbo_usage;
