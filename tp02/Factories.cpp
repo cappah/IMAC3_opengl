@@ -1,4 +1,6 @@
 #include "Factories.h"
+//forwards : 
+#include "Utils.h"
 
 ProgramFactory::ProgramFactory()
 {
@@ -274,7 +276,27 @@ void TextureFactory::drawUI()
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 	ImGui::PushItemWidth(180);
+
+	float posAutoCompletionX = ImGui::GetCursorPosX() + ImGui::GetWindowPos().x;
 	ImGui::InputText("path", path, 50);
+	if (ImGui::IsItemActive())
+		AutoCompletion::get().setIsOpen(true);		
+
+	float posAutoCompletionY = ImGui::GetCursorPosY() + ImGui::GetWindowPos().y;
+
+	ImGui::SetNextWindowPos(ImVec2(posAutoCompletionX, posAutoCompletionY));
+	//ImGui::SetNextWindowPos(ImGui::GetCursorPos());
+	if(AutoCompletion::get().getIsOpen())
+	{
+		ImGui::BeginTooltip();
+			AutoCompletion::get().clearWords();
+			AutoCompletion::get().addWord("toto");
+			AutoCompletion::get().addWord("titi");
+			AutoCompletion::get().apply(path);
+			AutoCompletion::get().setIsOpen(false);
+		ImGui::EndTooltip();
+	}
+
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 	if (ImGui::SmallButton("add"))

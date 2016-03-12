@@ -7,7 +7,70 @@
 #include <Windows.h>
 #endif // _WIN32 
 
+void AutoCompletion::addWord(std::string word)
+{
+	char* newWord = new char[word.size()+1];
+	std::strcpy(newWord, word.c_str());
+	m_words.push_back(newWord);
+}
 
+void AutoCompletion::clearWords()
+{
+	for (int i = 0; i < m_words.size(); i++)
+		delete[] (m_words[i]);
+
+	m_words.clear();
+}
+
+AutoCompletion::AutoCompletion(): m_currentItem(0)
+{
+
+}
+
+
+void AutoCompletion::apply(std::string& result)
+{
+	//char** words = new char*[_words.size()];
+	//for (int i = 0; i < _words.size(); i++)
+	//{
+	//	words[i] = new char[_words[i].size()+1];
+	//	std::strcpy(words[i], _words[i].c_str());
+	//	//_words[i].copy(words[i], _words[i].size());
+	//}
+
+	if (ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size()))
+	{
+		result = m_words[m_currentItem];
+	}
+
+	//for (int i = 0; i < _words.size(); i++)
+	//	delete[] words[i];
+	//delete[] words;
+}
+
+
+void AutoCompletion::apply(char* result)
+{
+	if (ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size()))
+	{
+		std::strcmp(result, m_words[m_currentItem]);
+	}
+}
+
+void AutoCompletion::toggleOpen()
+{
+	m_isOpen = !m_isOpen;
+}
+
+bool AutoCompletion::getIsOpen()
+{
+	return m_isOpen;
+}
+
+void AutoCompletion::setIsOpen(bool state)
+{
+	m_isOpen = state;
+}
 
 glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, BaseCamera& camera)
 {

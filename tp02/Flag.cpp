@@ -608,6 +608,9 @@ namespace Physic {
 		rootComponent["rigidity"] = m_rigidity;
 		rootComponent["autoCollisionDistance"] = m_autoCollisionDistance;
 		rootComponent["computeAutoCollision"] = m_computeAutoCollision;
+		rootComponent["autoCollisionViscosity"] = m_autoCollisionViscosity;
+		rootComponent["autoCollisionRigidity"] = m_autoCollisionRigidity;
+
 	}
 
 	void Flag::load(Json::Value & rootComponent)
@@ -632,6 +635,8 @@ namespace Physic {
 		m_rigidity = rootComponent.get("rigidity", 0.001).asFloat();
 		m_autoCollisionDistance = rootComponent.get("autoCollisionDistance", 0.01f).asFloat();
 		m_computeAutoCollision = rootComponent.get("computeAutoCollision", false).asBool();
+		m_autoCollisionRigidity = rootComponent.get("autoCollisionRigidity", 0.01f).asFloat();
+		m_autoCollisionViscosity = rootComponent.get("autoCollisionViscosity", 0.01f).asFloat();
 
 		//no need to save physic infos because we rebuild it in initialisation
 		regenerateFlag();

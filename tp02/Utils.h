@@ -101,3 +101,34 @@ void addDirectory(const std::string& name, const std::string& path);
 
 std::vector<std::string> splitString(const std::string& s, char delim);
 std::vector<std::string> splitString(const std::string& s, char delim01, char delim02);
+
+class AutoCompletion
+{
+private:
+	int m_currentItem;
+	std::vector<const char*> m_words;
+	bool m_isOpen;
+
+public:
+	void addWord(std::string word);
+	void clearWords();
+	void apply(std::string& result);
+	void apply(char* result);
+	void toggleOpen();
+	bool getIsOpen();
+	void setIsOpen(bool state);
+
+private:
+	AutoCompletion();
+public:
+	inline static AutoCompletion& get()
+	{
+		static AutoCompletion instance;
+
+		return instance;
+	}
+
+
+	AutoCompletion(const AutoCompletion& other) = delete;
+	void operator=(const AutoCompletion& other) = delete;
+};
