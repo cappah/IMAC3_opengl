@@ -13,7 +13,7 @@ namespace Physic {
 	}
 
 	Flag::Flag(Material3DObject* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1),
-		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f), m_autoCollisionDistance(0.01f),
+		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f), m_autoCollisionDistance(0.01f), m_autoCollisionRigidity(0.01f), m_autoCollisionViscosity(0.001f),
 		m_materialName("default"), m_computeAutoCollision(false)
 	{
 		modelMatrix = glm::mat4(1);
@@ -73,6 +73,8 @@ namespace Physic {
 		m_materialName = other.m_materialName;
 		m_autoCollisionDistance = other.m_autoCollisionDistance;
 		m_computeAutoCollision = other.m_computeAutoCollision;
+		m_autoCollisionRigidity = other.m_autoCollisionRigidity;
+		m_autoCollisionViscosity = other.m_autoCollisionViscosity;
 
 
 		modelMatrix = other.modelMatrix;
@@ -138,6 +140,8 @@ namespace Physic {
 		m_materialName = other.m_materialName;
 		m_autoCollisionDistance = other.m_autoCollisionDistance;
 		m_computeAutoCollision = other.m_computeAutoCollision;
+		m_autoCollisionRigidity = other.m_autoCollisionRigidity;
+		m_autoCollisionViscosity = other.m_autoCollisionViscosity;
 
 		modelMatrix = other.modelMatrix;
 
@@ -639,35 +643,45 @@ namespace Physic {
 		glm::vec3 topRight = m_mesh.topRight;
 		glm::vec3 center = bottomLeft + (topRight - bottomLeft)*0.5f;
 		float halfSize = std::max(topRight.x - bottomLeft.x, std::max(topRight.y - bottomLeft.y, topRight.z - bottomLeft.z) )*0.5f;
-		Octree<Point> octree(center, halfSize, 4);
+		Octree<Point> octree(center, halfSize, 2);
 		for (int i = 0; i < pointContainer.size(); i++)
 			octree.add(&pointContainer[i], pointContainer[i].position);
 
+		//draw octree : 
+		std::vector<glm::vec3> octreeCenters;
+		std::vector<float> octreeHalfSizes;
+		octree.getAllCenterAndSize(octreeCenters, octreeHalfSizes);
+		OctreeDrawer::get().addDrawItems(octreeCenters, octreeHalfSizes);
+
 		float maxRadius = std::max(m_width, m_height)/ (float)m_subdivision;
+		maxRadius *= 2.f;
 
 		std::vector<Point*> neighborPoints;
 		for (int i = 0; i < pointContainer.size(); i++)
 		{
-			neighborPoints = octree.findNeighbors(pointContainer[i].position, maxRadius);
+			octree.findNeighbors(pointContainer[i].position, maxRadius, neighborPoints);
 			for (int j = 0; j < neighborPoints.size(); j++)
 			{
 				glm::vec3 pointToNeightbor = neighborPoints[j]->position - pointContainer[i].position;
-				float distancePointToNeightbor = glm::length(pointToNeightbor) < m_autoCollisionDistance;
-				if (distancePointToNeightbor)
+				float distancePointToNeightbor = glm::length(pointToNeightbor);
+				if (distancePointToNeightbor < m_autoCollisionDistance && (neighborPoints[j] != &pointContainer[i]))
 				{
-					glm::vec3 pushBackForce = glm::normalize(pointToNeightbor) * (1.f - distancePointToNeightbor / m_autoCollisionDistance);
-					neighborPoints[j]->setForce(pushBackForce);
+					glm::vec3 pushBackForce = glm::normalize(pointToNeightbor) * m_autoCollisionRigidity*(1.f - distancePointToNeightbor / m_autoCollisionDistance)*(1.f - distancePointToNeightbor / m_autoCollisionDistance);
+					glm::vec3 breakForce = m_autoCollisionViscosity*(neighborPoints[j]->vitesse - pointContainer[i].vitesse);
+
+					neighborPoints[j]->setForce(pushBackForce - breakForce);
+					pointContainer[i].setForce(-pushBackForce + breakForce);
 				}
 			}
 
 			neighborPoints.clear();
+			octree.remove(&pointContainer[i], pointContainer[i].position);
 		}
+	}
 
-		std::vector<glm::vec3> octreeCenters;
-		std::vector<float> octreeHalfSizes;
-		octree.getAllCenterAndSize(octreeCenters, octreeHalfSizes);
-
-		OctreeDrawer::get().addDrawItems(octreeCenters, octreeHalfSizes);
+	void Physic::Flag::computeGlobalBreak(float deltaTime, Point* point)
+	{
+		point->force -= m_viscosity*(point->vitesse);
 	}
 
 	void Physic::Flag::update(float deltaTime)
@@ -691,6 +705,9 @@ namespace Physic {
 		
 		if(m_computeAutoCollision)
 			computeAutoCollision();
+
+		//for (int i = 0; i < pointContainer.size(); i++)
+		//	computeGlobalBreak(deltaTime, &pointContainer[i]);
 
 		synchronizeVisual();
 	}
@@ -818,6 +835,10 @@ namespace Physic {
 		if (ImGui::RadioButton("computeAutoCollision", m_computeAutoCollision))
 			m_computeAutoCollision = !m_computeAutoCollision;
 
+		ImGui::InputFloat("autoCollisionDistance", &m_autoCollisionDistance);
+		ImGui::InputFloat("autoCollisionRigidity", &m_autoCollisionRigidity);
+		ImGui::InputFloat("autoCollisionViscosity", &m_autoCollisionViscosity);
+
 		char tmpMaterialName[20];
 		m_materialName.copy(tmpMaterialName, m_materialName.size());
 		tmpMaterialName[m_materialName.size()] = '\0';
@@ -832,7 +853,7 @@ namespace Physic {
 			}
 		}
 
-		m_material->drawUI();
+		//m_material->drawUI();
 	}
 
 	void Flag::applyForce(const glm::vec3 & force)

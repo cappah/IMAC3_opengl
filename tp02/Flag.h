@@ -52,6 +52,8 @@ namespace Physic {
 		//for auto collisions : 
 		float m_autoCollisionDistance;
 		bool m_computeAutoCollision;
+		float m_autoCollisionRigidity;
+		float m_autoCollisionViscosity;
 
 	public:
 		Flag();
@@ -125,6 +127,7 @@ namespace Physic {
 		void computeLinks(float deltaTime, Link* link);
 		//apply physic simulation on points
 		void computePoints(float deltaTime, Point* point);
+		void computeGlobalBreak(float deltaTime, Point* point);
 
 		void computeAutoCollision();
 
