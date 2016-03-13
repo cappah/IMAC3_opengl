@@ -1,4 +1,7 @@
 #include "imgui_extension.h"
+//forwards : 
+#include "dirent.h"
+#include "Utils.h"
 
 namespace ImGui {
 
@@ -145,6 +148,80 @@ namespace ImGui {
 		}
 
 		return opened;
+	}
+
+	bool InputFilePath(const char* label, char* entry, size_t stringSize)
+	{
+		bool shouldCloseAutocompletionWindow = false;
+		bool resetItemSelected = false;
+		float posAutoCompletionX = ImGui::GetCursorPosX() + ImGui::GetWindowPos().x;
+		
+		
+		bool textEntered = ImGui::InputText(label, entry, stringSize, 0&(ImGuiInputTextFlags_AutoSelectAll));
+		if (textEntered) {
+			AutoCompletion::get().setIsActive(true);
+			AutoCompletion::get().setHasFocus(false);
+		}
+
+		if (!ImGui::IsItemActive()) {
+			if (!AutoCompletion::get().getItemSelected())
+			{
+				shouldCloseAutocompletionWindow = true;
+				AutoCompletion::get().setIsActive(false);
+			}
+		}
+
+		if (AutoCompletion::get().getItemSelected()) {
+			ImGui::SetKeyboardFocusHere(-1);
+			resetItemSelected = true;
+		}
+
+		float posAutoCompletionY = ImGui::GetCursorPosY() + ImGui::GetWindowPos().y;
+
+		ImGui::SetNextWindowPos(ImVec2(posAutoCompletionX, posAutoCompletionY));
+		if (AutoCompletion::get().getIsOpen())
+		{
+			ImGui::BeginTooltip();
+			
+			std::string path;
+			std::string filename;
+			std::size_t splitLocation = splitPathFileName(entry, path, filename);
+			if (path == "")
+				path = "." + path;
+			else
+				path += "/";
+
+			std::vector<std::string> fileAndDirNames = getAllFileAndDirNames( path );
+			AutoCompletion::get().clearWords();
+
+			for (auto& name : fileAndDirNames) {
+				if (name.compare(0, filename.size(), filename)==0 || filename.size() == 0) {
+					AutoCompletion::get().addWord(name);
+				}
+			}
+
+			bool autocompletionApplied = AutoCompletion::get().apply(filename);
+			if (autocompletionApplied)
+			{
+				if (path[0] == '.')
+					entry[splitLocation] = '\0';
+				else {
+					entry[splitLocation] = '/';
+					entry[splitLocation+1] = '\0';
+				}
+				std::strcat(entry, filename.c_str());
+			}
+
+			AutoCompletion::get().setIsOpen(false);
+			ImGui::EndTooltip();
+		}
+
+		AutoCompletion::get().setIsOpen(!shouldCloseAutocompletionWindow);
+		if(resetItemSelected)
+			AutoCompletion::get().setItemSelected(false);
+
+		return textEntered;
+
 	}
 
 }

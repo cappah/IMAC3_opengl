@@ -20,15 +20,17 @@ void AutoCompletion::clearWords()
 		delete[] (m_words[i]);
 
 	m_words.clear();
+
+	//m_currentItem = 0;
 }
 
-AutoCompletion::AutoCompletion(): m_currentItem(0)
+AutoCompletion::AutoCompletion(): m_currentItem(0), m_upKey(false), m_downKey(false)
 {
 
 }
 
 
-void AutoCompletion::apply(std::string& result)
+bool AutoCompletion::apply(std::string& result)
 {
 	//char** words = new char*[_words.size()];
 	//for (int i = 0; i < _words.size(); i++)
@@ -38,28 +40,93 @@ void AutoCompletion::apply(std::string& result)
 	//	//_words[i].copy(words[i], _words[i].size());
 	//}
 
-	if (ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size()))
-	{
-		result = m_words[m_currentItem];
-	}
+
+	//if (ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size()))
+	//{
+	//	result = m_words[m_currentItem];
+	//}
 
 	//for (int i = 0; i < _words.size(); i++)
 	//	delete[] words[i];
 	//delete[] words;
+
+	if (!ImGui::GetIO().KeysDown[GLFW_KEY_DOWN]) {
+		m_downKey = false;
+	}
+	if (!ImGui::GetIO().KeysDown[GLFW_KEY_UP]) {
+		m_upKey = false;
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_DOWN] && !m_downKey) {
+		m_hasFocus = true;
+		m_downKey = true;
+		m_currentItem++;
+		if(m_words.size())
+			m_currentItem %= m_words.size();
+	}
+	else if (ImGui::GetIO().KeysDown[GLFW_KEY_UP] && !m_upKey) {
+		m_hasFocus = true;
+		m_upKey = true;
+		m_currentItem = m_currentItem > 0 ? (m_currentItem - 1) : m_words.size() - 1;
+	}
+
+	if(m_words.size() > 0)
+		ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size());
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_TAB] || ImGui::GetIO().KeysDown[GLFW_KEY_ENTER]) {
+		m_hasFocus = false;
+		m_itemSelected = true;
+		if(m_currentItem >=0 && m_currentItem < m_words.size())
+			result = m_words[m_currentItem];
+		return true;
+	}
+
+	return false;	
 }
 
 
-void AutoCompletion::apply(char* result)
+bool AutoCompletion::apply(char* result)
 {
-	if (ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size()))
-	{
-		std::strcmp(result, m_words[m_currentItem]);
+
+	if (!ImGui::GetIO().KeysDown[GLFW_KEY_DOWN]) {
+		m_downKey = false;
 	}
+	if (!ImGui::GetIO().KeysDown[GLFW_KEY_UP]) {
+		m_upKey = false;
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_DOWN] && !m_downKey) {
+		m_hasFocus = true;
+		m_downKey = true;
+		m_currentItem++;
+		if (m_words.size())
+			m_currentItem %= m_words.size();
+	}
+	else if (ImGui::GetIO().KeysDown[GLFW_KEY_UP] && !m_upKey) {
+		m_hasFocus = true;
+		m_upKey = true;
+		m_currentItem = m_currentItem > 0 ? (m_currentItem - 1) : m_words.size() - 1;
+	}
+
+	ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size());
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_TAB] || ImGui::GetIO().KeysDown[GLFW_KEY_ENTER]) {
+		m_hasFocus = false;
+		m_itemSelected = true;
+		std::strcmp(result, m_words[m_currentItem]);
+		if (m_currentItem >= 0 && m_currentItem < m_words.size())
+			return true;
+	}
+	return false;
 }
 
 void AutoCompletion::toggleOpen()
 {
 	m_isOpen = !m_isOpen;
+	if (m_isOpen == false)
+		m_autocompletionJustClosed = true;
+	else
+		m_autocompletionJustClosed = false;
 }
 
 bool AutoCompletion::getIsOpen()
@@ -70,6 +137,47 @@ bool AutoCompletion::getIsOpen()
 void AutoCompletion::setIsOpen(bool state)
 {
 	m_isOpen = state;
+	if (m_isOpen == false)
+		m_autocompletionJustClosed = true;
+	else
+		m_autocompletionJustClosed = false;
+}
+
+bool AutoCompletion::isAutocompletionJustClosed() const
+{
+	return m_autocompletionJustClosed;
+}
+
+bool AutoCompletion::getIsActive() const
+{
+	return m_isActive;
+}
+
+void AutoCompletion::setIsActive(bool state)
+{
+	m_isActive = state;
+	m_itemSelected = false;
+}
+
+bool AutoCompletion::getHasFocus() const
+{
+	return m_hasFocus;
+}
+
+void AutoCompletion::setHasFocus(bool state)
+{
+	m_hasFocus = state;
+	m_itemSelected = false;
+}
+
+bool AutoCompletion::getItemSelected() const
+{
+	return m_itemSelected;
+}
+
+void AutoCompletion::setItemSelected(bool state)
+{
+	m_itemSelected = state;
 }
 
 glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, BaseCamera& camera)
@@ -316,6 +424,30 @@ std::vector<std::string> getAllDirNames(const std::string& path)
 	return dirNames;
 }
 
+std::vector<std::string> getAllFileAndDirNames(const std::string& path)
+{
+	std::vector<std::string> fileAndDirNames;
+
+	DIR *dir;
+	struct dirent *ent;
+
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			fileAndDirNames.push_back(ent->d_name);
+		}
+		closedir(dir);
+	}
+	else {
+		//could not open directory
+		std::cout << "error, can't open directory at path : " << path << std::endl;
+	}
+
+	return fileAndDirNames;
+}
+
+
 bool directoryExists(const std::string& name, const std::string& path)
 {
 	DIR *dir;
@@ -412,6 +544,21 @@ std::vector<std::string> splitString(const std::string& s, char delim01, char de
 	}
 
 	return elements;
+}
+
+std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& path, std::string& filename)
+{
+	std::size_t pathLength = pathAndFileName.find_last_of("/\\");
+	if (pathLength == std::string::npos) {
+		pathLength = 0;
+		path = "";
+		filename = pathAndFileName;
+	}
+	else {
+		path = pathAndFileName.substr(0, pathLength);
+		filename = pathAndFileName.substr(pathLength + 1);
+	}
+	return pathLength;
 }
 
 namespace Physic{

@@ -8,6 +8,7 @@
 #include "glm/mat4x4.hpp" // glm::mat4
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
+#include "GLFW/glfw3.h"
 
 #include <vector>
 #include <map>
@@ -90,8 +91,10 @@ inline void resize2DArray(std::vector<T>& container, int width, int height, int 
 	}
 }
 
-//fill a vector with all direcctories's names in the directory at given path.
+//fill a vector with all directories's names in the directory at given path.
 std::vector<std::string> getAllDirNames(const std::string& path);
+//fill a vector with all files' and directories' names in the directory at given path.
+std::vector<std::string> getAllFileAndDirNames(const std::string& path);
 
 bool directoryExists(const std::string& path);
 bool directoryExists(const std::string& name, const std::string& path);
@@ -102,21 +105,36 @@ void addDirectory(const std::string& name, const std::string& path);
 std::vector<std::string> splitString(const std::string& s, char delim);
 std::vector<std::string> splitString(const std::string& s, char delim01, char delim02);
 
+std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& path, std::string& filename);
+
 class AutoCompletion
 {
 private:
 	int m_currentItem;
 	std::vector<const char*> m_words;
 	bool m_isOpen;
+	bool m_downKey;
+	bool m_upKey;
+	bool m_autocompletionJustClosed;
+	bool m_isActive;
+	bool m_hasFocus;
+	bool m_itemSelected;
 
 public:
 	void addWord(std::string word);
 	void clearWords();
-	void apply(std::string& result);
-	void apply(char* result);
+	bool apply(std::string& result);
+	bool apply(char* result);
 	void toggleOpen();
 	bool getIsOpen();
 	void setIsOpen(bool state);
+	bool isAutocompletionJustClosed() const;
+	bool getIsActive() const;
+	void setIsActive(bool state);
+	bool getHasFocus() const;
+	void setHasFocus(bool state);
+	bool getItemSelected() const;
+	void setItemSelected(bool state);
 
 private:
 	AutoCompletion();

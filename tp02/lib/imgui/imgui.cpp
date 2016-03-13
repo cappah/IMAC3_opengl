@@ -7277,7 +7277,7 @@ bool ImGui::InputTextEx(const char* label, char* buf, int buf_size, const ImVec2
     const bool user_clicked = hovered && io.MouseClicked[0];
     const bool user_scrolled = is_multiline && g.ActiveId == 0 && edit_state.Id == id && g.ActiveIdPreviousFrame == draw_window->GetID("#SCROLLY");
 
-    bool select_all = (g.ActiveId != id) && (flags & ImGuiInputTextFlags_AutoSelectAll) != 0;
+	bool select_all = (g.ActiveId != id) && (flags & ImGuiInputTextFlags_AutoSelectAll) != 0;
     if (focus_requested || user_clicked || user_scrolled)
     {
         if (g.ActiveId != id)
@@ -7308,8 +7308,11 @@ bool ImGui::InputTextEx(const char* label, char* buf, int buf_size, const ImVec2
                 edit_state.Id = id;
                 edit_state.ScrollX = 0.0f;
                 stb_textedit_initialize_state(&edit_state.StbState, !is_multiline);
-                if (!is_multiline && focus_requested_by_code)
-                    select_all = true;
+				if (!is_multiline && focus_requested_by_code) {
+					select_all = (flags & ImGuiInputTextFlags_AutoSelectAll) != 0; // ORIGIN : --"(flags & ImGuiInputTextFlags_AutoSelectAll) != 0", ++"true;" MODIFIED
+					if((flags & ImGuiInputTextFlags_AutoSelectAll) == 0) // line added MODIFIED
+						edit_state.OnKeyPressed(STB_TEXTEDIT_K_LINEEND); // line added  MODIFIED
+				}
             }
             if (flags & ImGuiInputTextFlags_AlwaysInsertMode)
                 edit_state.StbState.insert_mode = true;

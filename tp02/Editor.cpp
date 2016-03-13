@@ -1001,7 +1001,6 @@ void Editor::onResizeWindow()
 
 void Editor::renderUI(Project& project)
 {
-		
 	Scene& scene = *project.getActiveScene();
 
 	if (!m_isUIVisible)

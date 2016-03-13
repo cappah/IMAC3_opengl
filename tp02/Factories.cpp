@@ -1,6 +1,7 @@
 #include "Factories.h"
 //forwards : 
 #include "Utils.h"
+#include "imgui_extension.h"
 
 ProgramFactory::ProgramFactory()
 {
@@ -277,25 +278,7 @@ void TextureFactory::drawUI()
 	ImGui::SameLine();
 	ImGui::PushItemWidth(180);
 
-	float posAutoCompletionX = ImGui::GetCursorPosX() + ImGui::GetWindowPos().x;
-	ImGui::InputText("path", path, 50);
-	if (ImGui::IsItemActive())
-		AutoCompletion::get().setIsOpen(true);		
-
-	float posAutoCompletionY = ImGui::GetCursorPosY() + ImGui::GetWindowPos().y;
-
-	ImGui::SetNextWindowPos(ImVec2(posAutoCompletionX, posAutoCompletionY));
-	//ImGui::SetNextWindowPos(ImGui::GetCursorPos());
-	if(AutoCompletion::get().getIsOpen())
-	{
-		ImGui::BeginTooltip();
-			AutoCompletion::get().clearWords();
-			AutoCompletion::get().addWord("toto");
-			AutoCompletion::get().addWord("titi");
-			AutoCompletion::get().apply(path);
-			AutoCompletion::get().setIsOpen(false);
-		ImGui::EndTooltip();
-	}
+	ImGui::InputFilePath("path", path, 50);
 
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
@@ -403,12 +386,18 @@ void CubeTextureFactory::drawUI()
 	ImGui::InputText("name", name, 20);
 	ImGui::PopItemWidth();
 
-	ImGui::InputText("path right", paths[0], 50);
-	ImGui::InputText("path left", paths[1], 50);
-	ImGui::InputText("path top", paths[2], 50);
-	ImGui::InputText("path bottom", paths[3], 50);
-	ImGui::InputText("path back", paths[4], 50);
-	ImGui::InputText("path front", paths[5], 50);
+	ImGui::InputFilePath("path", paths[0], 50);
+	ImGui::InputFilePath("path", paths[2], 50);
+	ImGui::InputFilePath("path", paths[3], 50);
+	ImGui::InputFilePath("path", paths[4], 50);
+	ImGui::InputFilePath("path", paths[5], 50);
+
+	//ImGui::InputText("path right", paths[0], 50);
+	//ImGui::InputText("path left", paths[1], 50);
+	//ImGui::InputText("path top", paths[2], 50);
+	//ImGui::InputText("path bottom", paths[3], 50);
+	//ImGui::InputText("path back", paths[4], 50);
+	//ImGui::InputText("path front", paths[5], 50);
 
 	if (ImGui::SmallButton("add"))
 	{
@@ -588,7 +577,7 @@ void MeshFactory::drawUI()
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 	ImGui::PushItemWidth(180);
-	ImGui::InputText("path", path, 50);
+	ImGui::InputFilePath("path", path, 50);
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 	if (ImGui::SmallButton("add"))
