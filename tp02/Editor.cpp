@@ -585,10 +585,10 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add billboard"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto colliderRenderer = new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe"));
-				auto newCollider = new BoxCollider(colliderRenderer);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
 				auto billboard = new Billboard();
 				newEntity->add(newCollider).add(billboard);
+				newEntity->setName("billboard");
 			}
 
 			ImGui::EndMenu();

@@ -13,6 +13,9 @@ tp02 - Copie/*
 videos/*
 tp02 - Copie - 2/*
 
+# Temporaries
+*/tmp/*
+
 
 #visual studio gitignore : 
 # User-specific files

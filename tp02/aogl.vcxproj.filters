@@ -116,6 +116,9 @@
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Octree.cpp" />
     <ClCompile Include="OctreeDrawer.cpp" />
+    <ClCompile Include="Billboard.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -241,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="Octree.h" />
     <ClInclude Include="OctreeDrawer.h" />
+    <ClInclude Include="Billboard.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -363,6 +369,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="wireframeInstanced.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="billboard.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="billboard.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

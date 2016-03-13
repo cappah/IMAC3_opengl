@@ -5,6 +5,43 @@
 
 ProgramFactory::ProgramFactory()
 {
+	//////////////////// PARTICLE shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_particle = compile_shader_from_file(GL_VERTEX_SHADER, "particle.vert");
+	GLuint fragShaderId_particle = compile_shader_from_file(GL_FRAGMENT_SHADER, "particle.frag");
+
+	GLuint programObject_particle = glCreateProgram();
+	glAttachShader(programObject_particle, vertShaderId_particle);
+	glAttachShader(programObject_particle, fragShaderId_particle);
+
+	const GLchar* feedbackVaryings[] = { "outPositions" }; //TODO others parameters
+	glTransformFeedbackVaryings(programObject_particle, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
+
+	glLinkProgram(programObject_particle);
+	if (check_link_error(programObject_particle) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// BILLBOARD shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_billboard = compile_shader_from_file(GL_VERTEX_SHADER, "billboard.vert");
+	GLuint fragShaderId_billboard = compile_shader_from_file(GL_FRAGMENT_SHADER, "billboard.frag");
+
+	GLuint programObject_billboard = glCreateProgram();
+	glAttachShader(programObject_billboard, vertShaderId_billboard);
+	glAttachShader(programObject_billboard, fragShaderId_billboard);
+
+	glLinkProgram(programObject_billboard);
+	if (check_link_error(programObject_billboard) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 	//////////////////// SKYBOX shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_skybox = compile_shader_from_file(GL_VERTEX_SHADER, "skybox.vert");
@@ -149,6 +186,7 @@ ProgramFactory::ProgramFactory()
 	m_programs["defaultDrawOnTexture"] = programObject_drawOnTexture;
 	m_programs["defaultGrassField"] = programObject_grassField;
 	m_programs["wireframeInstanced"] = programObject_wireframeInstanced;
+	m_programs["defaultBillboard"] = programObject_billboard;
 
 	m_defaults.push_back("defaultLit");
 	m_defaults.push_back("defaultUnlit");
@@ -158,6 +196,7 @@ ProgramFactory::ProgramFactory()
 	m_defaults.push_back("defaultDrawOnTexture");
 	m_defaults.push_back("defaultGrassField");
 	m_defaults.push_back("wireframeInstanced");
+	m_defaults.push_back("defaultBillboard");
 }
 
 void ProgramFactory::add(const std::string& name, GLuint programId)
@@ -524,24 +563,36 @@ MeshFactory::MeshFactory()
 	cubeWireFrame->computeBoundingBox();
 
 	Mesh* plane = new Mesh();
-	plane->triangleIndex = { 0, 1, 2, 2, 1, 3 };
-	plane->uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f };
-	plane->vertices = { -5.0, -0.5, 5.0, 5.0, -0.5, 5.0, -5.0, -0.5, -5.0, 5.0, -0.5, -5.0 };
+	plane->triangleIndex = { 0, 1, 2, 2, 3, 0 };
+	plane->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
+	plane->vertices = { -0.5, 0.0, -0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.5};
 	plane->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
 	plane->initGl();
 	plane->name = "plane";
 	plane->path = "";
 	plane->computeBoundingBox();
 
+	Mesh* quad = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_VERTICES), 2);
+	quad->triangleIndex = { 0, 1, 2, 0, 2, 3 };
+	quad->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
+	quad->vertices = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+	quad->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
+	quad->initGl();
+	quad->name = "quad";
+	quad->path = "";
+	//quad->computeBoundingBox();
+
 	m_meshes["default"] = cube;
 	m_meshes["cube"] = cube;
 	m_meshes["cubeWireframe"] = cubeWireFrame;
 	m_meshes["plane"] = plane;
+	m_meshes["quad"] = plane;
 
 	m_defaults.push_back("default");
 	m_defaults.push_back("cube");
 	m_defaults.push_back("cubeWireframe");
 	m_defaults.push_back("plane");
+	m_defaults.push_back("quad");
 }
 
 void MeshFactory::add(const std::string& name, Mesh* mesh)
@@ -666,11 +717,16 @@ MaterialFactory::MaterialFactory()
 	newMat = new MaterialGrassField(ProgramFactory::get().get("defaultGrassField"));
 	newMat->name = "grassfield";
 	m_materials["grassfield"] = newMat;
+
+	newMat = new MaterialBillboard(ProgramFactory::get().get("defaultBillboard"));
+	newMat->name = "billboard";
+	m_materials["billboard"] = newMat;
 	
 	m_defaults.push_back("default");
 	m_defaults.push_back("wireframe");
 	m_defaults.push_back("wireframeInstanced");
 	m_defaults.push_back("grassfield");
+	m_defaults.push_back("billboard");
 }
 
 void MaterialFactory::add(const std::string& name, Material* material)

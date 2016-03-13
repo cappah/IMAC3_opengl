@@ -2,12 +2,13 @@
 //forwards : 
 #include "Factories.h"
 #include "Scene.h"
+#include "SerializeUtils.h"
 
 
-Billboard::Billboard(): Component(ComponentType::BILLBOARD), m_translation(0,0,0), m_scale(1,1), m_textureName(""), m_color(1,1,1,1)
+Billboard::Billboard(): Component(ComponentType::BILLBOARD), m_translation(0,0,0), m_scale(1,1), m_textureName("default"), m_color(1,1,1,1)
 {
-	m_quadMesh = MeshFactory::get().get("defaultQuad");
-	m_billboardMaterial = static_cast<MaterialBillboard*>( MaterialFactory::get().get("billboard") );
+	m_quadMesh = MeshFactory::get().get("plane");
+	m_billboardMaterial =  MaterialFactory::get().get<MaterialBillboard>("billboard");
 	m_texture = TextureFactory::get().get("default");
 	m_texture->initGL();
 }
@@ -15,13 +16,13 @@ Billboard::Billboard(): Component(ComponentType::BILLBOARD), m_translation(0,0,0
 
 Billboard::~Billboard()
 {
-	m_texture->freeGL();
+	
 }
 
 void Billboard::render(const glm::mat4 & projection, const glm::mat4 & view)
 {
 	glm::mat4 MVP = projection * view;
-	glm::mat4 NormalMatrix = glm::transpose(glm::inverse(glm::mat4(1)));
+	//glm::mat4 NormalMatrix = glm::transpose(glm::inverse(glm::mat4(1)));
 	glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
 	glm::vec3 CameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
 
@@ -81,26 +82,21 @@ void Billboard::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 
 void Billboard::drawUI(Scene & scene)
 {
-	if (ImGui::CollapsingHeader("billboard"))
+	char texName[20];
+	int stringLength = std::min((int)m_textureName.size(), 20);
+	m_textureName.copy(texName, stringLength);
+	texName[stringLength] = '\0';
+	if (ImGui::InputText("textureName", texName, 20))
 	{
-		char texName[20];
-		int stringLength = std::min((int)m_textureName.size(), 20);
-		m_textureName.copy(texName, stringLength);
-		texName[stringLength] = '\0';
-		if (ImGui::InputText("textureName", texName, 20))
+		m_textureName = texName;
+
+		if (TextureFactory::get().contains(m_textureName))
 		{
-			m_textureName = texName;
-
-			if (TextureFactory::get().contains(m_textureName))
-			{
-				m_texture->freeGL();
-				m_texture = TextureFactory::get().get(m_textureName);
-				m_texture->initGL();
-			}
+			m_texture = TextureFactory::get().get(m_textureName);
 		}
-
-		ImGui::ColorEdit4("Color", glm::value_ptr(m_color));
 	}
+
+	ImGui::ColorEdit4("Color", glm::value_ptr(m_color));
 }
 
 void Billboard::eraseFromScene(Scene & scene)
@@ -115,6 +111,39 @@ Component* Billboard::clone(Entity* entity)
 	billboard->attachToEntity(entity);
 
 	return billboard;
+}
+
+void Billboard::addToEntity(Entity& entity)
+{
+	entity.add(this);
+}
+
+void Billboard::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void Billboard::save(Json::Value& rootComponent) const
+{
+	Component::save(rootComponent);
+
+	rootComponent["translation"] = toJsonValue(m_translation);
+	rootComponent["scale"] = toJsonValue(m_scale);
+	rootComponent["textureName"] = m_texture->name;
+	rootComponent["color"] = toJsonValue(m_color);
+}
+
+void Billboard::load(Json::Value& rootComponent)
+{
+	Component::load(rootComponent);
+
+	m_translation = fromJsonValue<glm::vec3>(rootComponent["translation"], glm::vec3(0, 0, 0));
+	m_scale = fromJsonValue<glm::vec2>(rootComponent["scale"], glm::vec2(0, 0));
+
+	m_textureName = rootComponent.get("textureName", "").asString();
+	m_texture = TextureFactory::get().get(m_textureName);
+
+	m_color = fromJsonValue<glm::vec4>(rootComponent["color"], glm::vec4(1, 1, 1, 1));
 }
 
 void Billboard::addToScene(Scene& scene)

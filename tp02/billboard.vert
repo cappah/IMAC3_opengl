@@ -29,7 +29,7 @@ out block
 void main()
 {	
 	vec3 pos = Position;
-	vec3 posWorldSpace = Translation + CameraRight * Position.x * Scale.x + CameraUp * Position.y * Scale.y;
+	vec3 posWorldSpace = Translation + CameraRight * Position.x * Scale.x + CameraUp * Position.z * Scale.y;
 
 	Out.TexCoord = TexCoord;// * TextureRepetition;
 	Out.Position = pos;
