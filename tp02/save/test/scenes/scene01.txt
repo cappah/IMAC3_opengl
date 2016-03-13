@@ -1,0 +1,900 @@
+{
+	"entities" : 
+	[
+		{
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"bottomLeft" : 
+					[
+						-0.5,
+						1,
+						-0.5
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						1.5,
+						0,
+						1
+					],
+					"offsetPosition" : 
+					[
+						0,
+						0,
+						0
+					],
+					"offsetScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"origin" : 
+					[
+						0,
+						0,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"topRight" : 
+					[
+						0.5,
+						2,
+						0.5
+					],
+					"translation" : 
+					[
+						0,
+						1.5,
+						0
+					],
+					"type" : 0,
+					"visualMaterialName" : "wireframe",
+					"visualMeshName" : "cubeWireframe"
+				},
+				{
+					"boundingBox" : 
+					{
+						"bottomLeft" : 
+						[
+							-16.098146438598633,
+							-14.598146438598633,
+							-16.098146438598633
+						],
+						"localBottomLeft" : 
+						[
+							-0.5,
+							-0.5,
+							-0.5
+						],
+						"localTopRight" : 
+						[
+							0.5,
+							0.5,
+							0.5
+						],
+						"modelMatrix" : 
+						[
+							32.196292877197266,
+							0,
+							0,
+							0,
+							0,
+							32.196292877197266,
+							0,
+							0,
+							0,
+							0,
+							32.196292877197266,
+							0,
+							0,
+							1.5,
+							0,
+							1
+						],
+						"offsetPosition" : 
+						[
+							0,
+							0,
+							0
+						],
+						"offsetScale" : 
+						[
+							1,
+							1,
+							1
+						],
+						"origin" : 
+						[
+							0,
+							0,
+							0
+						],
+						"rotation" : 
+						[
+							0,
+							0,
+							0,
+							1
+						],
+						"scale" : 
+						[
+							32.196292877197266,
+							32.196292877197266,
+							32.196292877197266
+						],
+						"topRight" : 
+						[
+							16.098146438598633,
+							17.598146438598633,
+							16.098146438598633
+						],
+						"translation" : 
+						[
+							0,
+							1.5,
+							0
+						],
+						"type" : 0,
+						"visualMaterialName" : "wireframe",
+						"visualMeshName" : "cubeWireframe"
+					},
+					"color" : 
+					[
+						0.78431373834609985,
+						0.074509806931018829,
+						0.30980393290519714
+					],
+					"intensity" : 10,
+					"position" : 
+					[
+						0,
+						1.5,
+						0
+					],
+					"type" : 2
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"localTranslation" : 
+			[
+				0,
+				1.5,
+				0
+			],
+			"modelMatrix" : 
+			[
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				1.5,
+				0,
+				1
+			],
+			"name" : "point light",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"translation" : 
+			[
+				0,
+				1.5,
+				0
+			]
+		},
+		{
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"materialCount" : 1,
+					"materialName" : 
+					[
+						"brick"
+					],
+					"meshName" : "cube",
+					"type" : 1
+				},
+				{
+					"bottomLeft" : 
+					[
+						2.5,
+						-0.5,
+						-0.5
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						3,
+						0,
+						0,
+						1
+					],
+					"offsetPosition" : 
+					[
+						0,
+						0,
+						0
+					],
+					"offsetScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"origin" : 
+					[
+						0,
+						0,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"topRight" : 
+					[
+						3.5,
+						0.5,
+						0.5
+					],
+					"translation" : 
+					[
+						3,
+						0,
+						0
+					],
+					"type" : 0,
+					"visualMaterialName" : "wireframe",
+					"visualMeshName" : "cubeWireframe"
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"localTranslation" : 
+			[
+				3,
+				0,
+				0
+			],
+			"modelMatrix" : 
+			[
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				3,
+				0,
+				0,
+				1
+			],
+			"name" : "cube",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"translation" : 
+			[
+				3,
+				0,
+				0
+			]
+		},
+		{
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"materialCount" : 1,
+					"materialName" : 
+					[
+						"brick"
+					],
+					"meshName" : "cube",
+					"type" : 1
+				},
+				{
+					"bottomLeft" : 
+					[
+						-2,
+						-2.5,
+						-5
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						10,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						10,
+						0,
+						3,
+						-2,
+						0,
+						1
+					],
+					"offsetPosition" : 
+					[
+						0,
+						0,
+						0
+					],
+					"offsetScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"origin" : 
+					[
+						0,
+						0,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						10,
+						1,
+						10
+					],
+					"topRight" : 
+					[
+						8,
+						-1.5,
+						5
+					],
+					"translation" : 
+					[
+						3,
+						-2,
+						0
+					],
+					"type" : 0,
+					"visualMaterialName" : "wireframe",
+					"visualMeshName" : "cubeWireframe"
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				10,
+				1,
+				10
+			],
+			"localTranslation" : 
+			[
+				3,
+				-2,
+				0
+			],
+			"modelMatrix" : 
+			[
+				10,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				10,
+				0,
+				3,
+				-2,
+				0,
+				1
+			],
+			"name" : "cube",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				10,
+				1,
+				10
+			],
+			"translation" : 
+			[
+				3,
+				-2,
+				0
+			]
+		},
+		{
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"bottomLeft" : 
+					[
+						-0.053841114044189453,
+						-0.5602116584777832,
+						0
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						10.71079158782959,
+						0,
+						0,
+						0,
+						0,
+						7.4327640533447266,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						5.3015546798706055,
+						3.1561703681945801,
+						0,
+						1
+					],
+					"offsetPosition" : 
+					[
+						-0.053841192275285721,
+						-0.56021153926849365,
+						0
+					],
+					"offsetScale" : 
+					[
+						10.71079158782959,
+						7.4327640533447266,
+						0
+					],
+					"origin" : 
+					[
+						-0.5,
+						-0.5,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						0
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"topRight" : 
+					[
+						10.656949996948242,
+						6.8725523948669434,
+						0
+					],
+					"translation" : 
+					[
+						0,
+						0,
+						0
+					],
+					"type" : 0,
+					"visualMaterialName" : "wireframe",
+					"visualMeshName" : "cubeWireframe"
+				},
+				{
+					"height" : 10,
+					"mass" : 0.10000000149011612,
+					"materialName" : "default",
+					"modelMatrix" : 
+					[
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1
+					],
+					"origin" : 
+					[
+						-0.5,
+						-0.5,
+						0
+					],
+					"rigidity" : 0.029999999329447746,
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"subdivision" : 10,
+					"translation" : 
+					[
+						0,
+						0,
+						0
+					],
+					"type" : 5,
+					"viscosity" : 0.0030000000260770321,
+					"width" : 10
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"localTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"modelMatrix" : 
+			[
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1
+			],
+			"name" : "flag",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"translation" : 
+			[
+				0,
+				0,
+				0
+			]
+		}
+	],
+	"entityCount" : 4
+}

@@ -11,6 +11,15 @@
 
 #include "Collider.h"
 
+//forwards :
+class Terrain;
+
+//small struct to store infos about a collision
+struct CollisionInfo {
+	glm::vec3 normal;
+	glm::vec3 point;
+};
+
 class Ray
 {
 private:
@@ -23,6 +32,9 @@ public:
 	glm::vec3 at(float t) const;
 	bool intersect(Collider& other, float* t = nullptr);
 	bool intersectPlane(const glm::vec3& anchor, const glm::vec3& normal, float* t = nullptr) const;
+	bool intersectTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, CollisionInfo& collisionInfo) const;
+	bool intersectMesh(const Mesh& mesh, CollisionInfo& collisionInfo) const;
+	bool intersectTerrain(const Terrain& terrain, CollisionInfo& collisionInfo) const;
 	glm::vec3 getDirection() const;
 	glm::vec3 getOrigin() const;
 	float getLength() const;

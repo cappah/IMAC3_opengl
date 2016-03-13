@@ -1,12 +1,82 @@
 #include "Scene.h"
+//forwards :
+#include "OctreeDrawer.h"
 
 
-Scene::Scene(Renderer * renderer) : m_renderer(renderer), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
+Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
 {
 }
 
 Scene::~Scene()
 {
+	clear();
+}
+
+void Scene::clear()
+{
+	//Components : 
+	/*
+	//Cameras : 
+	for (int i = 0; i < m_cameras.size(); i++)
+	{
+		delete m_cameras[i];
+		m_cameras.clear();
+	}
+	//Colliders : 
+	for (int i = 0; i < m_colliders.size(); i++)
+	{
+		delete m_colliders[i];
+		m_colliders.clear();
+	}
+	//Directionnal lights : 
+	for (int i = 0; i < m_directionalLights.size(); i++)
+	{
+		delete m_directionalLights[i];
+		m_directionalLights.clear();
+	}
+	//Flags : 
+	for (int i = 0; i < m_flags.size(); i++)
+	{
+		delete m_flags[i];
+		m_flags.clear();
+	}
+	//Mesh renderers : 
+	for (int i = 0; i < m_meshRenderers.size(); i++)
+	{
+		delete m_meshRenderers[i];
+		m_meshRenderers.clear();
+	}
+	//Particle emitters : 
+	for (int i = 0; i < m_particleEmitters.size(); i++)
+	{
+		delete m_particleEmitters[i];
+		m_particleEmitters.clear();
+	}
+	//Point lights : 
+	for (int i = 0; i < m_pointLights.size(); i++)
+	{
+		delete m_pointLights[i];
+		m_pointLights.clear();
+	}
+	//Point lights : 
+	for (int i = 0; i < m_spotLights.size(); i++)
+	{
+		delete m_spotLights[i];
+		m_spotLights.clear();
+	}
+	//Wind zones : 
+	for (int i = 0; i < m_windZones.size(); i++)
+	{
+		delete m_windZones[i];
+		m_windZones.clear();
+	}*/
+
+	//Entities : 
+	for (int i = 0; i < m_entities.size(); i++)
+	{
+		delete m_entities[i];
+	}
+	m_entities.clear();
 }
 
 std::vector<Entity*>& Scene::getEntities()
@@ -74,14 +144,26 @@ Scene & Scene::add(Billboard * billboard)
 	return *this;
 }
 
-Scene& Scene::erase(Entity * entity)
+Scene & Scene::add(Camera * camera)
+{
+	m_cameras.push_back(camera);
+	return *this;
+}
+
+Scene & Scene::add(Physic::WindZone* windZone)
+{
+	m_windZones.push_back(windZone);
+	return *this;
+}
+
+Scene& Scene::erase(Entity* entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
 
 	if (findIt != m_entities.end())
 	{
-		delete *findIt;
 		m_entities.erase(findIt);
+		delete entity;
 	}
 
 	return *this;
@@ -197,12 +279,39 @@ Scene & Scene::erase(Billboard * billboard)
 	return *this;
 }
 
-void Scene::render(const Camera& camera)
+
+Scene & Scene::erase(Camera * camera)
+{
+	auto findIt = std::find(m_cameras.begin(), m_cameras.end(), camera);
+
+	if (findIt != m_cameras.end())
+	{
+		delete camera;
+		m_cameras.erase(findIt);
+	}
+
+	return *this;
+}
+
+Scene & Scene::erase(Physic::WindZone * windZone)
+{
+	auto findIt = std::find(m_windZones.begin(), m_windZones.end(), windZone);
+
+	if (findIt != m_windZones.end())
+	{
+		delete windZone;
+		m_windZones.erase(findIt);
+	}
+
+	return *this;
+}
+
+void Scene::render(const BaseCamera& camera)
 {
 	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards);
 }
 
-void Scene::renderColliders(const Camera& camera)
+void Scene::renderColliders(const BaseCamera & camera)
 {
 	if(m_areCollidersVisible)
 		m_renderer->debugDrawColliders(camera, m_entities);
@@ -214,20 +323,29 @@ void Scene::renderDebugDeferred()
 		m_renderer->debugDrawDeferred();
 }
 
-void Scene::renderDebugLights(const Camera& camera)
+void Scene::renderDebugLights(const BaseCamera & camera)
 {
 	if(m_areLightsBoundingBoxVisible)
 		m_renderer->debugDrawLights(camera, m_pointLights, m_spotLights);
 }
 
-void Scene::renderPaths(const Camera& camera)
+void Scene::renderPaths(const BaseCamera& camera)
 {
 	m_pathManager.render(camera);
 }
 
+void Scene::renderDebugOctrees(const BaseCamera & camera)
+{
+	if (m_areOctreesVisible)
+	{
+		OctreeDrawer::get().render(camera.getProjectionMatrix(), camera.getViewMatrix());
+		OctreeDrawer::get().clear();
+	}
+}
+
 void Scene::updatePhysic(float deltaTime)
 {
-	m_physicManager.update(deltaTime, m_flags);
+	m_physicManager.update(deltaTime, m_flags, m_terrain, m_windZones);
 }
 
 void Scene::toggleColliderVisibility()
@@ -245,6 +363,11 @@ void Scene::toggleLightsBoundingBoxVisibility()
 	m_areLightsBoundingBoxVisible = !m_areLightsBoundingBoxVisible;
 }
 
+void Scene::toggleOctreesVisibility()
+{
+	m_areOctreesVisible = !m_areOctreesVisible;
+}
+
 bool Scene::getAreCollidersVisible() const
 {
 	return m_areCollidersVisible;
@@ -258,6 +381,11 @@ bool Scene::getIsDebugDeferredVisible() const
 bool Scene::getAreLightsBoundingBoxVisible() const
 {
 	return m_areLightsBoundingBoxVisible;
+}
+
+bool Scene::getAreOctreesVisible() const
+{
+	return m_areOctreesVisible;
 }
 
 void Scene::setAreCollidersVisible(bool value)
@@ -275,7 +403,12 @@ void Scene::setAreLightsBoundingBoxVisible(bool value)
 	m_areLightsBoundingBoxVisible = value;
 }
 
-void Scene::culling(const Camera & camera)
+void Scene::setAreOctreesVisible(bool value)
+{
+	m_areOctreesVisible = value;
+}
+
+void Scene::culling(const BaseCamera & camera)
 {
 	//m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
 }
@@ -293,4 +426,67 @@ Skybox& Scene::getSkybox()
 PathManager & Scene::getPathManager()
 {
 	return m_pathManager;
+}
+
+Renderer& Scene::getRenderer()
+{
+	return *m_renderer;
+}
+
+std::string Scene::getName() const
+{
+	return m_name;
+}
+
+void Scene::save(const std::string & path)
+{
+	Json::Value root;
+
+	root["entityCount"] = m_entities.size();
+	for (int i = 0; i < m_entities.size(); i++)
+	{
+		m_entities[i]->save(root["entities"][i]);
+	}
+
+	//TODO
+	//m_terrain.save(root["terrain"]);
+	//m_skybox.save(root["skybox"]);
+	
+	//DEBUG
+	std::cout << root;
+
+	std::ofstream stream;
+	stream.open(path);
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't save scene at path : " << path << std::endl;
+		return;
+	}
+	//save scene
+	stream << root;
+}
+
+void Scene::load(const std::string & path)
+{
+	Json::Value root;
+
+	std::ifstream stream;
+	stream.open(path);
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load scene at path : " << path << std::endl;
+		return;
+	}
+	stream >> root;
+	
+	int entityCount = root.get("entityCount", 0).asInt();
+	for (int i = 0; i < entityCount; i++)
+		m_entities[i] = new Entity(this);
+	for (int i = 0; i < entityCount; i++)
+		m_entities[i]->load(root["entities"][i]);
+
+	//TODO
+	//m_terrain.save(root["terrain"]);
+	//m_skybox.save(root["skybox"]);
+
 }

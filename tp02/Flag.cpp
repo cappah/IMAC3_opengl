@@ -1,11 +1,211 @@
 #include "Flag.h"
+//forwards : 
 #include "Scene.h"
 #include "Entity.h"
 #include "Factories.h"
+#include "OctreeDrawer.h"
 
 namespace Physic {
 
-	Flag::Flag(Material* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1) 
+	Flag::Flag() : Flag(MaterialFactory::get().get<Material3DObject>("default"))
+	{
+
+	}
+
+	Flag::Flag(Material3DObject* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1),
+		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f), m_autoCollisionDistance(0.01f), m_autoCollisionRigidity(0.01f), m_autoCollisionViscosity(0.001f),
+		m_materialName("default"), m_computeAutoCollision(false)
+	{
+		modelMatrix = glm::mat4(1);
+
+		m_materialName = m_material->name;
+
+		//don't forget to change the origin to have the right pivot rotation
+		origin = glm::vec3(-0.5f, -0.5f, 0.f);
+		m_mesh.origin = glm::vec3(-0.5f, -0.5f, 0.f);
+
+		m_mesh.topRight = glm::vec3(m_width, m_height, 0.f);
+		m_mesh.bottomLeft = glm::vec3(0.f, 0.f, 0.f);
+
+		m_mesh.vertices.clear();
+		m_mesh.normals.clear();
+		m_mesh.uvs.clear();
+		m_mesh.triangleIndex.clear();
+		m_mesh.tangents.clear();
+
+		localPointPositions.clear();
+		pointContainer.clear();
+		linkShape.clear();
+		linkShearing.clear();
+		linkBlending.clear();
+
+		generatePoints();
+		generateMesh();
+
+		m_mesh.initGl();
+
+		initialyzePhysic();
+
+		//cover the mesh with collider : 
+		if (m_entity != nullptr)
+		{
+			auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+			if (collider != nullptr)
+			{
+				collider->coverMesh(m_mesh);
+				collider->setOffsetScale(glm::vec3(1.f, 1.f, 2.f));
+			}
+		}
+
+	}
+
+	Flag::Flag(const Flag& other) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW)
+	{
+		m_material = other.m_material;
+		m_subdivision = other.m_subdivision;
+		m_width = other.m_width;
+		m_height = other.m_height;
+		translation = other.translation;
+		scale = other.scale;
+		m_mass = other.m_mass;
+		m_rigidity = other.m_rigidity;
+		m_viscosity = other.m_viscosity;
+		m_materialName = other.m_materialName;
+		m_autoCollisionDistance = other.m_autoCollisionDistance;
+		m_computeAutoCollision = other.m_computeAutoCollision;
+		m_autoCollisionRigidity = other.m_autoCollisionRigidity;
+		m_autoCollisionViscosity = other.m_autoCollisionViscosity;
+
+
+		modelMatrix = other.modelMatrix;
+
+		//don't forget to change the origin to have the right pivot rotation
+		origin = other.origin;
+		m_mesh.origin = other.m_mesh.origin;
+
+		m_mesh.topRight = other.m_mesh.topRight;
+		m_mesh.bottomLeft = other.m_mesh.bottomLeft;
+
+		m_mesh.vertices.clear();
+		m_mesh.normals.clear();
+		m_mesh.uvs.clear();
+		m_mesh.triangleIndex.clear();
+		m_mesh.tangents.clear();
+
+		localPointPositions.clear();
+		pointContainer.clear();
+		linkShape.clear();
+		linkShearing.clear();
+		linkBlending.clear();
+
+		generatePoints();
+		generateMesh();
+
+		m_mesh.initGl();
+
+		initialyzePhysic();
+
+		//cover the mesh with collider : 
+		if (m_entity != nullptr)
+		{
+			auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+			if (collider != nullptr)
+			{
+				collider->coverMesh(m_mesh);
+				collider->setOffsetScale(glm::vec3(1.f, 1.f, 2.f));
+			}
+		}
+	}
+
+	Flag & Flag::operator=(const Flag& other)
+	{
+		Component::operator=(other);
+
+		m_mesh.freeGl();
+		m_mesh.primitiveType = GL_TRIANGLES;
+		m_mesh.vbo_usage = (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS);
+		m_mesh.coordCountByVertex = 3;
+		m_mesh.drawUsage = GL_STREAM_DRAW;
+
+
+		m_material = other.m_material;
+		m_subdivision = other.m_subdivision;
+		m_width = other.m_width;
+		m_height = other.m_height;
+		translation = other.translation;
+		scale = other.scale;
+		m_mass = other.m_mass;
+		m_rigidity = other.m_rigidity;
+		m_viscosity = other.m_viscosity;
+		m_materialName = other.m_materialName;
+		m_autoCollisionDistance = other.m_autoCollisionDistance;
+		m_computeAutoCollision = other.m_computeAutoCollision;
+		m_autoCollisionRigidity = other.m_autoCollisionRigidity;
+		m_autoCollisionViscosity = other.m_autoCollisionViscosity;
+
+		modelMatrix = other.modelMatrix;
+
+		//don't forget to change the origin to have the right pivot rotation
+		origin = other.origin;
+		m_mesh.origin = other.m_mesh.origin;
+
+		m_mesh.topRight = other.m_mesh.topRight;
+		m_mesh.bottomLeft = other.m_mesh.bottomLeft;
+
+		m_mesh.vertices.clear();
+		m_mesh.normals.clear();
+		m_mesh.uvs.clear();
+		m_mesh.triangleIndex.clear();
+		m_mesh.tangents.clear();
+
+		localPointPositions.clear();
+		pointContainer.clear();
+		linkShape.clear();
+		linkShearing.clear();
+		linkBlending.clear();
+
+		generatePoints();
+		generateMesh();
+
+		m_mesh.initGl();
+
+		initialyzePhysic();
+
+		//cover the mesh with collider : 
+		if (m_entity != nullptr)
+		{
+			auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+			if (collider != nullptr)
+			{
+				collider->coverMesh(m_mesh);
+				collider->setOffsetScale(glm::vec3(1.f, 1.f, 2.f));
+			}
+		}
+
+		return *this;
+	}
+
+	Flag::~Flag()
+	{
+	}
+
+	void Flag::generatePoints()
+	{
+		float paddingX = m_width / (float)(m_subdivision - 1);
+		float paddingY = m_height / (float)(m_subdivision - 1);
+
+		for (int j = 0; j < m_subdivision; j++)
+		{
+			for (int i = 0; i < m_subdivision; i++)
+			{
+				//physic elements : 
+				localPointPositions.push_back(glm::vec3(i*paddingX, j*paddingY, 0.f));
+				pointContainer.push_back(Point(glm::vec3(i*paddingX, j*paddingY, 0.f), glm::vec3(0, 0, 0), 0.f));
+			}
+		}
+	}
+
+	void Flag::regenerateFlag()
 	{
 		modelMatrix = glm::mat4(1);
 
@@ -28,9 +228,10 @@ namespace Physic {
 		linkShearing.clear();
 		linkBlending.clear();
 
+		generatePoints();
 		generateMesh();
 
-		m_mesh.initGl();
+		m_mesh.updateAllVBOs();
 
 		initialyzePhysic();
 
@@ -45,10 +246,15 @@ namespace Physic {
 			}
 		}
 
-	}
+		//applied old transforms to the vertices :
+		for (int i = 0; i < pointContainer.size(); i++)
+		{
+			pointContainer[i].position = glm::vec3(glm::translate(glm::mat4(1), translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale) *  glm::vec4(localPointPositions[i], 1.f));
+			pointContainer[i].setVitesse(glm::vec3(0, 0, 0));
+			pointContainer[i].setForce(glm::vec3(0, 0, 0));
+		}
 
-	Flag::~Flag()
-	{
+		synchronizeVisual();
 	}
 
 	void Flag::generateMesh()
@@ -56,19 +262,10 @@ namespace Physic {
 		float paddingX = m_width / (float)(m_subdivision - 1);
 		float paddingY = m_height / (float)(m_subdivision - 1);
 
-		for (int j = 0; j < m_subdivision; j++)
-		{
-			for (int i = 0; i < m_subdivision; i++)
-			{
-				//physic elements : 
-				localPointPositions.push_back(glm::vec3(i*paddingX, j*paddingY, 0.f));
-				pointContainer.push_back(Point(glm::vec3(i*paddingX, j*paddingY, 0.f), glm::vec3(0, 0, 0), 0.f));
-			}
-		}
-
 		int lineCount = (m_subdivision - 1);
 		int rowCount = (m_subdivision - 1);
-		m_mesh.triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
+		//m_mesh.triangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
+		m_mesh.totalTriangleCount = (m_subdivision - 1) * (m_subdivision - 1) * 2 + 1;
 
 		// face 1 : 
 		for (int j = 0; j < m_subdivision; j++)
@@ -120,7 +317,7 @@ namespace Physic {
 
 		// face 1 : 
 		int k = 0;
-		for (int i = 0; i < m_mesh.triangleCount; i++)
+		for (int i = 0; i < m_mesh.totalTriangleCount; i++)
 		{
 			if (i % 2 == 0)
 			{
@@ -147,7 +344,7 @@ namespace Physic {
 		k += m_subdivision;
 
 		// face 2 : 
-		for (int i = 0; i < m_mesh.triangleCount; i++)
+		for (int i = 0; i < m_mesh.totalTriangleCount; i++)
 		{
 			if (i % 2 == 0)
 			{
@@ -171,7 +368,7 @@ namespace Physic {
 			}
 		}
 
-		m_mesh.triangleCount *= 2;
+		m_mesh.totalTriangleCount *= 2;
 
 	}
 
@@ -252,10 +449,9 @@ namespace Physic {
 
 	void Flag::initialyzePhysic()
 	{
-		//intialyze physic links : 
-		float k = 0.00002f;
-		float z = 0.000002f;
 		float l = 0.f;
+
+		//intialyze physic links : 
 		for (int j = 0; j < m_subdivision; j++)
 		{
 			for (int i = 0; i < m_subdivision; i++)
@@ -268,14 +464,14 @@ namespace Physic {
 				{
 					Point* right = &pointContainer[idx2DToIdx1D(i + 1, j, m_subdivision)];
 					l = glm::distance(right->position, current->position);
-					linkShape.push_back(Link(current, right, k, z, l)); //right link
+					linkShape.push_back(Link(current, right, m_rigidity, m_viscosity, l)); //right link
 				}
 
 				if (j + 1 < m_subdivision)
 				{
 					Point* up = &pointContainer[idx2DToIdx1D(i, j + 1, m_subdivision)];
 					l = glm::distance(up->position, current->position);
-					linkShape.push_back(Link(up, current, k, z, l)); //up link
+					linkShape.push_back(Link(up, current, m_rigidity, m_viscosity, l)); //up link
 				}
 
 				//shearing links
@@ -284,13 +480,13 @@ namespace Physic {
 				{
 					Point* rightUp = &pointContainer[idx2DToIdx1D(i + 1, j + 1, m_subdivision)];
 					l = glm::distance(rightUp->position, current->position);
-					linkShearing.push_back(Link(current, rightUp, k, z, l)); //right up link
+					linkShearing.push_back(Link(current, rightUp, m_rigidity, m_viscosity, l)); //right up link
 				}
 				if (j - 1 > 0 && i + 1 < m_subdivision)
 				{
 					Point* rightDown = &pointContainer[idx2DToIdx1D(i + 1, j - 1, m_subdivision)];
 					l = glm::distance(rightDown->position, current->position);
-					linkShearing.push_back(Link(current, rightDown, k, z, l)); //right down link
+					linkShearing.push_back(Link(current, rightDown, m_rigidity, m_viscosity, l)); //right down link
 				}
 
 				//blending links : 
@@ -299,17 +495,19 @@ namespace Physic {
 				{
 					Point* right2 = &pointContainer[idx2DToIdx1D(i + 2, j, m_subdivision)];
 					l = glm::distance(right2->position, current->position);
-					linkBlending.push_back(Link(current, right2, k, z, l)); //right link
+					linkBlending.push_back(Link(current, right2, m_rigidity, m_viscosity, l)); //right link
 				}
 
 				if (j + 2 < m_subdivision)
 				{
 					Point* up2 = &pointContainer[idx2DToIdx1D(i, j + 2, m_subdivision)];
 					l = glm::distance(up2->position, current->position);
-					linkBlending.push_back(Link(current, up2, k, z, l)); //up link
+					linkBlending.push_back(Link(current, up2, m_rigidity, m_viscosity, l)); //up link
 				}
 			}
 		}
+
+
 
 		//set masses : 
 		for (int i = 0; i < m_subdivision; i++)
@@ -321,9 +519,174 @@ namespace Physic {
 		{
 			for (int i = 0; i < m_subdivision; i++)
 			{
-				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = 0.00008f / (float)(m_subdivision * m_subdivision);
+				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = m_mass / (float)(m_subdivision * m_subdivision);
 			}
 		}
+	}
+
+	void Flag::updatePhysic()
+	{
+		//update rigidity and viscosity of links : 
+		for (int i = 0; i < linkShape.size(); i++)
+		{
+			linkShape[i].k = m_rigidity;
+			linkShape[i].z = m_viscosity;
+		}
+		for (int i = 0; i < linkBlending.size(); i++)
+		{
+			linkBlending[i].k = m_rigidity;
+			linkBlending[i].z = m_viscosity;
+		}
+		for (int i = 0; i < linkShearing.size(); i++)
+		{
+			linkShearing[i].k = m_rigidity;
+			linkShearing[i].z = m_viscosity;
+		}
+
+		//update masses : 
+		for (int i = 0; i < m_subdivision; i++)
+		{
+			pointContainer[i].masse = 0.f;
+		}
+
+		for (int j = 1; j < m_subdivision; j++)
+		{
+			for (int i = 0; i < m_subdivision; i++)
+			{
+				pointContainer[idx2DToIdx1D(i, j, m_subdivision)].masse = m_mass / (float)(m_subdivision * m_subdivision);
+			}
+		}
+	}
+
+	void Flag::restartSimulation()
+	{
+
+
+		origin = glm::vec3(-0.5f, -0.5f, 0.f);
+		m_mesh.origin = glm::vec3(-0.5f, -0.5f, 0.f);
+
+		m_mesh.topRight = glm::vec3(m_width, m_height, 0.f);
+		m_mesh.bottomLeft = glm::vec3(0.f, 0.f, 0.f);
+		
+		m_mesh.vertices.clear();
+		m_mesh.normals.clear();
+		m_mesh.uvs.clear();
+		m_mesh.triangleIndex.clear();
+		m_mesh.tangents.clear();
+
+		generateMesh();
+	
+		for (int i = 0; i < pointContainer.size(); i++)
+		{
+			pointContainer[i].position = glm::vec3(glm::translate(glm::mat4(1), translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale) *  glm::vec4(localPointPositions[i], 1.f));
+			pointContainer[i].setVitesse(glm::vec3(0, 0, 0));
+			pointContainer[i].setForce(glm::vec3(0, 0, 0));
+		}
+
+		synchronizeVisual();
+
+	}
+
+	void Flag::save(Json::Value & rootComponent) const
+	{
+		Component::save(rootComponent);
+
+		rootComponent["origin"] = toJsonValue(origin);
+		rootComponent["translation"] = toJsonValue(translation);
+		rootComponent["scale"] = toJsonValue(scale);
+		rootComponent["rotation"] = toJsonValue(rotation);
+		rootComponent["modelMatrix"] = toJsonValue(modelMatrix);
+		
+		rootComponent["materialName"] = m_materialName;
+
+		rootComponent["width"] = m_width;
+		rootComponent["height"] = m_height;
+		rootComponent["subdivision"] = m_subdivision;
+
+		rootComponent["mass"] = m_mass;
+		rootComponent["viscosity"] = m_viscosity;
+		rootComponent["rigidity"] = m_rigidity;
+		rootComponent["autoCollisionDistance"] = m_autoCollisionDistance;
+		rootComponent["computeAutoCollision"] = m_computeAutoCollision;
+		rootComponent["autoCollisionViscosity"] = m_autoCollisionViscosity;
+		rootComponent["autoCollisionRigidity"] = m_autoCollisionRigidity;
+
+	}
+
+	void Flag::load(Json::Value & rootComponent)
+	{
+		Component::load(rootComponent);
+
+		origin = fromJsonValue<glm::vec3>(rootComponent["origin"], glm::vec3());
+		translation = fromJsonValue<glm::vec3>(rootComponent["translation"], glm::vec3());
+		scale = fromJsonValue<glm::vec3>(rootComponent["scale"], glm::vec3());
+		rotation = fromJsonValue<glm::quat>(rootComponent["rotation"], glm::quat());
+		modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"], glm::mat4());
+
+		m_materialName = rootComponent.get("materialName", "default").asString();
+		m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
+
+		m_width = rootComponent.get("width", 10).asFloat();
+		m_height = rootComponent.get("height", 10).asFloat();
+		m_subdivision = rootComponent.get("subdivision", 10).asInt();
+
+		m_mass = rootComponent.get("mass", 0.1).asFloat();
+		m_viscosity = rootComponent.get("viscosity", 0.01).asFloat();
+		m_rigidity = rootComponent.get("rigidity", 0.001).asFloat();
+		m_autoCollisionDistance = rootComponent.get("autoCollisionDistance", 0.01f).asFloat();
+		m_computeAutoCollision = rootComponent.get("computeAutoCollision", false).asBool();
+		m_autoCollisionRigidity = rootComponent.get("autoCollisionRigidity", 0.01f).asFloat();
+		m_autoCollisionViscosity = rootComponent.get("autoCollisionViscosity", 0.01f).asFloat();
+
+		//no need to save physic infos because we rebuild it in initialisation
+		regenerateFlag();
+	}
+
+	void Flag::computeAutoCollision()
+	{
+		glm::vec3 bottomLeft = m_mesh.bottomLeft;
+		glm::vec3 topRight = m_mesh.topRight;
+		glm::vec3 center = bottomLeft + (topRight - bottomLeft)*0.5f;
+		float halfSize = std::max(topRight.x - bottomLeft.x, std::max(topRight.y - bottomLeft.y, topRight.z - bottomLeft.z) )*0.5f;
+		Octree<Point> octree(center, halfSize, 2);
+		for (int i = 0; i < pointContainer.size(); i++)
+			octree.add(&pointContainer[i], pointContainer[i].position);
+
+		//draw octree : 
+		std::vector<glm::vec3> octreeCenters;
+		std::vector<float> octreeHalfSizes;
+		octree.getAllCenterAndSize(octreeCenters, octreeHalfSizes);
+		OctreeDrawer::get().addDrawItems(octreeCenters, octreeHalfSizes);
+
+		float maxRadius = std::max(m_width, m_height)/ (float)m_subdivision;
+		maxRadius *= 2.f;
+
+		std::vector<Point*> neighborPoints;
+		for (int i = 0; i < pointContainer.size(); i++)
+		{
+			octree.findNeighbors(pointContainer[i].position, maxRadius, neighborPoints);
+			for (int j = 0; j < neighborPoints.size(); j++)
+			{
+				glm::vec3 pointToNeightbor = neighborPoints[j]->position - pointContainer[i].position;
+				float distancePointToNeightbor = glm::length(pointToNeightbor);
+				if (distancePointToNeightbor < m_autoCollisionDistance && (neighborPoints[j] != &pointContainer[i]))
+				{
+					glm::vec3 pushBackForce = glm::normalize(pointToNeightbor) * m_autoCollisionRigidity*(1.f - distancePointToNeightbor / m_autoCollisionDistance)*(1.f - distancePointToNeightbor / m_autoCollisionDistance);
+					glm::vec3 breakForce = m_autoCollisionViscosity*(neighborPoints[j]->vitesse - pointContainer[i].vitesse);
+
+					neighborPoints[j]->setForce(pushBackForce - breakForce);
+					pointContainer[i].setForce(-pushBackForce + breakForce);
+				}
+			}
+
+			neighborPoints.clear();
+			octree.remove(&pointContainer[i], pointContainer[i].position);
+		}
+	}
+
+	void Physic::Flag::computeGlobalBreak(float deltaTime, Point* point)
+	{
+		point->force -= m_viscosity*(point->vitesse);
 	}
 
 	void Physic::Flag::update(float deltaTime)
@@ -344,8 +707,12 @@ namespace Physic {
 		//blending : 
 		for (int i = 0; i < linkBlending.size(); i++)
 			computeLinks(deltaTime, &linkBlending[i]);
-			
-			
+		
+		if(m_computeAutoCollision)
+			computeAutoCollision();
+
+		//for (int i = 0; i < pointContainer.size(); i++)
+		//	computeGlobalBreak(deltaTime, &pointContainer[i]);
 
 		synchronizeVisual();
 	}
@@ -360,13 +727,13 @@ namespace Physic {
 
 		for (int i = 0, j = 0; i < pointContainer.size(); i++, j+=3)
 		{
-			m_mesh.vertices[j] = pointContainer[i].position.x + m_mesh.normals[j]*0.1f;
-			m_mesh.vertices[j+1] = pointContainer[i].position.y + m_mesh.normals[j + 1] * 0.1f;
-			m_mesh.vertices[j+2] = pointContainer[i].position.z + m_mesh.normals[j + 2] * 0.1f;
+			m_mesh.vertices[j] = pointContainer[i].position.x + m_mesh.normals[j]*0.01f;
+			m_mesh.vertices[j+1] = pointContainer[i].position.y + m_mesh.normals[j + 1] * 0.01f;
+			m_mesh.vertices[j+2] = pointContainer[i].position.z + m_mesh.normals[j + 2] * 0.01f;
 
-			m_mesh.vertices[j + verticePerFace*3] = pointContainer[i].position.x + m_mesh.normals[j + verticePerFace*3] * 0.1f;
-			m_mesh.vertices[j + 1 + verticePerFace*3] = pointContainer[i].position.y + m_mesh.normals[j + 1 + verticePerFace*3] * 0.1f;
-			m_mesh.vertices[j + 2 + verticePerFace*3] = pointContainer[i].position.z + m_mesh.normals[j + 2 + verticePerFace*3] * 0.1f;
+			m_mesh.vertices[j + verticePerFace*3] = pointContainer[i].position.x + m_mesh.normals[j + verticePerFace*3] * 0.01f;
+			m_mesh.vertices[j + 1 + verticePerFace*3] = pointContainer[i].position.y + m_mesh.normals[j + 1 + verticePerFace*3] * 0.01f;
+			m_mesh.vertices[j + 2 + verticePerFace*3] = pointContainer[i].position.z + m_mesh.normals[j + 2 + verticePerFace*3] * 0.01f;
 
 			//calculate bounds : 
 			if (pointContainer[i].position.x < min.x)
@@ -391,13 +758,17 @@ namespace Physic {
 		//update bounds : 
 		m_mesh.bottomLeft = min;
 		m_mesh.topRight = max;
-		auto collider = static_cast<BoxCollider*>(m_entity->getComponent(Component::ComponentType::COLLIDER));
-		if (collider != nullptr)
+		if (m_entity != nullptr)
 		{
-			//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
-			collider->scale = glm::vec3(1, 1, 1); 
-			collider->rotation = glm::quat(0, 0, 0, 0);
-			collider->coverMesh(m_mesh);
+			auto collider = static_cast<BoxCollider*>(m_entity->getComponent(Component::ComponentType::COLLIDER));
+			if (collider != nullptr)
+			{
+				//trick to remove scale and rotation from collider, because vertices are manually moved on scene and we want the collider to fit to the flag shape
+				collider->scale = glm::vec3(1, 1, 1); 
+				collider->rotation = glm::quat(0, 0, 0, 0);
+				collider->translation = glm::vec3(0, 0, 0);
+				collider->coverMesh(m_mesh);
+			}
 		}
 	}
 
@@ -407,7 +778,7 @@ namespace Physic {
 		if (d < 0.00000001f)
 			return;
 
-		float f = link->k * (1.f - link->l / d);
+		float f = -link->k * (1.f - d / link->l);
 		if (std::abs(f) < 0.00000001f)
 			return;
 
@@ -440,33 +811,54 @@ namespace Physic {
 		glm::mat4 mvp = projection * view * modelMatrix;
 		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
+		m_material->use();
 		m_material->setUniform_MVP(mvp);
 		m_material->setUniform_normalMatrix(normalMatrix);
-		m_material->use();
 
 		m_mesh.draw();
 	}
 
 	void Flag::drawUI(Scene& scene)
 	{
-		if (ImGui::CollapsingHeader("flag"))
+		if (ImGui::InputFloat("mass", &m_mass))
+			updatePhysic();
+		if(ImGui::InputFloat("viscosity", &m_viscosity))
+			updatePhysic();
+		if(ImGui::InputFloat("rigidity", &m_rigidity))
+			updatePhysic();
+
+		int tmpSub = m_subdivision;
+		if (ImGui::InputInt("subdivision", &m_subdivision))
 		{
-			char tmpMaterialName[20];
-			m_materialName.copy(tmpMaterialName, m_materialName.size());
-			tmpMaterialName[m_materialName.size()] = '\0';
-
-			if (ImGui::InputText("materialName", tmpMaterialName, 20))
-			{
-				m_materialName = tmpMaterialName;
-
-				if (MaterialFactory::get().contains(m_materialName))
-				{
-					m_material = MaterialFactory::get().get(m_materialName);
-				}
-			}
-
-			m_material->drawUI();
+			m_mass *= ((m_subdivision * m_subdivision) / (float)(tmpSub*tmpSub)); // change mass because we add matter, otherwise the system isn't stable
+			regenerateFlag();
 		}
+
+		if (ImGui::Button("restart simulation"))
+			restartSimulation();
+
+		if (ImGui::RadioButton("computeAutoCollision", m_computeAutoCollision))
+			m_computeAutoCollision = !m_computeAutoCollision;
+
+		ImGui::InputFloat("autoCollisionDistance", &m_autoCollisionDistance);
+		ImGui::InputFloat("autoCollisionRigidity", &m_autoCollisionRigidity);
+		ImGui::InputFloat("autoCollisionViscosity", &m_autoCollisionViscosity);
+
+		char tmpMaterialName[20];
+		m_materialName.copy(tmpMaterialName, m_materialName.size());
+		tmpMaterialName[m_materialName.size()] = '\0';
+
+		if (ImGui::InputText("materialName", tmpMaterialName, 20))
+		{
+			m_materialName = tmpMaterialName;
+
+			if (MaterialFactory::get().contains<Material3DObject>(m_materialName))
+			{
+				m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
+			}
+		}
+
+		//m_material->drawUI();
 	}
 
 	void Flag::applyForce(const glm::vec3 & force)
@@ -491,9 +883,23 @@ namespace Physic {
 		scene.add(this);
 	}
 
-	Component * Flag::clone(Entity * entity)
+	Component* Flag::clone(Entity* entity)
 	{
-		return nullptr;
+		Flag* newFlag = new Flag(*this);
+
+		newFlag->attachToEntity(entity);
+
+		return newFlag;
+	}
+
+	void Flag::addToEntity(Entity& entity)
+	{
+		entity.add(this);
+	}
+
+	void Flag::eraseFromEntity(Entity& entity)
+	{
+		entity.erase(this);
 	}
 
 	Mesh & Flag::getMesh() 
@@ -501,16 +907,28 @@ namespace Physic {
 		return m_mesh;
 	}
 
-	void Flag::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
+	void Flag::applyTransform(const glm::vec3& _translation, const glm::vec3& _scale, const glm::quat& _rotation)
 	{
-		modelMatrix = glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale);
+		modelMatrix = glm::translate(glm::mat4(1), _translation) * glm::mat4_cast(_rotation) * glm::scale(glm::mat4(1), _scale);
+
+		for (int i = 0; i < m_subdivision; i++)
+		{
+			pointContainer[i].position = glm::vec3(glm::translate(glm::mat4(1), _translation) * glm::mat4_cast(_rotation) *  glm::vec4(localPointPositions[i], 1.f));
+		}
 
 		for (int i = 0; i < pointContainer.size(); i++)
 		{
-			pointContainer[i].position = glm::vec3(modelMatrix * glm::vec4(localPointPositions[i], 1.f));
+			pointContainer[i].position = glm::vec3(glm::scale(glm::mat4(1), 1.f/scale) * glm::vec4(pointContainer[i].position, 1.f)); // inverse previous scale
+			pointContainer[i].position = glm::vec3( glm::scale(glm::mat4(1), _scale) * glm::vec4(pointContainer[i].position, 1.f));
 		}
 
-		modelMatrix = glm::translate(glm::mat4(1), translation);
+		modelMatrix = glm::mat4(1);//glm::translate(glm::mat4(1), -translation);
+
+		translation = _translation;
+		rotation = _rotation;
+		if (_scale != scale)
+			setDimensions(_scale.x, _scale.y);
+		scale = _scale;
 
 		synchronizeVisual();
 	}
@@ -518,6 +936,53 @@ namespace Physic {
 	glm::vec3 Flag::getOrigin() const
 	{
 		return origin;
+	}
+
+	float Flag::getMass() const
+	{
+		return m_mass;
+	}
+
+	float Flag::getRigidity() const
+	{
+		return m_rigidity;
+	}
+
+	float Flag::getViscosity() const
+	{
+		return m_viscosity;
+	}
+
+	void Flag::setMass(float mass)
+	{
+		m_mass = mass;
+	}
+
+	void Flag::setRigidity(float rigidity)
+	{
+		m_rigidity = rigidity;
+	}
+
+	void Flag::setViscosity(float viscosity)
+	{
+		m_viscosity = viscosity;
+	}
+
+	void Flag::setDimensions(float width, float height)
+	{
+		m_width = width;
+		m_height = height;
+		regenerateFlag();
+	}
+
+	void Flag::setSubdivision(int subdivision)
+	{
+		m_subdivision = subdivision;
+	}
+
+	int Flag::getSubdivision() const
+	{
+		return m_subdivision;
 	}
 
 }

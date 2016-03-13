@@ -8,13 +8,13 @@ ShadowMap::ShadowMap(int _textureWidth, int _textureHeight) : textureWidth(_text
 	//initialyze shadowRenderBuffer : 
 	glGenRenderbuffers(1, &shadowRenderBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, shadowRenderBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, textureWidth, _textureHeight);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, textureWidth, textureHeight);
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, shadowRenderBuffer);
 
 	//initialyze shadow texture : 
 	glGenTextures(1, &shadowTexture);
 	glBindTexture(GL_TEXTURE_2D, shadowTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, textureWidth, _textureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, textureWidth, textureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -33,6 +33,43 @@ ShadowMap::ShadowMap(int _textureWidth, int _textureHeight) : textureWidth(_text
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+ShadowMap::ShadowMap(ShadowMap&& other) noexcept
+{
+	textureWidth = other.textureWidth;
+	textureHeight = other.textureHeight;
+	shadowFrameBuffer = other.shadowFrameBuffer;
+	shadowRenderBuffer = other.shadowRenderBuffer;
+	shadowTexture = other.shadowTexture;
+
+	other.textureWidth = 0.f;
+	other.textureHeight = 0.f;
+	other.shadowFrameBuffer = 0;
+	other.shadowRenderBuffer = 0;
+	other.shadowTexture = 0;
+}
+
+ShadowMap& ShadowMap::operator=(ShadowMap&& other) noexcept
+{
+	if (&other != this)
+	{
+		//we keep texture alive in openGl context.
+
+		textureWidth = other.textureWidth;
+		textureHeight = other.textureHeight;
+		shadowFrameBuffer = other.shadowFrameBuffer;
+		shadowRenderBuffer = other.shadowRenderBuffer;
+		shadowTexture = other.shadowTexture;
+
+		other.textureWidth = 0.f;
+		other.textureHeight = 0.f;
+		other.shadowFrameBuffer = 0;
+		other.shadowRenderBuffer = 0;
+		other.shadowTexture = 0;
+	}
+
+	return *this;
 }
 
 ShadowMap::~ShadowMap()
@@ -64,8 +101,8 @@ OmniShadowMap::OmniShadowMap(int _textureWidth, int _textureHeight) : textureWid
 	{
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, textureWidth, textureHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -87,6 +124,44 @@ OmniShadowMap::OmniShadowMap(int _textureWidth, int _textureHeight) : textureWid
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+
+OmniShadowMap::OmniShadowMap(OmniShadowMap&& other) noexcept
+{
+	textureWidth = other.textureWidth;
+	textureHeight = other.textureHeight;
+	shadowFrameBuffer = other.shadowFrameBuffer;
+	shadowRenderBuffer = other.shadowRenderBuffer;
+	shadowTexture = other.shadowTexture;
+
+	other.textureWidth = 0.f;
+	other.textureHeight = 0.f;
+	other.shadowFrameBuffer = 0;
+	other.shadowRenderBuffer = 0;
+	other.shadowTexture = 0;
+}
+
+OmniShadowMap& OmniShadowMap::operator=(OmniShadowMap&& other) noexcept
+{
+	if (&other != this)
+	{
+		//we keep texture alive in openGl context.
+
+		textureWidth = other.textureWidth;
+		textureHeight = other.textureHeight;
+		shadowFrameBuffer = other.shadowFrameBuffer;
+		shadowRenderBuffer = other.shadowRenderBuffer;
+		shadowTexture = other.shadowTexture;
+
+		other.textureWidth = 0.f;
+		other.textureHeight = 0.f;
+		other.shadowFrameBuffer = 0;
+		other.shadowRenderBuffer = 0;
+		other.shadowTexture = 0;
+	}
+
+	return *this;
+}
+
 OmniShadowMap::~OmniShadowMap()
 {
 	glDeleteTextures(1, &shadowTexture);
@@ -98,7 +173,7 @@ OmniShadowMap::~OmniShadowMap()
 
 ///////////////////////////////////////////////////////
 
-LightManager::LightManager() //: globalIntensity(0.f)
+LightManager::LightManager() : directionalShadowMapViewportSize(128), directionalShadowMapViewportNear(0.1f), directionalShadowMapViewportFar(100.f)
 {
 
 }
@@ -128,7 +203,12 @@ void LightManager::setShadowMapCount(LightType lightType, unsigned int count)
 	}
 	else if (lightType == LightType::DIRECTIONAL)
 	{
-		directional_shadowMaps.resize(count);
+		int begin = std::max((int)(directional_shadowMaps.size() - 1), 0);
+		for (int i = begin; i < count; i++)
+		{
+			directional_shadowMaps.push_back(ShadowMap(4096, 4096));
+			//directional_shadowMaps.resize(count, ShadowMap(1024, 1024) ); // set texture size to 2048 for better precision with directional shadow maps.
+		}
 	}
 	else
 	{
@@ -220,4 +300,19 @@ void LightManager::uniformSpotLight(SpotLight & light)
 	glUniform1f(uniform_spotLight_int, light.intensity);
 	glUniform3fv(uniform_spotLight_pos, 1, glm::value_ptr(light.position));
 	glUniform1f(uniform_spotLight_angle, light.angle);
+}
+
+float LightManager::getDirectionalShadowMapViewportSize() const
+{
+	return directionalShadowMapViewportSize;
+}
+
+float LightManager::getDirectionalShadowMapViewportNear() const
+{
+	return directionalShadowMapViewportNear;
+}
+
+float LightManager::getDirectionalShadowMapViewportFar() const
+{
+	return directionalShadowMapViewportFar;
 }

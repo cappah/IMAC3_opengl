@@ -1,9 +1,189 @@
 #include "Utils.h"
+//forward
+#include "Camera.h"
+#include "dirent.h"
 
-glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, Camera& camera)
+#ifdef _WIN32 
+#include <Windows.h>
+#endif // _WIN32 
+
+void AutoCompletion::addWord(std::string word)
 {
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 viewMatrix = glm::lookAt(camera.eye, camera.o, camera.up);
+	char* newWord = new char[word.size()+1];
+	std::strcpy(newWord, word.c_str());
+	m_words.push_back(newWord);
+}
+
+void AutoCompletion::clearWords()
+{
+	for (int i = 0; i < m_words.size(); i++)
+		delete[] (m_words[i]);
+
+	m_words.clear();
+
+	//m_currentItem = 0;
+}
+
+AutoCompletion::AutoCompletion(): m_currentItem(0), m_upKey(false), m_downKey(false)
+{
+
+}
+
+
+bool AutoCompletion::apply(std::string& result)
+{
+	//char** words = new char*[_words.size()];
+	//for (int i = 0; i < _words.size(); i++)
+	//{
+	//	words[i] = new char[_words[i].size()+1];
+	//	std::strcpy(words[i], _words[i].c_str());
+	//	//_words[i].copy(words[i], _words[i].size());
+	//}
+
+
+	//if (ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size()))
+	//{
+	//	result = m_words[m_currentItem];
+	//}
+
+	//for (int i = 0; i < _words.size(); i++)
+	//	delete[] words[i];
+	//delete[] words;
+
+	if (!ImGui::GetIO().KeysDown[GLFW_KEY_DOWN]) {
+		m_downKey = false;
+	}
+	if (!ImGui::GetIO().KeysDown[GLFW_KEY_UP]) {
+		m_upKey = false;
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_DOWN] && !m_downKey) {
+		m_hasFocus = true;
+		m_downKey = true;
+		m_currentItem++;
+		if(m_words.size())
+			m_currentItem %= m_words.size();
+	}
+	else if (ImGui::GetIO().KeysDown[GLFW_KEY_UP] && !m_upKey) {
+		m_hasFocus = true;
+		m_upKey = true;
+		m_currentItem = m_currentItem > 0 ? (m_currentItem - 1) : m_words.size() - 1;
+	}
+
+	if(m_words.size() > 0)
+		ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size());
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_TAB] || ImGui::GetIO().KeysDown[GLFW_KEY_ENTER]) {
+		m_hasFocus = false;
+		m_itemSelected = true;
+		if(m_currentItem >=0 && m_currentItem < m_words.size())
+			result = m_words[m_currentItem];
+		return true;
+	}
+
+	return false;	
+}
+
+
+bool AutoCompletion::apply(char* result)
+{
+
+	if (!ImGui::GetIO().KeysDown[GLFW_KEY_DOWN]) {
+		m_downKey = false;
+	}
+	if (!ImGui::GetIO().KeysDown[GLFW_KEY_UP]) {
+		m_upKey = false;
+	}
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_DOWN] && !m_downKey) {
+		m_hasFocus = true;
+		m_downKey = true;
+		m_currentItem++;
+		if (m_words.size())
+			m_currentItem %= m_words.size();
+	}
+	else if (ImGui::GetIO().KeysDown[GLFW_KEY_UP] && !m_upKey) {
+		m_hasFocus = true;
+		m_upKey = true;
+		m_currentItem = m_currentItem > 0 ? (m_currentItem - 1) : m_words.size() - 1;
+	}
+
+	ImGui::ListBox("##autocompletion", &m_currentItem, m_words.data(), (int)m_words.size());
+
+	if (ImGui::GetIO().KeysDown[GLFW_KEY_TAB] || ImGui::GetIO().KeysDown[GLFW_KEY_ENTER]) {
+		m_hasFocus = false;
+		m_itemSelected = true;
+		std::strcmp(result, m_words[m_currentItem]);
+		if (m_currentItem >= 0 && m_currentItem < m_words.size())
+			return true;
+	}
+	return false;
+}
+
+void AutoCompletion::toggleOpen()
+{
+	m_isOpen = !m_isOpen;
+	if (m_isOpen == false)
+		m_autocompletionJustClosed = true;
+	else
+		m_autocompletionJustClosed = false;
+}
+
+bool AutoCompletion::getIsOpen()
+{
+	return m_isOpen;
+}
+
+void AutoCompletion::setIsOpen(bool state)
+{
+	m_isOpen = state;
+	if (m_isOpen == false)
+		m_autocompletionJustClosed = true;
+	else
+		m_autocompletionJustClosed = false;
+}
+
+bool AutoCompletion::isAutocompletionJustClosed() const
+{
+	return m_autocompletionJustClosed;
+}
+
+bool AutoCompletion::getIsActive() const
+{
+	return m_isActive;
+}
+
+void AutoCompletion::setIsActive(bool state)
+{
+	m_isActive = state;
+	m_itemSelected = false;
+}
+
+bool AutoCompletion::getHasFocus() const
+{
+	return m_hasFocus;
+}
+
+void AutoCompletion::setHasFocus(bool state)
+{
+	m_hasFocus = state;
+	m_itemSelected = false;
+}
+
+bool AutoCompletion::getItemSelected() const
+{
+	return m_itemSelected;
+}
+
+void AutoCompletion::setItemSelected(bool state)
+{
+	m_itemSelected = state;
+}
+
+glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, BaseCamera& camera)
+{
+	glm::mat4 projectionMatrix = camera.getProjectionMatrix();//glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 viewMatrix = camera.getViewMatrix();//glm::lookAt(camera.eye, camera.o, camera.up);
 
 	float x = (2.0f * mouse_x) / (float)width - 1.0f;
 	float y = 1.0f - (2.0f * mouse_y) / (float)height;
@@ -219,3 +399,202 @@ bool raySlabIntersect(float start, float dir, float min, float max, float* tfirs
 	if (tmax < *tlast)  (*tlast) = tmax;
 	return true;
 }
+
+std::vector<std::string> getAllDirNames(const std::string& path)
+{
+	std::vector<std::string> dirNames;
+
+	DIR *dir;
+	struct dirent *ent;
+
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if(ent->d_type == DT_DIR)
+				dirNames.push_back(ent->d_name);
+		}
+		closedir(dir);
+	}
+	else {
+		//could not open directory
+		std::cout << "error, can't open directory at path : " << path << std::endl;
+	}
+
+	return dirNames;
+}
+
+std::vector<std::string> getAllFileAndDirNames(const std::string& path)
+{
+	std::vector<std::string> fileAndDirNames;
+
+	DIR *dir;
+	struct dirent *ent;
+
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			fileAndDirNames.push_back(ent->d_name);
+		}
+		closedir(dir);
+	}
+	else {
+		//could not open directory
+		std::cout << "error, can't open directory at path : " << path << std::endl;
+	}
+
+	return fileAndDirNames;
+}
+
+
+bool directoryExists(const std::string& name, const std::string& path)
+{
+	DIR *dir;
+	struct dirent *ent;
+
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if (ent->d_type == DT_DIR && std::string(ent->d_name) == name)
+				return true;
+		}
+		closedir(dir);
+	}
+	else {
+		//could not open directory
+		std::cout << "error, can't open directory at path : " << path << std::endl;
+	}
+
+	return false;
+}
+
+bool directoryExists(const std::string& path)
+{
+	return (opendir(path.c_str()) != NULL);
+}
+
+void addDirectories(const std::string& path)
+{
+	if (directoryExists(path))
+		return;
+
+	std::vector<std::string> dirNames = splitString(path, '/', '\\');
+	if (dirNames.size() == 0)
+		return;
+
+	std::string currentPath = "";
+
+	for (int i = 0; i < dirNames.size(); i++)
+	{
+		if (!directoryExists(currentPath, dirNames[i]))
+		{
+			addDirectory(dirNames[i], currentPath);
+		}
+		currentPath += (dirNames[i] + "/");
+	}
+}
+
+void addDirectory(const std::string& name, const std::string& path)
+{
+#ifdef _WIN32
+	if ( path.find_last_of("/") >= path.size() || path.find_last_of("\\") >= path.size() )
+		CreateDirectory( (path + "/" + name).c_str() , NULL);
+	else
+		CreateDirectory( (path + name).c_str(), NULL);
+#endif // _WIN32
+
+#ifdef linux
+	std::cerr << "error : the addDirectory function isn't support on linux platform yet." << std::endl;
+#endif // linux
+
+
+	//TODO add linux support.
+}
+
+std::vector<std::string> splitString(const std::string& s, char delim)
+{
+	std::vector<std::string> elements;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, delim)){
+		elements.push_back(item);
+	}
+	return elements;
+}
+
+std::vector<std::string> splitString(const std::string& s, char delim01, char delim02)
+{
+	std::vector<std::string> tmpElements;
+	std::vector<std::string> elements;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, delim01)) {
+		tmpElements.push_back(item);
+	}
+
+	for (int i = 0; i < tmpElements.size(); i++)
+	{
+		std::stringstream ss2(tmpElements[i]);
+
+		while (std::getline(ss2, item, delim02)) {
+			elements.push_back(item);
+		}
+	}
+
+	return elements;
+}
+
+std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& path, std::string& filename)
+{
+	std::size_t pathLength = pathAndFileName.find_last_of("/\\");
+	if (pathLength == std::string::npos) {
+		pathLength = 0;
+		path = "";
+		filename = pathAndFileName;
+	}
+	else {
+		path = pathAndFileName.substr(0, pathLength);
+		filename = pathAndFileName.substr(pathLength + 1);
+	}
+	return pathLength;
+}
+
+namespace Physic{
+
+	void computeLink(float deltaTime, Link* link)
+	{
+		float d = glm::distance(link->M1->position, link->M2->position);
+		if (d < 0.00000001f)
+			return;
+
+		float f = link->k * (1.f - link->l / d);
+		if (std::abs(f) < 0.00000001f)
+			return;
+
+		glm::vec3 M1M2 = link->M2->position - link->M1->position;
+		glm::normalize(M1M2);
+		if (glm::length(M1M2) < 0.00000001f)
+			return;
+
+		//frein :
+		glm::vec3 frein = link->z*(link->M2->vitesse - link->M1->vitesse);
+
+		link->M1->force += (f * M1M2 + frein);
+		link->M2->force += (-f * M1M2 - frein);
+
+	}
+
+	void computePoints(float deltaTime, Point* point)
+	{
+		if (point->masse < 0.00000001f)
+			return;
+
+		//leapfrog
+		point->vitesse += (deltaTime / point->masse)*point->force;
+		point->position += deltaTime*point->vitesse;
+		point->force = glm::vec3(0, 0, 0);
+	}
+}
+

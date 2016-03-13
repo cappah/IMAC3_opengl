@@ -1,8 +1,11 @@
 #pragma once
 
 #include "Flag.h"
+#include "WindZone.h"
+#include "Terrain.h"
 
 namespace Physic {
+	
 	class PhysicManager
 	{
 	private:
@@ -15,7 +18,7 @@ namespace Physic {
 		void setGravity(const glm::vec3& g);
 		glm::vec3 getGravity() const;
 
-		void update(float deltaTime, std::vector<Flag*>& flags);
+		void update(float deltaTime, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones);
 	};
 }
 

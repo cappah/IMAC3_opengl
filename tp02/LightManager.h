@@ -21,7 +21,12 @@ struct ShadowMap
 	GLuint shadowTexture;
 
 	ShadowMap(int _textureWidth = 1024, int _textureHeight = 1024);
+	ShadowMap(ShadowMap&& other) noexcept;
+	ShadowMap& operator=(ShadowMap&& other) noexcept;
 	~ShadowMap();
+
+	ShadowMap(const ShadowMap& other) = delete;
+	ShadowMap& operator=(const ShadowMap& other) = delete;
 };
 
 struct OmniShadowMap // omnidirectional shadow map for point lights
@@ -34,7 +39,12 @@ struct OmniShadowMap // omnidirectional shadow map for point lights
 	GLuint shadowTexture;
 
 	OmniShadowMap(int _textureWidth = 1024, int _textureHeight = 1024);
+	OmniShadowMap(OmniShadowMap&& other) noexcept;
+	OmniShadowMap& operator=(OmniShadowMap&& other) noexcept;
 	~OmniShadowMap();
+
+	OmniShadowMap(const OmniShadowMap& other) = delete;
+	OmniShadowMap& operator=(const OmniShadowMap& other) = delete;
 };
 
 class LightManager
@@ -63,6 +73,10 @@ private:
 	std::vector<ShadowMap> directional_shadowMaps;
 	std::vector<OmniShadowMap> point_shadowMaps;
 
+	float directionalShadowMapViewportSize;
+	float directionalShadowMapViewportNear;
+	float directionalShadowMapViewportFar;
+
 
 public:
 	LightManager();
@@ -80,5 +94,9 @@ public:
 	void uniformPointLight(PointLight& light);
 	void uniformDirectionalLight(DirectionalLight& light);
 	void uniformSpotLight(SpotLight& light);
+
+	float getDirectionalShadowMapViewportSize() const;
+	float getDirectionalShadowMapViewportNear() const;
+	float getDirectionalShadowMapViewportFar() const;
 };
 

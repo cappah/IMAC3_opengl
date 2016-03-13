@@ -165,6 +165,11 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	lightManager->setShadowMapCount(LightManager::POINT, 10);
 }
 
+Renderer::~Renderer()
+{
+	delete lightManager;
+}
+
 
 void Renderer::onResizeWindow()
 {
@@ -374,10 +379,11 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 }
 
 
-void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards)
+void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-
+	glm::vec3 cameraPosition = camera.getCameraPosition();
+	glm::vec3 cameraForward = camera.getCameraForward();
 
 	////////////////////////// begin scene rendering 
 
@@ -421,8 +427,13 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 		{
 			lightManager->bindShadowMapFBO(LightManager::DIRECTIONAL, lightIdx);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			glm::mat4 lightProjection = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
-			glm::mat4 lightView = glm::lookAt(-directionalLights[lightIdx]->direction*2.f , glm::vec3(0,0,0) , directionalLights[lightIdx]->up);
+			float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
+			float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
+			float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
+			glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalLights[lightIdx]->position.y /*directionalShadowMapFar*0.5f*/, cameraPosition.z);
+			glm::vec3 eye = -directionalLights[lightIdx]->direction + orig;
+			glm::mat4 lightProjection = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
+			glm::mat4 lightView = glm::lookAt(eye, orig, directionalLights[lightIdx]->up);
 
 			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
 			{
@@ -478,8 +489,8 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	////// begin matrix updates
 
 	// update values
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 worldToView = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix();//glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 worldToView = camera.getViewMatrix();//glm::lookAt(camera.eye, camera.o, camera.up);
 	glm::mat4 camera_mvp = projection * worldToView;
 	glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
 	
@@ -498,15 +509,16 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	//render meshes
 	for (int i = 0; i < meshRenderers.size(); i++)
 	{
-		glm::mat4 modelMatrix = meshRenderers[i]->entity()->getModelMatrix(); //get modelMatrix
-		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
-		glm::mat4 mvp = projection * worldToView * modelMatrix;
+		//glm::mat4 modelMatrix = meshRenderers[i]->entity()->getModelMatrix(); //get modelMatrix
+		//glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
+		//glm::mat4 mvp = projection * worldToView * modelMatrix;
 
-		meshRenderers[i]->getMaterial()->use();
-		meshRenderers[i]->getMaterial()->setUniform_MVP(mvp);
-		meshRenderers[i]->getMaterial()->setUniform_normalMatrix(normalMatrix);
+		//meshRenderers[i]->getMaterial()->use();
+		//meshRenderers[i]->getMaterial()->setUniform_MVP(mvp);
+		//meshRenderers[i]->getMaterial()->setUniform_normalMatrix(normalMatrix);
 
-		meshRenderers[i]->getMesh()->draw();
+		//meshRenderers[i]->getMesh()->draw();
+		meshRenderers[i]->render(projection, worldToView);
 	}
 
 	//render physic flags : 
@@ -515,8 +527,11 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 		flags[i]->render(projection, worldToView);
 	}
 
-	//render terrain : 
+	//render terrain :
 	terrain.render(projection, worldToView);
+
+	terrain.renderGrassField(projection, worldToView);
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -540,7 +555,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 	// send screen to world matrix : 
 	glUniformMatrix4fv(unformScreenToWorld[POINT], 1, false, glm::value_ptr(screenToWorld));
-	glUniform3fv(uniformCameraPosition[POINT], 1, glm::value_ptr(camera.eye));
+	glUniform3fv(uniformCameraPosition[POINT], 1, glm::value_ptr(camera.getCameraPosition()));
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
@@ -585,7 +600,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 
 	// send screen to world matrix : 
 	glUniformMatrix4fv(unformScreenToWorld[SPOT], 1, false, glm::value_ptr(screenToWorld));
-	glUniform3fv(uniformCameraPosition[SPOT], 1, glm::value_ptr(camera.eye));
+	glUniform3fv(uniformCameraPosition[SPOT], 1, glm::value_ptr(cameraPosition));
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
@@ -640,7 +655,7 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glUseProgram(glProgram_lightPass_directionalLight);
 	// send screen to world matrix : 
 	glUniformMatrix4fv(unformScreenToWorld[DIRECTIONAL], 1, false, glm::value_ptr(screenToWorld));
-	glUniform3fv(uniformCameraPosition[DIRECTIONAL], 1, glm::value_ptr(camera.eye));
+	glUniform3fv(uniformCameraPosition[DIRECTIONAL], 1, glm::value_ptr(cameraPosition));
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
@@ -663,8 +678,16 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 			glUniform1i(uniformTextureShadow[DIRECTIONAL], 3); // send shadow texture
 		}
 
-		glm::mat4 projectionDirectionalLight = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
-		glm::mat4 worldToLightDirectionalLight = glm::lookAt(-directionalLights[i]->direction*2.f ,  glm::vec3(0, 0, 0) , directionalLights[i]->up);
+		//glm::mat4 projectionDirectionalLight = glm::ortho(-16.f, 16.f, -16.f, 16.f, 1.f, 100.f);
+		//glm::mat4 worldToLightDirectionalLight = glm::lookAt(-directionalLights[i]->direction*2.f ,  glm::vec3(0, 0, 0) , directionalLights[i]->up);
+
+		float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
+		float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
+		float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
+		glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalLights[i]->position.y/*directionalShadowMapFar*0.5f*/, cameraPosition.z);
+		glm::vec3 eye = -directionalLights[i]->direction + orig;
+		glm::mat4 projectionDirectionalLight = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
+		glm::mat4 worldToLightDirectionalLight = glm::lookAt(eye, orig, directionalLights[i]->up);
 		glm::mat4 WorldToLightScreen = projectionDirectionalLight * worldToLightDirectionalLight;
 		glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
 
@@ -693,7 +716,11 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	
+	//blending turn on for grass rendering
+	//glEnable(GL_BLEND);
+	//terrain.renderGrassField(projection, worldToView);
+	//glDisable(GL_BLEND);
+
 	//rander skybox : 
 	skybox.render(projection, worldToView);
 
@@ -704,12 +731,12 @@ void Renderer::render(const Camera& camera, std::vector<MeshRenderer*>& meshRend
 	}
 }
 
-void Renderer::debugDrawColliders(const Camera& camera, const std::vector<Entity*>& entities)
+void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix();//glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = camera.getViewMatrix();// glm::lookAt(camera.eye, camera.o, camera.up);
 	glm::mat4 vp = projection * view;
 	glm::mat4 screenToWorld = glm::transpose(glm::inverse(vp));
 
@@ -766,13 +793,13 @@ void Renderer::debugDrawDeferred()
 	///////////// end draw blit quad
 }
 
-void Renderer::debugDrawLights(const Camera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
+void Renderer::debugDrawLights(const BaseCamera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
 {
 	int width = Application::get().getWindowWidth();
 	int height = Application::get().getWindowHeight();
 
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);
 
 	for (auto& light : pointLights)
 	{
@@ -913,8 +940,10 @@ void Renderer::resizeBlitQuad(const glm::vec4 & viewport)
 
 
 
-void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos )
+void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos )
 {
+	glm::vec3 cameraPosition = camera.getCameraPosition();
+
 
 	if (!pointLightCullingInfos.empty())
 		pointLightCullingInfos.clear();
@@ -934,8 +963,8 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 	int width = Application::get().getWindowWidth();
 	int height = Application::get().getWindowHeight();
 
-	glm::mat4 projection = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);
 
 	int lastId = pointLights.size() - 1;;
 	for (int i = 0; i < pointLights.size(); i++)
@@ -946,7 +975,7 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
 
-		if (!(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
+		if (!(cameraPosition.x > bottomLeft.x && cameraPosition.x < topRight.x && cameraPosition.y > bottomLeft.y && cameraPosition.y < topRight.y && cameraPosition.z > bottomLeft.z && cameraPosition.z < topRight.z))
 		{
 
 			//compute 8 points of 3D collider : 
@@ -1021,7 +1050,7 @@ void Renderer::updateCulling(const Camera& camera, std::vector<PointLight*>& poi
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
 
-		if (!(camera.eye.x > bottomLeft.x && camera.eye.x < topRight.x && camera.eye.y > bottomLeft.y && camera.eye.y < topRight.y && camera.eye.z > bottomLeft.z && camera.eye.z < topRight.z))
+		if (!(cameraPosition.x > bottomLeft.x && cameraPosition.x < topRight.x && cameraPosition.y > bottomLeft.y && cameraPosition.y < topRight.y && cameraPosition.z > bottomLeft.z && cameraPosition.z < topRight.z))
 		{
 			//compute 8 points of 3D collider : 
 

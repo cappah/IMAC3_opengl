@@ -9,7 +9,7 @@
 class PathManager
 {
 private:
-	Material* m_material;
+	Material3DObject* m_material;
 	std::vector<Path*> m_paths;
 
 public:
@@ -26,6 +26,6 @@ public:
 	void add(PathPoint* pathPoint);
 	void erase(PathPoint* pathPoint);
 
-	void render(const Camera& camera);
+	void render(const BaseCamera& camera);
 };
 

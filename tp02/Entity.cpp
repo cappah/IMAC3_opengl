@@ -1,110 +1,14 @@
 #include "Entity.h"
 #include "Component.h"
 #include "Scene.h"
+#include "ComponentFactory.h"
 
-Transform::Transform() : m_translation(0,0,0), m_scale(1,1,1)
+Entity::Entity(Scene* scene) : TransformNode(), m_scene(scene), m_isSelected(false), m_name("default_entity"), m_parent(nullptr)
 {
-
-}
-
-Transform::~Transform()
-{
-
-}
-
-glm::mat4 Transform::getModelMatrix()
-{
-	return m_modelMatrix;
-}
-
-glm::vec3 Transform::getTranslation()
-{
-	return m_translation;
-}
-
-glm::vec3 Transform::getScale()
-{
-	return m_scale;
-}
-
-glm::quat Transform::getRotation()
-{
-	return m_rotation;
-}
-
-glm::vec3 Transform::getEulerRotation()
-{
-	return m_eulerRotation;
-}
-
-void Transform::translate(glm::vec3 const& t)
-{
-	m_translation += t;
-
-	updateModelMatrix();
-}
-
-void Transform::setTranslation(glm::vec3 const& t)
-{
-	m_translation = t;
-
-	updateModelMatrix();
-}
-
-void Transform::scale(glm::vec3 const& s)
-{
-	m_scale *= s;
-
-	updateModelMatrix();
-}
-
-void Transform::setScale(glm::vec3 const& s)
-{
-	m_scale = s;
-
-	updateModelMatrix();
-}
-
-void Transform::rotate(glm::quat const& q)
-{
-	m_rotation *= q;
-
-	updateModelMatrix();
-}
-
-void Transform::setRotation(glm::quat const& q)
-{
-	m_rotation = q;
-
-	updateModelMatrix();
-}
-
-void Transform::setEulerRotation(glm::vec3 const & q)
-{
-	m_eulerRotation = q;
-	m_rotation = glm::quat(q);
-
-	updateModelMatrix();
-}
-
-void Transform::updateModelMatrix()
-{
-	m_modelMatrix = glm::translate(glm::mat4(1), m_translation) * glm::mat4_cast(m_rotation) * glm::scale(glm::mat4(1), m_scale);
-
-	onChangeModelMatrix();
-}
-
-//////////////////////////////
-
-Entity::Entity(Scene* scene) : Transform(), m_scene(scene), m_isSelected(false)
-{
-	m_name.reserve(100);
-	m_name[0] = '\0';
-
 	scene->add(this);
 }
 
-Entity::Entity(const Entity& other) : Transform(other), m_isSelected(other.m_isSelected), m_name(other.m_name), m_scene(other.m_scene)
+Entity::Entity(const Entity& other) : TransformNode(other), m_isSelected(other.m_isSelected), m_name(other.m_name), m_scene(other.m_scene), m_parent(other.m_parent)
 {
 	m_scene->add(this);
 
@@ -117,17 +21,24 @@ Entity::Entity(const Entity& other) : Transform(other), m_isSelected(other.m_isS
 		//add to entity
 		m_components.push_back(newComponent);
 	}
+	eraseAllChilds();
+	for (int i = 0; i < other.m_childs.size(); i++)
+	{
+		auto newEntity = new Entity(*other.m_childs[i]);
+		m_childs.push_back(newEntity);
+	}
 
 	updateModelMatrix();
 }
 
 Entity& Entity::operator=(const Entity& other)
 {
-	Transform::operator=(other);
+	TransformNode::operator=(other);
 
 	m_isSelected = other.m_isSelected;
 	m_name = other.m_name;
 	m_scene = other.m_scene;
+	m_parent = other.m_parent;
 
 	m_scene->add(this);
 
@@ -141,13 +52,21 @@ Entity& Entity::operator=(const Entity& other)
 		//add to entity
 		m_components.push_back(newComponent);
 	}
+	eraseAllChilds();
+	for (int i = 0; i < other.m_childs.size(); i++)
+	{
+		auto newEntity = new Entity(*other.m_childs[i]);
+		m_childs.push_back(newEntity);
+	}
 
 	return *this;
 }
 
 Entity::~Entity()
 {
+	setParent(nullptr);
 	eraseAllComponents();
+	eraseAllChilds();
 }
 
 void Entity::onChangeModelMatrix()
@@ -160,10 +79,57 @@ void Entity::applyTransform()
 	//if (collider != nullptr)
 	//	collider->applyTransform(m_translation, m_scale);
 
-	for (auto c : m_components)
+	for (auto& c : m_components)
 	{
 		c->applyTransform(m_translation, m_scale, m_rotation);
 	}
+	for (auto& e : m_childs)
+	{
+		e->applyTransform(m_translation, m_scale, m_rotation);
+		//e->applyTransform(); //recursivity on all childs
+	}
+}
+
+void Entity::applyTransform(const glm::vec3 & parentTranslation, const glm::vec3 & parentScale, const glm::quat & parentRotation)
+{
+	m_translation = parentRotation * m_localTranslation + parentTranslation;
+	m_scale = m_localScale * parentScale;
+	m_rotation = m_localRotation * parentRotation;
+
+	//glm::mat4 updateMatrix = glm::translate(glm::mat4(1), parentTranslation);// *glm::mat4_cast(parentRotation);// *glm::scale(glm::mat4(1), parentScale);
+
+	////combine transforms to get world model matrix of the model
+	////and make the child launch applyTransform recursivly
+	setParentTransform(parentTranslation, parentScale, parentRotation);
+	updateModelMatrix();
+}
+
+
+void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId)
+{
+	bool nodeOpen = false;
+
+	ImVec2 itemPos;
+	ImVec2 itemSize;
+	if (ImGui::MyTreeNode("", itemPos, itemSize))
+		nodeOpen = true;
+	ImGui::SameLine();
+
+
+	ImGui::Text(Component::ComponentTypeName[component->type()].c_str());//, ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
+
+	ImGui::SameLine();
+	if (ImGui::Button("remove"))
+	{
+		hasToRemoveComponent = true;
+		removeId = id;
+	}
+
+	if(nodeOpen)
+		component->drawUI(scene);
+
+	if (nodeOpen)
+		ImGui::TreePop();
 }
 
 void Entity::drawUI(Scene& scene)
@@ -177,37 +143,58 @@ void Entity::drawUI(Scene& scene)
 		m_name = tmpName;
 	}
 
-	glm::vec3 tmpRot = m_eulerRotation * (180.f / glm::pi<float>());
-	if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 360 ))
+	TransformNode::drawUI(hasParent());
+
+	bool hasToRemoveComponent = false;
+	int removeId = 0;
+	bool expendComponent = false;
+	for (int i = 0; i < m_components.size(); i++)
 	{
-		m_eulerRotation = tmpRot * glm::pi<float>() / 180.f;
-		setRotation( glm::quat(m_eulerRotation) );
-		applyTransform();
-	}
+		ImGui::PushID(i);
+		//ImGui::Separator();
+		///*const float frame_height = 10;
+		//ImRect bb = ImRect(ImGui::GetCurrentWindow()->DC.CursorPos, ImVec2(ImGui::GetCurrentWindow()->Pos.x + ImGui::GetContentRegionMax().x, ImGui::GetCurrentWindow()->DC.CursorPos.y + frame_height));
+		//bool hovered, held;
+		//const ImGuiID id = ImGui::GetCurrentWindow()->DC. ->GetID(str_id);
+		//bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoKeyModifiers);
+		//ImGui::RenderCollapseTriangle(bb.Min, false);*/
+		//if (ImGui::Button("expend"))
+		//	expendComponent = true;
+		//ImGui::SameLine();
+		//ImGui::Text(Component::ComponentTypeName[m_components[i]->type()].c_str());
+		//ImGui::SameLine();
+		//if (ImGui::Button("remove"))
+		//{
+		//	hasToRemoveComponent = true;
+		//	removeId = i;
+		//}	
+		//ImGui::Separator();
+		//if(expendComponent)
+		//	m_components[i]->drawUI(scene);
+		displayTreeNodeInspector(scene, m_components[i], i, hasToRemoveComponent, removeId);
 
-	glm::vec3 tmpScale = m_scale;
-	if (ImGui::InputFloat3("scale", &tmpScale[0]))
+		ImGui::PopID();
+
+		expendComponent = false;
+	}
+	if(hasToRemoveComponent)
+		m_components[removeId]->eraseFromEntity(*this);
+
+	if (ImGui::Button("add component"))
+		ImGui::OpenPopup("add component window");
+
+	bool addComponentWindowOpened = true;
+
+	if (ImGui::BeginPopupModal("add component window", &addComponentWindowOpened))
 	{
-		setScale( tmpScale );
-		applyTransform();
+		Component* newComponent = nullptr;
+		ComponentFactory::get().drawModalWindow(this);
+
+		if(newComponent != nullptr)
+			newComponent->addToEntity(*this);
+
+		ImGui::EndPopup();
 	}
-
-	for (auto c : m_components)
-	{
-		c->drawUI(scene);
-	}
-
-	//if(collider != nullptr)
-	//	if (ImGui::CollapsingHeader("collider"))
-	//	{
-	//		collider->drawUI();
-	//	}
-
-	//if (meshRenderer != nullptr)
-	//	if (ImGui::CollapsingHeader("mesh renderer"))
-	//	{
-	//		meshRenderer->drawUI();
-	//	}
 
 }
 
@@ -326,6 +313,28 @@ Entity & Entity::add(Billboard * billboard)
 	return *this;
 }
 
+
+Entity & Entity::add(Camera * camera)
+{
+	camera->attachToEntity(this);
+
+	m_scene->add(camera);
+	m_components.push_back(camera);
+
+	return *this;
+}
+
+Entity & Entity::add(Physic::WindZone * windZone)
+{
+	windZone->attachToEntity(this);
+
+	m_scene->add(windZone);
+	m_components.push_back(windZone);
+
+	return *this;
+}
+
+
 Entity& Entity::erase(PointLight * pointLight)
 {
 	auto findIt = std::find(m_components.begin(), m_components.end(), pointLight);
@@ -443,6 +452,34 @@ Entity & Entity::erase(Billboard * billboard)
 	return *this;
 }
 
+Entity & Entity::erase(Physic::WindZone * windZone)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), windZone);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(windZone);
+	}
+
+	return *this;
+}
+
+Entity & Entity::erase(Camera * camera)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), camera);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(camera);
+	}
+
+	return *this;
+}
+
+
+
 void Entity::endCreation()
 {
 	Collider* colliderComponent = static_cast<Collider*>(getComponent(Component::ComponentType::COLLIDER));
@@ -470,7 +507,7 @@ void Entity::eraseAllComponents()
 	for (int i = 0; i < m_components.size(); i++)
 	{
 		m_components[i]->eraseFromScene(*m_scene);
-		m_components[i] = nullptr;
+		//m_components[i] = nullptr;
 	}
 	m_components.clear();
 }
@@ -485,4 +522,132 @@ Component* Entity::getComponent(Component::ComponentType type)
 	}
 
 	return nullptr;
+}
+
+bool Entity::hasParent() const
+{
+	return m_parent != nullptr;
+}
+
+bool Entity::hasChild() const
+{
+	return m_childs.size() > 0;
+}
+
+Entity* Entity::getChild(int idx)
+{
+	return m_childs[idx];
+}
+
+Entity* Entity::getParent()
+{
+	return m_parent;
+}
+
+void Entity::setParent(Entity* parent)
+{
+	if (m_parent != nullptr)
+		removeParent();
+
+	setParentAtomic(parent);
+	if(m_parent != nullptr)
+		m_parent->addChildAtomic(this);
+}
+
+void Entity::addChild(Entity* child)
+{
+	child->removeParent();
+
+	child->setParentAtomic(this);
+	addChildAtomic(child);
+}
+
+void Entity::removeParent()
+{
+	m_parent->removeChild(this);
+	m_parent = nullptr;
+}
+
+void Entity::removeChild(Entity* child)
+{
+	if (m_childs.size() > 0) //has childs ?
+	{
+		auto findIt = std::find(m_childs.begin(), m_childs.end(), child);
+		if (findIt != m_childs.end())
+			m_childs.erase(findIt);
+	}
+}
+
+void Entity::eraseAllChilds()
+{
+	while(m_childs.size() > 0)
+	{
+		m_scene->erase(m_childs.back());
+		//m_childs[i] = nullptr;
+	}
+	if(m_childs.size() > 0)
+		m_childs.clear();
+}
+
+int Entity::getChildCount() const
+{
+	return m_childs.size();
+}
+
+void Entity::save(Json::Value& entityRoot) const
+{
+	TransformNode::save(entityRoot);
+
+	//Scene* m_scene; scene is already set by constructor 
+	entityRoot["name"] = m_name;
+
+	//std::vector<Entity*> m_childs; TODO
+	//Entity* m_parent; TODO
+
+	//bool m_isSelected; selected information isn't serialized
+
+	entityRoot["componentCount"] = m_components.size();
+	for (int i = 0; i < m_components.size(); i++)
+	{
+		m_components[i]->save(entityRoot["components"][i]);
+	}
+}
+
+void Entity::load(Json::Value& entityRoot)
+{
+	TransformNode::load(entityRoot);
+
+	//Scene* m_scene; scene is already set by constructor 
+	m_name = entityRoot.get("name", "defaultEntity").asString();
+
+	//std::vector<Entity*> m_childs; TODO
+	//Entity* m_parent; TODO
+
+	//bool m_isSelected; selected information isn't serialized
+
+	int componentCount = entityRoot.get("componentCount", 0).asInt();
+	for (int i = 0; i < componentCount; i++)
+	{
+		Component* newComponent;
+		Component::ComponentType type = (Component::ComponentType)entityRoot["components"][i].get("type", "NONE").asInt();
+		newComponent = ComponentFactory::get().getInstance(type);
+		newComponent->load(entityRoot["components"][i]);
+
+		newComponent->addToEntity(*this);
+	}
+}
+
+void Entity::addChildAtomic(Entity* child)
+{
+	m_childs.push_back(child);
+}
+
+void Entity::setParentAtomic(Entity* parent)
+{
+	m_parent = parent;
+
+	if (m_parent == nullptr)
+		setParentTransform();
+	else
+		setParentTransform(*m_parent);
 }

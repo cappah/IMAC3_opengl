@@ -18,6 +18,8 @@
 #include "Materials.h"
 #include "Component.h"
 
+#include "Octree.h"
+
 namespace Physic {
 
 	class Flag : public Component
@@ -37,14 +39,27 @@ namespace Physic {
 		Mesh m_mesh;
 
 		std::string m_materialName;
-		Material *m_material;
+		Material3DObject *m_material;
 
 		float m_width;
 		float m_height;
 		int m_subdivision;
 
+		float m_mass;
+		float m_viscosity;
+		float m_rigidity;
+
+		//for auto collisions : 
+		float m_autoCollisionDistance;
+		bool m_computeAutoCollision;
+		float m_autoCollisionRigidity;
+		float m_autoCollisionViscosity;
+
 	public:
-		Flag(Material* material, int subdivision = 10, float width = 10.f, float height = 10.f);
+		Flag();
+		Flag(Material3DObject* material, int subdivision = 10, float width = 10.f, float height = 10.f);
+		Flag(const Flag& other);
+		Flag& operator=(const Flag& other);
 		~Flag();
 
 		//function to call each frame, with deltaTime = frame duration or fixe duration
@@ -65,6 +80,8 @@ namespace Physic {
 		virtual void eraseFromScene(Scene & scene) override;
 		virtual void addToScene(Scene & scene) override;
 		virtual Component * clone(Entity * entity) override;
+		virtual void addToEntity(Entity& entity) override;
+		virtual void eraseFromEntity(Entity& entity) override;
 
 		//return the flag mesh
 		Mesh& getMesh();
@@ -75,9 +92,30 @@ namespace Physic {
 		//Return the origin of the flag, which is normaly also the origin of the flag mesh.
 		glm::vec3 getOrigin() const;
 
+		float getMass() const;
+		float getRigidity() const;
+		float getViscosity() const;
+		void setMass(float mass);
+		void setRigidity(float rigidity);
+		void setViscosity(float viscosity);
+		void setDimensions(float width, float height);
+
+		void setSubdivision(int subdivision);
+		int getSubdivision() const;
+
+		void updatePhysic();
+
+		void restartSimulation();
+
+		virtual void save(Json::Value& rootComponent) const override;
+		virtual void load(Json::Value& rootComponent) override;
+
 	private : 
+		//completly free memory allocate for the flag and then reconstruct the flag
+		void regenerateFlag();
 		//simply generate the model, don't destroy or allocate memory, we have to do it manually before and after calling this function
 		void generateMesh();
+		void generatePoints(); 
 		//update all normals such that they follow the shape
 		void updateNormals();
 		//initialyze and place the physic points and links
@@ -89,6 +127,9 @@ namespace Physic {
 		void computeLinks(float deltaTime, Link* link);
 		//apply physic simulation on points
 		void computePoints(float deltaTime, Point* point);
+		void computeGlobalBreak(float deltaTime, Point* point);
+
+		void computeAutoCollision();
 
 	};
 

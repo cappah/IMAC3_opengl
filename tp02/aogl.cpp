@@ -44,6 +44,10 @@
 #include "Flag.h"
 #include "Scene.h"
 
+#include "jsoncpp/json/json.h"
+
+#include "Project.h"
+
 #ifndef DEBUG_PRINT
 #define DEBUG_PRINT 1
 #endif
@@ -69,18 +73,36 @@ extern const unsigned int DroidSans_ttf_len;
 
 
 
-void window_size_callback(GLFWwindow* window, int width, int height)
+//void window_size_callback(GLFWwindow* window, int width, int height)
+//{
+//	Application::get().setWindowResize(true);
+//	Application::get().setWindowWidth(width);
+//	Application::get().setWindowHeight(height);
+//}
+
+
+
+int main(int argc, char** argv)
 {
-	Application::get().setWindowResize(true);
-	Application::get().setWindowWidth(width);
-	Application::get().setWindowHeight(height);
+	//init project : 
+	Project project;
+	project.init();
+
+	//open default project : 
+	project.open("", "save/tmp");
+
+	//edit or play project : 
+	//project.play();
+	project.edit();
+
+	//close window : 
+	project.exitApplication();
 }
 
-
-
-
+/*
 int main( int argc, char **argv )
 {
+
     //int width = 1024, height= 768;
 	int width = 1024, height = 680;
     float widthf = (float) width, heightf = (float) height;
@@ -127,7 +149,7 @@ int main( int argc, char **argv )
     GLenum err = glewInit();
     if (GLEW_OK != err)
     {
-          /* Problem: glewInit failed, something is seriously wrong. */
+          //Problem: glewInit failed, something is seriously wrong.
           fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
           exit( EXIT_FAILURE );
     }
@@ -159,6 +181,7 @@ int main( int argc, char **argv )
 
 	//////////////////// INPUT HANDLER ///////////////////////////
 	InputHandler inputHandler;
+	inputHandler.attachToWindow(window);
 
 	//////////////////// SKYBOX shaders ////////////////////////
 	// Try to load and compile shaders
@@ -228,6 +251,75 @@ int main( int argc, char **argv )
 	if (!checkError("Uniforms"))
 		exit(1);
 	
+	
+	//////////////////// TERRAIN shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_terrain = compile_shader_from_file(GL_VERTEX_SHADER, "terrain.vert");
+	GLuint fragShaderId_terrain = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrain.frag");
+
+	GLuint programObject_terrain = glCreateProgram();
+	glAttachShader(programObject_terrain, vertShaderId_terrain);
+	glAttachShader(programObject_terrain, fragShaderId_terrain);
+
+	glLinkProgram(programObject_terrain);
+	if (check_link_error(programObject_terrain) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// TERRAIN EDITION shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_terrainEdition = compile_shader_from_file(GL_VERTEX_SHADER, "terrainEdition.vert");
+	GLuint fragShaderId_terrainEdition = compile_shader_from_file(GL_FRAGMENT_SHADER, "terrainEdition.frag");
+
+	GLuint programObject_terrainEdition = glCreateProgram();
+	glAttachShader(programObject_terrainEdition, vertShaderId_terrainEdition);
+	glAttachShader(programObject_terrainEdition, fragShaderId_terrainEdition);
+
+	glLinkProgram(programObject_terrainEdition);
+	if (check_link_error(programObject_terrainEdition) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+	
+	//////////////////// DRAW ON TEXTURE shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_drawOnTexture = compile_shader_from_file(GL_VERTEX_SHADER, "drawOnTexture.vert");
+	GLuint fragShaderId_drawOnTexture = compile_shader_from_file(GL_FRAGMENT_SHADER, "drawOnTexture.frag");
+
+	GLuint programObject_drawOnTexture = glCreateProgram();
+	glAttachShader(programObject_drawOnTexture, vertShaderId_drawOnTexture);
+	glAttachShader(programObject_drawOnTexture, fragShaderId_drawOnTexture);
+
+	glLinkProgram(programObject_drawOnTexture);
+	if (check_link_error(programObject_drawOnTexture) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// GRASS FIELD shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_grassField = compile_shader_from_file(GL_VERTEX_SHADER, "grassField.vert");
+	GLuint fragShaderId_grassField = compile_shader_from_file(GL_FRAGMENT_SHADER, "grassField.frag");
+
+	GLuint programObject_grassField = glCreateProgram();
+	glAttachShader(programObject_grassField, vertShaderId_grassField);
+	glAttachShader(programObject_grassField, fragShaderId_grassField);
+
+	glLinkProgram(programObject_grassField);
+	if (check_link_error(programObject_grassField) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 
 	// cube and plane ;
 
@@ -291,39 +383,50 @@ int main( int argc, char **argv )
 	cubeWireFrame.normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
 	cubeWireFrame.initGl();
 
-	/*
-    int x;
-    int y;
-    int comp;
+	Mesh plane;
+	plane.triangleIndex = { 0, 1, 2, 2, 1, 3 };
+	plane.uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f };
+	plane.vertices = { -5.0, -0.5, 5.0, 5.0, -0.5, 5.0, -5.0, -0.5, -5.0, 5.0, -0.5, -5.0 };
+	plane.normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
+	plane.initGl();
 
-    unsigned char * diffuse = stbi_load("textures/spnza_bricks_a_diff.tga", &x, &y, &comp, 3);
-    GLuint diffuseTexture;
-    glGenTextures(1, &diffuseTexture);
+	
+ //   int x;
+ //   int y;
+ //   int comp;
 
-    glBindTexture(GL_TEXTURE_2D, diffuseTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, diffuse);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
+ //   unsigned char * diffuse = stbi_load("textures/spnza_bricks_a_diff.tga", &x, &y, &comp, 3);
+ //   GLuint diffuseTexture;
+ //   glGenTextures(1, &diffuseTexture);
 
-    unsigned char * specular = stbi_load("textures/spnza_bricks_a_spec.tga", &x, &y, &comp, 3);
-	GLuint specularTexture;
-	glGenTextures(1, &specularTexture);
+ //   glBindTexture(GL_TEXTURE_2D, diffuseTexture);
+ //   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, diffuse);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ //   glGenerateMipmap(GL_TEXTURE_2D);
 
-    glBindTexture(GL_TEXTURE_2D, specularTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, specular);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
-	*/
+ //   unsigned char * specular = stbi_load("textures/spnza_bricks_a_spec.tga", &x, &y, &comp, 3);
+	//GLuint specularTexture;
+	//glGenTextures(1, &specularTexture);
+
+ //   glBindTexture(GL_TEXTURE_2D, specularTexture);
+ //   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, specular);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+ //   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ //   glGenerateMipmap(GL_TEXTURE_2D);
+	
 
 	Texture* diffuseTexture = new Texture("textures/spnza_bricks_a_diff.tga");
 	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
 	Texture* bumpTexture = new Texture("textures/spnza_bricks_a_normal.png");
+
+	Texture* grassTextureDiffuse = new Texture("textures/grass/grass01.png", true);
+	grassTextureDiffuse->textureWrapping_u = GL_CLAMP_TO_EDGE;
+	grassTextureDiffuse->textureWrapping_v = GL_CLAMP_TO_EDGE;
 
 	std::vector<std::string> skyboxTexturePaths = {"textures/skyboxes/right.png", "textures/skyboxes/left.png", 
 												   "textures/skyboxes/top.png", "textures/skyboxes/top.png",
@@ -335,6 +438,7 @@ int main( int argc, char **argv )
 	diffuseTexture->initGL();
 	specularTexture->initGL();
 	bumpTexture->initGL();
+	grassTextureDiffuse->initGL();
 
 	//////////////////// BEGIN RESSOURCES : 
 	//the order between resource initialization and factories initialisation is important, indeed it's the factory which set set name of the different ressources when they are added to the factories.
@@ -344,22 +448,26 @@ int main( int argc, char **argv )
 	TextureFactory::get().add("brickDiffuse", diffuseTexture);
 	TextureFactory::get().add("brickSpecular", specularTexture);
 	TextureFactory::get().add("brickBump", bumpTexture);
+	TextureFactory::get().add("grass01Diffuse", grassTextureDiffuse);
 
 	// materials : 
 	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
 	MaterialBillboard billboardMaterial(programObject_billboard);
+	MaterialGrassField grassFieldMaterial(programObject_grassField);
 
 	//material factories : 
 	MaterialFactory::get().add("default", &defaultMaterial);
 	MaterialFactory::get().add("brick", &brickMaterial);
 	MaterialFactory::get().add("wireframe", &wireframeMaterial);
 	MaterialFactory::get().add("billboard", &billboardMaterial);
+	MaterialFactory::get().add("grassField", &grassFieldMaterial);
 
 	//mesh factories : 
 	MeshFactory::get().add("cube", &cube);
 	MeshFactory::get().add("cubeWireframe", &cubeWireFrame);
+	MeshFactory::get().add("plane", &plane);
 
 	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
 
@@ -368,6 +476,10 @@ int main( int argc, char **argv )
 	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
 	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
 	ProgramFactory::get().add("defaultBillboard", programObject_billboard);
+	ProgramFactory::get().add("defaultTerrain", programObject_terrain);
+	ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
+	ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
+	ProgramFactory::get().add("defaultGrassField", programObject_grassField);
 
 	///////////////////// END RESSOURCES 
 
@@ -411,12 +523,14 @@ int main( int argc, char **argv )
 
 	// an entity with a light : 
 	Entity* newEntity = new Entity(&scene);
-	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxColliderLight = new BoxCollider(&cubeWireFrame, &wireframeMaterial);
 	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
-	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
-	pointLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get("wireframe")));
-	newEntity->add(boxColliderLight).add(pointLight);
+	//PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
+	DirectionalLight* directionalLight = new DirectionalLight(1, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f));
+	//boxColliderLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
+	newEntity->add(boxColliderLight).add(directionalLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
+	newEntity->setName("point light");
 
 
 	//renderers : 
@@ -430,8 +544,8 @@ int main( int argc, char **argv )
 	//MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
 
 	//colliders : 
-	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrameRenderer);
-	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrameRenderer);
+	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrame, &wireframeMaterial);
+	BoxCollider* boxCollider02 = new BoxCollider(&cubeWireFrame, &wireframeMaterial);
 
 	//entities : 
 	
@@ -439,37 +553,40 @@ int main( int argc, char **argv )
 	Entity* entity_cube01 = new Entity(&scene);
 	entity_cube01->add(cubeRenderer01);
 	entity_cube01->add(boxCollider01);
+	entity_cube01->setName("cube");
 	entity_cube01->setTranslation( glm::vec3(3, 0, 0) );
 	//cube entity 02
 	Entity* entity_cube02 = new Entity(&scene);
 	entity_cube02->add(cubeRenderer02);
 	entity_cube02->add(boxCollider02);
+	entity_cube02->setName("cube");
 	entity_cube02->setTranslation(glm::vec3(3, -2, 0));
 	entity_cube02->setScale(glm::vec3(10, 1, 10));
-	/*
-	Entity* entity_cube03= new Entity(&scene);
-	entity_cube03->add(cubeRenderer03);
-	entity_cube03->add(boxCollider03);
-	entity_cube03->setScale(glm::vec3(10, 1, 10));
-	entity_cube03->setTranslation(glm::vec3(4, 2, 0));
-	entity_cube03->setRotation( glm::quat( glm::vec3(0, 0, -glm::pi<float>()*0.5f) ));
-	//cube entity 04
-	Entity* entity_cube04 = new Entity(&scene);
-	entity_cube04->add(cubeRenderer04);
-	entity_cube04->add(boxCollider04);
-	entity_cube04->setTranslation(glm::vec3(0, -2, 0));
-	entity_cube04->setScale(glm::vec3(10, 1, 10));
-	entity_cube04->setTranslation(glm::vec3(0, 2, 4));
-	entity_cube04->setRotation(glm::quat(glm::vec3(-glm::pi<float>()*0.5f, 0, 0)));
-	*/
+	
+	//Entity* entity_cube03= new Entity(&scene);
+	//entity_cube03->add(cubeRenderer03);
+	//entity_cube03->add(boxCollider03);
+	//entity_cube03->setScale(glm::vec3(10, 1, 10));
+	//entity_cube03->setTranslation(glm::vec3(4, 2, 0));
+	//entity_cube03->setRotation( glm::quat( glm::vec3(0, 0, -glm::pi<float>()*0.5f) ));
+	////cube entity 04
+	//Entity* entity_cube04 = new Entity(&scene);
+	//entity_cube04->add(cubeRenderer04);
+	//entity_cube04->add(boxCollider04);
+	//entity_cube04->setTranslation(glm::vec3(0, -2, 0));
+	//entity_cube04->setScale(glm::vec3(10, 1, 10));
+	//entity_cube04->setTranslation(glm::vec3(0, 2, 4));
+	//entity_cube04->setRotation(glm::quat(glm::vec3(-glm::pi<float>()*0.5f, 0, 0)));
+	
 
 	//flage entity : 
-	Material* tmpMat = MaterialFactory::get().get("default");
+	Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>("default");
 	Physic::Flag* flag = new Physic::Flag(tmpMat);
 
 	Entity* entity_flag = new Entity(&scene);
-	entity_flag->add(new BoxCollider(&cubeWireFrameRenderer));
+	entity_flag->add(new BoxCollider(&cubeWireFrame, &wireframeMaterial));
 	entity_flag->add(flag);
+	entity_flag->setName("flag");
 	entity_flag->endCreation();
 
 
@@ -477,6 +594,7 @@ int main( int argc, char **argv )
 	Editor editor(&wireframeMaterial);
 
 	float deltaTime = 0.f;
+	float fixedDeltaTime = 1.f / 60.f;
 
 	//main loop
     do
@@ -485,14 +603,13 @@ int main( int argc, char **argv )
         ImGui_ImplGlfwGL3_NewFrame();
 
 		//Physics : 
-		scene.updatePhysic(deltaTime);
+		scene.updatePhysic(fixedDeltaTime);
 
 		//check if window has been resized by user
 		if (Application::get().getWindowResize())
 		{
 			renderer.onResizeWindow();
-			//TODO : 
-			//editor.onResizeWindow();
+			editor.onResizeWindow();
 
 			Application::get().setWindowResize(false);
 		}
@@ -503,10 +620,11 @@ int main( int argc, char **argv )
 
 
 		//synchronize input handler : 
-		inputHandler.synchronize(window);
+		inputHandler.synchronize();
 
 		//get active camera before render scene : 
-		Camera& currentCamera = editor.getCamera();
+		BaseCamera& currentCamera = editor.getCamera();
+		//currentCamera.updateScreenSize(width, height);
 		//scene.culling(currentCamera);
 
 		//rendering : 
@@ -522,15 +640,15 @@ int main( int argc, char **argv )
 		
 
 #if 1
-		/*
-        ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
-        ImGui::Begin("aogl");
-        ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
-        lightManager.drawUI();
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::End();
-		*/
-
+		
+        //ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+        //ImGui::Begin("aogl");
+        //ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
+        //lightManager.drawUI();
+        //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        //ImGui::End();
+		
+		
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI(scene);
 
@@ -558,5 +676,7 @@ int main( int argc, char **argv )
 
     exit( EXIT_SUCCESS );
 }
+
+*/
 
 

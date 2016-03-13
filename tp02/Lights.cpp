@@ -41,6 +41,22 @@ void Light::updateBoundingBox()
 	//nothing by default
 }
 
+void Light::save(Json::Value & rootComponent) const
+{
+	Component::save(rootComponent);
+
+	rootComponent["intensity"] = intensity;
+	rootComponent["color"] = toJsonValue(color);
+}
+
+void Light::load(Json::Value & rootComponent)
+{
+	Component::load(rootComponent);
+
+	intensity = rootComponent.get("intensity", 1).asFloat();
+	color = fromJsonValue<glm::vec3>(rootComponent["color"], glm::vec3(1,1,1));
+}
+
 ///////////////////////////////
 
 PointLight::PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) : Light(_intensity, _color), position(_position)
@@ -64,13 +80,10 @@ void PointLight::updateBoundingBox()
 
 void PointLight::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("point light"))
-	{
-		if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
-			updateBoundingBox();
-		if (ImGui::ColorEdit3("light color", &color[0]))
-			updateBoundingBox();
-	}
+	if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
+		updateBoundingBox();
+	if (ImGui::ColorEdit3("light color", &color[0]))
+		updateBoundingBox();
 }
 
 void PointLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -100,14 +113,40 @@ void PointLight::addToScene(Scene& scene)
 	scene.add(this);
 }
 
-void PointLight::setBoundingBoxVisual(MeshRenderer * visual)
+void PointLight::addToEntity(Entity& entity)
 {
-	boundingBox.setVisual(visual);
+	entity.add(this);
+}
+
+void PointLight::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void PointLight::setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial)
+{
+	boundingBox.setVisual(visualMesh, visualMaterial);
 }
 
 void PointLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color)
 {
 	boundingBox.render(projectile, view, color);
+}
+
+void PointLight::save(Json::Value & rootComponent) const
+{
+	Light::save(rootComponent);
+
+	rootComponent["position"] = toJsonValue(position);
+	rootComponent["boundingBox"] = toJsonValue(boundingBox);
+}
+
+void PointLight::load(Json::Value & rootComponent)
+{
+	Light::load(rootComponent);
+
+	position = fromJsonValue<glm::vec3>(rootComponent["position"], glm::vec3());
+	boundingBox = fromJsonValue<BoxCollider>(rootComponent["boundingBox"], BoxCollider());
 }
 
 
@@ -125,11 +164,8 @@ DirectionalLight::~DirectionalLight()
 
 void DirectionalLight::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("directional light"))
-	{
-		ImGui::SliderFloat("light intensity", &intensity, 0.f, 10.f);
-		ImGui::ColorEdit3("light color", &color[0]);
-	}
+	ImGui::SliderFloat("light intensity", &intensity, 0.f, 10.f);
+	ImGui::ColorEdit3("light color", &color[0]);
 }
 
 void DirectionalLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -137,6 +173,7 @@ void DirectionalLight::applyTransform(const glm::vec3 & translation, const glm::
 	glm::mat3 rotMat = glm::mat3_cast(rotation);
 	up = glm::normalize( rotMat * glm::vec3(1, 0, 0) );
 	direction = glm::normalize( rotMat * glm::vec3(0, -1, 0) );
+	position = translation;
 }
 
 void DirectionalLight::eraseFromScene(Scene & scene)
@@ -156,6 +193,32 @@ Component* DirectionalLight::clone(Entity* entity)
 void DirectionalLight::addToScene(Scene& scene)
 {
 	scene.add(this);
+}
+
+void DirectionalLight::addToEntity(Entity& entity)
+{
+	entity.add(this);
+}
+
+void DirectionalLight::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void DirectionalLight::save(Json::Value & rootComponent) const
+{
+	Light::save(rootComponent);
+
+	rootComponent["up"] = toJsonValue(up);
+	rootComponent["direction"] = toJsonValue(direction);
+}
+
+void DirectionalLight::load(Json::Value & rootComponent)
+{
+	Light::load(rootComponent);
+
+	up = fromJsonValue<glm::vec3>(rootComponent["up"], glm::vec3());
+	direction = fromJsonValue<glm::vec3>(rootComponent["direction"], glm::vec3());
 }
 
 ////////////////////////////////////
@@ -182,15 +245,12 @@ void SpotLight::updateBoundingBox()
 
 void SpotLight::drawUI(Scene& scene)
 {
-	if (ImGui::CollapsingHeader("spot light"))
-	{
-		if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
-			updateBoundingBox();
-		if (ImGui::ColorEdit3("light color", &color[0]))
-			updateBoundingBox();
+	if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
+		updateBoundingBox();
+	if (ImGui::ColorEdit3("light color", &color[0]))
+		updateBoundingBox();
 
-		ImGui::SliderFloat("light angles", &angle, 0.f, glm::pi<float>());
-	}
+	ImGui::SliderFloat("light angles", &angle, 0.f, glm::pi<float>());
 }
 
 void SpotLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -223,12 +283,44 @@ void SpotLight::addToScene(Scene& scene)
 	scene.add(this);
 }
 
-void SpotLight::setBoundingBoxVisual(MeshRenderer * visual)
+void SpotLight::addToEntity(Entity& entity)
 {
-	boundingBox.setVisual(visual);
+	entity.add(this);
+}
+
+void SpotLight::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void SpotLight::setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial)
+{
+	boundingBox.setVisual(visualMesh, visualMaterial);
 }
 
 void SpotLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color)
 {
 	boundingBox.render(projectile, view, color);
+}
+
+void SpotLight::save(Json::Value & rootComponent) const
+{
+	Light::save(rootComponent);
+
+	rootComponent["up"] = toJsonValue(up);
+	rootComponent["position"] = toJsonValue(position);
+	rootComponent["direction"] = toJsonValue(direction);
+	rootComponent["angle"] = angle;
+	rootComponent["boundingBox"] = toJsonValue(boundingBox);
+}
+
+void SpotLight::load(Json::Value & rootComponent)
+{
+	Light::load(rootComponent);
+
+	up = fromJsonValue<glm::vec3>(rootComponent["up"], glm::vec3());
+	position = fromJsonValue<glm::vec3>(rootComponent["position"], glm::vec3());
+	direction = fromJsonValue<glm::vec3>(rootComponent["direction"], glm::vec3());
+	angle = rootComponent.get("angle", glm::pi<float>() / 4.f).asFloat();
+	boundingBox = fromJsonValue<BoxCollider>(rootComponent["boundingBox"], BoxCollider());
 }

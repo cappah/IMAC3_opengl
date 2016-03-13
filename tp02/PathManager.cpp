@@ -4,12 +4,12 @@
 
 PathManager::PathManager()
 {
-	m_material = MaterialFactory::get().get("wireframe");
+	m_material = MaterialFactory::get().get<Material3DObject>("wireframe");
 }
 
 PathManager::~PathManager()
 {
-	delete m_material;
+	
 }
 
 void PathManager::updatePathId(int pathId, int oldPathId, PathPoint* pathPoint)
@@ -111,10 +111,10 @@ void PathManager::erase(PathPoint * pathPoint)
 	}
 }
 
-void PathManager::render(const Camera& camera)
+void PathManager::render(const BaseCamera& camera)
 {
-	glm::mat4 projection = glm::perspective(45.0f, (float)Application::get().getWindowWidth() / (float)Application::get().getWindowHeight(), 0.1f, 1000.f);
-	glm::mat4 view = glm::lookAt(camera.eye, camera.o, camera.up);
+	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)Application::get().getWindowWidth() / (float)Application::get().getWindowHeight(), 0.1f, 1000.f);
+	glm::mat4 view = camera.getViewMatrix(); // glm::lookAt(camera.eye, camera.o, camera.up);
 
 	m_material->use();
 	for (auto& path : m_paths)

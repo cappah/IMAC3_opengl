@@ -1,6 +1,9 @@
 #include "PhysicManager.h"
+#include "Application.h"
+#include "Entity.h" // TODO remove 
 
 namespace Physic {
+
 
 	PhysicManager::PhysicManager(const glm::vec3& _gravity) : m_gravity(_gravity)
 	{
@@ -21,13 +24,22 @@ namespace Physic {
 		return m_gravity;
 	}
 
-	void PhysicManager::update(float deltaTime, std::vector<Flag*>& flags)
+	void PhysicManager::update(float deltaTime, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones)
 	{
 		for (int i = 0; i < flags.size(); i++)
 		{
+			for (int j = 0; j < windZones.size(); j++)
+			{
+				// TODO replace by flags[i]->getTransform().position...
+				flags[i]->applyForce(windZones[j]->getForce(Application::get().getTime(), flags[i]->entity()->getTranslation() ));
+			}
+
 			flags[i]->applyGravity(m_gravity);
 			flags[i]->update(deltaTime);
 		}
+
+		//update terrain : 
+		terrain.updatePhysic(deltaTime, windZones);
 	}
 
 }

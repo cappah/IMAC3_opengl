@@ -22,6 +22,7 @@
     <ProjectGuid>{2826947C-145D-950D-BD49-7B10A95F110F}</ProjectGuid>
     <RootNamespace>aogl</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -61,7 +62,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>\</OutDir>
+    <OutDir>build2\</OutDir>
     <IntDir>obj\Debug\aogl\</IntDir>
     <TargetName>aogl_d</TargetName>
     <TargetExt>.exe</TargetExt>
@@ -223,19 +224,24 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="ComponentFactory.cpp" />
     <ClCompile Include="CSpline.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Factories.cpp" />
     <ClCompile Include="Flag.cpp" />
     <ClCompile Include="Gizmo.cpp" />
+    <ClCompile Include="imgui_extension.cpp" />
     <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="lib\jsoncpp\jsoncpp.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Lights.cpp" />
     <ClCompile Include="Link.cpp" />
     <ClCompile Include="Materials.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
+    <ClCompile Include="Octree.cpp" />
+    <ClCompile Include="OctreeDrawer.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="Path.cpp" />
     <ClCompile Include="PathManager.cpp" />
@@ -243,13 +249,17 @@
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="PhysicManager.cpp" />
     <ClCompile Include="Point.cpp" />
+    <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SerializeUtils.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TransformNode.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="WindZone.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="imgui.vcxproj">
@@ -273,19 +283,27 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="ComponentFactory.h" />
     <ClInclude Include="CSpline.h" />
+    <ClInclude Include="dirent.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Factories.h" />
     <ClInclude Include="Flag.h" />
     <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="imgui_extension.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="ISerializable.h" />
+    <ClInclude Include="lib\jsoncpp\json\json-forwards.h" />
+    <ClInclude Include="lib\jsoncpp\json\json.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Link.h" />
     <ClInclude Include="Materials.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="Octree.h" />
+    <ClInclude Include="OctreeDrawer.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PathManager.h" />
@@ -293,13 +311,17 @@
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="PhysicManager.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SerializeUtils.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TransformNode.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="WindZone.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="aogl.frag" />
@@ -314,6 +336,10 @@
     <None Include="billboard.vert" />
     <None Include="blit.frag" />
     <None Include="blit.vert" />
+    <None Include="drawOnTexture.frag" />
+    <None Include="drawOnTexture.vert" />
+    <None Include="grassField.frag" />
+    <None Include="grassField.vert" />
     <None Include="shadowPass.frag" />
     <None Include="shadowPass.vert" />
     <None Include="shadowPassOmni.frag" />
@@ -327,6 +353,8 @@
     <None Include="terrainEdition.vert" />
     <None Include="wireframe.frag" />
     <None Include="wireframe.vert" />
+    <None Include="wireframeInstanced.frag" />
+    <None Include="wireframeInstanced.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

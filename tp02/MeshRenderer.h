@@ -14,30 +14,41 @@ class Entity;
 class MeshRenderer : public Component
 {
 private:
-	std::string meshName;
 	Mesh* mesh;
+	std::vector<Material3DObject*> material;
 
+	//for UI : 
+	std::string meshName;
 	std::string materialName;
-	Material* material;
 
 public:
-	MeshRenderer(Mesh* _mesh = nullptr, Material* _material = nullptr);
+	MeshRenderer();
+	MeshRenderer(Mesh* _mesh, Material3DObject* _material);
 	virtual ~MeshRenderer();
 
 	virtual void drawUI(Scene& scene) override;
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+	virtual void addToEntity(Entity& entity) override;
+	virtual void eraseFromEntity(Entity& entity) override;
 
 	void setMesh(Mesh* _mesh);
-	void setMaterial(Material* _material);
+	void addMaterial(Material3DObject* _material);
+	void removeMaterial(int idx);
+	void setMaterial(Material3DObject* _material, int idx);
 
-	Material* getMaterial() const;
+	Material3DObject* getMaterial(int idx) const;
 	Mesh* getMesh() const;
 
-	std::string getMaterialName() const;
+	std::string getMaterialName(int idx) const;
 	std::string getMeshName() const;
 
 	glm::vec3 getOrigin() const;
+
+	void render(const glm::mat4& projection, const glm::mat4& view);
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 };
 

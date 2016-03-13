@@ -36,6 +36,9 @@ struct Light : public Component
 
 	virtual void updateBoundingBox();
 
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
+
 };
 
 struct PointLight : public Light
@@ -53,9 +56,14 @@ struct PointLight : public Light
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+	virtual void addToEntity(Entity& entity) override;
+	virtual void eraseFromEntity(Entity& entity) override;
 
-	void setBoundingBoxVisual(MeshRenderer* visual);
+	void setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial);
 	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 
 };
 
@@ -64,6 +72,7 @@ struct DirectionalLight : public Light
 	glm::vec3 up;
 
 	glm::vec3 direction;
+	glm::vec3 position;
 
 	DirectionalLight(float _intensity = 0.2f, glm::vec3 _color = glm::vec3(1, 1, 1), glm::vec3 _direction = glm::vec3(0, -1, 0));
 	virtual ~DirectionalLight();
@@ -73,6 +82,11 @@ struct DirectionalLight : public Light
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+	virtual void addToEntity(Entity& entity) override;
+	virtual void eraseFromEntity(Entity& entity) override;
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 };
 
 struct SpotLight : public Light
@@ -95,8 +109,13 @@ struct SpotLight : public Light
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;
+	virtual void addToEntity(Entity& entity) override;
+	virtual void eraseFromEntity(Entity& entity) override;
 
-	void setBoundingBoxVisual(MeshRenderer* visual);
+	void setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial);
 	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 };
 

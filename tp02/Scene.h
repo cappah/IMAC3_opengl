@@ -17,9 +17,16 @@
 #include "Terrain.h"
 #include "Skybox.h"
 
+#include "jsoncpp/json/json.h"
+#include <iostream>
+#include <fstream>
+
 class Scene
 {
 private:
+	//scene name :
+	std::string m_name;
+
 	//entities : 
 	std::vector<Entity*> m_entities;
 
@@ -44,7 +51,13 @@ private:
 	//billboards : 
 	std::vector<Billboard*> m_billboards;
 
-	//special components : 
+	//cameras : 
+	std::vector<Camera*> m_cameras;
+	
+	//windZones : 
+	std::vector<Physic::WindZone*> m_windZones;
+
+	//special componants : 
 	//terrain : 
 	Terrain m_terrain;
 
@@ -63,11 +76,14 @@ private:
 	bool m_areCollidersVisible;
 	bool m_isDebugDeferredVisible;
 	bool m_areLightsBoundingBoxVisible;
+	bool m_areOctreesVisible;
 
 
 public:
-	Scene(Renderer * renderer);
+	Scene(Renderer* renderer, const std::string& sceneName = "defaultScene");
 	~Scene();
+
+	void clear();
 
 	std::vector<Entity*>& getEntities();
 
@@ -81,6 +97,8 @@ public:
 	Scene& add(Physic::ParticleEmitter* particleEmitter);
 	Scene& add(PathPoint* pathPoint);
 	Scene& add(Billboard* billboard);
+	Scene& add(Camera* camera);
+	Scene& add(Physic::WindZone* windZone);
 
 	Scene& erase(Entity* entity);
 	Scene& erase(PointLight* pointLight);
@@ -92,29 +110,42 @@ public:
 	Scene& erase(Physic::ParticleEmitter* particleEmitter);
 	Scene& erase(PathPoint* pathPoint);
 	Scene& erase(Billboard* billboard);
+	Scene& erase(Camera* camera);
+	Scene& erase(Physic::WindZone* windZone);
 
-	void render(const Camera& camera);
-	void renderColliders(const Camera& camera);
+	void render(const BaseCamera& camera);
+	void renderColliders(const BaseCamera& camera);
 	void renderDebugDeferred();
-	void renderDebugLights(const Camera& camera);
-	void renderPaths(const Camera& camera);
+	void renderDebugLights(const BaseCamera& camera);
+	void renderPaths(const BaseCamera& camera);
+	void renderDebugOctrees(const BaseCamera& camera);
 
 	void updatePhysic(float deltaTime);
 
 	void toggleColliderVisibility();
 	void toggleDebugDeferredVisibility();
 	void toggleLightsBoundingBoxVisibility();
+	void toggleOctreesVisibility();
 	bool getAreCollidersVisible() const;
 	bool getIsDebugDeferredVisible() const;
 	bool getAreLightsBoundingBoxVisible() const;
+	bool getAreOctreesVisible() const;
 	void setAreCollidersVisible(bool value);
 	void setIsDebugDeferredVisible(bool value);
 	void setAreLightsBoundingBoxVisible(bool value);
+	void setAreOctreesVisible(bool value);
 
-	void culling(const Camera& camera);
+	void culling(const BaseCamera& camera);
 
 	Terrain& getTerrain();
 	Skybox& getSkybox();
 	PathManager& getPathManager();
+	Renderer& getRenderer();
+
+	std::string getName() const;
+
+	void save(const std::string& path);
+	void load(const std::string& path);
+
 };
 
