@@ -11,6 +11,17 @@
 
 namespace Physic{
 
+	struct Particle
+	{
+		glm::vec3 position;
+		glm::vec3 velocity;
+		glm::vec3 force;
+		float elapsedTime;
+		float lifeTime;
+		glm::vec4 color;
+		glm::vec2 size;
+	};
+
 	class ParticleEmitter : public Component
 	{
 	public :
@@ -25,13 +36,14 @@ namespace Physic{
 		Texture* m_particleTexture;
 
 		//particles soa : 
-		std::vector<glm::vec3> m_positions;
-		std::vector<glm::vec3> m_velocities;
-		std::vector<glm::vec3> m_forces;
-		std::vector<float> m_elapsedTimes;
-		std::vector<float> m_lifeTimes;
-		std::vector<glm::vec4> m_colors;
-		std::vector<glm::vec2> m_sizes;
+		//std::vector<glm::vec3> m_positions;
+		//std::vector<glm::vec3> m_velocities;
+		//std::vector<glm::vec3> m_forces;
+		//std::vector<float> m_elapsedTimes;
+		//std::vector<float> m_lifeTimes;
+		//std::vector<glm::vec4> m_colors;
+		//std::vector<glm::vec2> m_sizes;
+		std::vector<Particle> m_particles;
 
 		//model :
 		int m_triangleCount;
@@ -51,7 +63,7 @@ namespace Physic{
 		GLuint m_vboVertices;
 		GLuint m_vboNormals;
 		//instanced infos : 
-		GLuint m_vboPositionsA;
+		/*GLuint m_vboPositionsA;
 		GLuint m_vboPositionsB;
 		GLuint m_vboVelocitiesA;
 		GLuint m_vboVelocitiesB;
@@ -64,7 +76,13 @@ namespace Physic{
 		GLuint m_vboColorsA;
 		GLuint m_vboColorsB;
 		GLuint m_vboSizesA;
-		GLuint m_vboSizesB;
+		GLuint m_vboSizesB;*/
+
+		bool m_isFirst;
+		unsigned int m_currVB;
+		unsigned int m_currTFB;
+		GLuint m_particleBuffer[2];
+		GLuint m_transformFeedback[2];
 
 	public:
 		ParticleEmitter();

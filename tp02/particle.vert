@@ -7,7 +7,7 @@ precision highp int;
 #define VERTEX 0
 #define NORMALS 1
 #define UVS 2
-#define POSITION 3
+#define POSITIONS 3
 #define VELOCITIES 4
 #define FORCES 5
 #define ELAPSED_TIMES 6
@@ -15,17 +15,17 @@ precision highp int;
 #define COLORS 8
 #define SIZES 9
 
-layout(location = 0) in vec3 Position;
-layout(location = 1) in vec3 Normal;
-layout(location = 2) in vec2 TexCoord;
+layout(location = VERTEX) in vec3 Position;
+layout(location = NORMALS) in vec3 Normal;
+layout(location = UVS) in vec2 TexCoord;
 
-layout(location = 3) in vec3 Translation;
-layout(location = 4) in vec3 Velocity;
-layout(location = 5) in vec3 Force;
-layout(location = 6) in float ElapsedTime;
-layout(location = 7) in float LifeTIme;
-layout(location = 8) in vec4 Color;
-layout(location = 9) in vec2 Size;
+layout(location = POSITIONS) in vec3 Translation;
+layout(location = VELOCITIES) in vec3 Velocity;
+layout(location = FORCES) in vec3 Force;
+//layout(location = ELAPSED_TIMES) in float ElapsedTime;
+//layout(location = LIFE_TIMES) in float LifeTIme;
+//layout(location = COLORS) in vec4 Color;
+//layout(location = SIZES) in vec2 Size;
 
 uniform mat4 VP;
 uniform vec3 CameraRight;
@@ -41,6 +41,10 @@ out block
 
 void main()
 {	
+	//TMP
+	vec2 Size = vec2(1,1);
+	vec4 Color = vec4(1,0,0,1);
+
 	vec3 pos = Position;
 	vec3 posWorldSpace = Translation + CameraRight * Position.x * Size.x + CameraUp * Position.z * Size.y;
 

@@ -25,12 +25,13 @@ ProgramFactory::ProgramFactory()
 	//////////////////// PARTICLE SIMULATION shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_particleSimulation = compile_shader_from_file(GL_VERTEX_SHADER, "particleSimulation.vert");
+	GLuint vertShaderId_particleSimulation = compile_shader_from_file(GL_VERTEX_SHADER, "particleSimulation.geom"); //TODO
 
 	GLuint programObject_particleSimulation = glCreateProgram();
 	glAttachShader(programObject_particleSimulation, vertShaderId_particleSimulation);
 
-	const GLchar* feedbackVaryings[] = { "outPositions" }; //TODO others parameters
-	glTransformFeedbackVaryings(programObject_particleSimulation, 1, feedbackVaryings, GL_SEPARATE_ATTRIBS);
+	const GLchar* feedbackVaryings[7] = { "outPositions", "outVelocities", "outForces", "outElapsedTimes", "outLifeTimes", "outColors", "outSizes" };
+	glTransformFeedbackVaryings(programObject_particleSimulation, 7, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
 
 	glLinkProgram(programObject_particleSimulation);
 	if (check_link_error(programObject_particleSimulation) < 0)
@@ -202,7 +203,7 @@ ProgramFactory::ProgramFactory()
 	m_programs["defaultGrassField"] = programObject_grassField;
 	m_programs["wireframeInstanced"] = programObject_wireframeInstanced;
 	m_programs["defaultBillboard"] = programObject_billboard;
-	m_programs["defaultParticle"] = programObject_particle;
+	m_programs["defaultParticles"] = programObject_particle;
 	m_programs["particleSimulation"] = programObject_particleSimulation;
 
 	m_defaults.push_back("defaultLit");
@@ -214,7 +215,7 @@ ProgramFactory::ProgramFactory()
 	m_defaults.push_back("defaultGrassField");
 	m_defaults.push_back("wireframeInstanced");
 	m_defaults.push_back("defaultBillboard");
-	m_defaults.push_back("defaultParticle");
+	m_defaults.push_back("defaultParticles");
 	m_defaults.push_back("particleSimulation");
 }
 
@@ -740,12 +741,22 @@ MaterialFactory::MaterialFactory()
 	newMat = new MaterialBillboard(ProgramFactory::get().get("defaultBillboard"));
 	newMat->name = "billboard";
 	m_materials["billboard"] = newMat;
+
+	newMat = new MaterialParticles(ProgramFactory::get().get("defaultParticles"));
+	newMat->name = "particles";
+	m_materials["particles"] = newMat;
+
+	newMat = new MaterialParticleSimulation(ProgramFactory::get().get("particleSimulation"));
+	newMat->name = "particleSimulation";
+	m_materials["particleSimulation"] = newMat;
 	
 	m_defaults.push_back("default");
 	m_defaults.push_back("wireframe");
 	m_defaults.push_back("wireframeInstanced");
 	m_defaults.push_back("grassfield");
 	m_defaults.push_back("billboard");
+	m_defaults.push_back("particles");
+	m_defaults.push_back("particleSimulation");
 }
 
 void MaterialFactory::add(const std::string& name, Material* material)
