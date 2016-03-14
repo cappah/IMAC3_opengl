@@ -591,6 +591,16 @@ void Editor::displayMenuBar(Project& project)
 				newEntity->setName("billboard");
 			}
 
+			if (ImGui::Button("add particle emitter"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto particleEmitter = new Physic::ParticleEmitter();
+				newEntity->add(newCollider).add(particleEmitter);
+				newEntity->setName("particle emitter");
+			}
+
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("camera mode"))

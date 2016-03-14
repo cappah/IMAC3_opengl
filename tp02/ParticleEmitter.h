@@ -7,28 +7,31 @@
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "Component.h"
+#include "Materials.h"
 
 namespace Physic{
 
 	class ParticleEmitter : public Component
 	{
 	public :
-		enum VBO_TYPES {VERTICES, NORMALS, UVS, POSITIONS, VELOCITIES, FORCES, ELAPSED_TIMES, LIFE_TIMES, COLORS};
+		enum VBO_TYPES {VERTICES = 0, NORMALS, UVS,
+			POSITIONS, VELOCITIES, FORCES, ELAPSED_TIMES, LIFE_TIMES, COLORS, SIZES};
 	private:
 		//parameters : 
 		int m_maxParticleCount;
 		std::vector<glm::vec2> m_sizeSteps;
 		std::vector<glm::vec4> m_colorSteps;
 		glm::vec2 m_lifeTimeInterval;
+		Texture* m_particleTexture;
 
 		//particles soa : 
+		std::vector<glm::vec3> m_positions;
+		std::vector<glm::vec3> m_velocities;
+		std::vector<glm::vec3> m_forces;
 		std::vector<float> m_elapsedTimes;
 		std::vector<float> m_lifeTimes;
 		std::vector<glm::vec4> m_colors;
 		std::vector<glm::vec2> m_sizes;
-		std::vector<glm::vec3> m_positions;
-		std::vector<glm::vec3> m_velocities;
-		std::vector<glm::vec3> m_forces;
 
 		//model :
 		int m_triangleCount;
@@ -37,6 +40,10 @@ namespace Physic{
 		std::vector<float> m_vertices;
 		std::vector<float> m_normals;
 
+		//materials : 
+		MaterialParticles* m_materialParticules;
+		MaterialParticleSimulation* m_materialParticuleSimulation;
+
 		//opengl stuff : 
 		GLuint m_vao;
 		GLuint m_index;
@@ -44,18 +51,28 @@ namespace Physic{
 		GLuint m_vboVertices;
 		GLuint m_vboNormals;
 		//instanced infos : 
-		GLuint m_vboLifeTimes;
-		GLuint m_vboElapsedTimes;
-		GLuint m_vboColors;
-		GLuint m_vboSizes;
-		GLuint m_vboPositions;
-		GLuint m_vbovelocities;
-		GLuint m_vboForces;
+		GLuint m_vboPositionsA;
+		GLuint m_vboPositionsB;
+		GLuint m_vboVelocitiesA;
+		GLuint m_vboVelocitiesB;
+		GLuint m_vboForcesA;
+		GLuint m_vboForcesB;
+		GLuint m_vboLifeTimesA;
+		GLuint m_vboLifeTimesB;
+		GLuint m_vboElapsedTimesA;
+		GLuint m_vboElapsedTimesB;
+		GLuint m_vboColorsA;
+		GLuint m_vboColorsB;
+		GLuint m_vboSizesA;
+		GLuint m_vboSizesB;
 
 	public:
 		ParticleEmitter();
 		~ParticleEmitter();
 		void initGl();
+		void draw();
+		void simulateOnGPU(float deltaTime);
+		void render(const glm::mat4& projection, const glm::mat4& view);
 
 		//TODO
 

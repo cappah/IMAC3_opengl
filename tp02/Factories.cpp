@@ -14,11 +14,26 @@ ProgramFactory::ProgramFactory()
 	glAttachShader(programObject_particle, vertShaderId_particle);
 	glAttachShader(programObject_particle, fragShaderId_particle);
 
-	const GLchar* feedbackVaryings[] = { "outPositions" }; //TODO others parameters
-	glTransformFeedbackVaryings(programObject_particle, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
-
 	glLinkProgram(programObject_particle);
 	if (check_link_error(programObject_particle) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// PARTICLE SIMULATION shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_particleSimulation = compile_shader_from_file(GL_VERTEX_SHADER, "particleSimulation.vert");
+
+	GLuint programObject_particleSimulation = glCreateProgram();
+	glAttachShader(programObject_particleSimulation, vertShaderId_particleSimulation);
+
+	const GLchar* feedbackVaryings[] = { "outPositions" }; //TODO others parameters
+	glTransformFeedbackVaryings(programObject_particleSimulation, 1, feedbackVaryings, GL_SEPARATE_ATTRIBS);
+
+	glLinkProgram(programObject_particleSimulation);
+	if (check_link_error(programObject_particleSimulation) < 0)
 		exit(1);
 
 	//check uniform errors : 
@@ -187,6 +202,8 @@ ProgramFactory::ProgramFactory()
 	m_programs["defaultGrassField"] = programObject_grassField;
 	m_programs["wireframeInstanced"] = programObject_wireframeInstanced;
 	m_programs["defaultBillboard"] = programObject_billboard;
+	m_programs["defaultParticle"] = programObject_particle;
+	m_programs["particleSimulation"] = programObject_particleSimulation;
 
 	m_defaults.push_back("defaultLit");
 	m_defaults.push_back("defaultUnlit");
@@ -197,6 +214,8 @@ ProgramFactory::ProgramFactory()
 	m_defaults.push_back("defaultGrassField");
 	m_defaults.push_back("wireframeInstanced");
 	m_defaults.push_back("defaultBillboard");
+	m_defaults.push_back("defaultParticle");
+	m_defaults.push_back("particleSimulation");
 }
 
 void ProgramFactory::add(const std::string& name, GLuint programId)

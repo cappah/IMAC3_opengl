@@ -308,7 +308,7 @@ Scene & Scene::erase(Physic::WindZone * windZone)
 
 void Scene::render(const BaseCamera& camera)
 {
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards);
+	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters);
 }
 
 void Scene::renderColliders(const BaseCamera & camera)
@@ -345,7 +345,7 @@ void Scene::renderDebugOctrees(const BaseCamera & camera)
 
 void Scene::updatePhysic(float deltaTime)
 {
-	m_physicManager.update(deltaTime, m_flags, m_terrain, m_windZones);
+	m_physicManager.update(deltaTime, m_flags, m_terrain, m_windZones, m_particleEmitters);
 }
 
 void Scene::toggleColliderVisibility()

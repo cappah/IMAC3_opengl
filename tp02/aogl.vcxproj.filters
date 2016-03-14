@@ -377,5 +377,17 @@
     <None Include="billboard.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="particle.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="particle.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="particleSimulation.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="particleSimulation.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

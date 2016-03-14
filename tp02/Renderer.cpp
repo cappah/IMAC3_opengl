@@ -379,7 +379,7 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 }
 
 
-void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards)
+void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 	glm::vec3 cameraPosition = camera.getCameraPosition();
@@ -724,11 +724,11 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	//rander skybox : 
 	skybox.render(projection, worldToView);
 
-
 	for (int i = 0; i < billboards.size(); i++)
-	{
 		billboards[i]->render(projection, worldToView);
-	}
+
+	for (int i = 0; i < particleEmitters.size(); i++)
+		particleEmitters[i]->render(projection, worldToView);
 }
 
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)
