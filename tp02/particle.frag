@@ -7,14 +7,11 @@ layout(location = 0) out vec4 FragColor;
 in block
 {
     vec2 TexCoord;
-    vec3 Position;
-    vec3 Normal;
-	vec4 Color;
 } In;
 
 void main()
 {
 	//no lighting for the moment 
 
-	FragColor = texture2D(Texture, In.TexCoord) * In.Color;
+	FragColor = vec4(1,0,0,1);// texture2D(Texture, In.TexCoord) * In.Color;
 }

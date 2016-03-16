@@ -755,23 +755,17 @@ void MaterialBillboard::setUniformColor(const glm::vec4 & color)
 MaterialParticles::MaterialParticles(): Material(ProgramFactory::get().get("defaultParticle"))
 {
 	m_uniformVP = glGetUniformLocation(glProgram, "VP");
-	m_uniformScale = glGetUniformLocation(glProgram, "Scale");
-	m_uniformTranslation = glGetUniformLocation(glProgram, "Translation");
 	m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
 	m_uniformCameraRight = glGetUniformLocation(glProgram, "CameraRight");
 	m_uniformCameraUp = glGetUniformLocation(glProgram, "CameraUp");
-	m_uniformColor = glGetUniformLocation(glProgram, "Color");
 }
 
 MaterialParticles::MaterialParticles(GLuint _glProgram) : Material(_glProgram)
 {
 	m_uniformVP = glGetUniformLocation(glProgram, "VP");
-	m_uniformScale = glGetUniformLocation(glProgram, "Scale");
-	m_uniformTranslation = glGetUniformLocation(glProgram, "Translation");
 	m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
 	m_uniformCameraRight = glGetUniformLocation(glProgram, "CameraRight");
 	m_uniformCameraUp = glGetUniformLocation(glProgram, "CameraUp");
-	m_uniformColor = glGetUniformLocation(glProgram, "Color");
 }
 
 void MaterialParticles::use()

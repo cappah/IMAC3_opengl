@@ -312,13 +312,9 @@ class MaterialParticles : public Material
 {
 private:
 	GLuint m_uniformVP;
-	GLuint m_uniformScale;
-	GLuint m_uniformTranslation;
 	GLuint m_uniformTexture;
 	GLuint m_uniformCameraRight;
-	GLuint m_uniformCameraUp;
-	GLuint m_uniformColor;
-	
+	GLuint m_uniformCameraUp;	
 
 public :
 	MaterialParticles();

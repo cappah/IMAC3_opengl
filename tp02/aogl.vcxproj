@@ -341,8 +341,9 @@
     <None Include="grassField.frag" />
     <None Include="grassField.vert" />
     <None Include="particle.frag" />
+    <None Include="particle.geom" />
     <None Include="particle.vert" />
-    <None Include="particleSimulation.frag" />
+    <None Include="particleSimulation.geom" />
     <None Include="particleSimulation.vert" />
     <None Include="shadowPass.frag" />
     <None Include="shadowPass.vert" />

@@ -20,6 +20,9 @@ namespace Physic{
 		float lifeTime;
 		glm::vec4 color;
 		glm::vec2 size;
+
+		inline Particle(): position(0,0,0), velocity(0,0,0), force(0,0,0), elapsedTime(0), lifeTime(10), color(1,0,0,1), size(1,1)
+		{}
 	};
 
 	class ParticleEmitter : public Component

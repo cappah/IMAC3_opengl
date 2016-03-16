@@ -8,10 +8,12 @@ ProgramFactory::ProgramFactory()
 	//////////////////// PARTICLE shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_particle = compile_shader_from_file(GL_VERTEX_SHADER, "particle.vert");
+	GLuint geomShaderId_particle = compile_shader_from_file(GL_GEOMETRY_SHADER, "particle.geom");
 	GLuint fragShaderId_particle = compile_shader_from_file(GL_FRAGMENT_SHADER, "particle.frag");
 
 	GLuint programObject_particle = glCreateProgram();
 	glAttachShader(programObject_particle, vertShaderId_particle);
+	glAttachShader(programObject_particle, geomShaderId_particle);
 	glAttachShader(programObject_particle, fragShaderId_particle);
 
 	glLinkProgram(programObject_particle);
@@ -25,10 +27,11 @@ ProgramFactory::ProgramFactory()
 	//////////////////// PARTICLE SIMULATION shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_particleSimulation = compile_shader_from_file(GL_VERTEX_SHADER, "particleSimulation.vert");
-	GLuint vertShaderId_particleSimulation = compile_shader_from_file(GL_VERTEX_SHADER, "particleSimulation.geom"); //TODO
+	GLuint geomShaderId_particleSimulation = compile_shader_from_file(GL_GEOMETRY_SHADER, "particleSimulation.geom");
 
 	GLuint programObject_particleSimulation = glCreateProgram();
 	glAttachShader(programObject_particleSimulation, vertShaderId_particleSimulation);
+	glAttachShader(programObject_particleSimulation, geomShaderId_particleSimulation);
 
 	const GLchar* feedbackVaryings[7] = { "outPositions", "outVelocities", "outForces", "outElapsedTimes", "outLifeTimes", "outColors", "outSizes" };
 	glTransformFeedbackVaryings(programObject_particleSimulation, 7, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);

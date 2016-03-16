@@ -386,7 +386,10 @@
     <None Include="particleSimulation.vert">
       <Filter>shaders</Filter>
     </None>
-    <None Include="particleSimulation.frag">
+    <None Include="particle.geom">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="particleSimulation.geom">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

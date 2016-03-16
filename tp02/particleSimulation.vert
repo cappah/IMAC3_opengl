@@ -26,28 +26,22 @@ layout(location = COLORS) in vec4 inColors;
 layout(location = SIZES) in vec2 inSizes;
 
 //outputs : 
-out vec3 outPositions; 
-out vec3 outVelocities;
-out vec3 outForces;
+out vec3 positions; 
+out vec3 velocities;
+out vec3 forces;
+out float elapsedTimes;
+out float lifeTimes;
+out vec4 colors;
+out vec2 sizes;
 
-out float outElapsedTimes;
-out float outLifeTimes;
-out vec4 outColors;
-out vec2 outSizes;
-
-//uniforms :
-uniform float DeltaTime;
 
 void main()
 {	
-	float fixedMass = 0.01f;
-
-	outVelocities = vec3(0,0,0);//inVelocities +  (DeltaTime / fixedMass)*vec3(0.0,0.1,0.0); //inForces;
-	outPositions = vec3(0,10,0);//inPositions + DeltaTime*inVelocities;
-	outForces = vec3(0.0, 0.0, 0.0); //remove outForces ?
-
-	outElapsedTimes = inElapsedTimes + DeltaTime;
-	outLifeTimes = inLifeTimes; //remove outLifeTimes ?
-	outColors = vec4(0,1,0,1);//inColors; //todo
-	outSizes = inSizes; //todo
+	velocities =  inVelocities;//inVelocities +  (DeltaTime / fixedMass)*vec3(0.0,0.1,0.0); //inForces;
+	positions = inPositions;//inPositions + DeltaTime*inVelocities;
+	forces = inForces; //remove outForces ?
+	elapsedTimes = inElapsedTimes;
+	lifeTimes = inLifeTimes; //remove outLifeTimes ?
+	colors = inColors;//inColors; //todo
+	sizes = inSizes; //todo
 }
