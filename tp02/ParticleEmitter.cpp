@@ -28,12 +28,6 @@ namespace Physic {
 
 		m_particles.resize(m_maxParticleCount);
 
-		//init model :
-		m_triangleIndex = { 0, 1, 2, 2, 3, 0 };
-		m_uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
-		m_vertices = { -0.5, 0.0, -0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.5 };
-		m_normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
-		
 		//initialize vbos :
 		initGl();
 	}
@@ -48,33 +42,33 @@ namespace Physic {
 	{
 		m_triangleCount = m_triangleIndex.size() / 3;
 
-		glGenVertexArrays(1, &m_vao);
-		glBindVertexArray(m_vao);
+		//glGenVertexArrays(1, &m_vao);
+		//glBindVertexArray(m_vao);
 
-		glGenBuffers(1, &m_index);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangleIndex.size()*sizeof(int), &m_triangleIndex[0], GL_STATIC_DRAW);
+		//glGenBuffers(1, &m_index);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangleIndex.size()*sizeof(int), &m_triangleIndex[0], GL_STATIC_DRAW);
 
-		glGenBuffers(1, &m_vboVertices);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vboVertices);
-		glEnableVertexAttribArray(VERTICES);
-		glBufferData(GL_ARRAY_BUFFER, m_vertices.size()*sizeof(float), &m_vertices[0], GL_STATIC_DRAW);
-		glVertexAttribPointer(VERTICES, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+		//glGenBuffers(1, &m_vboVertices);
+		//glBindBuffer(GL_ARRAY_BUFFER, m_vboVertices);
+		//glEnableVertexAttribArray(VERTICES);
+		//glBufferData(GL_ARRAY_BUFFER, m_vertices.size()*sizeof(float), &m_vertices[0], GL_STATIC_DRAW);
+		//glVertexAttribPointer(VERTICES, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
-		glGenBuffers(1, &m_vboNormals);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vboNormals);
-		glEnableVertexAttribArray(NORMALS);
-		glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(float), &m_normals[0], GL_STATIC_DRAW);
-		glVertexAttribPointer(NORMALS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+		//glGenBuffers(1, &m_vboNormals);
+		//glBindBuffer(GL_ARRAY_BUFFER, m_vboNormals);
+		//glEnableVertexAttribArray(NORMALS);
+		//glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(float), &m_normals[0], GL_STATIC_DRAW);
+		//glVertexAttribPointer(NORMALS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
 
-		glGenBuffers(1, &m_vboUvs);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vboUvs);
-		glEnableVertexAttribArray(UVS);
-		glBufferData(GL_ARRAY_BUFFER, m_uvs.size()*sizeof(float), &m_uvs[0], GL_STATIC_DRAW);
-		glVertexAttribPointer(UVS, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
+		//glGenBuffers(1, &m_vboUvs);
+		//glBindBuffer(GL_ARRAY_BUFFER, m_vboUvs);
+		//glEnableVertexAttribArray(UVS);
+		//glBufferData(GL_ARRAY_BUFFER, m_uvs.size()*sizeof(float), &m_uvs[0], GL_STATIC_DRAW);
+		//glVertexAttribPointer(UVS, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindVertexArray(0);
 
 		//Instanced stuff : 
 		glGenTransformFeedbacks(2, m_transformFeedback);
@@ -101,24 +95,32 @@ namespace Physic {
 		glEnable(GL_RASTERIZER_DISCARD);
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
+
+		GLfloat feedback[3];
+		glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(feedback), feedback);
+		for (int i = 0; i < 3; i++) {
+			std::cout << "pos01 = " << feedback[i] << std::endl;
+		}
+
 		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
 
 		glEnableVertexAttribArray(POSITIONS);
-		glEnableVertexAttribArray(VELOCITIES);
-		glEnableVertexAttribArray(FORCES);
-		glEnableVertexAttribArray(ELAPSED_TIMES);
-		glEnableVertexAttribArray(LIFE_TIMES);
-		glEnableVertexAttribArray(SIZES);
-		glEnableVertexAttribArray(COLORS);
+		//glEnableVertexAttribArray(VELOCITIES);
+		//glEnableVertexAttribArray(FORCES);
+		//glEnableVertexAttribArray(ELAPSED_TIMES);
+		//glEnableVertexAttribArray(LIFE_TIMES);
+		//glEnableVertexAttribArray(COLORS);
+		//glEnableVertexAttribArray(SIZES);
 
 		glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, position));
-		glVertexAttribPointer(VELOCITIES, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, velocity));
-		glVertexAttribPointer(FORCES, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, force));
-		glVertexAttribPointer(ELAPSED_TIMES, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, elapsedTime));
-		glVertexAttribPointer(LIFE_TIMES, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, lifeTime));
-		glVertexAttribPointer(SIZES, 2, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, size));
-		glVertexAttribPointer(COLORS, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, color)); 
+		//glVertexAttribPointer(VELOCITIES, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, velocity));
+		//glVertexAttribPointer(FORCES, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, force));
+		//glVertexAttribPointer(ELAPSED_TIMES, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, elapsedTime));
+		//glVertexAttribPointer(LIFE_TIMES, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, lifeTime));
+		//glVertexAttribPointer(COLORS, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, color)); 
+		//glVertexAttribPointer(SIZES, 2, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, size));
 
+		
 
 		glBeginTransformFeedback(GL_POINTS);
 		if (m_isFirst) {
@@ -131,21 +133,12 @@ namespace Physic {
 		glEndTransformFeedback();
 
 		glDisableVertexAttribArray(POSITIONS);
-		glDisableVertexAttribArray(VELOCITIES);
-		glDisableVertexAttribArray(FORCES);
-		glDisableVertexAttribArray(ELAPSED_TIMES);
-		glDisableVertexAttribArray(LIFE_TIMES);
-		glDisableVertexAttribArray(SIZES);
-		glDisableVertexAttribArray(COLORS);
-
-		//swap vbos for ping-pong efect (we only use two vbo for each parameter)
-		//std::swap(m_vboPositionsA, m_vboPositionsB);
-		//std::swap(m_vboVelocitiesA, m_vboVelocitiesB);
-		//std::swap(m_vboForcesA, m_vboForcesB);
-		//std::swap(m_vboElapsedTimesA, m_vboElapsedTimesB);
-		//std::swap(m_vboLifeTimesA, m_vboLifeTimesB);
-		//std::swap(m_vboColorsA, m_vboColorsB);
-		//std::swap(m_vboSizesA, m_vboSizesB);
+		//glDisableVertexAttribArray(VELOCITIES);
+		//glDisableVertexAttribArray(FORCES);
+		//glDisableVertexAttribArray(ELAPSED_TIMES);
+		//glDisableVertexAttribArray(LIFE_TIMES);
+		//glDisableVertexAttribArray(SIZES);
+		//glDisableVertexAttribArray(COLORS);
 
 		glDisable(GL_RASTERIZER_DISCARD);
 
@@ -178,12 +171,6 @@ namespace Physic {
 
 		glDrawArrays(GL_POINTS, 0, m_maxParticleCount*3);
 		//glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
-
-		GLfloat feedback[17];
-		glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(feedback), feedback);
-		for (int i = 0; i < 17; i++) {
-			std::cout << "pos = " << feedback[i] << std::endl;
-		}
 
 		glDisableVertexAttribArray(0);
 

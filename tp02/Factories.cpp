@@ -33,8 +33,8 @@ ProgramFactory::ProgramFactory()
 	glAttachShader(programObject_particleSimulation, vertShaderId_particleSimulation);
 	glAttachShader(programObject_particleSimulation, geomShaderId_particleSimulation);
 
-	const GLchar* feedbackVaryings[7] = { "outPositions", "outVelocities", "outForces", "outElapsedTimes", "outLifeTimes", "outColors", "outSizes" };
-	glTransformFeedbackVaryings(programObject_particleSimulation, 7, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
+	const GLchar* feedbackVaryings[1] = { "outPositions" }; //, "outVelocities", "outForces", "outElapsedTimes", "outLifeTimes", "outColors", "outSizes"};
+	glTransformFeedbackVaryings(programObject_particleSimulation, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
 
 	glLinkProgram(programObject_particleSimulation);
 	if (check_link_error(programObject_particleSimulation) < 0)

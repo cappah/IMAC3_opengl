@@ -1,5 +1,14 @@
 #version 410 core
 
+#define POSITIONS 0
+#define VELOCITIES 1
+#define FORCES 2
+#define ELAPSED_TIMES 3
+#define LIFE_TIMES 4
+#define COLORS 5
+#define SIZES 6
+
+layout(std140, column_major) uniform;
 layout (points) in;
 layout (triangle_strip) out;
 layout (max_vertices = 4) out;

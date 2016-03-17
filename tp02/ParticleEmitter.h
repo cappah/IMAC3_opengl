@@ -14,22 +14,21 @@ namespace Physic{
 	struct Particle
 	{
 		glm::vec3 position;
-		glm::vec3 velocity;
-		glm::vec3 force;
-		float elapsedTime;
-		float lifeTime;
-		glm::vec4 color;
-		glm::vec2 size;
+		//glm::vec3 velocity;
+		//glm::vec3 force;
+		//float elapsedTime;
+		//float lifeTime;
+		//glm::vec4 color;
+		//glm::vec2 size;
 
-		inline Particle(): position(0,0,0), velocity(0,0,0), force(0,0,0), elapsedTime(0), lifeTime(10), color(1,0,0,1), size(1,1)
+		inline Particle(): position(0,0,0)//, velocity(0,0,0), force(0,0,0), elapsedTime(0), lifeTime(10), color(1,0,0,1), size(1,1)
 		{}
 	};
 
 	class ParticleEmitter : public Component
 	{
 	public :
-		enum VBO_TYPES {VERTICES = 0, NORMALS, UVS,
-			POSITIONS, VELOCITIES, FORCES, ELAPSED_TIMES, LIFE_TIMES, COLORS, SIZES};
+		enum VBO_TYPES { POSITIONS = 0 };//, VELOCITIES, FORCES, ELAPSED_TIMES, LIFE_TIMES, COLORS, SIZES};
 	private:
 		//parameters : 
 		int m_maxParticleCount;
