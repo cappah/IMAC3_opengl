@@ -176,11 +176,12 @@ namespace Physic {
 		glEnableVertexAttribArray(POSITIONS);
 		glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, position)); // position
 
-		glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
+		glDrawArrays(GL_POINTS, 0, m_maxParticleCount*3);
+		//glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
 
-		GLfloat feedback[10];
+		GLfloat feedback[17];
 		glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(feedback), feedback);
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 17; i++) {
 			std::cout << "pos = " << feedback[i] << std::endl;
 		}
 
