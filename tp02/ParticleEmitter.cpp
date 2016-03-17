@@ -6,27 +6,34 @@
 namespace Physic {
 
 
-	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), m_maxParticleCount(10),
-	m_materialParticules(MaterialFactory::get().get<MaterialParticles>("particles")),
-	m_materialParticuleSimulation(MaterialFactory::get().get<MaterialParticleSimulation>("particleSimulation")),
+	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), 
+	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), 
+	m_translation(glm::vec3(0,0,0)),
+	m_materialParticules(MaterialFactory::get().get<MaterialParticlesCPU>("particlesCPU")),
+	//m_materialParticuleSimulation(MaterialFactory::get().get<MaterialParticleSimulation>("particleSimulation")),
 	m_triangleIndex({ 0, 1, 2, 2, 3, 0 }),
 	m_uvs({ 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f }), m_vertices({ -0.5, 0.0, -0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.5 }), 
-	m_normals({ 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }), m_particleTexture(TextureFactory::get().get("default")),
-	m_currVB(0), m_currTFB(1), m_isFirst(true)
+	m_normals({ 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }), m_particleTexture(TextureFactory::get().get("default"))
 	{
-		////initialize system : 
-		//for (int i = 0; i < m_maxParticleCount; i++)
-		//{
-		//	m_positions.push_back(glm::vec3(0, 0, 0));
-		//	m_velocities.push_back(glm::vec3(0,0,0));
-		//	m_forces.push_back(glm::vec3(0,0,0));
-		//	m_elapsedTimes.push_back(0.f);
-		//	m_lifeTimes.push_back(5.f);
-		//	m_colors.push_back(glm::vec4(1,0,0,1));
-		//	m_sizes.push_back(glm::vec2(1.f, 1.f));
-		//}
+		//add default color step :
+		m_colorSteps_times.push_back(0);
+		m_colorSteps_values.push_back(glm::vec4(1,0,0,1));
 
-		m_particles.resize(m_maxParticleCount);
+		//add default force step : 
+		m_forceSteps_times.push_back(0);
+		m_forceSteps_values.push_back(glm::vec3(0, 1, 0));
+
+		//initialize system : 
+		for (int i = 0; i < m_maxParticleCount; i++)
+		{
+			m_positions.push_back(glm::vec3(0, 0, 0));
+			m_velocities.push_back(glm::vec3(0,0,0));
+			m_forces.push_back(glm::vec3(0,0,0));
+			m_elapsedTimes.push_back(0.f);
+			m_lifeTimes.push_back(5.f);
+			m_colors.push_back(glm::vec4(1,0,0,1));
+			m_sizes.push_back(glm::vec2(1.f, 1.f));
+		}
 
 		//initialize vbos :
 		initGl();
@@ -42,107 +49,227 @@ namespace Physic {
 	{
 		m_triangleCount = m_triangleIndex.size() / 3;
 
-		//glGenVertexArrays(1, &m_vao);
-		//glBindVertexArray(m_vao);
+		glGenVertexArrays(1, &m_vao);
+		glBindVertexArray(m_vao);
 
-		//glGenBuffers(1, &m_index);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index);
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangleIndex.size()*sizeof(int), &m_triangleIndex[0], GL_STATIC_DRAW);
+		glGenBuffers(1, &m_index);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_triangleIndex.size()*sizeof(int), &m_triangleIndex[0], GL_STATIC_DRAW);
 
-		//glGenBuffers(1, &m_vboVertices);
-		//glBindBuffer(GL_ARRAY_BUFFER, m_vboVertices);
-		//glEnableVertexAttribArray(VERTICES);
-		//glBufferData(GL_ARRAY_BUFFER, m_vertices.size()*sizeof(float), &m_vertices[0], GL_STATIC_DRAW);
-		//glVertexAttribPointer(VERTICES, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+		glGenBuffers(1, &m_vboVertices);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboVertices);
+		glEnableVertexAttribArray(VERTICES);
+		glBufferData(GL_ARRAY_BUFFER, m_vertices.size()*sizeof(float), &m_vertices[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(VERTICES, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
-		//glGenBuffers(1, &m_vboNormals);
-		//glBindBuffer(GL_ARRAY_BUFFER, m_vboNormals);
-		//glEnableVertexAttribArray(NORMALS);
-		//glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(float), &m_normals[0], GL_STATIC_DRAW);
-		//glVertexAttribPointer(NORMALS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+		glGenBuffers(1, &m_vboNormals);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboNormals);
+		glEnableVertexAttribArray(NORMALS);
+		glBufferData(GL_ARRAY_BUFFER, m_normals.size()*sizeof(float), &m_normals[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(NORMALS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
 
-		//glGenBuffers(1, &m_vboUvs);
-		//glBindBuffer(GL_ARRAY_BUFFER, m_vboUvs);
-		//glEnableVertexAttribArray(UVS);
-		//glBufferData(GL_ARRAY_BUFFER, m_uvs.size()*sizeof(float), &m_uvs[0], GL_STATIC_DRAW);
-		//glVertexAttribPointer(UVS, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
-		//glBindBuffer(GL_ARRAY_BUFFER, 0);
-		//glBindVertexArray(0);
+		glGenBuffers(1, &m_vboUvs);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboUvs);
+		glEnableVertexAttribArray(UVS);
+		glBufferData(GL_ARRAY_BUFFER, m_uvs.size()*sizeof(float), &m_uvs[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(UVS, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
 
-		//Instanced stuff : 
-		glGenTransformFeedbacks(2, m_transformFeedback);
-		glGenBuffers(2, m_particleBuffer);
-
-		for (unsigned int i = 0; i < 2; i++) {
-			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[i]);
-			glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[i]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Particle)*m_maxParticleCount, &m_particles[0], GL_DYNAMIC_DRAW);
-			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_particleBuffer[i]);
-		}
-
-	}
-
-	void ParticleEmitter::simulateOnGPU(float deltaTime)
-	{
-		int tmp = m_currVB;
-		m_currVB = m_currTFB;
-		m_currTFB = tmp;
-
-		m_materialParticuleSimulation->use();
-		m_materialParticuleSimulation->glUniform_deltaTime(deltaTime);
-
-		glEnable(GL_RASTERIZER_DISCARD);
-
-		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currVB]);
-
-		GLfloat feedback[3];
-		glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(feedback), feedback);
-		for (int i = 0; i < 3; i++) {
-			std::cout << "pos01 = " << feedback[i] << std::endl;
-		}
-
-		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, m_transformFeedback[m_currTFB]);
-
+		//instanced stuff :
+		glGenBuffers(1, &m_vboPositions);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboPositions);
 		glEnableVertexAttribArray(POSITIONS);
-		//glEnableVertexAttribArray(VELOCITIES);
-		//glEnableVertexAttribArray(FORCES);
-		//glEnableVertexAttribArray(ELAPSED_TIMES);
-		//glEnableVertexAttribArray(LIFE_TIMES);
-		//glEnableVertexAttribArray(COLORS);
-		//glEnableVertexAttribArray(SIZES);
+		glBufferData(GL_ARRAY_BUFFER, m_positions.size()*sizeof(glm::vec3), &m_positions[0], GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
-		glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, position));
-		//glVertexAttribPointer(VELOCITIES, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, velocity));
-		//glVertexAttribPointer(FORCES, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, force));
-		//glVertexAttribPointer(ELAPSED_TIMES, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, elapsedTime));
-		//glVertexAttribPointer(LIFE_TIMES, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, lifeTime));
-		//glVertexAttribPointer(COLORS, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, color)); 
-		//glVertexAttribPointer(SIZES, 2, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, size));
+		glGenBuffers(1, &m_vboColors);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboColors);
+		glEnableVertexAttribArray(COLORS);
+		glBufferData(GL_ARRAY_BUFFER, m_colors.size()*sizeof(glm::vec4), &m_colors[0], GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(COLORS, 4, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 4, (void*)0);
 
+		glGenBuffers(1, &m_vboSizes);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboSizes);
+		glEnableVertexAttribArray(SIZES);
+		glBufferData(GL_ARRAY_BUFFER, m_sizes.size()*sizeof(glm::vec2), &m_sizes[0], GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(SIZES, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
+
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		
-
-		glBeginTransformFeedback(GL_POINTS);
-		if (m_isFirst) {
-			glDrawArrays(GL_POINTS, 0, 1);
-			m_isFirst = false;
-		}
-		else {
-			glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currVB]);
-		}
-		glEndTransformFeedback();
-
-		glDisableVertexAttribArray(POSITIONS);
-		//glDisableVertexAttribArray(VELOCITIES);
-		//glDisableVertexAttribArray(FORCES);
-		//glDisableVertexAttribArray(ELAPSED_TIMES);
-		//glDisableVertexAttribArray(LIFE_TIMES);
-		//glDisableVertexAttribArray(SIZES);
-		//glDisableVertexAttribArray(COLORS);
-
-		glDisable(GL_RASTERIZER_DISCARD);
-
 	}
+
+	void ParticleEmitter::swapParticles(int a_idx, int b_idx)
+	{
+		std::iter_swap(m_positions.begin() + a_idx, m_positions.begin() + b_idx);
+		std::iter_swap(m_velocities.begin() + a_idx, m_velocities.begin() + b_idx);
+		std::iter_swap(m_forces.begin() + a_idx, m_forces.begin() + b_idx);
+		std::iter_swap(m_elapsedTimes.begin() + a_idx, m_elapsedTimes.begin() + b_idx);
+		std::iter_swap(m_lifeTimes.begin() + a_idx, m_lifeTimes.begin() + b_idx);
+		std::iter_swap(m_colors.begin() + a_idx, m_colors.begin() + b_idx);
+		std::iter_swap(m_sizes.begin() + a_idx, m_sizes.begin() + b_idx);
+	}
+
+	glm::vec3 ParticleEmitter::getInternalParticleForce(float elapsedTime, float lifeTime, const glm::vec3 & position)
+	{
+		assert(m_forceSteps_times.size() == m_forceSteps_values.size());
+
+		if (m_forceSteps_values.size() < 2 || lifeTime == 0) {
+			if (m_forceSteps_values.size() > 0)
+				return m_forceSteps_values[0];
+			else
+				return glm::vec3(0, 0, 0);
+		}
+
+		float timeRatio = elapsedTime / lifeTime;
+
+		int stepIdx = 0;
+		for (int i = 0; i < m_forceSteps_times.size() - 1; i++) {
+			if (m_forceSteps_times[i] <= timeRatio && m_forceSteps_times[i + 1] > timeRatio) {
+				stepIdx = i;
+				elapsedTime -= m_forceSteps_times[i];
+				elapsedTime *= m_forceSteps_times[i+1] - m_forceSteps_times[i];
+				break;
+			}
+		}
+
+		return  m_forceSteps_values[stepIdx] * elapsedTime + m_forceSteps_values[stepIdx + 1] * (1 - elapsedTime);
+	}
+
+	glm::vec2 ParticleEmitter::getInternalParticleSize(float elapsedTime, float lifeTime, const glm::vec3 & position)
+	{
+		assert(m_sizeSteps_times.size() == m_sizeSteps_values.size());
+
+		if (m_sizeSteps_values.size() < 2 || lifeTime == 0) {
+			if (m_sizeSteps_values.size() > 0)
+				return m_sizeSteps_values[0];
+			else
+				return glm::vec2(1, 1);
+		}
+
+		float timeRatio = elapsedTime / lifeTime;
+
+		int stepIdx = 0;
+		for (int i = 0; i < m_sizeSteps_times.size() - 1; i++) {
+			if (m_sizeSteps_times[i] <= timeRatio && m_sizeSteps_times[i + 1] > timeRatio) {
+				stepIdx = i;
+				elapsedTime -= m_sizeSteps_times[i];
+				elapsedTime *= m_sizeSteps_times[i + 1] - m_sizeSteps_times[i];
+				break;
+			}
+		}
+
+		return  m_sizeSteps_values[stepIdx] * elapsedTime + m_sizeSteps_values[stepIdx + 1] * (1 - elapsedTime);
+	}
+
+	glm::vec4 ParticleEmitter::getInternalParticleColor(float elapsedTime, float lifeTime, const glm::vec3 & position)
+	{
+		assert(m_colorSteps_times.size() == m_colorSteps_values.size());
+
+		if (m_colorSteps_values.size() < 2 || lifeTime == 0) {
+			if (m_colorSteps_values.size() > 0)
+				return m_colorSteps_values[0];
+			else
+				return glm::vec4(1, 1, 1, 1);
+		}
+
+		float timeRatio = elapsedTime / lifeTime;
+
+		int stepIdx = 0;
+		for (int i = 0; i < m_colorSteps_times.size() - 1; i++) {
+			if (m_colorSteps_times[i] <= timeRatio && m_colorSteps_times[i + 1] > timeRatio) {
+				stepIdx = i;
+				elapsedTime -= m_colorSteps_times[i];
+				elapsedTime *= m_colorSteps_times[i + 1] - m_colorSteps_times[i];
+				break;
+			}
+		}
+
+		return  m_colorSteps_values[stepIdx] * elapsedTime + m_colorSteps_values[stepIdx + 1] * (1 - elapsedTime);
+	}
+
+	glm::vec3 ParticleEmitter::getInitialVelocity() const
+	{
+		float interval = m_initialVelocityInterval.y - m_initialVelocityInterval.x;
+		return glm::sphericalRand(1.f)* interval + m_initialVelocityInterval.x;
+	}
+
+	float ParticleEmitter::getInitialLifeTime() const
+	{
+		return glm::linearRand(m_initialVelocityInterval.x, m_initialVelocityInterval.y);
+	}
+
+	void ParticleEmitter::spawnParticles(int spawnCount)
+	{
+		if (spawnCount + m_aliveParticlesCount >= m_maxParticleCount)
+			spawnCount = m_maxParticleCount - m_aliveParticlesCount;
+
+		//buffer is too small, we can't add particles : 
+		if (spawnCount <= 0)
+			return;
+
+		int previousParticleCount = m_aliveParticlesCount;
+		for (int i = previousParticleCount; i < previousParticleCount + spawnCount; i++) {
+			m_positions[i]= m_translation;
+			m_velocities[i] = getInitialVelocity();
+			m_forces[i] = glm::vec3(0,0,0);
+			m_elapsedTimes[i] = 0;
+			m_lifeTimes[i] = getInitialLifeTime();
+			m_colors[i] = m_colorSteps_values.size() > 0 ? m_colorSteps_values[0] : glm::vec4(1,1,1,1);
+			m_sizes[i] = m_sizeSteps_values.size() > 0 ? m_sizeSteps_values[0] : glm::vec2(1,1);
+
+			m_aliveParticlesCount++;
+		}
+	}
+
+	void ParticleEmitter::update(float deltaTime)
+	{
+		float defaultParticleMass = 0.1f; //todo improve
+
+		//spawn particles : 
+		float particleCountToSpwan_float = m_particleCountBySecond * deltaTime + m_spawnFragment;
+		float particleCountToSpwan_floored;
+		m_spawnFragment = (float)modf(particleCountToSpwan_float, &particleCountToSpwan_floored);
+			spawnParticles(particleCountToSpwan_floored);
+
+		//update particles : 
+		assert((m_aliveParticlesCount <= m_maxParticleCount));
+		for (int i = 0; i < m_aliveParticlesCount; i++)
+		{
+			assert(m_maxParticleCount == m_elapsedTimes.size());
+			m_elapsedTimes[i] += deltaTime;
+
+			assert(m_maxParticleCount == m_lifeTimes.size());
+			if (m_elapsedTimes[i] > m_lifeTimes[i])
+			{
+				//kill the particle : 
+				//if(m_aliveParticlesCount<m_maxParticleCount && m_aliveParticlesCount != 0)
+				swapParticles(i, m_aliveParticlesCount-1);
+				m_aliveParticlesCount--;
+				i--;
+				continue;
+			}
+			else
+			{
+				assert(m_maxParticleCount == m_forces.size());
+				assert(m_maxParticleCount == m_velocities.size());
+				assert(m_maxParticleCount == m_positions.size());
+
+				//give some forces to the particle : 
+				m_forces[i] += getInternalParticleForce(m_elapsedTimes[i], m_lifeTimes[i], m_positions[i]);
+
+				//compute forces applied to the point :
+				m_velocities[i] += (deltaTime / defaultParticleMass)*m_forces[i];
+				m_positions[i] += deltaTime*m_velocities[i];
+				m_forces[i] = glm::vec3(0, 0, 0);
+			}
+		}
+
+		updateVbos();
+	}
+
 
 	void ParticleEmitter::render(const glm::mat4 & projection, const glm::mat4 & view)
 	{
@@ -165,15 +292,42 @@ namespace Physic {
 
 	void ParticleEmitter::draw()
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_particleBuffer[m_currTFB]);
-		glEnableVertexAttribArray(POSITIONS);
-		glVertexAttribPointer(POSITIONS, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (const GLvoid*)offsetof(Physic::Particle, position)); // position
+		glBindVertexArray(m_vao);
+		
 
-		glDrawArrays(GL_POINTS, 0, m_maxParticleCount*3);
-		//glDrawTransformFeedback(GL_POINTS, m_transformFeedback[m_currTFB]);
+		glVertexAttribDivisor(VERTICES, 0);
+		glVertexAttribDivisor(NORMALS, 0);
+		glVertexAttribDivisor(UVS, 0);
+		glVertexAttribDivisor(POSITIONS, 1);
+		glVertexAttribDivisor(COLORS, 1);
+		glVertexAttribDivisor(SIZES, 1);
 
-		glDisableVertexAttribArray(0);
+		glDrawElementsInstanced(GL_TRIANGLES, m_triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0, m_aliveParticlesCount);
 
+		glBindVertexArray(0);
+
+	}
+
+	void ParticleEmitter::updateVbos()
+	{
+		//instanced stuff :
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboPositions);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, m_aliveParticlesCount*sizeof(glm::vec3), &m_positions[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboColors);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, m_aliveParticlesCount*sizeof(glm::vec4), &m_colors[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboSizes);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, m_aliveParticlesCount*sizeof(glm::vec2), &m_sizes[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	void ParticleEmitter::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
+	{
+		m_translation = translation;
+		m_rotation = rotation;
 	}
 
 	void ParticleEmitter::drawUI(Scene& scene)

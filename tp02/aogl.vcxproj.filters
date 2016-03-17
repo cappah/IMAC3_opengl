@@ -392,5 +392,11 @@
     <None Include="particleSimulation.geom">
       <Filter>shaders</Filter>
     </None>
+    <None Include="particleCPU.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="particleCPU.vert">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

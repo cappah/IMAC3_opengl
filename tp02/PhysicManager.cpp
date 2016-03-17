@@ -44,7 +44,7 @@ namespace Physic {
 		//update particles : 
 		for (int i = 0; i < particleEmitters.size(); i++)
 		{
-			particleEmitters[i]->simulateOnGPU(deltaTime);
+			particleEmitters[i]->update(deltaTime);
 		}
 	}
 

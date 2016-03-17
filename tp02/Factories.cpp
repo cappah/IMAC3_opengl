@@ -5,6 +5,24 @@
 
 ProgramFactory::ProgramFactory()
 {
+
+	//////////////////// CPU PARTICLE shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_particleCPU = compile_shader_from_file(GL_VERTEX_SHADER, "particleCPU.vert");
+	GLuint fragShaderId_particleCPU = compile_shader_from_file(GL_FRAGMENT_SHADER, "particleCPU.frag");
+
+	GLuint programObject_particleCPU = glCreateProgram();
+	glAttachShader(programObject_particleCPU, vertShaderId_particleCPU);
+	glAttachShader(programObject_particleCPU, fragShaderId_particleCPU);
+
+	glLinkProgram(programObject_particleCPU);
+	if (check_link_error(programObject_particleCPU) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 	//////////////////// PARTICLE shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_particle = compile_shader_from_file(GL_VERTEX_SHADER, "particle.vert");
@@ -207,6 +225,7 @@ ProgramFactory::ProgramFactory()
 	m_programs["wireframeInstanced"] = programObject_wireframeInstanced;
 	m_programs["defaultBillboard"] = programObject_billboard;
 	m_programs["defaultParticles"] = programObject_particle;
+	m_programs["defaultParticlesCPU"] = programObject_particleCPU;
 	m_programs["particleSimulation"] = programObject_particleSimulation;
 
 	m_defaults.push_back("defaultLit");
@@ -219,6 +238,7 @@ ProgramFactory::ProgramFactory()
 	m_defaults.push_back("wireframeInstanced");
 	m_defaults.push_back("defaultBillboard");
 	m_defaults.push_back("defaultParticles");
+	m_defaults.push_back("defaultParticlesCPU");
 	m_defaults.push_back("particleSimulation");
 }
 
@@ -232,6 +252,8 @@ void ProgramFactory::add(const std::string& name, GLuint programId)
 
 GLuint ProgramFactory::get(const std::string& name)
 {
+	assert(m_programs.find(name) != m_programs.end());
+
 	return m_programs[name];
 }
 
@@ -749,6 +771,10 @@ MaterialFactory::MaterialFactory()
 	newMat->name = "particles";
 	m_materials["particles"] = newMat;
 
+	newMat = new MaterialParticlesCPU(ProgramFactory::get().get("defaultParticlesCPU"));
+	newMat->name = "particlesCPU";
+	m_materials["particlesCPU"] = newMat;
+
 	newMat = new MaterialParticleSimulation(ProgramFactory::get().get("particleSimulation"));
 	newMat->name = "particleSimulation";
 	m_materials["particleSimulation"] = newMat;
@@ -759,6 +785,7 @@ MaterialFactory::MaterialFactory()
 	m_defaults.push_back("grassfield");
 	m_defaults.push_back("billboard");
 	m_defaults.push_back("particles");
+	m_defaults.push_back("particlesCPU");
 	m_defaults.push_back("particleSimulation");
 }
 

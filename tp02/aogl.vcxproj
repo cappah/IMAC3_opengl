@@ -343,6 +343,8 @@
     <None Include="particle.frag" />
     <None Include="particle.geom" />
     <None Include="particle.vert" />
+    <None Include="particleCPU.frag" />
+    <None Include="particleCPU.vert" />
     <None Include="particleSimulation.geom" />
     <None Include="particleSimulation.vert" />
     <None Include="shadowPass.frag" />

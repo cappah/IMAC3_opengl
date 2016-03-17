@@ -308,6 +308,28 @@ public:
 	virtual void drawUI() override;
 };
 
+class MaterialParticlesCPU : public Material
+{
+private:
+	GLuint m_uniformVP;
+	GLuint m_uniformTexture;
+	GLuint m_uniformCameraRight;
+	GLuint m_uniformCameraUp;
+
+public:
+	MaterialParticlesCPU();
+	MaterialParticlesCPU(GLuint _glProgram);
+
+	void glUniform_VP(const glm::mat4& VP);
+	void setUniformTexture(int texId);
+	void setUniformCameraRight(const glm::vec3& camRight);
+	void setUniformCameraUp(const glm::vec3& camUp);
+
+	virtual void use() override;
+	virtual void drawUI() override;
+};
+
+
 class MaterialParticles : public Material
 {
 private:
