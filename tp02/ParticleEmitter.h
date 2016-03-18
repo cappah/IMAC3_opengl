@@ -36,6 +36,7 @@ namespace Physic{
 		glm::vec2 m_initialVelocityInterval;
 		glm::vec2 m_lifeTimeInterval;
 		Texture* m_particleTexture;
+		std::string m_particleTextureName;
 		float m_particleCountBySecond;
 		float m_spawnFragment;
 
@@ -85,6 +86,7 @@ namespace Physic{
 		void render(const glm::mat4& projection, const glm::mat4& view);
 		void draw();
 		void updateVbos();
+		void onChangeMaxParticleCount();
 
 		//TODO
 

@@ -135,7 +135,7 @@ namespace Physic {
 			}
 		}
 
-		return  m_forceSteps_values[stepIdx] * elapsedTime + m_forceSteps_values[stepIdx + 1] * (1 - elapsedTime);
+		return  m_forceSteps_values[stepIdx] * (1 - elapsedTime) + m_forceSteps_values[stepIdx + 1] * elapsedTime;
 	}
 
 	glm::vec2 ParticleEmitter::getInternalParticleSize(float elapsedTime, float lifeTime, const glm::vec3 & position)
@@ -161,7 +161,7 @@ namespace Physic {
 			}
 		}
 
-		return  m_sizeSteps_values[stepIdx] * elapsedTime + m_sizeSteps_values[stepIdx + 1] * (1 - elapsedTime);
+		return  m_sizeSteps_values[stepIdx] * (1 - elapsedTime) + m_sizeSteps_values[stepIdx + 1] * elapsedTime;
 	}
 
 	glm::vec4 ParticleEmitter::getInternalParticleColor(float elapsedTime, float lifeTime, const glm::vec3 & position)
@@ -187,7 +187,7 @@ namespace Physic {
 			}
 		}
 
-		return  m_colorSteps_values[stepIdx] * elapsedTime + m_colorSteps_values[stepIdx + 1] * (1 - elapsedTime);
+		return  m_colorSteps_values[stepIdx] * (1 - elapsedTime) + m_colorSteps_values[stepIdx + 1] * elapsedTime;
 	}
 
 	glm::vec3 ParticleEmitter::getInitialVelocity() const
@@ -198,7 +198,7 @@ namespace Physic {
 
 	float ParticleEmitter::getInitialLifeTime() const
 	{
-		return glm::linearRand(m_initialVelocityInterval.x, m_initialVelocityInterval.y);
+		return glm::linearRand(m_lifeTimeInterval.x, m_lifeTimeInterval.y);
 	}
 
 	void ParticleEmitter::spawnParticles(int spawnCount)
@@ -232,7 +232,7 @@ namespace Physic {
 		float particleCountToSpwan_float = m_particleCountBySecond * deltaTime + m_spawnFragment;
 		float particleCountToSpwan_floored;
 		m_spawnFragment = (float)modf(particleCountToSpwan_float, &particleCountToSpwan_floored);
-			spawnParticles(particleCountToSpwan_floored);
+		spawnParticles(particleCountToSpwan_floored);
 
 		//update particles : 
 		assert((m_aliveParticlesCount <= m_maxParticleCount));
@@ -264,6 +264,12 @@ namespace Physic {
 				m_velocities[i] += (deltaTime / defaultParticleMass)*m_forces[i];
 				m_positions[i] += deltaTime*m_velocities[i];
 				m_forces[i] = glm::vec3(0, 0, 0);
+
+				//compute shape and colors : 
+				assert(m_maxParticleCount == m_colors.size());
+				m_colors[i] = getInternalParticleColor(m_elapsedTimes[i], m_lifeTimes[i], m_positions[i]);
+				assert(m_maxParticleCount == m_sizes.size());
+				m_sizes[i] = getInternalParticleSize(m_elapsedTimes[i], m_lifeTimes[i], m_positions[i]);
 			}
 		}
 
@@ -293,7 +299,7 @@ namespace Physic {
 	void ParticleEmitter::draw()
 	{
 		glBindVertexArray(m_vao);
-		
+
 
 		glVertexAttribDivisor(VERTICES, 0);
 		glVertexAttribDivisor(NORMALS, 0);
@@ -324,6 +330,39 @@ namespace Physic {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
+	void ParticleEmitter::onChangeMaxParticleCount()
+	{
+		if (m_maxParticleCount <= 0)
+			m_maxParticleCount = 1;
+
+		if (m_maxParticleCount <= m_aliveParticlesCount)
+			m_aliveParticlesCount = m_maxParticleCount;
+
+		m_positions.resize(m_maxParticleCount);
+		m_velocities.resize(m_maxParticleCount);
+		m_forces.resize(m_maxParticleCount);
+		m_elapsedTimes.resize(m_maxParticleCount);
+		m_lifeTimes.resize(m_maxParticleCount);
+		m_colors.resize(m_maxParticleCount);
+		m_sizes.resize(m_maxParticleCount);
+
+		//instanced stuff :
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboPositions);
+		glEnableVertexAttribArray(POSITIONS);
+		glBufferData(GL_ARRAY_BUFFER, m_positions.size()*sizeof(glm::vec3), &m_positions[0], GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboColors);
+		glEnableVertexAttribArray(COLORS);
+		glBufferData(GL_ARRAY_BUFFER, m_colors.size()*sizeof(glm::vec4), &m_colors[0], GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboSizes);
+		glEnableVertexAttribArray(SIZES);
+		glBufferData(GL_ARRAY_BUFFER, m_sizes.size()*sizeof(glm::vec2), &m_sizes[0], GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
 	void ParticleEmitter::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 	{
 		m_translation = translation;
@@ -332,7 +371,111 @@ namespace Physic {
 
 	void ParticleEmitter::drawUI(Scene& scene)
 	{
-		//TODO
+		
+		//particle texture : 
+		char texName[20];
+		int stringLength = std::min((int)m_particleTextureName.size(), 20);
+		m_particleTextureName.copy(texName, stringLength);
+		texName[stringLength] = '\0';
+		if (ImGui::InputText("textureName", texName, 20))
+		{
+			m_particleTextureName = texName;
+
+			if (TextureFactory::get().contains(m_particleTextureName))
+			{
+				m_particleTexture = TextureFactory::get().get(m_particleTextureName);
+			}
+		}
+
+		//size step :
+		ImGui::PushID("SizeSteps");
+		if (ImGui::Button("add size step")) {
+			m_sizeSteps_times.push_back(1.f);
+			m_sizeSteps_values.push_back(glm::vec2(1, 1));
+		}
+		for (int i = 0; i < m_sizeSteps_times.size(); i++)
+		{
+			ImGui::PushID(i);
+			if (ImGui::InputFloat("##sizeStepTime", &m_sizeSteps_times[i])) {
+				if (m_sizeSteps_times[i] < 0) m_sizeSteps_times[i] = 0;
+				else if (m_sizeSteps_times[i] > 1.f) m_sizeSteps_times[i] = 1.f;
+			}
+			ImGui::SameLine();
+			ImGui::InputFloat2("##sizeStepValue", &m_sizeSteps_values[i][0]);
+			ImGui::SameLine();
+			if (ImGui::Button("remove")) {
+				m_sizeSteps_times.erase(m_sizeSteps_times.begin() + i);
+				m_sizeSteps_values.erase(m_sizeSteps_values.begin() + i);
+				i--;
+			}
+			ImGui::PopID();
+		}
+		ImGui::PopID();
+
+		//color step :
+		ImGui::PushID("ColorSteps");
+		if (ImGui::Button("add color step")) {
+			m_colorSteps_times.push_back(1.f);
+			m_colorSteps_values.push_back(glm::vec4(1, 1, 1, 1));
+		}
+		for (int i = 0; i < m_colorSteps_times.size(); i++)
+		{
+			ImGui::PushID(i);
+			if (ImGui::InputFloat("##colorStepTime", &m_colorSteps_times[i])) {
+				if (m_colorSteps_times[i] < 0) m_colorSteps_times[i] = 0;
+				else if (m_colorSteps_times[i] > 1.f) m_colorSteps_times[i] = 1.f;
+			}
+			ImGui::SameLine();
+			ImGui::ColorEdit4("##colorStepValue", &m_colorSteps_values[i][0]);
+			ImGui::SameLine();
+			if (ImGui::Button("remove")) {
+				m_colorSteps_times.erase(m_colorSteps_times.begin() + i);
+				m_colorSteps_values.erase(m_colorSteps_values.begin() + i);
+				i--;
+			}
+			ImGui::PopID();
+		}
+		ImGui::PopID();
+
+		//force step :
+		ImGui::PushID("ForceSteps");
+		if (ImGui::Button("add force step")) {
+			m_forceSteps_times.push_back(1.f);
+			m_forceSteps_values.push_back(glm::vec3(0, 0, 0));
+		}
+		for (int i = 0; i < m_forceSteps_times.size(); i++)
+		{
+			ImGui::PushID(i);
+			if (ImGui::InputFloat("##colorStepTime", &m_forceSteps_times[i])) {
+				if (m_forceSteps_times[i] < 0) m_forceSteps_times[i] = 0;
+				else if (m_forceSteps_times[i] > 1.f) m_forceSteps_times[i] = 1.f;
+			}
+			ImGui::SameLine();
+			ImGui::InputFloat3("##forceStepValue", &m_forceSteps_values[i][0]);
+			ImGui::SameLine();
+			if (ImGui::Button("remove")) {
+				m_forceSteps_times.erase(m_forceSteps_times.begin() + i);
+				m_forceSteps_values.erase(m_forceSteps_values.begin() + i);
+				i--;
+			}
+			ImGui::PopID();
+		}
+		ImGui::PopID();
+
+		//particle by second :
+		ImGui::InputFloat("particle count by second", &m_particleCountBySecond);
+
+		//life time interval :
+		ImGui::InputFloat2("life time interval", &m_lifeTimeInterval[0]);
+
+		//initial velocity interval :
+		ImGui::InputFloat2("initial velocity interval", &m_initialVelocityInterval[0]);
+
+		//max particle count : 
+		if (ImGui::InputInt("max particle count", &m_maxParticleCount)) {
+			onChangeMaxParticleCount();
+		}
+
 	}
 
 	void ParticleEmitter::eraseFromScene(Scene& scene)

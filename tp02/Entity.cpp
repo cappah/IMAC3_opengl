@@ -107,6 +107,7 @@ void Entity::applyTransform(const glm::vec3 & parentTranslation, const glm::vec3
 
 void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId)
 {
+	ImGui::SetNextWindowContentWidth(80);
 	bool nodeOpen = false;
 
 	ImVec2 itemPos;
@@ -125,8 +126,12 @@ void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id
 		removeId = id;
 	}
 
-	if(nodeOpen)
+	if (nodeOpen) {
+		//ImGui::SetNextWindowContentWidth(500);
+		//ImGui::BeginChild(ImGuiID(id), ImVec2(500, 0), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_ChildWindowAutoFitY | ImGuiWindowFlags_ChildWindowAutoFitX);
 		component->drawUI(scene);
+		//ImGui::EndChild();
+	}
 
 	if (nodeOpen)
 		ImGui::TreePop();

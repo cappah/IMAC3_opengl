@@ -757,7 +757,6 @@ void Editor::displayTopLeftWindow(Project& project)
 			for (auto& selected : m_currentSelected)
 			{
 				ImGui::PushID(entityId);
-
 				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str()))
 					selected->drawUI(scene);
 				ImGui::PopID();
@@ -1039,6 +1038,7 @@ void Editor::renderUI(Project& project)
 	ImGui::Begin("leftWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
 		ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z -30, m_windowRect.w));
 
+		ImGui::SetNextWindowContentWidth(m_topLeftPanelRect.z - 30);
 			ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
 				displayTopLeftWindow(project);
 			ImGui::EndChild();
