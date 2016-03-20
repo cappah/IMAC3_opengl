@@ -129,13 +129,14 @@ namespace Physic {
 		for (int i = 0; i < m_forceSteps_times.size() - 1; i++) {
 			if (m_forceSteps_times[i] <= timeRatio && m_forceSteps_times[i + 1] > timeRatio) {
 				stepIdx = i;
-				elapsedTime -= m_forceSteps_times[i];
-				elapsedTime *= m_forceSteps_times[i+1] - m_forceSteps_times[i];
+				timeRatio -= m_forceSteps_times[i];
+				float delta = (m_sizeSteps_times[i + 1] - m_sizeSteps_times[i]);
+				timeRatio /= delta == 0 ? 0.00001f : delta;
 				break;
 			}
 		}
 
-		return  m_forceSteps_values[stepIdx] * (1 - elapsedTime) + m_forceSteps_values[stepIdx + 1] * elapsedTime;
+		return  m_forceSteps_values[stepIdx] * (1 - timeRatio) + m_forceSteps_values[stepIdx + 1] * timeRatio;
 	}
 
 	glm::vec2 ParticleEmitter::getInternalParticleSize(float elapsedTime, float lifeTime, const glm::vec3 & position)
@@ -155,13 +156,14 @@ namespace Physic {
 		for (int i = 0; i < m_sizeSteps_times.size() - 1; i++) {
 			if (m_sizeSteps_times[i] <= timeRatio && m_sizeSteps_times[i + 1] > timeRatio) {
 				stepIdx = i;
-				elapsedTime -= m_sizeSteps_times[i];
-				elapsedTime *= m_sizeSteps_times[i + 1] - m_sizeSteps_times[i];
+				timeRatio -= m_sizeSteps_times[i];
+				float delta = (m_sizeSteps_times[i + 1] - m_sizeSteps_times[i]);
+				timeRatio /= delta == 0 ? 0.00001f : delta;
 				break;
 			}
 		}
 
-		return  m_sizeSteps_values[stepIdx] * (1 - elapsedTime) + m_sizeSteps_values[stepIdx + 1] * elapsedTime;
+		return  m_sizeSteps_values[stepIdx] * (1 - timeRatio) + m_sizeSteps_values[stepIdx + 1] * timeRatio;
 	}
 
 	glm::vec4 ParticleEmitter::getInternalParticleColor(float elapsedTime, float lifeTime, const glm::vec3 & position)
@@ -181,13 +183,14 @@ namespace Physic {
 		for (int i = 0; i < m_colorSteps_times.size() - 1; i++) {
 			if (m_colorSteps_times[i] <= timeRatio && m_colorSteps_times[i + 1] > timeRatio) {
 				stepIdx = i;
-				elapsedTime -= m_colorSteps_times[i];
-				elapsedTime *= m_colorSteps_times[i + 1] - m_colorSteps_times[i];
+				timeRatio -= m_colorSteps_times[i];
+				float delta = (m_sizeSteps_times[i + 1] - m_sizeSteps_times[i]);
+				timeRatio /= delta == 0 ? 0.00001f : delta;
 				break;
 			}
 		}
 
-		return  m_colorSteps_values[stepIdx] * (1 - elapsedTime) + m_colorSteps_values[stepIdx + 1] * elapsedTime;
+		return  m_colorSteps_values[stepIdx] * (1 - timeRatio) + m_colorSteps_values[stepIdx + 1] * timeRatio;
 	}
 
 	glm::vec3 ParticleEmitter::getInitialVelocity() const
@@ -371,7 +374,9 @@ namespace Physic {
 
 	void ParticleEmitter::drawUI(Scene& scene)
 	{
-		
+		float width = ImGui::GetWindowContentRegionWidth();
+
+
 		//particle texture : 
 		char texName[20];
 		int stringLength = std::min((int)m_particleTextureName.size(), 20);
@@ -393,8 +398,10 @@ namespace Physic {
 			m_sizeSteps_times.push_back(1.f);
 			m_sizeSteps_values.push_back(glm::vec2(1, 1));
 		}
+
 		for (int i = 0; i < m_sizeSteps_times.size(); i++)
 		{
+			ImGui::PushItemWidth(width*0.25);
 			ImGui::PushID(i);
 			if (ImGui::InputFloat("##sizeStepTime", &m_sizeSteps_times[i])) {
 				if (m_sizeSteps_times[i] < 0) m_sizeSteps_times[i] = 0;
@@ -409,6 +416,7 @@ namespace Physic {
 				i--;
 			}
 			ImGui::PopID();
+			ImGui::PopItemWidth();
 		}
 		ImGui::PopID();
 
@@ -420,6 +428,7 @@ namespace Physic {
 		}
 		for (int i = 0; i < m_colorSteps_times.size(); i++)
 		{
+			ImGui::PushItemWidth(width*0.25);
 			ImGui::PushID(i);
 			if (ImGui::InputFloat("##colorStepTime", &m_colorSteps_times[i])) {
 				if (m_colorSteps_times[i] < 0) m_colorSteps_times[i] = 0;
@@ -434,6 +443,7 @@ namespace Physic {
 				i--;
 			}
 			ImGui::PopID();
+			ImGui::PopItemWidth();
 		}
 		ImGui::PopID();
 
@@ -445,6 +455,7 @@ namespace Physic {
 		}
 		for (int i = 0; i < m_forceSteps_times.size(); i++)
 		{
+			ImGui::PushItemWidth(width*0.25);
 			ImGui::PushID(i);
 			if (ImGui::InputFloat("##colorStepTime", &m_forceSteps_times[i])) {
 				if (m_forceSteps_times[i] < 0) m_forceSteps_times[i] = 0;
@@ -459,6 +470,7 @@ namespace Physic {
 				i--;
 			}
 			ImGui::PopID();
+			ImGui::PopItemWidth();
 		}
 		ImGui::PopID();
 

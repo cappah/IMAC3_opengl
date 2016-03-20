@@ -739,6 +739,7 @@ void Editor::displayTopLeftWindow(Project& project)
 
 	int entityId = 0;
 
+
 	if (!m_currentSelected.empty())
 	{
 		//can't add or remove components in multiple editing, only change components parameters
@@ -757,8 +758,9 @@ void Editor::displayTopLeftWindow(Project& project)
 			for (auto& selected : m_currentSelected)
 			{
 				ImGui::PushID(entityId);
-				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str()))
+				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str())) {
 					selected->drawUI(scene);
+				}
 				ImGui::PopID();
 
 				entityId++;
