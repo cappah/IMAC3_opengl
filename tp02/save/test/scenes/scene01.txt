@@ -2,6 +2,7 @@
 	"entities" : 
 	[
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
@@ -199,6 +200,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -284,6 +286,7 @@
 			]
 		},
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
@@ -388,6 +391,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -473,6 +477,7 @@
 			]
 		},
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
@@ -577,6 +582,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -662,14 +668,15 @@
 			]
 		},
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
 				{
 					"bottomLeft" : 
 					[
-						-0.053841114044189453,
-						-0.5602116584777832,
+						0,
+						-3.5012173652648926,
 						0
 					],
 					"localBottomLeft" : 
@@ -686,33 +693,33 @@
 					],
 					"modelMatrix" : 
 					[
-						10.71079158782959,
+						11.293522834777832,
 						0,
 						0,
 						0,
 						0,
-						7.4327640533447266,
+						6.8931789398193359,
 						0,
 						0,
 						0,
 						0,
 						0,
 						0,
-						5.3015546798706055,
-						3.1561703681945801,
+						5.646761417388916,
+						-0.054627895355224609,
 						0,
 						1
 					],
 					"offsetPosition" : 
 					[
-						-0.053841192275285721,
-						-0.56021153926849365,
+						0,
+						-3.5012173652648926,
 						0
 					],
 					"offsetScale" : 
 					[
-						10.71079158782959,
-						7.4327640533447266,
+						11.293522834777832,
+						6.8931789398193359,
 						0
 					],
 					"origin" : 
@@ -736,8 +743,8 @@
 					],
 					"topRight" : 
 					[
-						10.656949996948242,
-						6.8725523948669434,
+						11.293522834777832,
+						3.3919615745544434,
 						0
 					],
 					"translation" : 
@@ -811,6 +818,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,

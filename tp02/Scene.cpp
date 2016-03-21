@@ -393,6 +393,16 @@ std::string Scene::getName() const
 	return m_name;
 }
 
+void Scene::resolveEntityChildSaving(Json::Value & rootComponent, Entity* currentEntity) 
+{
+	rootComponent["isRootEntity"] = false;
+	rootComponent["childCount"] = currentEntity->getChildCount();
+	currentEntity->save(rootComponent);
+	for (int i = 0; i < currentEntity->getChildCount(); i++) {
+		resolveEntityChildSaving(rootComponent["childs"][i], currentEntity->getChild(i));
+	}
+}
+
 void Scene::save(const std::string & path)
 {
 	Json::Value root;
@@ -400,7 +410,14 @@ void Scene::save(const std::string & path)
 	root["entityCount"] = m_entities.size();
 	for (int i = 0; i < m_entities.size(); i++)
 	{
-		m_entities[i]->save(root["entities"][i]);
+		if (!m_entities[i]->hasParent()) {
+			root["entities"][i]["isRootEntity"] = true;
+			root["entities"][i]["childCount"] = m_entities[i]->getChildCount();
+			m_entities[i]->save(root["entities"][i]);
+			for (int j = 0; j < m_entities[i]->getChildCount(); j++) {
+				resolveEntityChildSaving(root["entities"][i]["childs"][j], m_entities[i]->getChild(j));
+			}
+		}
 	}
 
 	//TODO
@@ -421,6 +438,25 @@ void Scene::save(const std::string & path)
 	stream << root;
 }
 
+void Scene::resolveEntityChildPreLoading(Json::Value & rootComponent, Entity* currentEntity)
+{
+	int childcount = rootComponent.get("childCount", 0).asInt();
+	for (int j = 0; j < childcount; j++) {
+		Entity* newEntity = new Entity(this);
+		currentEntity->addChild(newEntity);
+		resolveEntityChildPreLoading(rootComponent["childs"][j], newEntity);
+	}
+}
+
+void Scene::resolveEntityChildLoading(Json::Value & rootComponent, Entity* currentEntity)
+{
+	int childcount = rootComponent.get("childCount", 0).asInt();
+	for (int j = 0; j < childcount; j++) {
+		currentEntity->getChild(j)->load(rootComponent["childs"][j]);
+		resolveEntityChildLoading(rootComponent["childs"][j], currentEntity->getChild(j));
+	}
+}
+
 void Scene::load(const std::string & path)
 {
 	Json::Value root;
@@ -435,10 +471,19 @@ void Scene::load(const std::string & path)
 	stream >> root;
 	
 	int entityCount = root.get("entityCount", 0).asInt();
-	for (int i = 0; i < entityCount; i++)
-		m_entities[i] = new Entity(this);
-	for (int i = 0; i < entityCount; i++)
-		m_entities[i]->load(root["entities"][i]);
+	assert(m_entities.size() == 0);
+	for (int i = 0; i < entityCount; i++) {
+		if (root["entities"][i].get("isRootEntity", false).asBool() == true) {
+			auto newEntity = new Entity(this);
+			resolveEntityChildPreLoading(root["entities"][i], newEntity);
+		}
+	}
+	for (int i = 0; i < entityCount; i++) {
+		if (root["entities"][i].get("isRootEntity", false).asBool() == true) {
+			m_entities[i]->load(root["entities"][i]);
+			resolveEntityChildLoading(root["entities"][i], m_entities[i]);
+		}
+	}
 
 	//TODO
 	//m_terrain.save(root["terrain"]);

@@ -2,6 +2,7 @@
 	"entities" : 
 	[
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
@@ -199,6 +200,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -284,6 +286,201 @@
 			]
 		},
 		{
+			"childCount" : 1,
+			"childs" : 
+			[
+				{
+					"childCount" : 0,
+					"componentCount" : 2,
+					"components" : 
+					[
+						{
+							"materialCount" : 1,
+							"materialName" : 
+							[
+								"brick"
+							],
+							"meshName" : "cube",
+							"type" : 1
+						},
+						{
+							"bottomLeft" : 
+							[
+								2.5,
+								-2.4789834022521973,
+								-0.5
+							],
+							"localBottomLeft" : 
+							[
+								-0.5,
+								-0.5,
+								-0.5
+							],
+							"localTopRight" : 
+							[
+								0.5,
+								0.5,
+								0.5
+							],
+							"modelMatrix" : 
+							[
+								1,
+								0,
+								0,
+								0,
+								0,
+								1,
+								0,
+								0,
+								0,
+								0,
+								1,
+								0,
+								3,
+								-1.9789834022521973,
+								0,
+								1
+							],
+							"offsetPosition" : 
+							[
+								0,
+								0,
+								0
+							],
+							"offsetScale" : 
+							[
+								1,
+								1,
+								1
+							],
+							"origin" : 
+							[
+								0,
+								0,
+								0
+							],
+							"rotation" : 
+							[
+								0,
+								0,
+								0,
+								1
+							],
+							"scale" : 
+							[
+								1,
+								1,
+								1
+							],
+							"topRight" : 
+							[
+								3.5,
+								-1.4789834022521973,
+								0.5
+							],
+							"translation" : 
+							[
+								3,
+								-1.9789834022521973,
+								0
+							],
+							"type" : 0,
+							"visualMaterialName" : "wireframe",
+							"visualMeshName" : "cubeWireframe"
+						}
+					],
+					"eulerRotation" : 
+					[
+						0,
+						0,
+						0
+					],
+					"isRootEntity" : false,
+					"localEulerRotation" : 
+					[
+						0,
+						0,
+						0
+					],
+					"localRotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"localScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"localTranslation" : 
+					[
+						3,
+						-1.9789834022521973,
+						0
+					],
+					"modelMatrix" : 
+					[
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						3,
+						-1.9789834022521973,
+						0,
+						1
+					],
+					"name" : "cube",
+					"parentRotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"parentScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"parentTranslation" : 
+					[
+						3,
+						-1.9789834022521973,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"translation" : 
+					[
+						3,
+						-1.9789834022521973,
+						0
+					]
+				}
+			],
 			"componentCount" : 2,
 			"components" : 
 			[
@@ -388,6 +585,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -473,5 +671,5 @@
 			]
 		}
 	],
-	"entityCount" : 2
+	"entityCount" : 3
 }
