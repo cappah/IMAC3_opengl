@@ -237,5 +237,8 @@ public:
 
 	//update physic : 
 	void updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones);
+
+	void save(Json::Value& rootComponent) const;
+	void load(Json::Value& rootComponent);
 };
 

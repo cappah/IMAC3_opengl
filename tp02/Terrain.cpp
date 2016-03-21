@@ -1067,6 +1067,33 @@ void Terrain::updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& wind
 	//TODO : trees,...
 }
 
+void Terrain::save(Json::Value & rootComponent) const
+{
+	rootComponent["subdivision"] = m_subdivision;
+	rootComponent["width"] = m_width;
+	rootComponent["depth"] = m_depth;
+	rootComponent["height"] = m_height;
+
+	rootComponent["offset"] = toJsonValue<glm::vec3>(m_offset);
+
+	rootComponent["seed"] = m_seed;
+
+	//NoiseGenerator m_terrainNoise;
+	m_terrainNoise.save(rootComponent["terrainNoise"]);
+}
+
+void Terrain::load(Json::Value & rootComponent)
+{
+	m_subdivision = rootComponent.get("subdivision", 10).asInt();
+	m_width = rootComponent.get("width", 10).asFloat();
+	m_depth = rootComponent.get("depth", 10).asFloat();
+	m_height = rootComponent.get("height", 10).asFloat();
+	m_offset = fromJsonValue<glm::vec3>(rootComponent["offset"], glm::vec3(0,0,0));
+	m_seed = rootComponent.get("seed", 10).asInt();
+
+	generateTerrain();
+}
+
 //get terrain height at a given point
 float Terrain::getHeight(float x, float y)
 {

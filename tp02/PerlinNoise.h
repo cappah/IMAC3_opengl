@@ -6,10 +6,12 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
+#include "ISerializable.h"
+
 #include "Utils.h"
 
 
-struct Perlin2D
+struct Perlin2D : ISerializable
 {
 	int m_seed;
 	float m_persistence;
@@ -39,6 +41,9 @@ struct Perlin2D
 	void setSeed(int seed);
 
 	void updateNoise();
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 
 private :
 	float getValue2D(int i, int j);

@@ -421,7 +421,7 @@ void Scene::save(const std::string & path)
 	}
 
 	//TODO
-	//m_terrain.save(root["terrain"]);
+	m_terrain.save(root["terrain"]);
 	m_skybox.save(root["skybox"]);
 	
 	//DEBUG
@@ -486,7 +486,7 @@ void Scene::load(const std::string & path)
 	}
 
 	//TODO
-	//m_terrain.save(root["terrain"]);
+	m_terrain.load(root["terrain"]);
 	m_skybox.load(root["skybox"]);
 
 }

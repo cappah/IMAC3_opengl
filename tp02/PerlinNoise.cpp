@@ -133,3 +133,25 @@ void Perlin2D::updateNoise()
 	for (int i = 0; i < m_maxHeight * m_maxHeight; i++)
 		m_values[i] = ((float)std::rand()) / RAND_MAX;
 }
+
+void Perlin2D::save(Json::Value & rootComponent) const
+{
+	rootComponent["seed"] = m_seed;
+	rootComponent["persistence"] = m_persistence;
+	rootComponent["samplingOffset"] = m_samplingOffset;
+	rootComponent["octaveCount"] = m_octaveCount;
+	rootComponent["height"] = m_height;
+	rootComponent["maxHeight"] = m_maxHeight;
+}
+
+void Perlin2D::load(Json::Value & rootComponent)
+{
+	m_seed = rootComponent.get("seed", 0).asInt();
+	m_persistence = rootComponent.get("persistence", 0.5f).asFloat();
+	m_samplingOffset = rootComponent.get("samplingOffset", 64).asInt();
+	m_octaveCount = rootComponent.get("octaveCount", 3).asInt();
+	m_height = rootComponent.get("height", 512).asInt();
+	m_maxHeight = rootComponent.get("maxHeight", 512).asInt();
+
+	updateNoise();
+}
