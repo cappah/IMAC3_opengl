@@ -120,12 +120,8 @@ void Texture::freeGL()
 	//m_textureUseCounts--;
 
 	//if (m_textureUseCounts <= 0)
-	if(glId > 0)
-	{
-		if(glId > 0)
-			glDeleteTextures(1, &glId);
-
-		m_textureUseCounts = 0;
+	if(glId > 0){
+		glDeleteTextures(1, &glId);
 	}
 }
 
@@ -179,11 +175,8 @@ void CubeTexture::setTextureParameters(GLint _internalFormat, GLenum _format, GL
 
 void CubeTexture::initGL()
 {
+	if (glId <= 0){
 
-	m_textureUseCounts++;
-
-	if (m_textureUseCounts == 1)
-	{
 		glGenTextures(1, &glId);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, glId);
 
@@ -212,13 +205,7 @@ void CubeTexture::initGL()
 
 void CubeTexture::freeGL()
 {
-	m_textureUseCounts--;
-
-	if (m_textureUseCounts <= 0)
-	{
-		if (glId > 0)
+	if (glId > 0){
 			glDeleteTextures(1, &glId);
-
-		m_textureUseCounts = 0;
 	}
 }
