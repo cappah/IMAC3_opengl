@@ -129,6 +129,9 @@ public:
 	virtual void use() override;
 
 	virtual void drawUI() override;
+
+	void setDiffuseTexture(CubeTexture* texture);
+	CubeTexture* getDiffuseTexture() const;
 };
 
 class MaterialShadow : public Material
