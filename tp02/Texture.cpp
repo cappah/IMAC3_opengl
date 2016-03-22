@@ -8,7 +8,10 @@ Texture::Texture() : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), 
 
 Texture::Texture(int width, int height) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), comp(3), pixels(0), w(width), h(height), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)
 {
-
+	//pixels = new unsigned char[3*width*height];
+	//for (int i = 0; i < 3*width*height; i++) {
+	//	pixels[i] = 255;
+	//}
 }
 
 Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)

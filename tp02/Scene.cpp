@@ -75,6 +75,10 @@ void Scene::clear()
 		delete m_entities[i];
 	}
 	m_entities.clear();
+
+	//clear systems : 
+	m_terrain.clear();
+	//m_skybox.clear(); //TODO
 }
 
 std::vector<Entity*>& Scene::getEntities()
@@ -425,7 +429,7 @@ void Scene::save(const std::string & path)
 	m_skybox.save(root["skybox"]);
 	
 	//DEBUG
-	std::cout << root;
+	//std::cout << root;
 
 	std::ofstream stream;
 	stream.open(path);

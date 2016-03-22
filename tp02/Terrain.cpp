@@ -3,6 +3,8 @@
 #include "Application.h"
 #include "Factories.h" 
 #include "Ray.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
 
 
 GrassField::GrassField() : mass(0.005f), rigidity(0.05f), viscosity(0.003f), lockYPlane(true)
@@ -170,6 +172,35 @@ void GrassField::initGl()
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void GrassField::freeGl()
+{
+	glDeleteBuffers(1, &vbo_index);
+	glDeleteBuffers(1, &vbo_vertices);
+	glDeleteBuffers(1, &vbo_uvs);
+	glDeleteBuffers(1, &vbo_normals);
+	glDeleteBuffers(1, &vbo_animPos);
+	glDeleteBuffers(1, &vbo_pos);
+	glDeleteVertexArrays(1, &vao);
+}
+
+void GrassField::clear()
+{
+	freeGl();
+
+	grassTexture = TextureFactory::get().get("default");
+
+	triangleIndex.clear();
+	vertices.clear();
+	normals.clear();
+	uvs.clear();
+	positions.clear();
+	grassKeys.clear();
+	offsets.clear();
+	forces.clear();
+	speeds.clear();
+	links.clear();
 }
 
 void GrassField::addGrass(GrassKey grassKey, const glm::vec3 & position)
@@ -398,6 +429,16 @@ void GrassField::drawUI()
 	}
 }
 
+void GrassField::save(Json::Value & rootComponent) const
+{
+	//TODO
+}
+
+void GrassField::load(Json::Value & rootComponent)
+{
+	//TODO
+}
+
 void GrassField::updateVBOPositions()
 {
 	if (positions.size() <= 0)
@@ -428,9 +469,12 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
 			m_material(ProgramFactory::get().get("defaultTerrain")), m_terrainMaterial(ProgramFactory::get().get("defaultTerrainEdition")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
-			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024), m_filterTexture(1024, 1024), //textures
+			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024), //textures
 			m_terrainBump(1024, 1024), m_terrainSpecular(1024, 1024), m_drawMatTexture(1024, 1024)
 {
+	//filter texture initialisation : 
+	m_filterTexture = new Texture(1024, 1024);
+
 	// initialyze the texture name : 
 	m_newLayoutName[0] = '\0';
 	m_newGrassTextureName[0] = '\0';
@@ -486,11 +530,11 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	//noise and filter
 	m_noiseTexture.initGL();
 
-	m_filterTexture.internalFormat = GL_RGBA16;
-	m_filterTexture.format = GL_RGBA;
-	m_filterTexture.type = GL_FLOAT;
-	m_filterTexture.generateMipMap = false;
-	m_filterTexture.initGL();
+	m_filterTexture->internalFormat = GL_RGBA16;
+	m_filterTexture->format = GL_RGBA;
+	m_filterTexture->type = GL_FLOAT;
+	m_filterTexture->generateMipMap = false;
+	m_filterTexture->initGL();
 	//draw texture
 	m_drawMatTexture.name = "texture draw text";
 	m_drawMatTexture.initGL();
@@ -525,7 +569,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	matLayoutDrawBuffers[0] = GL_COLOR_ATTACHMENT0;
 	glDrawBuffers(1, matLayoutDrawBuffers);
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_filterTexture.glId, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_filterTexture->glId, 0);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -585,7 +629,7 @@ Terrain::~Terrain()
 	m_terrainBump.freeGL();
 	m_terrainSpecular.freeGL();
 	m_noiseTexture.freeGL();
-	m_filterTexture.freeGL();
+	m_filterTexture->freeGL();
 }
 
 void Terrain::drawMaterialOnTerrain(glm::vec3 position, float radius, int textureIdx)
@@ -598,7 +642,7 @@ void Terrain::drawMaterialOnTerrain(glm::vec3 position, float radius, int textur
 	//we don't want to clear the texture attached to the framebuffer
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_filterTexture.glId); //we read and write on the same texture
+	glBindTexture(GL_TEXTURE_2D, m_filterTexture->glId); //we read and write on the same texture
 
 	m_drawOnTextureMaterial.use();
 	m_drawOnTextureMaterial.setUniformColorToDraw(glm::vec4(greyValue, greyValue, greyValue,1));
@@ -649,7 +693,7 @@ void Terrain::generateTerrainTexture()
 	m_terrainMaterial.use();
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_filterTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_filterTexture->glId);
 
 	for (int i = 0; i < m_terrainLayouts.size(); i++)
 	{
@@ -708,7 +752,7 @@ void Terrain::computeNoiseTexture(Perlin2D& perlin2D)
 {
 	//redraw the noise texture
 	m_noiseTexture.freeGL();
-	m_filterTexture.freeGL();
+	m_filterTexture->freeGL();
 
 	for (int j = 0, k = 0; j < 1024; j++)
 	{
@@ -723,13 +767,13 @@ void Terrain::computeNoiseTexture(Perlin2D& perlin2D)
 			for (int p = 0; p < 3; p++)
 			{
 				m_noiseTexture.pixels[k + p] = ((noiseValue - m_noiseMin) / (m_noiseMax - m_noiseMin)) * 255;
-				m_filterTexture.pixels[k + p] = ((noiseValue - m_noiseMin) / (m_noiseMax - m_noiseMin)) * 255;
+				m_filterTexture->pixels[k + p] = ((noiseValue - m_noiseMin) / (m_noiseMax - m_noiseMin)) * 255;
 			}
 		}
 	}
 
 	m_noiseTexture.initGL();
-	m_filterTexture.initGL();
+	m_filterTexture->initGL();
 }
 
 void Terrain::computeNormals()
@@ -984,6 +1028,34 @@ void Terrain::initGl()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void Terrain::freeGl()
+{
+	glDeleteVertexArrays(1, &vao);
+	glDeleteBuffers(1, &vbo_index);
+	glDeleteBuffers(1, &vbo_vertices);
+	glDeleteBuffers(1, &vbo_uvs);
+	glDeleteBuffers(1, &vbo_normals);
+	glDeleteBuffers(1, &vbo_tangents);
+}
+
+void Terrain::clear()
+{
+	freeGl();
+
+	m_triangleIndex.clear();
+	m_uvs.clear();
+	m_vertices.clear();
+	m_normals.clear();
+	m_tangents.clear();
+
+	m_heightMap.clear();
+	m_terrainLayouts.clear();
+	m_textureRepetitions.clear();
+	m_grassLayout.clear();
+	
+	m_grassField.clear();
+}
+
 void Terrain::drawGrassOnTerrain(const glm::vec3 position)
 {
 	drawGrassOnTerrain(position, m_drawRadius * m_width*0.5f, m_grassDensity, m_maxGrassDensity);
@@ -1069,29 +1141,92 @@ void Terrain::updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& wind
 
 void Terrain::save(Json::Value & rootComponent) const
 {
+	//parameters : 
 	rootComponent["subdivision"] = m_subdivision;
 	rootComponent["width"] = m_width;
 	rootComponent["depth"] = m_depth;
 	rootComponent["height"] = m_height;
-
 	rootComponent["offset"] = toJsonValue<glm::vec3>(m_offset);
-
+	
+	//noise :
 	rootComponent["seed"] = m_seed;
-
-	//NoiseGenerator m_terrainNoise;
 	m_terrainNoise.save(rootComponent["terrainNoise"]);
+
+	//materials :
+	rootComponent["materialLayoutCount"] = m_terrainLayouts.size();
+	for (int i = 0; i < m_terrainLayouts.size(); i++) {
+		rootComponent["materialLayouts"][i]["textureRepetition"] = toJsonValue(m_textureRepetitions[i]);
+		rootComponent["materialLayouts"][i]["materialName"] = m_terrainLayouts[i]->name;
+	}
+	/*
+	std::stringstream ss;
+	for (int i = 0; i < m_filterTexture->w*m_filterTexture->h; i++) {
+		ss << i;
+	}
+	std::string stringifiedTexture;
+	ss>>stringifiedTexture;
+	rootComponent["terrainFilterTexture"]["width"] = m_filterTexture->w;
+	rootComponent["terrainFilterTexture"]["height"] = m_filterTexture->h;
+	rootComponent["terrainFilterTexture"]["data"] = stringifiedTexture;
+	*/
+	//create file : 
+	std::ofstream file;
+	file.open("test_terrain.bmp");
+	file.close();
+	//write to file : 
+	unsigned char* pixels = new unsigned char[m_filterTexture->w*m_filterTexture->h*3];
+	glBindTexture(GL_TEXTURE_2D, m_filterTexture->glId);
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_write_bmp("test_terrain.bmp", m_filterTexture->w, m_filterTexture->h, 3, pixels);
 }
 
 void Terrain::load(Json::Value & rootComponent)
 {
+	//parameters : 
 	m_subdivision = rootComponent.get("subdivision", 10).asInt();
 	m_width = rootComponent.get("width", 10).asFloat();
 	m_depth = rootComponent.get("depth", 10).asFloat();
 	m_height = rootComponent.get("height", 10).asFloat();
 	m_offset = fromJsonValue<glm::vec3>(rootComponent["offset"], glm::vec3(0,0,0));
+
+	//noise : 
 	m_seed = rootComponent.get("seed", 10).asInt();
+	m_terrainNoise.load(rootComponent["terrainNoise"]);
+
+	//materials : 
+	int materialLayoutCount = rootComponent.get("materialLayoutCount", 0).asInt();
+	for (int i = 0; i < materialLayoutCount; i++) {
+		glm::vec2 textureRepetition = fromJsonValue<glm::vec2>(rootComponent["materialLayouts"][i]["textureRepetition"], glm::vec2(1, 1));
+		m_textureRepetitions.push_back(textureRepetition);
+		std::string materialLayoutName = rootComponent["materialLayouts"][i]["materialName"].asString();
+		if (MaterialFactory::get().contains<MaterialLit>(materialLayoutName)) {
+			m_terrainLayouts.push_back(MaterialFactory::get().get<MaterialLit>(materialLayoutName));
+		}
+	}
+	//recreate m_filterTexture : 
+	m_filterTexture->freeGL();
+	/*
+	std::string textureData = rootComponent["terrainFilterTexture"].get("data", "").asString();
+	int texWidth = rootComponent["terrainFilterTexture"].get("width", "").asInt();
+	int texHeight = rootComponent["terrainFilterTexture"].get("height", "").asInt();
+	std::stringstream ss;
+	ss << textureData;
+	if (m_filterTexture != nullptr)
+		delete m_filterTexture;
+	unsigned char* pixels = new unsigned char[texWidth*texHeight];
+	for (int i = 0; i < texWidth*texHeight; i++) {
+		ss >> pixels[i];
+	}
+	m_filterTexture = new Texture(pixels, texWidth, texHeight, 3);
+	*/
+	m_filterTexture = new Texture("test_terrain.bmp");
 
 	generateTerrain();
+	updateTerrain();
+	applyNoise(m_terrainNoise, false);
+	//redraw the terrain texture : 
+	generateTerrainTexture();
 }
 
 //get terrain height at a given point
@@ -1112,7 +1247,7 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 	m_material.use();
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_filterTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_filterTexture->glId);
 
 	for (int i = 0; i < m_terrainLayouts.size(); i++)
 	{
