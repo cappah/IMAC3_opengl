@@ -7,7 +7,7 @@ namespace Physic {
 
 
 	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), 
-	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), 
+	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), m_emitInShape(false),
 	m_translation(glm::vec3(0,0,0)), m_scale(1,1,1),
 	m_materialParticules(MaterialFactory::get().get<MaterialParticlesCPU>("particlesCPU")),
 	//m_materialParticuleSimulation(MaterialFactory::get().get<MaterialParticleSimulation>("particleSimulation")),
@@ -535,12 +535,48 @@ namespace Physic {
 
 	void ParticleEmitter::save(Json::Value & rootComponent) const
 	{
-		//TODO
+		rootComponent["maxParticleCount"] = m_maxParticleCount;
+		rootComponent["aliveParticlesCount"] = m_aliveParticlesCount;
+		
+		rootComponent["sizeSteps_times"] = toJsonValue(m_sizeSteps_times);
+		rootComponent["sizeSteps_values"] = toJsonValue(m_sizeSteps_values);
+
+		rootComponent["colorSteps_times"] = toJsonValue(m_colorSteps_times);
+		rootComponent["colorSteps_values"] = toJsonValue(m_colorSteps_values);
+		
+		rootComponent["forceSteps_times"] = toJsonValue(m_forceSteps_times);
+		rootComponent["forceSteps_values"] = toJsonValue(m_forceSteps_values);
+
+		rootComponent["initialVelocityInterval"] = toJsonValue(m_initialVelocityInterval);
+		rootComponent["lifeTimeInterval"] = toJsonValue(m_lifeTimeInterval);
+		rootComponent["particleTextureName"] = m_particleTextureName;
+		rootComponent["particleCountBySecond"] = m_particleCountBySecond;
+		rootComponent["emitInShape"] = m_emitInShape;
 	}
 
 	void ParticleEmitter::load(Json::Value & rootComponent)
 	{
-		//TODO
+		m_maxParticleCount = rootComponent.get("maxParticleCount", 0).asInt();
+		m_aliveParticlesCount = rootComponent.get("aliveParticlesCount", 0).asInt();
+
+		m_sizeSteps_times = fromJsonValues_vector<float>(rootComponent["sizeSteps_times"]);
+		m_sizeSteps_values = fromJsonValues_vector<glm::vec2>(rootComponent["sizeSteps_values"]);
+
+		m_colorSteps_times = fromJsonValues_vector<float>(rootComponent["colorSteps_times"]);
+		m_colorSteps_values = fromJsonValues_vector<glm::vec4>(rootComponent["colorSteps_values"]);
+
+		m_forceSteps_times = fromJsonValues_vector<float>(rootComponent["forceSteps_times"]);
+		m_forceSteps_values = fromJsonValues_vector<glm::vec3>(rootComponent["forceSteps_values"]);
+
+		m_initialVelocityInterval = fromJsonValue(rootComponent["initialVelocityInterval"], glm::vec2(0, 0));
+		m_lifeTimeInterval = fromJsonValue(rootComponent["lifeTimeInterval"], glm::vec2(1,10));
+		m_particleTextureName = rootComponent.get("particleTextureName", "default").asString();
+		if (TextureFactory::get().contains(m_particleTextureName)) {
+			m_particleTexture = TextureFactory::get().get(m_particleTextureName);
+			m_particleTexture->initGL();
+		}
+		m_particleCountBySecond = rootComponent.get("particleCountBySecond", 10).asFloat();
+		m_emitInShape = rootComponent.get("emitInShape", false).asBool();
 	}
 
 }

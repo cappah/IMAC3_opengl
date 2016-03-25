@@ -76,11 +76,13 @@
 			"cube",
 			"cubeWireframe",
 			"default",
-			"plane"
+			"plane",
+			"quad"
 		],
-		"size" : 4,
+		"size" : 5,
 		"values" : 
 		[
+			"",
 			"",
 			"",
 			"",

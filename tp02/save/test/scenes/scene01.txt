@@ -668,8 +668,8 @@
 				{
 					"bottomLeft" : 
 					[
-						-0.053841114044189453,
-						-0.5602116584777832,
+						-0.088252544403076172,
+						-12.316777229309082,
 						0
 					],
 					"localBottomLeft" : 
@@ -686,33 +686,33 @@
 					],
 					"modelMatrix" : 
 					[
-						10.71079158782959,
+						10.088252067565918,
 						0,
 						0,
 						0,
 						0,
-						7.4327640533447266,
+						12.316777229309082,
 						0,
 						0,
 						0,
 						0,
 						0,
 						0,
-						5.3015546798706055,
-						3.1561703681945801,
+						4.9558734893798828,
+						-6.158388614654541,
 						0,
 						1
 					],
 					"offsetPosition" : 
 					[
-						-0.053841192275285721,
-						-0.56021153926849365,
+						-0.088252328336238861,
+						-12.316777229309082,
 						0
 					],
 					"offsetScale" : 
 					[
-						10.71079158782959,
-						7.4327640533447266,
+						10.088252067565918,
+						12.316777229309082,
 						0
 					],
 					"origin" : 
@@ -736,8 +736,8 @@
 					],
 					"topRight" : 
 					[
-						10.656949996948242,
-						6.8725523948669434,
+						10,
+						0,
 						0
 					],
 					"translation" : 
@@ -751,6 +751,10 @@
 					"visualMeshName" : "cubeWireframe"
 				},
 				{
+					"autoCollisionDistance" : 0.0099999997764825821,
+					"autoCollisionRigidity" : 0.0099999997764825821,
+					"autoCollisionViscosity" : 0.0010000000474974513,
+					"computeAutoCollision" : false,
 					"height" : 10,
 					"mass" : 0.10000000149011612,
 					"materialName" : "default",
@@ -894,7 +898,253 @@
 				0,
 				0
 			]
+		},
+		{
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"bottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1
+					],
+					"offsetPosition" : 
+					[
+						0,
+						0,
+						0
+					],
+					"offsetScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"origin" : 
+					[
+						0,
+						0,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"topRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"translation" : 
+					[
+						0,
+						0,
+						0
+					],
+					"type" : 0,
+					"visualMaterialName" : "wireframe",
+					"visualMeshName" : "cubeWireframe"
+				},
+				{
+					"aliveParticlesCount" : 10,
+					"colorSteps_times" : 
+					{
+						"data" : 
+						[
+							0
+						],
+						"size" : 1
+					},
+					"colorSteps_values" : 
+					{
+						"data" : 
+						[
+							[
+								1,
+								0,
+								0,
+								1
+							]
+						],
+						"size" : 1
+					},
+					"emitInShape" : false,
+					"forceSteps_times" : 
+					{
+						"data" : 
+						[
+							0
+						],
+						"size" : 1
+					},
+					"forceSteps_values" : 
+					{
+						"data" : 
+						[
+							[
+								0,
+								1,
+								0
+							]
+						],
+						"size" : 1
+					},
+					"initialVelocityInterval" : 
+					[
+						0.10000000149011612,
+						0.5
+					],
+					"lifeTimeInterval" : 
+					[
+						3,
+						5
+					],
+					"maxParticleCount" : 10,
+					"particleCountBySecond" : 10,
+					"particleTextureName" : "",
+					"sizeSteps_times" : 
+					{
+						"size" : 0
+					},
+					"sizeSteps_values" : 
+					{
+						"size" : 0
+					}
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"localTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"modelMatrix" : 
+			[
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1
+			],
+			"name" : "particle emitter",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"translation" : 
+			[
+				0,
+				0,
+				0
+			]
 		}
 	],
-	"entityCount" : 4
+	"entityCount" : 5
 }

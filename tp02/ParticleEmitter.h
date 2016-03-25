@@ -11,6 +11,9 @@
 #include "Component.h"
 #include "Materials.h"
 
+#include "jsoncpp/json/json.h"
+#include "SerializeUtils.h"
+
 namespace Physic{
 
 

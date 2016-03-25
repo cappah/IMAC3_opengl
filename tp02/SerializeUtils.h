@@ -63,7 +63,7 @@ std::vector<T> fromJsonValues_vector(Json::Value& value)
 	int size = value.get("size", 0).asInt();
 	for (int i = 0; i < size; i++)
 	{
-		loadedValues[i] = fromJsonValue<T>(value["data"][i]);
+		loadedValues[i] = fromJsonValue<T>(value["data"][i], T());
 	}
 	return loadedValues;
 }
