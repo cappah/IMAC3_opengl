@@ -724,11 +724,14 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	//render skybox : 
 	skybox.render(projection, worldToView);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	for (int i = 0; i < billboards.size(); i++)
 		billboards[i]->render(projection, worldToView);
 
 	for (int i = 0; i < particleEmitters.size(); i++)
 		particleEmitters[i]->render(projection, worldToView);
+	glDisable(GL_BLEND);
 }
 
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)

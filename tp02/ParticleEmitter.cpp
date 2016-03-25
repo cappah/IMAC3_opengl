@@ -8,7 +8,7 @@ namespace Physic {
 
 	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), 
 	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), 
-	m_translation(glm::vec3(0,0,0)),
+	m_translation(glm::vec3(0,0,0)), m_scale(1,1,1),
 	m_materialParticules(MaterialFactory::get().get<MaterialParticlesCPU>("particlesCPU")),
 	//m_materialParticuleSimulation(MaterialFactory::get().get<MaterialParticleSimulation>("particleSimulation")),
 	m_triangleIndex({ 0, 1, 2, 2, 3, 0 }),
@@ -184,7 +184,7 @@ namespace Physic {
 			if (m_colorSteps_times[i] <= timeRatio && m_colorSteps_times[i + 1] > timeRatio) {
 				stepIdx = i;
 				timeRatio -= m_colorSteps_times[i];
-				float delta = (m_sizeSteps_times[i + 1] - m_sizeSteps_times[i]);
+				float delta = (m_colorSteps_times[i + 1] - m_colorSteps_times[i]);
 				timeRatio /= delta == 0 ? 0.00001f : delta;
 				break;
 			}
@@ -215,7 +215,13 @@ namespace Physic {
 
 		int previousParticleCount = m_aliveParticlesCount;
 		for (int i = previousParticleCount; i < previousParticleCount + spawnCount; i++) {
-			m_positions[i]= m_translation;
+			if (m_emitInShape) {
+				m_positions[i] = glm::vec3(glm::linearRand(m_translation.x - m_scale.x*0.5f, m_translation.x + m_scale.x*0.5f), glm::linearRand(m_translation.y - m_scale.y*0.5f, m_translation.y + m_scale.y*0.5f), glm::linearRand(m_translation.z - m_scale.z*0.5f, m_translation.z + m_scale.z*0.5f));
+			}
+			else {
+
+				m_positions[i]= m_translation;
+			}
 			m_velocities[i] = getInitialVelocity();
 			m_forces[i] = glm::vec3(0,0,0);
 			m_elapsedTimes[i] = 0;
@@ -285,6 +291,7 @@ namespace Physic {
 		glm::mat4 VP = projection * view;
 		glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
 		glm::vec3 CameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
+		glm::vec3 CameraPos = glm::vec3(view[0][3], view[1][3], view[2][3]);
 
 		m_materialParticules->use();
 
@@ -370,6 +377,7 @@ namespace Physic {
 	{
 		m_translation = translation;
 		m_rotation = rotation;
+		m_scale = scale;
 	}
 
 	void ParticleEmitter::drawUI(Scene& scene)
@@ -389,6 +397,7 @@ namespace Physic {
 			if (TextureFactory::get().contains(m_particleTextureName))
 			{
 				m_particleTexture = TextureFactory::get().get(m_particleTextureName);
+				m_particleTexture->initGL();
 			}
 		}
 
@@ -486,6 +495,11 @@ namespace Physic {
 		//max particle count : 
 		if (ImGui::InputInt("max particle count", &m_maxParticleCount)) {
 			onChangeMaxParticleCount();
+		}
+
+		//Emit particle inside shape volume : 
+		if (ImGui::RadioButton("emit in shape", m_emitInShape)) {
+			m_emitInShape = !m_emitInShape;
 		}
 
 	}

@@ -21,6 +21,7 @@ namespace Physic{
 	private:
 
 		//transform :
+		glm::vec3 m_scale;
 		glm::vec3 m_translation;
 		glm::quat m_rotation;
 
@@ -39,6 +40,7 @@ namespace Physic{
 		std::string m_particleTextureName;
 		float m_particleCountBySecond;
 		float m_spawnFragment;
+		bool m_emitInShape;
 
 		//particles soa : 
 		std::vector<glm::vec3> m_positions;

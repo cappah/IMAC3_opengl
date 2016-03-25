@@ -24,4 +24,6 @@ void main()
 	//no lighting for the moment 
 
 	FragColor = texture2D(Texture, In.TexCoord) * In.Color;
+	if(FragColor.a == 0)
+		discard;
 }
