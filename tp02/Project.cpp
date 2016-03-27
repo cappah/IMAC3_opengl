@@ -188,9 +188,9 @@ void Project::load()
 	streamResources >> rootResources;
 
 	MeshFactory::get().load(rootResources["meshFactory"]);
-	MaterialFactory::get().load(rootResources["materialFactory"]);
 	TextureFactory::get().load(rootResources["textureFactory"]);
 	CubeTextureFactory::get().load(rootResources["cubeTextureFactory"]);
+	MaterialFactory::get().load(rootResources["materialFactory"]);
 
 	//load scenes : 
 	Json::Value rootProject;

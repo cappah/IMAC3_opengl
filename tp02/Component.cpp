@@ -55,5 +55,5 @@ void Component::save(Json::Value & componentRoot) const
 void Component::load(Json::Value & componentRoot)
 {
 	//m_entity already set
-	m_type = (ComponentType)componentRoot.get("type", "NONE").asInt();
+	m_type = (ComponentType)componentRoot.get("type", 0).asInt();
 }

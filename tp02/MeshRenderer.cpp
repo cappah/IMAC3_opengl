@@ -54,16 +54,18 @@ void MeshRenderer::drawUI(Scene& scene)
 	ImGui::SameLine();
 	if (ImGui::Button("add"))
 	{
-		Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
-		if (tmpMat != nullptr)
-			material.push_back(tmpMat);
+		if (MaterialFactory::get().contains<Material3DObject>(materialName)) {
+			Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
+			if (tmpMat != nullptr)
+				material.push_back(tmpMat);
+		}
 	}
 
 	for (int i = 0; i < material.size(); i++)
 	{
 		ImGui::PushID(i);
 		ImGui::Text(material[i]->name.c_str());
-		if (material.size() > 0){
+		if (material.size() > 1){
 			ImGui::SameLine();
 			if (ImGui::Button("remove")){
 				material.erase(material.begin() + i);

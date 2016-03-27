@@ -554,6 +554,8 @@ namespace Physic {
 
 	void ParticleEmitter::save(Json::Value & rootComponent) const
 	{
+		Component::save(rootComponent);
+
 		rootComponent["maxParticleCount"] = m_maxParticleCount;
 		rootComponent["aliveParticlesCount"] = m_aliveParticlesCount;
 		
@@ -576,6 +578,8 @@ namespace Physic {
 
 	void ParticleEmitter::load(Json::Value & rootComponent)
 	{
+		Component::load(rootComponent);
+
 		m_maxParticleCount = rootComponent.get("maxParticleCount", 0).asInt();
 		m_aliveParticlesCount = rootComponent.get("aliveParticlesCount", 0).asInt();
 
