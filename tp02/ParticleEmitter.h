@@ -44,6 +44,7 @@ namespace Physic{
 		float m_particleCountBySecond;
 		float m_spawnFragment;
 		bool m_emitInShape;
+		bool m_sortParticles;
 
 		//particles soa : 
 		std::vector<glm::vec3> m_positions;
@@ -53,6 +54,7 @@ namespace Physic{
 		std::vector<float> m_lifeTimes;
 		std::vector<glm::vec4> m_colors;
 		std::vector<glm::vec2> m_sizes;
+		std::vector<float> m_distanceToCamera;
 
 		//model :
 		int m_triangleCount;
@@ -87,7 +89,8 @@ namespace Physic{
 		glm::vec3 getInitialVelocity() const;
 		float getInitialLifeTime() const;
 		void spawnParticles(int spawnCount);
-		void update(float deltaTime);
+		void update(float deltaTime, const glm::vec3& cameraPosition);
+		void sortParticles();
 		void render(const glm::mat4& projection, const glm::mat4& view);
 		void draw();
 		void updateVbos();
@@ -106,6 +109,10 @@ namespace Physic{
 		virtual void eraseFromEntity(Entity& entity) override;
 		virtual void save(Json::Value& rootComponent) const override;
 		virtual void load(Json::Value& rootComponent) override;
+
+	private:
+		void sorting_quickSort(int begin, int end);
+		int sorting_partition(int begin, int end);
 	};
 
 }

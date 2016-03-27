@@ -343,9 +343,10 @@ void Scene::renderDebugOctrees(const BaseCamera & camera)
 	}
 }
 
-void Scene::updatePhysic(float deltaTime)
+void Scene::updatePhysic(float deltaTime, const BaseCamera& camera)
 {
-	m_physicManager.update(deltaTime, m_flags, m_terrain, m_windZones, m_particleEmitters);
+	
+	m_physicManager.update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters);
 }
 
 void Scene::toggleColliderVisibility()
@@ -489,4 +490,9 @@ void Scene::load(const std::string & path)
 	//m_terrain.save(root["terrain"]);
 	//m_skybox.save(root["skybox"]);
 
+}
+
+BaseCamera* Scene::getMainCamera() const
+{
+	return m_cameras.size() > 0 ? m_cameras[0] : nullptr;
 }

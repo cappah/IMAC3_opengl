@@ -7,7 +7,7 @@ namespace Physic {
 
 
 	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), 
-	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), m_emitInShape(false),
+	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), m_emitInShape(false), m_sortParticles(false),
 	m_translation(glm::vec3(0,0,0)), m_scale(1,1,1),
 	m_materialParticules(MaterialFactory::get().get<MaterialParticlesCPU>("particlesCPU")),
 	//m_materialParticuleSimulation(MaterialFactory::get().get<MaterialParticleSimulation>("particleSimulation")),
@@ -33,6 +33,7 @@ namespace Physic {
 			m_lifeTimes.push_back(5.f);
 			m_colors.push_back(glm::vec4(1,0,0,1));
 			m_sizes.push_back(glm::vec2(1.f, 1.f));
+			m_distanceToCamera.push_back(999.f);
 		}
 
 		//initialize vbos :
@@ -110,6 +111,7 @@ namespace Physic {
 		std::iter_swap(m_lifeTimes.begin() + a_idx, m_lifeTimes.begin() + b_idx);
 		std::iter_swap(m_colors.begin() + a_idx, m_colors.begin() + b_idx);
 		std::iter_swap(m_sizes.begin() + a_idx, m_sizes.begin() + b_idx);
+		std::iter_swap(m_distanceToCamera.begin() + a_idx, m_distanceToCamera.begin() + b_idx);
 	}
 
 	glm::vec3 ParticleEmitter::getInternalParticleForce(float elapsedTime, float lifeTime, const glm::vec3 & position)
@@ -233,7 +235,7 @@ namespace Physic {
 		}
 	}
 
-	void ParticleEmitter::update(float deltaTime)
+	void ParticleEmitter::update(float deltaTime, const glm::vec3& cameraPosition)
 	{
 		float defaultParticleMass = 0.1f; //todo improve
 
@@ -279,10 +281,21 @@ namespace Physic {
 				m_colors[i] = getInternalParticleColor(m_elapsedTimes[i], m_lifeTimes[i], m_positions[i]);
 				assert(m_maxParticleCount == m_sizes.size());
 				m_sizes[i] = getInternalParticleSize(m_elapsedTimes[i], m_lifeTimes[i], m_positions[i]);
+
+				//update distance to camera : 
+				m_distanceToCamera[i] = glm::distance(m_positions[i], cameraPosition);
 			}
 		}
 
+		if(m_sortParticles)
+			sortParticles();
+
 		updateVbos();
+	}
+
+	void ParticleEmitter::sortParticles() 
+	{
+		sorting_quickSort(0, m_aliveParticlesCount-1);
 	}
 
 
@@ -355,6 +368,7 @@ namespace Physic {
 		m_lifeTimes.resize(m_maxParticleCount);
 		m_colors.resize(m_maxParticleCount);
 		m_sizes.resize(m_maxParticleCount);
+		m_distanceToCamera.resize(m_maxParticleCount);
 
 		//instanced stuff :
 		glBindBuffer(GL_ARRAY_BUFFER, m_vboPositions);
@@ -502,6 +516,11 @@ namespace Physic {
 			m_emitInShape = !m_emitInShape;
 		}
 
+		//sort particles (reduce performances) : 
+		if (ImGui::RadioButton("sort particles", m_sortParticles)) {
+			m_sortParticles = !m_sortParticles;
+		}
+
 	}
 
 	void ParticleEmitter::eraseFromScene(Scene& scene)
@@ -552,6 +571,7 @@ namespace Physic {
 		rootComponent["particleTextureName"] = m_particleTextureName;
 		rootComponent["particleCountBySecond"] = m_particleCountBySecond;
 		rootComponent["emitInShape"] = m_emitInShape;
+		rootComponent["sortParticles"] = m_sortParticles;
 	}
 
 	void ParticleEmitter::load(Json::Value & rootComponent)
@@ -577,6 +597,30 @@ namespace Physic {
 		}
 		m_particleCountBySecond = rootComponent.get("particleCountBySecond", 10).asFloat();
 		m_emitInShape = rootComponent.get("emitInShape", false).asBool();
+		m_sortParticles = rootComponent.get("sortParticles", false).asBool();
+	}
+
+	void ParticleEmitter::sorting_quickSort(int begin, int end)
+	{
+		if (begin <= end) {
+			int pivot = sorting_partition(begin, end);
+			sorting_quickSort(begin, pivot - 1);
+			sorting_quickSort(pivot+1, end);
+		}
+	}
+
+	int ParticleEmitter::sorting_partition(int begin, int end)
+	{
+		float pivot = m_distanceToCamera[end];
+		int i = begin;
+		for (int j = begin; j < end - 1; j++) {
+			if (m_distanceToCamera[j] >= pivot) {
+				swapParticles(i, j);
+				i++;
+			}
+		}
+		swapParticles(i, end);
+		return i;
 	}
 
 }

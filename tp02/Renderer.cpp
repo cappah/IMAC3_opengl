@@ -725,12 +725,14 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	skybox.render(projection, worldToView);
 
 	glEnable(GL_BLEND);
+	glDepthMask(GL_FALSE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	for (int i = 0; i < billboards.size(); i++)
 		billboards[i]->render(projection, worldToView);
 
 	for (int i = 0; i < particleEmitters.size(); i++)
 		particleEmitters[i]->render(projection, worldToView);
+	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
 }
 

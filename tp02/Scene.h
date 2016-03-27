@@ -120,7 +120,7 @@ public:
 	void renderPaths(const BaseCamera& camera);
 	void renderDebugOctrees(const BaseCamera& camera);
 
-	void updatePhysic(float deltaTime);
+	void updatePhysic(float deltaTime, const BaseCamera& camera);
 
 	void toggleColliderVisibility();
 	void toggleDebugDeferredVisibility();
@@ -146,6 +146,8 @@ public:
 
 	void save(const std::string& path);
 	void load(const std::string& path);
+
+	BaseCamera* getMainCamera() const;
 
 };
 
