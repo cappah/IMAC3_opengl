@@ -219,7 +219,10 @@ public:
 template<typename T>
 T* MaterialFactory::get(const std::string& name)
 {
-	return dynamic_cast<T*>(m_materials[name]);
+	assert(m_materials.find(name) != m_materials.end());
+
+	assert(dynamic_cast<T*>(m_materials[name]) == m_materials[name]);
+	return static_cast<T*>(m_materials[name]);
 }
 
 template<typename T>

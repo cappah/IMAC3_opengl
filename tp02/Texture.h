@@ -37,7 +37,7 @@ struct Texture
 	Texture(int width, int height);
 	Texture(unsigned char* _pixels, int width, int height, int _comp);
 	Texture(char r, char g, char b);
-	Texture(const std::string& _path, bool alphaChannel = false);
+	Texture(const std::string& _path, bool alphaChannel = true);
 	Texture(int width, int height, const glm::vec4& color);
 	Texture(int width, int height, const glm::vec3 & color);
 	~Texture();

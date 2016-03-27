@@ -20,7 +20,7 @@ class Scene;
 class Component : public ISerializable
 {
 public:
-	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, CAMERA, WIND_ZONE, COMPONENT_COUNT, LIGHT, NONE };
+	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, BILLBOARD, CAMERA, WIND_ZONE, COMPONENT_COUNT, LIGHT, NONE };
 	static const std::vector<std::string> ComponentTypeName;
 protected:
 	Entity* m_entity;

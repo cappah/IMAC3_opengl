@@ -21,6 +21,7 @@
 #include "Flag.h"
 #include "ParticleEmitter.h"
 #include "PathPoint.h"
+#include "Billboard.h"
 #include "Camera.h"
 #include "WindZone.h"
 
@@ -132,6 +133,7 @@ public:
 	// function to add a component. 
 	Entity& add(PathPoint* pathPoint);
 	// function to add a component. 
+	Entity& add(Billboard* billboard);
 	Entity& add(Camera* camera);
 	// function to add a component. 
 	Entity& add(Physic::WindZone* windZone);
@@ -153,6 +155,7 @@ public:
 	// function to erase a component.
 	Entity& erase(PathPoint* pathPoint);
 	// function to erase a component.
+	Entity& erase(Billboard* billboard);
 	Entity& erase(Camera* camera);
 	// function to erase a component.
 	Entity& erase(Physic::WindZone* windZone);

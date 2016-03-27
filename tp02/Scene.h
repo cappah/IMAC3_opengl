@@ -9,6 +9,7 @@
 #include "ParticleEmitter.h"
 #include "PhysicManager.h"
 #include "PathManager.h"
+#include "Billboard.h"
 
 #include "LightManager.h"
 #include "Renderer.h"
@@ -46,6 +47,9 @@ private:
 
 	//particles : 
 	std::vector<Physic::ParticleEmitter*> m_particleEmitters;
+
+	//billboards : 
+	std::vector<Billboard*> m_billboards;
 
 	//cameras : 
 	std::vector<Camera*> m_cameras;
@@ -92,6 +96,7 @@ public:
 	Scene& add(Physic::Flag* flag);
 	Scene& add(Physic::ParticleEmitter* particleEmitter);
 	Scene& add(PathPoint* pathPoint);
+	Scene& add(Billboard* billboard);
 	Scene& add(Camera* camera);
 	Scene& add(Physic::WindZone* windZone);
 
@@ -104,6 +109,7 @@ public:
 	Scene& erase(Physic::Flag* flag);
 	Scene& erase(Physic::ParticleEmitter* particleEmitter);
 	Scene& erase(PathPoint* pathPoint);
+	Scene& erase(Billboard* billboard);
 	Scene& erase(Camera* camera);
 	Scene& erase(Physic::WindZone* windZone);
 
@@ -114,7 +120,7 @@ public:
 	void renderPaths(const BaseCamera& camera);
 	void renderDebugOctrees(const BaseCamera& camera);
 
-	void updatePhysic(float deltaTime);
+	void updatePhysic(float deltaTime, const BaseCamera& camera);
 
 	void toggleColliderVisibility();
 	void toggleDebugDeferredVisibility();
@@ -144,6 +150,8 @@ public:
 	void resolveEntityChildLoading(Json::Value & rootComponent, Entity* currentEntity);
 	void save(const std::string& path);
 	void load(const std::string& path);
+
+	BaseCamera* getMainCamera() const;
 
 };
 

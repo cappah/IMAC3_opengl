@@ -234,6 +234,24 @@ int main( int argc, char **argv )
 	if (!checkError("Uniforms"))
 		exit(1);
 
+	//////////////////// BILLBOARD shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_billboard = compile_shader_from_file(GL_VERTEX_SHADER, "billboard.vert");
+	GLuint fragShaderId_billboard = compile_shader_from_file(GL_FRAGMENT_SHADER, "billboard.frag");
+
+	GLuint programObject_billboard = glCreateProgram();
+	glAttachShader(programObject_billboard, vertShaderId_billboard);
+	glAttachShader(programObject_billboard, fragShaderId_billboard);
+
+	glLinkProgram(programObject_billboard);
+	if (check_link_error(programObject_billboard) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+	
+	
 	//////////////////// TERRAIN shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_terrain = compile_shader_from_file(GL_VERTEX_SHADER, "terrain.vert");
@@ -436,12 +454,14 @@ int main( int argc, char **argv )
 	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
+	MaterialBillboard billboardMaterial(programObject_billboard);
 	MaterialGrassField grassFieldMaterial(programObject_grassField);
 
 	//material factories : 
 	MaterialFactory::get().add("default", &defaultMaterial);
 	MaterialFactory::get().add("brick", &brickMaterial);
 	MaterialFactory::get().add("wireframe", &wireframeMaterial);
+	MaterialFactory::get().add("billboard", &billboardMaterial);
 	MaterialFactory::get().add("grassField", &grassFieldMaterial);
 
 	//mesh factories : 
@@ -455,6 +475,7 @@ int main( int argc, char **argv )
 	ProgramFactory::get().add("defaultLit", programObject_gPass);
 	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
 	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
+	ProgramFactory::get().add("defaultBillboard", programObject_billboard);
 	ProgramFactory::get().add("defaultTerrain", programObject_terrain);
 	ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
 	ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
@@ -520,7 +541,7 @@ int main( int argc, char **argv )
 	//cubeRenderer02.mesh = &cube;
 	//cubeRenderer02.material = &brickMaterial;
 
-	MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
+	//MeshRenderer* planeRenderer = new MeshRenderer(&plane, &brickMaterial);
 
 	//colliders : 
 	BoxCollider* boxCollider01 = new BoxCollider(&cubeWireFrame, &wireframeMaterial);

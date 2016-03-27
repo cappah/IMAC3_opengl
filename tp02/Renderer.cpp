@@ -379,7 +379,7 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 }
 
 
-void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags)
+void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 	glm::vec3 cameraPosition = camera.getCameraPosition();
@@ -721,8 +721,19 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	//terrain.renderGrassField(projection, worldToView);
 	//glDisable(GL_BLEND);
 
-	//rander skybox : 
+	//render skybox : 
 	skybox.render(projection, worldToView);
+
+	glEnable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	for (int i = 0; i < billboards.size(); i++)
+		billboards[i]->render(projection, worldToView);
+
+	for (int i = 0; i < particleEmitters.size(); i++)
+		particleEmitters[i]->render(projection, worldToView);
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
 }
 
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)

@@ -219,6 +219,7 @@
       <ObjectFileName>$(IntDir)aogl.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Billboard.cpp" />
     <ClCompile Include="BSpline.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collider.cpp" />
@@ -277,6 +278,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Billboard.h" />
     <ClInclude Include="BSpline.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collider.h" />
@@ -330,12 +332,21 @@
     <None Include="aogl_lightPass_directionalLight.frag" />
     <None Include="aogl_lightPass_pointLight.frag" />
     <None Include="aogl_lightPass_spotLight.frag" />
+    <None Include="billboard.frag" />
+    <None Include="billboard.vert" />
     <None Include="blit.frag" />
     <None Include="blit.vert" />
     <None Include="drawOnTexture.frag" />
     <None Include="drawOnTexture.vert" />
     <None Include="grassField.frag" />
     <None Include="grassField.vert" />
+    <None Include="particle.frag" />
+    <None Include="particle.geom" />
+    <None Include="particle.vert" />
+    <None Include="particleCPU.frag" />
+    <None Include="particleCPU.vert" />
+    <None Include="particleSimulation.geom" />
+    <None Include="particleSimulation.vert" />
     <None Include="shadowPass.frag" />
     <None Include="shadowPass.vert" />
     <None Include="shadowPassOmni.frag" />

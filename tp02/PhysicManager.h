@@ -3,6 +3,8 @@
 #include "Flag.h"
 #include "WindZone.h"
 #include "Terrain.h"
+#include "ParticleEmitter.h"
+#include "Camera.h"
 
 namespace Physic {
 	
@@ -18,7 +20,7 @@ namespace Physic {
 		void setGravity(const glm::vec3& g);
 		glm::vec3 getGravity() const;
 
-		void update(float deltaTime, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones);
+		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters);
 	};
 }
 

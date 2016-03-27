@@ -160,6 +160,32 @@ public:
 	virtual void drawUI() override;
 };
 
+class MaterialBillboard : public Material
+{
+private:
+	GLuint m_uniformMVP;
+	GLuint m_uniformScale;
+	GLuint m_uniformTranslation;
+	GLuint m_uniformTexture;
+	GLuint m_uniformCameraRight;
+	GLuint m_uniformCameraUp;
+	GLuint m_uniformColor;
+
+public:
+	MaterialBillboard();
+	MaterialBillboard(GLuint _glProgram);
+
+	virtual void use() override;
+	virtual void drawUI() override;
+
+	void setUniformMVP(const glm::mat4& mvp);
+	void setUniformScale(const glm::vec2& scale);
+	void setUniformTranslation(const glm::vec3& translation);
+	void setUniformTexture(int texId);
+	void setUniformCameraRight(const glm::vec3& camRight);
+	void setUniformCameraUp(const glm::vec3& camUp);
+	void setUniformColor(const glm::vec4& color);
+};
 
 
 struct MaterialTerrain : public Material3DObject
@@ -284,4 +310,63 @@ public:
 	virtual void use() override;
 	virtual void drawUI() override;
 };
+
+class MaterialParticlesCPU : public Material
+{
+private:
+	GLuint m_uniformVP;
+	GLuint m_uniformTexture;
+	GLuint m_uniformCameraRight;
+	GLuint m_uniformCameraUp;
+
+public:
+	MaterialParticlesCPU();
+	MaterialParticlesCPU(GLuint _glProgram);
+
+	void glUniform_VP(const glm::mat4& VP);
+	void setUniformTexture(int texId);
+	void setUniformCameraRight(const glm::vec3& camRight);
+	void setUniformCameraUp(const glm::vec3& camUp);
+
+	virtual void use() override;
+	virtual void drawUI() override;
+};
+
+
+class MaterialParticles : public Material
+{
+private:
+	GLuint m_uniformVP;
+	GLuint m_uniformTexture;
+	GLuint m_uniformCameraRight;
+	GLuint m_uniformCameraUp;	
+
+public :
+	MaterialParticles();
+	MaterialParticles(GLuint _glProgram);
+
+	void glUniform_VP(const glm::mat4& VP);
+	void setUniformTexture(int texId);
+	void setUniformCameraRight(const glm::vec3& camRight);
+	void setUniformCameraUp(const glm::vec3& camUp);
+
+	virtual void use() override;
+	virtual void drawUI() override;
+};
+
+class MaterialParticleSimulation : public Material
+{
+private :
+	GLuint m_uniformDeltaTime;
+
+public:
+	MaterialParticleSimulation();
+	MaterialParticleSimulation(GLuint _glProgram);
+
+	void glUniform_deltaTime(float deltaTime);
+
+	virtual void use() override;
+	virtual void drawUI() override;
+};
+
 

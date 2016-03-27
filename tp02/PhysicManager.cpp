@@ -24,7 +24,7 @@ namespace Physic {
 		return m_gravity;
 	}
 
-	void PhysicManager::update(float deltaTime, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones)
+	void PhysicManager::update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters)
 	{
 		for (int i = 0; i < flags.size(); i++)
 		{
@@ -40,6 +40,12 @@ namespace Physic {
 
 		//update terrain : 
 		terrain.updatePhysic(deltaTime, windZones);
+
+		//update particles : 
+		for (int i = 0; i < particleEmitters.size(); i++)
+		{
+			particleEmitters[i]->update(deltaTime, camera.getCameraPosition());
+		}
 	}
 
 }

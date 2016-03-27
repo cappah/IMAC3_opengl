@@ -5,6 +5,80 @@
 
 ProgramFactory::ProgramFactory()
 {
+
+	//////////////////// CPU PARTICLE shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_particleCPU = compile_shader_from_file(GL_VERTEX_SHADER, "particleCPU.vert");
+	GLuint fragShaderId_particleCPU = compile_shader_from_file(GL_FRAGMENT_SHADER, "particleCPU.frag");
+
+	GLuint programObject_particleCPU = glCreateProgram();
+	glAttachShader(programObject_particleCPU, vertShaderId_particleCPU);
+	glAttachShader(programObject_particleCPU, fragShaderId_particleCPU);
+
+	glLinkProgram(programObject_particleCPU);
+	if (check_link_error(programObject_particleCPU) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// PARTICLE shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_particle = compile_shader_from_file(GL_VERTEX_SHADER, "particle.vert");
+	GLuint geomShaderId_particle = compile_shader_from_file(GL_GEOMETRY_SHADER, "particle.geom");
+	GLuint fragShaderId_particle = compile_shader_from_file(GL_FRAGMENT_SHADER, "particle.frag");
+
+	GLuint programObject_particle = glCreateProgram();
+	glAttachShader(programObject_particle, vertShaderId_particle);
+	glAttachShader(programObject_particle, geomShaderId_particle);
+	glAttachShader(programObject_particle, fragShaderId_particle);
+
+	glLinkProgram(programObject_particle);
+	if (check_link_error(programObject_particle) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// PARTICLE SIMULATION shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_particleSimulation = compile_shader_from_file(GL_VERTEX_SHADER, "particleSimulation.vert");
+	GLuint geomShaderId_particleSimulation = compile_shader_from_file(GL_GEOMETRY_SHADER, "particleSimulation.geom");
+
+	GLuint programObject_particleSimulation = glCreateProgram();
+	glAttachShader(programObject_particleSimulation, vertShaderId_particleSimulation);
+	glAttachShader(programObject_particleSimulation, geomShaderId_particleSimulation);
+
+	const GLchar* feedbackVaryings[1] = { "outPositions" }; //, "outVelocities", "outForces", "outElapsedTimes", "outLifeTimes", "outColors", "outSizes"};
+	glTransformFeedbackVaryings(programObject_particleSimulation, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
+
+	glLinkProgram(programObject_particleSimulation);
+	if (check_link_error(programObject_particleSimulation) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
+	//////////////////// BILLBOARD shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_billboard = compile_shader_from_file(GL_VERTEX_SHADER, "billboard.vert");
+	GLuint fragShaderId_billboard = compile_shader_from_file(GL_FRAGMENT_SHADER, "billboard.frag");
+
+	GLuint programObject_billboard = glCreateProgram();
+	glAttachShader(programObject_billboard, vertShaderId_billboard);
+	glAttachShader(programObject_billboard, fragShaderId_billboard);
+
+	glLinkProgram(programObject_billboard);
+	if (check_link_error(programObject_billboard) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 	//////////////////// SKYBOX shaders ////////////////////////
 	// Try to load and compile shaders
 	GLuint vertShaderId_skybox = compile_shader_from_file(GL_VERTEX_SHADER, "skybox.vert");
@@ -149,6 +223,10 @@ ProgramFactory::ProgramFactory()
 	m_programs["defaultDrawOnTexture"] = programObject_drawOnTexture;
 	m_programs["defaultGrassField"] = programObject_grassField;
 	m_programs["wireframeInstanced"] = programObject_wireframeInstanced;
+	m_programs["defaultBillboard"] = programObject_billboard;
+	m_programs["defaultParticles"] = programObject_particle;
+	m_programs["defaultParticlesCPU"] = programObject_particleCPU;
+	m_programs["particleSimulation"] = programObject_particleSimulation;
 
 	m_defaults.push_back("defaultLit");
 	m_defaults.push_back("defaultUnlit");
@@ -158,6 +236,10 @@ ProgramFactory::ProgramFactory()
 	m_defaults.push_back("defaultDrawOnTexture");
 	m_defaults.push_back("defaultGrassField");
 	m_defaults.push_back("wireframeInstanced");
+	m_defaults.push_back("defaultBillboard");
+	m_defaults.push_back("defaultParticles");
+	m_defaults.push_back("defaultParticlesCPU");
+	m_defaults.push_back("particleSimulation");
 }
 
 void ProgramFactory::add(const std::string& name, GLuint programId)
@@ -170,6 +252,8 @@ void ProgramFactory::add(const std::string& name, GLuint programId)
 
 GLuint ProgramFactory::get(const std::string& name)
 {
+	assert(m_programs.find(name) != m_programs.end());
+
 	return m_programs[name];
 }
 
@@ -236,11 +320,17 @@ TextureFactory::TextureFactory()
 	
 	newTex->name = "default";
 	m_textures["default"] = newTex;
+
+	newTex = new Texture(0, 0, 125);
+	newTex->initGL();
+
+	newTex->name = "defaultNormal";
+	m_textures["defaultNormal"] = newTex;
 }
 
 void TextureFactory::add(const std::string& name, const std::string& path)
 {
-	if (name == "default") //can't override default key
+	if (name == "default" || name == "defaultNormal") //can't override default key
 		return;
 
 	auto newTexture = new Texture(path);
@@ -251,7 +341,7 @@ void TextureFactory::add(const std::string& name, const std::string& path)
 
 void TextureFactory::add(const std::string& name, Texture* texture)
 {
-	if (name == "default") //can't override default key
+	if (name == "default" || name == "defaultNormal") //can't override default key
 		return;
 
 	texture->name = name;
@@ -518,24 +608,36 @@ MeshFactory::MeshFactory()
 	cubeWireFrame->computeBoundingBox();
 
 	Mesh* plane = new Mesh();
-	plane->triangleIndex = { 0, 1, 2, 2, 1, 3 };
-	plane->uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f };
-	plane->vertices = { -5.0, -0.5, 5.0, 5.0, -0.5, 5.0, -5.0, -0.5, -5.0, 5.0, -0.5, -5.0 };
+	plane->triangleIndex = { 0, 1, 2, 2, 3, 0 };
+	plane->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
+	plane->vertices = { -0.5, 0.0, -0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.5};
 	plane->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
 	plane->initGl();
 	plane->name = "plane";
 	plane->path = "";
 	plane->computeBoundingBox();
 
+	Mesh* quad = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_VERTICES), 2);
+	quad->triangleIndex = { 0, 1, 2, 0, 2, 3 };
+	quad->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
+	quad->vertices = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+	quad->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
+	quad->initGl();
+	quad->name = "quad";
+	quad->path = "";
+	//quad->computeBoundingBox();
+
 	m_meshes["default"] = cube;
 	m_meshes["cube"] = cube;
 	m_meshes["cubeWireframe"] = cubeWireFrame;
 	m_meshes["plane"] = plane;
+	m_meshes["quad"] = plane;
 
 	m_defaults.push_back("default");
 	m_defaults.push_back("cube");
 	m_defaults.push_back("cubeWireframe");
 	m_defaults.push_back("plane");
+	m_defaults.push_back("quad");
 }
 
 void MeshFactory::add(const std::string& name, Mesh* mesh)
@@ -660,11 +762,31 @@ MaterialFactory::MaterialFactory()
 	newMat = new MaterialGrassField(ProgramFactory::get().get("defaultGrassField"));
 	newMat->name = "grassfield";
 	m_materials["grassfield"] = newMat;
+
+	newMat = new MaterialBillboard(ProgramFactory::get().get("defaultBillboard"));
+	newMat->name = "billboard";
+	m_materials["billboard"] = newMat;
+
+	newMat = new MaterialParticles(ProgramFactory::get().get("defaultParticles"));
+	newMat->name = "particles";
+	m_materials["particles"] = newMat;
+
+	newMat = new MaterialParticlesCPU(ProgramFactory::get().get("defaultParticlesCPU"));
+	newMat->name = "particlesCPU";
+	m_materials["particlesCPU"] = newMat;
+
+	newMat = new MaterialParticleSimulation(ProgramFactory::get().get("particleSimulation"));
+	newMat->name = "particleSimulation";
+	m_materials["particleSimulation"] = newMat;
 	
 	m_defaults.push_back("default");
 	m_defaults.push_back("wireframe");
 	m_defaults.push_back("wireframeInstanced");
 	m_defaults.push_back("grassfield");
+	m_defaults.push_back("billboard");
+	m_defaults.push_back("particles");
+	m_defaults.push_back("particlesCPU");
+	m_defaults.push_back("particleSimulation");
 }
 
 void MaterialFactory::add(const std::string& name, Material* material)

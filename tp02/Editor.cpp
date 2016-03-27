@@ -582,6 +582,25 @@ void Editor::displayMenuBar(Project& project)
 				changeCurrentSelected(newEntity);
 			}
 
+			if (ImGui::Button("add billboard"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto billboard = new Billboard();
+				newEntity->add(newCollider).add(billboard);
+				newEntity->setName("billboard");
+			}
+
+			if (ImGui::Button("add particle emitter"))
+			{
+				auto newEntity = new Entity(&scene);
+				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto particleEmitter = new Physic::ParticleEmitter();
+				newEntity->add(newCollider).add(particleEmitter);
+				newEntity->setName("particle emitter");
+			}
+
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("camera mode"))
@@ -720,6 +739,7 @@ void Editor::displayTopLeftWindow(Project& project)
 
 	int entityId = 0;
 
+
 	if (!m_currentSelected.empty())
 	{
 		//can't add or remove components in multiple editing, only change components parameters
@@ -738,9 +758,9 @@ void Editor::displayTopLeftWindow(Project& project)
 			for (auto& selected : m_currentSelected)
 			{
 				ImGui::PushID(entityId);
-
-				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str()))
+				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str())) {
 					selected->drawUI(scene);
+				}
 				ImGui::PopID();
 
 				entityId++;
@@ -1020,6 +1040,7 @@ void Editor::renderUI(Project& project)
 	ImGui::Begin("leftWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
 		ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z -30, m_windowRect.w));
 
+		ImGui::SetNextWindowContentWidth(m_topLeftPanelRect.z - 30);
 			ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
 				displayTopLeftWindow(project);
 			ImGui::EndChild();

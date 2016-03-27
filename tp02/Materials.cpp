@@ -696,3 +696,192 @@ void MaterialGrassField::drawUI()
 {
 	//nothing
 }
+
+//////////////////////////////// BILLBOARD //////////////////////
+
+MaterialBillboard::MaterialBillboard()
+{
+	MaterialBillboard(ProgramFactory::get().get("defaultBillboard"));
+}
+
+MaterialBillboard::MaterialBillboard(GLuint _glProgram) : Material(_glProgram)
+{
+	 m_uniformMVP = glGetUniformLocation(glProgram, "MVP");
+	 m_uniformScale = glGetUniformLocation(glProgram, "Scale");
+	 m_uniformTranslation = glGetUniformLocation(glProgram, "Translation");
+	 m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
+	 m_uniformCameraRight = glGetUniformLocation(glProgram, "CameraRight");
+	 m_uniformCameraUp = glGetUniformLocation(glProgram, "CameraUp");
+	 m_uniformColor = glGetUniformLocation(glProgram, "Color");
+}
+
+void MaterialBillboard::use()
+{
+	glUseProgram(glProgram);
+}
+
+void MaterialBillboard::drawUI()
+{
+	//nothing
+}
+
+void MaterialBillboard::setUniformMVP(const glm::mat4 & mvp)
+{
+	glUniformMatrix4fv(m_uniformMVP, 1, false, glm::value_ptr(mvp));
+}
+
+void MaterialBillboard::setUniformScale(const glm::vec2 & scale)
+{
+	glUniform2fv(m_uniformScale, 1, glm::value_ptr(scale));
+}
+
+void MaterialBillboard::setUniformTranslation(const glm::vec3 & translation)
+{
+	glUniform3fv(m_uniformTranslation, 1, glm::value_ptr(translation));
+}
+
+void MaterialBillboard::setUniformTexture(int texId)
+{
+	glUniform1i(m_uniformTexture, texId);
+}
+
+void MaterialBillboard::setUniformCameraRight(const glm::vec3& camRight)
+{
+	glUniform3fv(m_uniformCameraRight, 1, glm::value_ptr(camRight));
+}
+
+void MaterialBillboard::setUniformCameraUp(const glm::vec3& camUp)
+{
+	glUniform3fv(m_uniformCameraUp, 1, glm::value_ptr(camUp));
+}
+
+void MaterialBillboard::setUniformColor(const glm::vec4 & color)
+{
+	glUniform4fv(m_uniformColor, 1, glm::value_ptr(color));
+}
+
+
+
+///////////////////////////////////////////////
+
+MaterialParticlesCPU::MaterialParticlesCPU() : Material(ProgramFactory::get().get("defaultParticlesCPU"))
+{
+	m_uniformVP = glGetUniformLocation(glProgram, "VP");
+	m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
+	m_uniformCameraRight = glGetUniformLocation(glProgram, "CameraRight");
+	m_uniformCameraUp = glGetUniformLocation(glProgram, "CameraUp");
+}
+
+MaterialParticlesCPU::MaterialParticlesCPU(GLuint _glProgram) : Material(_glProgram)
+{
+	m_uniformVP = glGetUniformLocation(glProgram, "VP");
+	m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
+	m_uniformCameraRight = glGetUniformLocation(glProgram, "CameraRight");
+	m_uniformCameraUp = glGetUniformLocation(glProgram, "CameraUp");
+}
+
+void MaterialParticlesCPU::use()
+{
+	glUseProgram(glProgram);
+}
+
+void MaterialParticlesCPU::drawUI()
+{
+	//nothing
+}
+
+void MaterialParticlesCPU::glUniform_VP(const glm::mat4& VP)
+{
+	glUniformMatrix4fv(m_uniformVP, 1, false, glm::value_ptr(VP));
+}
+
+void MaterialParticlesCPU::setUniformTexture(int texId)
+{
+	glUniform1i(m_uniformTexture, texId);
+}
+
+void MaterialParticlesCPU::setUniformCameraRight(const glm::vec3& camRight)
+{
+	glUniform3fv(m_uniformCameraRight, 1, glm::value_ptr(camRight));
+}
+
+void MaterialParticlesCPU::setUniformCameraUp(const glm::vec3& camUp)
+{
+	glUniform3fv(m_uniformCameraUp, 1, glm::value_ptr(camUp));
+}
+
+
+///////////////////////////////////////////////
+
+MaterialParticles::MaterialParticles(): Material(ProgramFactory::get().get("defaultParticles"))
+{
+	m_uniformVP = glGetUniformLocation(glProgram, "VP");
+	m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
+	m_uniformCameraRight = glGetUniformLocation(glProgram, "CameraRight");
+	m_uniformCameraUp = glGetUniformLocation(glProgram, "CameraUp");
+}
+
+MaterialParticles::MaterialParticles(GLuint _glProgram) : Material(_glProgram)
+{
+	m_uniformVP = glGetUniformLocation(glProgram, "VP");
+	m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
+	m_uniformCameraRight = glGetUniformLocation(glProgram, "CameraRight");
+	m_uniformCameraUp = glGetUniformLocation(glProgram, "CameraUp");
+}
+
+void MaterialParticles::use()
+{
+	glUseProgram(glProgram);
+}
+
+void MaterialParticles::drawUI()
+{
+	//nothing
+}
+
+void MaterialParticles::glUniform_VP(const glm::mat4& VP)
+{
+	glUniformMatrix4fv(m_uniformVP, 1, false, glm::value_ptr(VP));
+}
+
+void MaterialParticles::setUniformTexture(int texId)
+{
+	glUniform1i(m_uniformTexture, texId);
+}
+
+void MaterialParticles::setUniformCameraRight(const glm::vec3& camRight)
+{
+	glUniform3fv(m_uniformCameraRight, 1, glm::value_ptr(camRight));
+}
+
+void MaterialParticles::setUniformCameraUp(const glm::vec3& camUp)
+{
+	glUniform3fv(m_uniformCameraUp, 1, glm::value_ptr(camUp));
+}
+
+///////////////////////////////////////////
+
+MaterialParticleSimulation::MaterialParticleSimulation(): Material(ProgramFactory::get().get("particleSimulation"))
+{
+	m_uniformDeltaTime = glGetUniformLocation(glProgram, "DeltaTime");
+}
+
+MaterialParticleSimulation::MaterialParticleSimulation(GLuint _glProgram) : Material(_glProgram)
+{
+	m_uniformDeltaTime = glGetUniformLocation(glProgram, "DeltaTime");
+}
+
+void MaterialParticleSimulation::glUniform_deltaTime(float deltaTime)
+{
+	glUniform1f(m_uniformDeltaTime, deltaTime);
+}
+
+void MaterialParticleSimulation::use()
+{
+	glUseProgram(glProgram);
+}
+
+void MaterialParticleSimulation::drawUI()
+{
+	//nothing
+}

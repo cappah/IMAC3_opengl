@@ -241,8 +241,14 @@ void Project::edit()
 		t = glfwGetTime();
 		ImGui_ImplGlfwGL3_NewFrame();
 
+		//get main camera : 
+		BaseCamera& currentCamera = editor.getCamera();
+		//get active camera before render scene : 
+		//currentCamera.updateScreenSize(width, height);
+		//scene.culling(currentCamera);
+
 		//Physics : 
-		scene->updatePhysic(Application::get().getFixedDeltaTime());
+		scene->updatePhysic(Application::get().getFixedDeltaTime(), currentCamera);
 
 		//check if window has been resized by user
 		if (Application::get().getWindowResize())
@@ -260,11 +266,6 @@ void Project::edit()
 
 		//synchronize input handler : 
 		InputHandler::synchronize();
-
-		//get active camera before render scene : 
-		BaseCamera& currentCamera = editor.getCamera();
-		//currentCamera.updateScreenSize(width, height);
-		//scene.culling(currentCamera);
 
 		//rendering : 
 		//renderer.render(camera, entities);

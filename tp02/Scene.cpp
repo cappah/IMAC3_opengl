@@ -142,6 +142,12 @@ Scene & Scene::add(PathPoint * pathPoint)
 	return *this;
 }
 
+Scene & Scene::add(Billboard * billboard)
+{
+	m_billboards.push_back(billboard);
+	return *this;
+}
+
 Scene & Scene::add(Camera * camera)
 {
 	m_cameras.push_back(camera);
@@ -264,6 +270,19 @@ Scene & Scene::erase(PathPoint * pathPoint)
 	return *this;
 }
 
+Scene & Scene::erase(Billboard * billboard)
+{
+	auto findIt = std::find(m_billboards.begin(), m_billboards.end(), billboard);
+
+	if (findIt != m_billboards.end())
+	{
+		delete billboard;
+		m_billboards.erase(findIt);
+	}
+
+	return *this;
+}
+
 
 Scene & Scene::erase(Camera * camera)
 {
@@ -293,7 +312,7 @@ Scene & Scene::erase(Physic::WindZone * windZone)
 
 void Scene::render(const BaseCamera& camera)
 {
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags);
+	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters);
 }
 
 void Scene::renderColliders(const BaseCamera & camera)
@@ -328,9 +347,10 @@ void Scene::renderDebugOctrees(const BaseCamera & camera)
 	}
 }
 
-void Scene::updatePhysic(float deltaTime)
+void Scene::updatePhysic(float deltaTime, const BaseCamera& camera)
 {
-	m_physicManager.update(deltaTime, m_flags, m_terrain, m_windZones);
+	
+	m_physicManager.update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters);
 }
 
 void Scene::toggleColliderVisibility()
@@ -519,4 +539,9 @@ void Scene::load(const std::string & path)
 	m_terrain.load(root["terrain"]);
 	m_skybox.load(root["skybox"]);
 
+}
+
+BaseCamera* Scene::getMainCamera() const
+{
+	return m_cameras.size() > 0 ? m_cameras[0] : nullptr;
 }

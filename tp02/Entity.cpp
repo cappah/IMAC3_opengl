@@ -107,6 +107,7 @@ void Entity::applyTransform(const glm::vec3 & parentTranslation, const glm::vec3
 
 void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId)
 {
+	ImGui::SetNextWindowContentWidth(80);
 	bool nodeOpen = false;
 
 	ImVec2 itemPos;
@@ -125,8 +126,12 @@ void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id
 		removeId = id;
 	}
 
-	if(nodeOpen)
+	if (nodeOpen) {
+		//ImGui::SetNextWindowContentWidth(500);
+		//ImGui::BeginChild(ImGuiID(id), ImVec2(500, 0), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_ChildWindowAutoFitY | ImGuiWindowFlags_ChildWindowAutoFitX);
 		component->drawUI(scene);
+		//ImGui::EndChild();
+	}
 
 	if (nodeOpen)
 		ImGui::TreePop();
@@ -303,6 +308,16 @@ Entity & Entity::add(PathPoint * pathPoint)
 	return *this;
 }
 
+Entity & Entity::add(Billboard * billboard)
+{
+	billboard->attachToEntity(this);
+
+	m_scene->add(billboard);
+	m_components.push_back(billboard);
+
+	return *this;
+}
+
 
 Entity & Entity::add(Camera * camera)
 {
@@ -424,6 +439,19 @@ Entity & Entity::erase(PathPoint * pathPoint)
 	{
 		m_components.erase(findIt);
 		m_scene->erase(pathPoint);
+	}
+
+	return *this;
+}
+
+Entity & Entity::erase(Billboard * billboard)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), billboard);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(billboard);
 	}
 
 	return *this;
