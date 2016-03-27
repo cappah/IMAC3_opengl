@@ -138,6 +138,10 @@ public:
 
 	std::string getName() const;
 
+	//helper to load entities, for making links between entities and their childs
+	void resolveEntityChildSaving(Json::Value & rootComponent, Entity* currentEntity);
+	void resolveEntityChildPreLoading(Json::Value & rootComponent, Entity* currentEntity);
+	void resolveEntityChildLoading(Json::Value & rootComponent, Entity* currentEntity);
 	void save(const std::string& path);
 	void load(const std::string& path);
 

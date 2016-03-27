@@ -8,8 +8,6 @@
 
 #include "glm/common.hpp"
 
-#include "Factories.h"
-
 class Skybox
 {
 	Mesh mesh;
@@ -25,5 +23,8 @@ public:
 	void drawUI();
 
 	void render(const glm::mat4& projection, const glm::mat4& view );
+
+	void save(Json::Value& rootComponent) const;
+	void load(Json::Value& rootComponent);
 };
 

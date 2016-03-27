@@ -541,7 +541,8 @@ void Entity::addChild(Entity* child)
 
 void Entity::removeParent()
 {
-	m_parent->removeChild(this);
+	if(m_parent != nullptr)
+		m_parent->removeChild(this);
 	m_parent = nullptr;
 }
 
@@ -588,6 +589,12 @@ void Entity::save(Json::Value& entityRoot) const
 	{
 		m_components[i]->save(entityRoot["components"][i]);
 	}
+
+	//entityRoot["childCount"] = m_childs.size();
+	//for (int i = 0; i < m_childs.size(); i++)
+	//{
+	//	m_childs[i]->save(entityRoot["childs"][i]);
+	//}
 }
 
 void Entity::load(Json::Value& entityRoot)
@@ -612,6 +619,13 @@ void Entity::load(Json::Value& entityRoot)
 
 		newComponent->addToEntity(*this);
 	}
+
+	//int childCount = entityRoot.get("childCount", 0).asInt();
+	//for (int i = 0; i < childCount; i++)
+	//{
+	//	Entity* newEntity = new Entity(m_scene);
+	//	newEntity->load(entityRoot["childs"][i]);
+	//}
 }
 
 void Entity::addChildAtomic(Entity* child)

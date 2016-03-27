@@ -329,11 +329,21 @@ void MaterialSkybox::drawUI()
 
 		if (CubeTextureFactory::get().contains(tmpTxt))
 		{
-			textureDiffuse->freeGL();
 			textureDiffuse = CubeTextureFactory::get().get(diffuseTextureName);
 			textureDiffuse->initGL();
 		}
 	}
+}
+
+void MaterialSkybox::setDiffuseTexture(CubeTexture* texture)
+{
+	diffuseTextureName = texture->name;
+	textureDiffuse = texture;
+}
+
+CubeTexture* MaterialSkybox::getDiffuseTexture() const
+{
+	return textureDiffuse;
 }
 
 /////////////////// SHADOW MATERIAL ////////////////////

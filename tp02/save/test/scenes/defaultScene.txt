@@ -2,6 +2,7 @@
 	"entities" : 
 	[
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
@@ -199,6 +200,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -284,6 +286,7 @@
 			]
 		},
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
@@ -388,6 +391,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -473,6 +477,7 @@
 			]
 		},
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
@@ -577,6 +582,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -662,14 +668,15 @@
 			]
 		},
 		{
+			"childCount" : 0,
 			"componentCount" : 2,
 			"components" : 
 			[
 				{
 					"bottomLeft" : 
 					[
-						-0.94575643539428711,
-						-12.536311149597168,
+						-0.14637279510498047,
+						-13.390969276428223,
 						0
 					],
 					"localBottomLeft" : 
@@ -686,33 +693,33 @@
 					],
 					"modelMatrix" : 
 					[
-						10.945756912231445,
+						10.14637279510498,
 						0,
 						0,
 						0,
 						0,
-						12.536311149597168,
+						13.390969276428223,
 						0,
 						0,
 						0,
 						0,
 						0,
 						0,
-						4.5271220207214355,
-						-6.268155574798584,
+						4.9268136024475098,
+						-6.6954846382141113,
 						0,
 						1
 					],
 					"offsetPosition" : 
 					[
-						-0.94575661420822144,
-						-12.536311149597168,
+						-0.14637260138988495,
+						-13.390969276428223,
 						0
 					],
 					"offsetScale" : 
 					[
-						10.945756912231445,
-						12.536311149597168,
+						10.14637279510498,
+						13.390969276428223,
 						0
 					],
 					"origin" : 
@@ -811,6 +818,7 @@
 				0,
 				0
 			],
+			"isRootEntity" : true,
 			"localEulerRotation" : 
 			[
 				0,
@@ -896,5 +904,33 @@
 			]
 		}
 	],
-	"entityCount" : 4
+	"entityCount" : 4,
+	"skybox" : 
+	{
+		"textureName" : "default"
+	},
+	"terrain" : 
+	{
+		"depth" : 100,
+		"height" : 10,
+		"materialLayoutCount" : 0,
+		"offset" : 
+		[
+			0,
+			0,
+			0
+		],
+		"seed" : 0,
+		"subdivision" : 30,
+		"terrainNoise" : 
+		{
+			"height" : 512,
+			"maxHeight" : 32,
+			"octaveCount" : 3,
+			"persistence" : 0.5,
+			"samplingOffset" : 64,
+			"seed" : 0
+		},
+		"width" : 100
+	}
 }

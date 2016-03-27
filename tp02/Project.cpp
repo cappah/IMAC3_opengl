@@ -338,11 +338,11 @@ void Project::loadScene(const std::string& sceneName)
 		addDirectories(m_path + "/scenes/");
 		m_activeScene->save(activeScenePath);
 
-		m_activeScene->clear();
-		//delete m_activeScene;
+		//m_activeScene->clear();
+		delete m_activeScene;
 	}
 
-	//m_activeScene = new Scene(m_renderer, sceneName);
+	m_activeScene = new Scene(m_renderer, sceneName);
 	m_activeScene->load(m_scenes[sceneName]);
 	m_activeSceneName = sceneName;
 }

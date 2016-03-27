@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <time.h>
+#include <sstream>
+#include <fstream>
 
 #include "glew/glew.h"
 
@@ -43,7 +45,8 @@ struct GrassKey
 };
 
 //structure which store infos to render grass in instanced mode
-struct GrassField {
+struct GrassField : public ISerializable
+{
 
 	enum VboTypes {VERTICES = 0, NORMALS, UVS, POSITIONS, ANIM_POS};
 	
@@ -85,6 +88,8 @@ struct GrassField {
 	GrassField();
 	~GrassField();
 	void initGl();
+	void freeGl();
+	void clear();
 
 	void addGrass(GrassKey grassKey, const glm::vec3& position);
 	void remove(GrassKey grassKey);
@@ -115,10 +120,12 @@ struct GrassField {
 
 	void drawUI();
 
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 };
 
 
-class Terrain
+class Terrain : public ISerializable
 {
 public : 
 	enum TerrainTools { PARAMETER = 0, DRAW_MATERIAL, DRAW_GRASS, PERLIN };
@@ -168,7 +175,7 @@ private:
 	GLuint m_terrainFbo;
 	GLuint m_materialLayoutsFBO;
 
-	Texture m_filterTexture;
+	Texture* m_filterTexture;
 	Texture m_terrainDiffuse;
 	Texture m_terrainBump;
 	Texture m_terrainSpecular;
@@ -204,6 +211,8 @@ public:
 	~Terrain();
 	//initialize vbos and vao, based on the informations of the mesh.
 	void initGl();
+	void freeGl(); // delete gl information from GPU memory
+	void clear(); //delete everything from memory.
 
 	// simply draw the vertices, using vao.
 	void render(const glm::mat4& projection, const glm::mat4& view);
@@ -237,5 +246,8 @@ public:
 
 	//update physic : 
 	void updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones);
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
 };
 

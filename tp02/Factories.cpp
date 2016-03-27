@@ -355,7 +355,7 @@ void CubeTextureFactory::add(const std::string& name, const std::vector<std::str
 
 	auto newTexture = new CubeTexture(paths);
 
-	newTexture->name = "default";
+	newTexture->name = name;
 	m_textures[name] = newTexture;
 }
 
@@ -364,7 +364,7 @@ void CubeTextureFactory::add(const std::string& name, CubeTexture* textureId)
 	if (name == "default") //can't override default key
 		return;
 
-	textureId->name = "default";
+	textureId->name = name;
 	m_textures[name] = textureId;
 }
 
