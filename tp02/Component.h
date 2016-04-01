@@ -20,7 +20,7 @@ class Scene;
 class Component : public ISerializable
 {
 public:
-	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, BILLBOARD, CAMERA, WIND_ZONE, COMPONENT_COUNT, LIGHT, NONE };
+	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, BILLBOARD, CAMERA, WIND_ZONE, RIGIDBODY, COMPONENT_COUNT, LIGHT, NONE };
 	static const std::vector<std::string> ComponentTypeName;
 protected:
 	Entity* m_entity;
@@ -46,6 +46,12 @@ public:
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1,1,1), const glm::quat& rotation = glm::quat());
 
+	// function to get component.
+	Component* getComponent(Component::ComponentType type);
+	// function to get components of a certain type.
+	template<typename T>
+	std::vector<T*> getComponents(Component::ComponentType type);
+
 	//Erase a component from the scene
 	//You normally don't have to directly call this function
 	//to erase a component from the scene, call entity.erase(component).
@@ -65,4 +71,13 @@ public:
 	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(Json::Value& componentRoot) override;
 };
+
+template<typename T>
+std::vector<T*> Component::getComponents(Component::ComponentType type)
+{
+	if (m_entity != nullptr)
+		return m_entity->getComponents<T>(type);
+	else
+		return std::vector<T*>();
+}
 

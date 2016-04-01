@@ -24,6 +24,7 @@
 #include "Billboard.h"
 #include "Camera.h"
 #include "WindZone.h"
+#include "Rigidbody.h"
 
 #include "glm/gtc/quaternion.hpp"
 
@@ -97,6 +98,9 @@ public:
 	virtual void applyTransform() override;
 	//function to apply transform to all children.
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
+	//apply only rotation and translation (usefull for physic driven transform).
+	virtual void applyTransform(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) override;
+	void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat());
 
 	//helper to draw UI : 
 	void displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId);
@@ -137,6 +141,8 @@ public:
 	Entity& add(Camera* camera);
 	// function to add a component. 
 	Entity& add(Physic::WindZone* windZone);
+	// function to add a component. 
+	Entity& add(Rigidbody* rigidbody);
 
 	// function to erase a component.
 	Entity& erase(PointLight* pointLight);
@@ -159,6 +165,8 @@ public:
 	Entity& erase(Camera* camera);
 	// function to erase a component.
 	Entity& erase(Physic::WindZone* windZone);
+	// function to erase a component.
+	Entity& erase(Rigidbody* rigidbody);
 
 	//finalyze the creation of the entity, should be called after all components has been added to the entity : 
 	//One of the goal of this function is to properly set up the collider such that it cover well all the components of the entity.
@@ -168,7 +176,11 @@ public:
 	void eraseAllComponents();
 
 	// function to get component.
-	Component* getComponent(Component::ComponentType type);
+	template<typename T = Component>
+	T* getComponent(Component::ComponentType type);
+	// function to get components of a certain type.
+	template<typename T>
+	std::vector<T*> getComponents(Component::ComponentType type);
 
 	bool hasParent() const;
 	bool hasChild() const;
@@ -189,3 +201,34 @@ private:
 	void setParentAtomic(Entity* parent);
 
 };
+
+template<typename T>
+std::vector<T*> Entity::getComponents(Component::ComponentType type)
+{
+	std::vector<T*> foundComponents;
+
+	for (int i = 0; i < m_components.size(); i++) {
+		if (m_components[i]->type() == type) {
+			assert(dynamic_cast<T*>(m_components[i]) == m_components[i]);
+			T* foundComponent = static_cast<T*>(m_components[i]);
+			foundComponents.push_back(foundComponent);
+		}
+	}
+
+	return foundComponents;
+}
+
+template<typename T = Component>
+T* Entity::getComponent(Component::ComponentType type)
+{
+	auto findIt = std::find_if(m_components.begin(), m_components.end(), [type](Component* c) { return c->type() == type; });
+
+	if (findIt != m_components.end())
+	{
+		assert(dynamic_cast<T*>(*findIt) == *findIt);
+		T* foundComponent = static_cast<T*>(*findIt);
+		return foundComponent;
+	}
+
+	return nullptr;
+}

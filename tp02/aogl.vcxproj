@@ -241,6 +241,7 @@
     <ClCompile Include="Materials.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
+    <ClCompile Include="MotionState.cpp" />
     <ClCompile Include="Octree.cpp" />
     <ClCompile Include="OctreeDrawer.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
@@ -253,6 +254,7 @@
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Rigidbody.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SerializeUtils.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -312,6 +314,7 @@
     <ClInclude Include="Materials.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="MotionState.h" />
     <ClInclude Include="Octree.h" />
     <ClInclude Include="OctreeDrawer.h" />
     <ClInclude Include="ParticleEmitter.h" />
@@ -324,6 +327,7 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SerializeUtils.h" />
     <ClInclude Include="Skybox.h" />

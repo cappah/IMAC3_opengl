@@ -160,6 +160,13 @@ Scene & Scene::add(Physic::WindZone* windZone)
 	return *this;
 }
 
+Scene & Scene::add(Rigidbody* rigidbody)
+{
+	m_rigidbodies.push_back(rigidbody);
+	return *this;
+}
+
+
 Scene& Scene::erase(Entity* entity)
 {
 	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
@@ -310,6 +317,19 @@ Scene & Scene::erase(Physic::WindZone * windZone)
 	return *this;
 }
 
+Scene & Scene::erase(Rigidbody* rigidbody)
+{
+	auto findIt = std::find(m_rigidbodies.begin(), m_rigidbodies.end(), rigidbody);
+
+	if (findIt != m_rigidbodies.end())
+	{
+		delete rigidbody;
+		m_rigidbodies.erase(findIt);
+	}
+
+	return *this;
+}
+
 void Scene::render(const BaseCamera& camera)
 {
 	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters);
@@ -436,6 +456,11 @@ PathManager & Scene::getPathManager()
 Renderer& Scene::getRenderer()
 {
 	return *m_renderer;
+}
+
+Physic::PhysicManager& Scene::getPhysicManager()
+{
+	return m_physicManager;
 }
 
 std::string Scene::getName() const

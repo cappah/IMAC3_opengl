@@ -16,6 +16,9 @@
 
 #include "Component.h"
 
+#include "btBulletCollisionCommon.h"
+#include "btBulletDynamicsCommon.h"
+
 //forward
 class Ray;
 class Entity;
@@ -97,6 +100,8 @@ struct Collider : public Component
 	//return true if the collider is intersected by the ray. t is the distance from the origin of the ray, to the intersection.
 	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) = 0;
 
+	virtual btCollisionShape* makeShape() = 0;
+
 	virtual void drawUI(Scene& scene) override;
 
 	virtual void eraseFromScene(Scene& scene) override;
@@ -132,6 +137,7 @@ struct BoxCollider : public Collider
 	virtual void eraseFromEntity(Entity& entity) override;
 	virtual void coverMesh(Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
+	virtual btCollisionShape* makeShape() override;
 
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(Json::Value& rootComponent) override;

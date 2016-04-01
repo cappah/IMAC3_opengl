@@ -119,6 +119,10 @@
     <ClCompile Include="Billboard.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="Rigidbody.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MotionState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -247,6 +251,10 @@
     <ClInclude Include="Billboard.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="Rigidbody.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MotionState.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

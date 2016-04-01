@@ -10,6 +10,7 @@
 #include "PhysicManager.h"
 #include "PathManager.h"
 #include "Billboard.h"
+#include "Rigidbody.h"
 
 #include "LightManager.h"
 #include "Renderer.h"
@@ -57,7 +58,10 @@ private:
 	//windZones : 
 	std::vector<Physic::WindZone*> m_windZones;
 
-	//special componants : 
+	//rigidbodies : 
+	std::vector<Rigidbody*> m_rigidbodies;
+
+	//special components : 
 	//terrain : 
 	Terrain m_terrain;
 
@@ -99,6 +103,7 @@ public:
 	Scene& add(Billboard* billboard);
 	Scene& add(Camera* camera);
 	Scene& add(Physic::WindZone* windZone);
+	Scene& add(Rigidbody* rigidbody);
 
 	Scene& erase(Entity* entity);
 	Scene& erase(PointLight* pointLight);
@@ -112,6 +117,7 @@ public:
 	Scene& erase(Billboard* billboard);
 	Scene& erase(Camera* camera);
 	Scene& erase(Physic::WindZone* windZone);
+	Scene& erase(Rigidbody* rigidbody);
 
 	void render(const BaseCamera& camera);
 	void renderColliders(const BaseCamera& camera);
@@ -141,6 +147,7 @@ public:
 	Skybox& getSkybox();
 	PathManager& getPathManager();
 	Renderer& getRenderer();
+	Physic::PhysicManager& getPhysicManager();
 
 	std::string getName() const;
 

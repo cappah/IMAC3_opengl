@@ -167,6 +167,16 @@ void TransformNode::setParentTransform(const glm::vec3& parentTranslation, const
 	m_parentRotation = parentRotation;
 	m_parentTranslation = parentTranslation;
 	m_parentScale = parentScale;
+
+	m_localTranslation -= m_parentTranslation;
+}
+
+void TransformNode::setParentTransform(const glm::vec3 & parentTranslation, const glm::quat & parentRotation)
+{
+	m_parentRotation = parentRotation;
+	m_parentTranslation = parentTranslation;
+
+	m_localTranslation -= m_parentTranslation;
 }
 
 void TransformNode::setParentTransform(const TransformNode & parentTransform)

@@ -363,6 +363,11 @@ void BoxCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 _origin)
 	updateModelMatrix();
 }
 
+btCollisionShape * BoxCollider::makeShape()
+{
+	return new btBoxShape(btVector3(0.5f * scale.x, 0.5f * scale.y, 0.5f * scale.z));
+}
+
 void BoxCollider::save(Json::Value & rootComponent) const
 {
 	Collider::save(rootComponent);

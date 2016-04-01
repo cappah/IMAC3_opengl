@@ -104,6 +104,32 @@ void Entity::applyTransform(const glm::vec3 & parentTranslation, const glm::vec3
 	updateModelMatrix();
 }
 
+void Entity::applyTransform(const glm::vec3 & parentTranslation, const glm::quat & parentRotation)
+{
+	m_translation = parentRotation * m_localTranslation + parentTranslation;
+	m_rotation = m_localRotation * parentRotation;
+
+	//glm::mat4 updateMatrix = glm::translate(glm::mat4(1), parentTranslation);// *glm::mat4_cast(parentRotation);// *glm::scale(glm::mat4(1), parentScale);
+
+	////combine transforms to get world model matrix of the model
+	////and make the child launch applyTransform recursivly
+	setParentTransform(parentTranslation, parentRotation);
+	updateModelMatrix();
+}
+
+void Entity::applyTransformFromPhysicSimulation(const glm::vec3 & parentTranslation, const glm::quat & parentRotation)
+{
+	m_translation = parentRotation * m_localTranslation + parentTranslation;
+	m_rotation = m_localRotation * parentRotation;
+
+	//glm::mat4 updateMatrix = glm::translate(glm::mat4(1), parentTranslation);// *glm::mat4_cast(parentRotation);// *glm::scale(glm::mat4(1), parentScale);
+
+	////combine transforms to get world model matrix of the model
+	////and make the child launch applyTransform recursivly
+	setParentTransform(parentTranslation, parentRotation);
+	updateModelMatrix();
+}
+
 
 void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId)
 {
@@ -265,6 +291,11 @@ Entity& Entity::add(Collider * collider)
 	m_scene->add(collider);
 	m_components.push_back(collider);
 
+	//special stuuf for colliders : 
+	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
+	if (rigidbody != nullptr)
+		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
+
 	return *this;
 }
 
@@ -339,6 +370,20 @@ Entity & Entity::add(Physic::WindZone * windZone)
 	return *this;
 }
 
+Entity & Entity::add(Rigidbody* rigidbody)
+{
+	rigidbody->attachToEntity(this);
+
+	m_scene->add(rigidbody);
+	m_components.push_back(rigidbody);
+
+	//special stuff for rigidbody :
+	rigidbody->init(m_scene->getPhysicManager().getBulletDynamicSimulation()); //must be call after the rigidbody has been attached to an entity
+	rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
+
+	return *this;
+}
+
 
 Entity& Entity::erase(PointLight * pointLight)
 {
@@ -388,6 +433,11 @@ Entity& Entity::erase(Collider * collider)
 		m_components.erase(findIt);
 		m_scene->erase(collider);
 	}
+
+	//special stuff for colliders : 
+	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
+	if (rigidbody != nullptr)
+		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
 
 	return *this;
 }
@@ -483,7 +533,18 @@ Entity & Entity::erase(Camera * camera)
 	return *this;
 }
 
+Entity & Entity::erase(Rigidbody * rigidbody)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), rigidbody);
 
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(rigidbody);
+	}
+
+	return *this;
+}
 
 void Entity::endCreation()
 {
@@ -515,18 +576,6 @@ void Entity::eraseAllComponents()
 		//m_components[i] = nullptr;
 	}
 	m_components.clear();
-}
-
-Component* Entity::getComponent(Component::ComponentType type)
-{
-	auto findIt = std::find_if(m_components.begin(), m_components.end(), [type](Component* c) { return c->type() == type; });
-
-	if (findIt != m_components.end())
-	{
-		return *findIt;
-	}
-
-	return nullptr;
 }
 
 bool Entity::hasParent() const

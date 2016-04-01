@@ -15,6 +15,8 @@
 #include "Flag.h"
 #include "Lights.h"
 #include "WindZone.h"
+#include "Billboard.h"
+#include "Rigidbody.h"
 
 class ComponentFactory
 {

@@ -67,6 +67,7 @@ public:
 	void setLocalEulerRotation(glm::vec3 const& q);
 
 	void setParentTransform(const glm::vec3& parentTranslation = glm::vec3(0, 0, 0), const glm::vec3& parentScale = glm::vec3(1, 1, 1), const glm::quat& parentRotation = glm::quat());
+	void setParentTransform(const glm::vec3& parentTranslation, const glm::quat& parentRotation);
 	void setParentTransform(const TransformNode& parentTransform);
 
 	void updateModelMatrix();
@@ -77,6 +78,8 @@ public:
 	virtual void applyTransform() = 0;
 	//function to apply transform to all children.
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) = 0;
+	//function to apply transform to all children, but this one don't scale the object.
+	virtual void applyTransform(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) = 0;
 
 	void drawUI(bool local = false);
 
