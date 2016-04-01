@@ -48,6 +48,8 @@
 
 #include "Project.h"
 
+#include "btBulletDynamicsCommon.h"
+
 #ifndef DEBUG_PRINT
 #define DEBUG_PRINT 1
 #endif

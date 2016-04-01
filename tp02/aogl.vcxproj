@@ -93,7 +93,7 @@
     <ClCompile>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\include;lib\glfw\include;src;common;lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\include;lib\glfw\include;src;common;lib;lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -153,7 +153,7 @@
     <ClCompile>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\include;lib\glfw\include;src;common;lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\include;lib\glfw\include;src;common;lib;lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
@@ -217,6 +217,7 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="aogl.cpp">
       <ObjectFileName>$(IntDir)aogl.obj</ObjectFileName>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Billboard.cpp" />
@@ -270,6 +271,15 @@
     </ProjectReference>
     <ProjectReference Include="glew.vcxproj">
       <Project>{7463977C-609A-980D-0987-7E10F59C140F}</Project>
+    </ProjectReference>
+    <ProjectReference Include="lib\bullet3\build\src\BulletCollision\BulletCollision.vcxproj">
+      <Project>{99009089-69ec-3693-a73b-4edb900e2fd9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="lib\bullet3\build\src\BulletDynamics\BulletDynamics.vcxproj">
+      <Project>{1c0b9962-7cf8-3208-9708-13843127be24}</Project>
+    </ProjectReference>
+    <ProjectReference Include="lib\bullet3\build\src\LinearMath\LinearMath.vcxproj">
+      <Project>{4d3e2878-bc40-3640-9221-cb5b2e8d8d28}</Project>
     </ProjectReference>
     <ProjectReference Include="stb.vcxproj">
       <Project>{6EAB880B-DAB4-887C-6330-9F7CCF38947C}</Project>
