@@ -17,6 +17,14 @@ tp02 - Copie - 2/*
 # Temporaries
 */tmp/*
 
+# Models and Textures
+*/models/*
+*/textures/*
+
+# Saves
+*/save/*
+tp02/save/*
+
 
 #visual studio gitignore : 
 # User-specific files
