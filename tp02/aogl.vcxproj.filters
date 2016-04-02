@@ -123,6 +123,7 @@
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="MotionState.cpp" />
+    <ClCompile Include="DebugDrawer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ray.h" />
@@ -255,6 +256,7 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="MotionState.h" />
+    <ClInclude Include="DebugDrawer.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -404,6 +406,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="particleCPU.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="debugDrawer.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="debugDrawer.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

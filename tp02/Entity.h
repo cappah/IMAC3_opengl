@@ -100,7 +100,8 @@ public:
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 	//apply only rotation and translation (usefull for physic driven transform).
 	virtual void applyTransform(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) override;
-	void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat());
+	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) override;
+	void applyTransformFromPhysicSimulation();
 
 	//helper to draw UI : 
 	void displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId);

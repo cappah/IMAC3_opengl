@@ -64,12 +64,12 @@ public:
 	void removeCollider(Collider* collider);
 	//only remove all colliders from the rigidbody, don't destroy them.
 	void removeAllColliders();
-	//update the shape of the collider : 
 
 
 	virtual void drawUI(Scene& scene) override;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat());
+	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat());
 	void applyTransformFromPhysicSimulation();
 
 	virtual void eraseFromScene(Scene& scene) override;

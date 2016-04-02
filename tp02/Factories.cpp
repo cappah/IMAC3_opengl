@@ -215,6 +215,23 @@ ProgramFactory::ProgramFactory()
 	if (!checkError("Uniforms"))
 		exit(1);
 
+	//////////////////// DEBUG DRAWER shaders ////////////////////////
+	// Try to load and compile shaders
+	GLuint vertShaderId_debugDrawer = compile_shader_from_file(GL_VERTEX_SHADER, "debugDrawer.vert");
+	GLuint fragShaderId_debugDrawer  = compile_shader_from_file(GL_FRAGMENT_SHADER, "debugDrawer.frag");
+
+	GLuint programObject_debugDrawer = glCreateProgram();
+	glAttachShader(programObject_debugDrawer, vertShaderId_debugDrawer);
+	glAttachShader(programObject_debugDrawer, fragShaderId_debugDrawer);
+
+	glLinkProgram(programObject_debugDrawer);
+	if (check_link_error(programObject_debugDrawer) < 0)
+		exit(1);
+
+	//check uniform errors : 
+	if (!checkError("Uniforms"))
+		exit(1);
+
 	m_programs["defaultLit"] = programObject_gPass;
 	m_programs["defaultUnlit"] = programObject_wireframe;
 	m_programs["defaultSkybox"] = programObject_skybox;
@@ -227,6 +244,7 @@ ProgramFactory::ProgramFactory()
 	m_programs["defaultParticles"] = programObject_particle;
 	m_programs["defaultParticlesCPU"] = programObject_particleCPU;
 	m_programs["particleSimulation"] = programObject_particleSimulation;
+	m_programs["debugDrawer"] = programObject_debugDrawer;
 
 	m_defaults.push_back("defaultLit");
 	m_defaults.push_back("defaultUnlit");
@@ -240,6 +258,7 @@ ProgramFactory::ProgramFactory()
 	m_defaults.push_back("defaultParticles");
 	m_defaults.push_back("defaultParticlesCPU");
 	m_defaults.push_back("particleSimulation");
+	m_defaults.push_back("debugDrawer");
 }
 
 void ProgramFactory::add(const std::string& name, GLuint programId)
@@ -778,6 +797,10 @@ MaterialFactory::MaterialFactory()
 	newMat = new MaterialParticleSimulation(ProgramFactory::get().get("particleSimulation"));
 	newMat->name = "particleSimulation";
 	m_materials["particleSimulation"] = newMat;
+
+	newMat = new MaterialDebugDrawer(ProgramFactory::get().get("debugDrawer"));
+	newMat->name = "debugDrawer";
+	m_materials["debugDrawer"] = newMat;
 	
 	m_defaults.push_back("default");
 	m_defaults.push_back("wireframe");
@@ -787,6 +810,7 @@ MaterialFactory::MaterialFactory()
 	m_defaults.push_back("particles");
 	m_defaults.push_back("particlesCPU");
 	m_defaults.push_back("particleSimulation");
+	m_defaults.push_back("debugDrawer");
 }
 
 void MaterialFactory::add(const std::string& name, Material* material)

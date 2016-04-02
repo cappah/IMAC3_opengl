@@ -1,6 +1,8 @@
 #include "PhysicManager.h"
+//forwards :
 #include "Application.h"
 #include "Entity.h" // TODO remove 
+#include "DebugDrawer.h"
 
 namespace Physic {
 
@@ -16,7 +18,7 @@ namespace Physic {
 
 	void DebugDrawerPhysicWorld::drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color)
 	{
-		//TODO
+		DebugDrawer::drawLine(glm::vec3(from.x(), from.y(), from.z()), glm::vec3(to.x(), to.y(), to.z()), glm::vec3(color.x(), color.y(), color.z()));
 	}
 
 	void DebugDrawerPhysicWorld::drawContactPoint(const btVector3 &PointOnB, const btVector3 &normalOnB, btScalar distance, int lifeTime, const btVector3 &color)
@@ -127,6 +129,44 @@ namespace Physic {
 		for (int i = 0; i < particleEmitters.size(); i++)
 		{
 			particleEmitters[i]->update(deltaTime, camera.getCameraPosition());
+		}
+	}
+
+
+	void PhysicManager::update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters, bool updateRigidbodies)
+	{
+		if (updateRigidbodies) {
+			//update bullet internal physic :
+			m_physicWorld->stepSimulation(Application::get().getFixedDeltaTime(), 10);
+		}
+
+		//update flags :
+		for (int i = 0; i < flags.size(); i++)
+		{
+			for (int j = 0; j < windZones.size(); j++)
+			{
+				// TODO replace by flags[i]->getTransform().position...
+				flags[i]->applyForce(windZones[j]->getForce(Application::get().getTime(), flags[i]->entity()->getTranslation()));
+			}
+
+			flags[i]->applyGravity(m_gravity);
+			flags[i]->update(deltaTime);
+		}
+
+		//update terrain : 
+		terrain.updatePhysic(deltaTime, windZones);
+
+		//update particles : 
+		for (int i = 0; i < particleEmitters.size(); i++)
+		{
+			particleEmitters[i]->update(deltaTime, camera.getCameraPosition());
+		}
+	}
+
+	void PhysicManager::debugDraw(const glm::mat4 & projection, const glm::mat4 & view) const
+	{
+		if (m_debugDrawerPhysicWorld != nullptr) {
+			m_physicWorld->debugDrawWorld();
 		}
 	}
 

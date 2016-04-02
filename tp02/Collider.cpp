@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Entity.h"
 #include "Factories.h"
+#include "Rigidbody.h"
 
 Collider::Collider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial) : Component(COLLIDER), visualMesh(_visualMesh), visualMaterial(_visualMaterial), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1), origin(0,0,0)
 {
@@ -26,6 +27,14 @@ void Collider::applyTransform(const glm::vec3 & translation, const glm::vec3 & s
 	this->rotation = rotation;
 
 	applyTransform(translation, scale);
+}
+
+void Collider::applyTransformFromPhysicSimulation(const glm::vec3 & translation, const glm::quat & rotation)
+{
+	this->rotation = rotation;
+	this->translation = translation;
+
+	updateModelMatrix();
 }
 
 void Collider::applyTransform(const glm::vec3& _translation, const glm::vec3& _scale)
@@ -85,28 +94,28 @@ void Collider::appendRotation(const glm::quat & _rotation)
 void Collider::setOffsetPosition(glm::vec3 _offset)
 {
 	offsetPosition = _offset;
-
+	updateOffsetMatrix();
 	updateModelMatrix();
 }
 
 void Collider::setOffsetScale(glm::vec3 _offset)
 {
 	offsetScale = _offset;
-
+	updateOffsetMatrix();
 	updateModelMatrix();
 }
 
 void Collider::addOffsetPosition(glm::vec3 _offset)
 {
 	offsetPosition += _offset;
-
+	updateOffsetMatrix();
 	updateModelMatrix();
 }
 
 void Collider::addOffsetScale(glm::vec3 _offset)
 {
 	offsetScale += _offset;
-
+	updateOffsetMatrix();
 	updateModelMatrix();
 }
 
@@ -125,6 +134,26 @@ glm::vec3 Collider::getOrigin() const
 glm::mat4 Collider::getModelMatrix()
 {
 	return modelMatrix;
+}
+
+glm::mat4 Collider::getOffsetMatrix() const
+{
+	return offsetMatrix;
+}
+
+void Collider::updateModelMatrix()
+{
+	modelMatrix = glm::translate(glm::mat4(1), translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale) * offsetMatrix;
+}
+
+void Collider::updateOffsetMatrix()
+{
+	offsetMatrix = glm::translate(glm::mat4(1), offsetPosition) * glm::scale(glm::mat4(1), offsetScale);
+	// TODO : Speed up this process
+	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
+	if (rigidbody != nullptr) {
+		rigidbody->makeShape();
+	}
 }
 
 void Collider::eraseFromScene(Scene & scene)
@@ -194,7 +223,8 @@ BoxCollider::BoxCollider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial): Col
 
 void BoxCollider::updateModelMatrix()
 {
-	modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale * offsetScale) * glm::translate(glm::mat4(1), -origin);
+	Collider::updateModelMatrix();
+	//modelMatrix = glm::translate(glm::mat4(1), offsetPosition + translation) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scale * offsetScale) * glm::translate(glm::mat4(1), -origin);
 
 	topRight = glm::vec3( modelMatrix * glm::vec4(localTopRight, 1) );
 	bottomLeft = glm::vec3( modelMatrix * glm::vec4(localBottomLeft, 1) );
@@ -365,7 +395,7 @@ void BoxCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 _origin)
 
 btCollisionShape * BoxCollider::makeShape()
 {
-	return new btBoxShape(btVector3(0.5f * scale.x, 0.5f * scale.y, 0.5f * scale.z));
+	return new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 }
 
 void BoxCollider::save(Json::Value & rootComponent) const

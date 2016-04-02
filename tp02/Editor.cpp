@@ -231,7 +231,7 @@ void init_gui_states(GUIStates & guiStates)
 
 /////////////////////////////////// EDITOR
 
-Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f)
+Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f), m_isPlaying(false)
 {
 	m_savePath[0] = '\0';
 	m_loadPath[0] = '\0';
@@ -455,6 +455,11 @@ void Editor::displayMenuBar(Project& project)
 				scene.toggleDebugDeferredVisibility();
 			}
 
+			if (ImGui::RadioButton("debug physic visibility", scene.getIsDebugPhysicVisible()))
+			{
+				scene.toggleDebugPhysicVisibility();
+			}
+
 			if (ImGui::RadioButton("gizmo visibility", m_isGizmoVisible))
 			{
 				toggleGizmoVisibility();
@@ -656,12 +661,44 @@ void Editor::displayMenuBar(Project& project)
 			ImGui::EndMenu();
 		}
 
+		if (!m_isPlaying){
+			if (ImGui::Button("play"))
+				launchGameInEditMode(project);
+		}
+		else{
+			if (ImGui::Button("stop"))
+				stopGameInEditMode(project);
+		}
+
 		ImGui::Text("                                 Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 		ImGui::EndMainMenuBar();
 	}
 
 }
+
+void Editor::launchGameInEditMode(Project& project)
+{
+	changeCurrentSelected(nullptr);
+	//toggleDebugVisibility(*project.getActiveScene());
+
+	//save the current scene : 
+	project.saveActiveScene();
+	//setPlaying mode to true : 
+	m_isPlaying = true;
+}
+
+void  Editor::stopGameInEditMode(Project& project)
+{
+	changeCurrentSelected(nullptr);
+	//toggleDebugVisibility(*project.getActiveScene());
+
+	//setPlaying mode to false : 
+	m_isPlaying = false;
+	//reload the current scene : 
+	project.reloadActiveScene();
+}
+
 
 void Editor::displayModals(Project& project)
 {
@@ -1264,6 +1301,7 @@ void Editor::toggleDebugVisibility(Scene& scene)
 	scene.setAreCollidersVisible(m_isUIVisible);
 	scene.setIsDebugDeferredVisible(m_isUIVisible);
 	scene.setAreLightsBoundingBoxVisible(m_isUIVisible);
+	scene.setIsDebugPhysicVisible(m_isUIVisible);
 	m_isGizmoVisible = m_isUIVisible;
 
 }
@@ -1434,6 +1472,11 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 		//if (m_guiStates.backwardPressed)
 		//	camera_translate(*m_camera, 0, 0, -cameraSpeed);
 	}
+}
+
+bool Editor::getIsPlaying() const
+{
+	return m_isPlaying;
 }
 
 

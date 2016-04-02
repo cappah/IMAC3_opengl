@@ -117,17 +117,57 @@ void Entity::applyTransform(const glm::vec3 & parentTranslation, const glm::quat
 	updateModelMatrix();
 }
 
-void Entity::applyTransformFromPhysicSimulation(const glm::vec3 & parentTranslation, const glm::quat & parentRotation)
+void Entity::applyTransformFromPhysicSimulation(const glm::vec3 & translation, const glm::quat & rotation)
 {
-	m_translation = parentRotation * m_localTranslation + parentTranslation;
-	m_rotation = m_localRotation * parentRotation;
+	//setTranslation : 
+	m_translation = translation;
+	m_localTranslation = translation;
 
-	//glm::mat4 updateMatrix = glm::translate(glm::mat4(1), parentTranslation);// *glm::mat4_cast(parentRotation);// *glm::scale(glm::mat4(1), parentScale);
+	//setRotation : 
+	m_rotation = rotation;
+	m_localRotation = rotation;
 
-	////combine transforms to get world model matrix of the model
-	////and make the child launch applyTransform recursivly
-	setParentTransform(parentTranslation, parentRotation);
-	updateModelMatrix();
+	//updateModelMatrix : 
+	m_translation = m_parentRotation * m_localTranslation + m_parentTranslation;
+	m_scale = m_localScale * m_parentScale;
+	m_rotation = m_localRotation * m_parentRotation;
+	m_modelMatrix = glm::translate(glm::mat4(1), m_translation) * glm::mat4_cast(m_rotation) * glm::scale(glm::mat4(1), m_scale);
+
+	//onChangeModelMatrix : 
+	applyTransformFromPhysicSimulation();
+
+
+	//m_translation = parentRotation * m_localTranslation + parentTranslation;
+	//m_rotation = m_localRotation * parentRotation;
+
+	////glm::mat4 updateMatrix = glm::translate(glm::mat4(1), parentTranslation);// *glm::mat4_cast(parentRotation);// *glm::scale(glm::mat4(1), parentScale);
+
+	//////combine transforms to get world model matrix of the model
+	//////and make the child launch applyTransform recursivly
+	//setParentTransform(parentTranslation, parentRotation);
+	////updateModelMatrix();
+	//m_translation = m_parentRotation * m_localTranslation + m_parentTranslation;
+	//m_scale = m_localScale * m_parentScale;
+	//m_rotation = m_localRotation * m_parentRotation;
+
+	//m_modelMatrix = glm::translate(glm::mat4(1), m_translation) * glm::mat4_cast(m_rotation) * glm::scale(glm::mat4(1), m_scale);
+
+
+	//set transformations to components and childs :
+	applyTransformFromPhysicSimulation();
+}
+
+void Entity::applyTransformFromPhysicSimulation()
+{
+	for (auto& c : m_components)
+	{
+		c->applyTransformFromPhysicSimulation(m_translation, m_rotation);
+	}
+	for (auto& e : m_childs)
+	{
+		e->applyTransformFromPhysicSimulation(m_translation, m_rotation);
+		//e->applyTransform(); //recursivity on all childs
+	}
 }
 
 
@@ -378,8 +418,8 @@ Entity & Entity::add(Rigidbody* rigidbody)
 	m_components.push_back(rigidbody);
 
 	//special stuff for rigidbody :
-	rigidbody->init(m_scene->getPhysicManager().getBulletDynamicSimulation()); //must be call after the rigidbody has been attached to an entity
 	rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
+	rigidbody->init(m_scene->getPhysicManager().getBulletDynamicSimulation()); //must be call after the rigidbody has been attached to an entity
 
 	return *this;
 }
@@ -677,6 +717,7 @@ void Entity::save(Json::Value& entityRoot) const
 void Entity::load(Json::Value& entityRoot)
 {
 	TransformNode::load(entityRoot);
+	applyTransform();
 
 	//Scene* m_scene; scene is already set by constructor 
 	m_name = entityRoot.get("name", "defaultEntity").asString();
@@ -696,6 +737,8 @@ void Entity::load(Json::Value& entityRoot)
 
 		newComponent->addToEntity(*this);
 	}
+
+	applyTransform();
 
 	//int childCount = entityRoot.get("childCount", 0).asInt();
 	//for (int i = 0; i < childCount; i++)

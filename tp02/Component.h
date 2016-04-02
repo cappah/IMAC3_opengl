@@ -44,10 +44,12 @@ public:
 
 	virtual void drawUI(Scene& scene) = 0;
 
-	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1,1,1), const glm::quat& rotation = glm::quat());
+	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat());
+	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat());
 
 	// function to get component.
-	Component* getComponent(Component::ComponentType type);
+	template<typename T>
+	T* getComponent(Component::ComponentType type);
 	// function to get components of a certain type.
 	template<typename T>
 	std::vector<T*> getComponents(Component::ComponentType type);
@@ -71,6 +73,15 @@ public:
 	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(Json::Value& componentRoot) override;
 };
+
+template<typename T>
+T* Component::getComponent(Component::ComponentType type)
+{
+	if (m_entity != nullptr)
+		return m_entity->getComponent<T>(type);
+	else
+		return nullptr;
+}
 
 template<typename T>
 std::vector<T*> Component::getComponents(Component::ComponentType type)

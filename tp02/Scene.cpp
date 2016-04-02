@@ -3,7 +3,7 @@
 #include "OctreeDrawer.h"
 
 
-Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true)
+Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true), m_isDebugPhysicVisible(true)
 {
 }
 
@@ -367,10 +367,20 @@ void Scene::renderDebugOctrees(const BaseCamera & camera)
 	}
 }
 
+void Scene::renderDebugPhysic(const BaseCamera & camera)
+{
+	if (m_isDebugPhysicVisible)
+		m_physicManager.debugDraw(camera.getProjectionMatrix(), camera.getViewMatrix());
+}
+
 void Scene::updatePhysic(float deltaTime, const BaseCamera& camera)
 {
-	
 	m_physicManager.update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters);
+}
+
+void Scene::updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode)
+{
+	m_physicManager.update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters, updateInEditMode);
 }
 
 void Scene::toggleColliderVisibility()
@@ -393,6 +403,11 @@ void Scene::toggleOctreesVisibility()
 	m_areOctreesVisible = !m_areOctreesVisible;
 }
 
+void Scene::toggleDebugPhysicVisibility()
+{
+	m_isDebugPhysicVisible = !m_isDebugPhysicVisible;
+}
+
 bool Scene::getAreCollidersVisible() const
 {
 	return m_areCollidersVisible;
@@ -413,6 +428,11 @@ bool Scene::getAreOctreesVisible() const
 	return m_areOctreesVisible;
 }
 
+bool Scene::getIsDebugPhysicVisible() const
+{
+	return m_isDebugPhysicVisible;
+}
+
 void Scene::setAreCollidersVisible(bool value)
 {
 	m_areCollidersVisible = value;
@@ -431,6 +451,11 @@ void Scene::setAreLightsBoundingBoxVisible(bool value)
 void Scene::setAreOctreesVisible(bool value)
 {
 	m_areOctreesVisible = value;
+}
+
+void Scene::setIsDebugPhysicVisible(bool value)
+{
+	m_isDebugPhysicVisible = value;
 }
 
 void Scene::culling(const BaseCamera & camera)

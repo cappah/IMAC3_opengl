@@ -184,6 +184,18 @@ void MaterialLit::drawUI()
 	}
 }
 
+void MaterialLit::initGL()
+{
+	if(textureDiffuse != nullptr)
+		textureDiffuse->initGL();
+
+	if(textureSpecular != nullptr)
+		textureSpecular->initGL();
+
+	if(textureBump != nullptr)
+		textureBump->initGL();
+}
+
 void MaterialLit::save(Json::Value & objectRoot) const
 {
 	objectRoot["textureDiffuseName"] = textureDiffuse->name;
@@ -244,6 +256,11 @@ void MaterialUnlit::drawUI()
 	//nothing
 }
 
+void MaterialUnlit::initGL()
+{
+	//nothing
+}
+
 
 //////////////////////////////////////////////////
 
@@ -273,6 +290,38 @@ void MaterialInstancedUnlit::drawUI()
 {
 	//nothing
 }
+
+void MaterialInstancedUnlit::initGL()
+{
+	//nothing
+}
+
+///////////////////////////////////////////////
+
+MaterialDebugDrawer::MaterialDebugDrawer(GLuint _glProgram) : Material(_glProgram)
+{
+	uniform_MVP = glGetUniformLocation(glProgram, "MVP");
+}
+
+void MaterialDebugDrawer::setUniform_MVP(const glm::mat4 & MVP)
+{
+	glUniformMatrix4fv(uniform_MVP, 1, false, glm::value_ptr(MVP));
+}
+
+void MaterialDebugDrawer::use()
+{
+	//bind shaders
+	glUseProgram(glProgram);
+}
+
+void MaterialDebugDrawer::drawUI()
+{
+}
+
+void MaterialDebugDrawer::initGL()
+{
+}
+
 
 ///////////////////////////////////////////////
 
@@ -335,6 +384,12 @@ void MaterialSkybox::drawUI()
 	}
 }
 
+void MaterialSkybox::initGL()
+{
+	if (textureDiffuse != nullptr)
+		textureDiffuse->initGL();
+}
+
 void MaterialSkybox::setDiffuseTexture(CubeTexture* texture)
 {
 	diffuseTextureName = texture->name;
@@ -365,6 +420,11 @@ void MaterialShadow::use()
 }
 
 void MaterialShadow::drawUI()
+{
+	//nothing
+}
+
+void MaterialShadow::initGL()
 {
 	//nothing
 }
@@ -442,6 +502,18 @@ void MaterialTerrain::drawUI()
 	ImGui::InputFloat("specular power", &specularPower);
 
 	ImGui::InputFloat2("texture repetition", &textureRepetition[0]);
+}
+
+void MaterialTerrain::initGL()
+{
+	if(textureDiffuse != nullptr)
+		textureDiffuse->initGL();
+
+	if(textureSpecular != nullptr)
+		textureSpecular->initGL();
+
+	if(textureBump != nullptr)
+		textureBump->initGL();
 }
 
 void MaterialTerrain::setUniformLayoutOffset(const glm::vec2& layoutOffset)
@@ -615,6 +687,18 @@ void MaterialTerrainEdition::drawUI()
 	*/
 }
 
+void MaterialTerrainEdition::initGL()
+{
+	if (textureDiffuse != nullptr)
+		textureDiffuse->initGL();
+
+	if (textureSpecular != nullptr)
+		textureSpecular->initGL();
+
+	if (textureBump != nullptr)
+		textureBump->initGL();
+}
+
 MaterialDrawOnTexture::MaterialDrawOnTexture(GLuint _glProgram) : Material(_glProgram)
 {
 	uniform_colorToDraw = glGetUniformLocation(_glProgram, "DrawColor");
@@ -651,6 +735,11 @@ void MaterialDrawOnTexture::use()
 void MaterialDrawOnTexture::drawUI()
 {
 	//not displayed in UI
+}
+
+void MaterialDrawOnTexture::initGL()
+{
+	//nothing
 }
 
 ////////////////////////// GRASS FIELD //////////////////
@@ -697,6 +786,11 @@ void MaterialGrassField::drawUI()
 	//nothing
 }
 
+void MaterialGrassField::initGL()
+{
+	//nothing
+}
+
 //////////////////////////////// BILLBOARD //////////////////////
 
 MaterialBillboard::MaterialBillboard()
@@ -721,6 +815,11 @@ void MaterialBillboard::use()
 }
 
 void MaterialBillboard::drawUI()
+{
+	//nothing
+}
+
+void MaterialBillboard::initGL()
 {
 	//nothing
 }
@@ -790,6 +889,11 @@ void MaterialParticlesCPU::drawUI()
 	//nothing
 }
 
+void MaterialParticlesCPU::initGL()
+{
+	//nothing
+}
+
 void MaterialParticlesCPU::glUniform_VP(const glm::mat4& VP)
 {
 	glUniformMatrix4fv(m_uniformVP, 1, false, glm::value_ptr(VP));
@@ -839,6 +943,11 @@ void MaterialParticles::drawUI()
 	//nothing
 }
 
+void MaterialParticles::initGL()
+{
+	//nothing
+}
+
 void MaterialParticles::glUniform_VP(const glm::mat4& VP)
 {
 	glUniformMatrix4fv(m_uniformVP, 1, false, glm::value_ptr(VP));
@@ -882,6 +991,11 @@ void MaterialParticleSimulation::use()
 }
 
 void MaterialParticleSimulation::drawUI()
+{
+	//nothing
+}
+
+void MaterialParticleSimulation::initGL()
 {
 	//nothing
 }

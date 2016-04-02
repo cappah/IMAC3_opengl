@@ -53,6 +53,7 @@ namespace Physic {
 		btDiscreteDynamicsWorld* getBulletDynamicSimulation() const;
 
 		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters);
+		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters, bool updateRigidbodies);
 	
 		void debugDraw(const glm::mat4& projection, const glm::mat4& view) const;
 	};

@@ -239,6 +239,7 @@ void MeshRenderer::load(Json::Value & rootComponent)
 	{
 		materialName = rootComponent["materialName"][i].asString();
 		material.push_back(MaterialFactory::get().get<Material3DObject>(materialName));
+		material.back()->initGL();
 	}
 	materialName = '\0'; //rootComponent.get("materialName", "").asString();
 

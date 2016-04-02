@@ -227,6 +227,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentFactory.cpp" />
     <ClCompile Include="CSpline.cpp" />
+    <ClCompile Include="DebugDrawer.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Factories.cpp" />
@@ -297,6 +298,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentFactory.h" />
     <ClInclude Include="CSpline.h" />
+    <ClInclude Include="DebugDrawer.h" />
     <ClInclude Include="dirent.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="Entity.h" />
@@ -350,6 +352,8 @@
     <None Include="billboard.vert" />
     <None Include="blit.frag" />
     <None Include="blit.vert" />
+    <None Include="debugDrawer.frag" />
+    <None Include="debugDrawer.vert" />
     <None Include="drawOnTexture.frag" />
     <None Include="drawOnTexture.vert" />
     <None Include="grassField.frag" />

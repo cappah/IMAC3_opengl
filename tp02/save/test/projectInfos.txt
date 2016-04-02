@@ -1,15 +1,12 @@
 {
 	"activeSceneName" : "scene01",
-	"sceneCount" : 2,
+	"sceneCount" : 1,
 	"sceneInfos" : 
 	[
 		{
 			"name" : "scene01",
-			"path" : "save/test/scenes/scene01.txt"
-		},
-		{
-			"name" : "scene02",
-			"path" : "save/test/scenes/scene02.txt"
+			"path" : "save/test/scenes/scene01.txt",
+			"status" : 1
 		}
 	]
 }

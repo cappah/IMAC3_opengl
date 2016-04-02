@@ -80,6 +80,7 @@ public:
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) = 0;
 	//function to apply transform to all children, but this one don't scale the object.
 	virtual void applyTransform(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) = 0;
+	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) = 0;
 
 	void drawUI(bool local = false);
 

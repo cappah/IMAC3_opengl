@@ -126,6 +126,9 @@ private:
 	bool m_saveWindowOpen;
 	bool m_loadWindowOpen;
 
+	//is the game playing in edit mode ? 
+	bool m_isPlaying;
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 
@@ -143,6 +146,8 @@ public:
 	void displayBottomWindow(Project& project);
 	void displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
 	void displayBottomLeftWindow(Project& project);
+	void launchGameInEditMode(Project& project);
+	void stopGameInEditMode(Project& project);
 	void displayModals(Project& project);
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();
@@ -170,6 +175,8 @@ public:
 	void updateGuiStates(GLFWwindow* window);
 	void updateCameraMovement_editor(GLFWwindow* window);
 	void updateCameraMovement_fps(GLFWwindow* window);
+
+	bool getIsPlaying() const;
 
 	//for multiple editing : 
 	void clearSelectedComponents();

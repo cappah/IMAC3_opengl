@@ -32,6 +32,7 @@ struct Collider : public Component
 	glm::vec3 offsetPosition;
 	//the offsetScale is an offset added to the scale of the collider
 	glm::vec3 offsetScale;
+	glm::mat4 offsetMatrix;
 	//the origin is between 0 and 1, it represent the pivot point of this collider
 	glm::vec3 origin;
 	glm::vec3 translation;
@@ -47,6 +48,7 @@ struct Collider : public Component
 
 	//apply transform operation to this collider
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale, const glm::quat& rotation) override;
+	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation) override;
 
 	//apply transform operation to this collider
 	void applyTransform(const glm::vec3& _translation, const glm::vec3& _scale);
@@ -87,9 +89,15 @@ struct Collider : public Component
 	//get the collider modelMatrix
 	glm::mat4 getModelMatrix();
 
+	//get the matrix created from the offset position and offset scale
+	glm::mat4 getOffsetMatrix() const;
+
 	//update the collider modelMatrix, it is otomatically called by functions that applied transformation on this collider. 
 	//You have to override this function to set the proper behaviour of this collider when a transformation is applied to it.
-	virtual void updateModelMatrix() = 0;
+	virtual void updateModelMatrix();
+
+	//update the matrix created from offset scale and offset translation.
+	virtual void updateOffsetMatrix();
 
 	//render this collider, if it has a visual representation. With the given color.
 	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1, 0, 0)) = 0;

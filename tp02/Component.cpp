@@ -46,12 +46,9 @@ void Component::applyTransform(const glm::vec3& translation, const glm::vec3& sc
 	//to override
 }
 
-Component * Component::getComponent(Component::ComponentType type)
+void Component::applyTransformFromPhysicSimulation(const glm::vec3 & translation, const glm::quat & rotation)
 {
-	if (m_entity != nullptr)
-		return m_entity->getComponent(type);
-	else
-		return nullptr;
+	//to override
 }
 
 void Component::save(Json::Value & componentRoot) const

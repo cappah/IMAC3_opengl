@@ -27,6 +27,7 @@ struct Material
 	virtual ~Material();
 	virtual void use() = 0;
 	virtual void drawUI() = 0;
+	virtual void initGL() = 0;
 };
 
 struct Material3DObject : public Material
@@ -85,6 +86,8 @@ public:
 
 	virtual void drawUI() override;
 
+	virtual void initGL() override;
+
 	// Hérité via ISerializable
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -108,6 +111,8 @@ struct MaterialUnlit : public Material3DObject
 	virtual void use() override;
 
 	virtual void drawUI() override;
+
+	virtual void initGL() override;
 };
 
 
@@ -124,7 +129,23 @@ struct MaterialInstancedUnlit : public Material
 	virtual void use() override;
 
 	virtual void drawUI() override;
+
+	virtual void initGL() override;
 };
+
+struct MaterialDebugDrawer : public Material
+{
+	GLuint uniform_MVP;
+
+	MaterialDebugDrawer(GLuint _glProgram);
+
+	void setUniform_MVP(const glm::mat4& MVP);
+
+	virtual void use() override;
+	virtual void drawUI() override;
+	virtual void initGL() override;
+};
+
 
 class MaterialSkybox : public Material
 {
@@ -143,8 +164,8 @@ public:
 	void setUniform_VP(const glm::mat4& vp);
 
 	virtual void use() override;
-
 	virtual void drawUI() override;
+	virtual void initGL() override;
 
 	void setDiffuseTexture(CubeTexture* texture);
 	CubeTexture* getDiffuseTexture() const;
@@ -158,6 +179,7 @@ public:
 
 	virtual void use() override;
 	virtual void drawUI() override;
+	virtual void initGL() override;
 };
 
 class MaterialBillboard : public Material
@@ -177,6 +199,7 @@ public:
 
 	virtual void use() override;
 	virtual void drawUI() override;
+	virtual void initGL() override;
 
 	void setUniformMVP(const glm::mat4& mvp);
 	void setUniformScale(const glm::vec2& scale);
@@ -218,8 +241,8 @@ struct MaterialTerrain : public Material3DObject
 	MaterialTerrain(GLuint _glProgram);
 
 	virtual void use() override;
-
 	virtual void drawUI() override;
+	virtual void initGL() override;
 
 	void setUniformLayoutOffset(const glm::vec2& layoutOffset);
 	void setUniformFilterTexture(int textureId);
@@ -268,8 +291,8 @@ public:
 	void setUniformTextureRepetition(const glm::vec2& textureRepetition);
 
 	virtual void use() override;
-
 	virtual void drawUI() override;
+	virtual void initGL() override;
 };
 
 class MaterialDrawOnTexture : public Material
@@ -290,6 +313,7 @@ public :
 
 	virtual void use() override;
 	virtual void drawUI() override;
+	virtual void initGL() override;
 };
 
 class MaterialGrassField : public Material
@@ -309,6 +333,7 @@ public:
 
 	virtual void use() override;
 	virtual void drawUI() override;
+	virtual void initGL() override;
 };
 
 class MaterialParticlesCPU : public Material
@@ -330,6 +355,7 @@ public:
 
 	virtual void use() override;
 	virtual void drawUI() override;
+	virtual void initGL() override;
 };
 
 
@@ -339,7 +365,7 @@ private:
 	GLuint m_uniformVP;
 	GLuint m_uniformTexture;
 	GLuint m_uniformCameraRight;
-	GLuint m_uniformCameraUp;	
+	GLuint m_uniformCameraUp;
 
 public :
 	MaterialParticles();
@@ -352,6 +378,7 @@ public :
 
 	virtual void use() override;
 	virtual void drawUI() override;
+	virtual void initGL() override;
 };
 
 class MaterialParticleSimulation : public Material
@@ -367,6 +394,7 @@ public:
 
 	virtual void use() override;
 	virtual void drawUI() override;
+	virtual void initGL() override;
 };
 
 
