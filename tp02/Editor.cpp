@@ -679,6 +679,11 @@ void Editor::displayMenuBar(Project& project)
 
 void Editor::launchGameInEditMode(Project& project)
 {
+	if (project.getActiveSceneStatus() == Project::SceneStatus::TEMPORARY) {
+		std::cout << "can't play the scene in a temporary scene, please save your scene." << std::endl;
+		return;
+	}
+
 	changeCurrentSelected(nullptr);
 	//toggleDebugVisibility(*project.getActiveScene());
 

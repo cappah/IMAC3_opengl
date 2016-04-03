@@ -470,7 +470,9 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 			m_material(ProgramFactory::get().get("defaultTerrain")), m_terrainMaterial(ProgramFactory::get().get("defaultTerrainEdition")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
 			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024), //textures
-			m_terrainBump(1024, 1024), m_terrainSpecular(1024, 1024), m_drawMatTexture(1024, 1024)
+			m_terrainBump(1024, 1024), m_terrainSpecular(1024, 1024), m_drawMatTexture(1024, 1024),
+			m_terrainCollider(nullptr), m_terrainRigidbody(nullptr), m_ptrToPhysicWorld(nullptr), m_triangleIndexVertexArray(nullptr), //physic
+			m_aabbMin(-1000, -1000, -1000), m_aabbMax(1000, 1000, 1000) //aabb
 {
 	//filter texture initialisation : 
 	m_filterTexture = new Texture(1024, 1024);
@@ -601,35 +603,12 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 		exit(EXIT_FAILURE);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
 
 Terrain::~Terrain()
 {
-	m_material.textureDiffuse = nullptr; // detach texture as the texture is inside the terrain and will be destroyed
-
-	if (vbo_index != 0)
-		glDeleteBuffers(1, &vbo_index);
-
-	if (vbo_vertices != 0)
-		glDeleteBuffers(1, &vbo_vertices);
-
-	if (vbo_uvs != 0)
-		glDeleteBuffers(1, &vbo_uvs);
-
-	if (vbo_normals != 0)
-		glDeleteBuffers(1, &vbo_normals);
-
-	glDeleteVertexArrays(1, &vao);
-
-	glDeleteFramebuffers(1, &m_terrainFbo);
-
-	m_terrainDiffuse.freeGL();
-	m_terrainBump.freeGL();
-	m_terrainSpecular.freeGL();
-	m_noiseTexture.freeGL();
-	m_filterTexture->freeGL();
+	clear();
 }
 
 void Terrain::drawMaterialOnTerrain(glm::vec3 position, float radius, int textureIdx)
@@ -848,6 +827,10 @@ void Terrain::computeNormals()
 
 void Terrain::applyNoise(Perlin2D& perlin2D, bool _computeNoiseTexture)
 {
+	//init aabb :
+	m_aabbMin = m_vertices.size() > 0 ? glm::vec3(m_vertices[0], m_vertices[1], m_vertices[2]) : glm::vec3(0, 0, 0);
+	m_aabbMax = m_vertices.size() > 0 ? glm::vec3(m_vertices[0], m_vertices[1], m_vertices[2]) : glm::vec3(0, 0, 0);
+
 	m_noiseMin = 1.f;
 	m_noiseMax = 0.f;
 
@@ -868,6 +851,14 @@ void Terrain::applyNoise(Perlin2D& perlin2D, bool _computeNoiseTexture)
 			m_heightMap[l] = noiseValue * 2.f - 1.f;
 
 			m_vertices[k] = m_heightMap[l] * m_height + m_offset.y;
+
+			//update aabb :
+			if (m_vertices[k - 1] < m_aabbMin.x) m_aabbMin.x = m_vertices[k - 1];
+			else if(m_vertices[k - 1] > m_aabbMax.x) m_aabbMax.x = m_vertices[k - 1];
+			if (m_vertices[k] < m_aabbMin.y) m_aabbMin.y = m_vertices[k];
+			else if (m_vertices[k] > m_aabbMax.y) m_aabbMax.y = m_vertices[k];
+			if (m_vertices[k + 1] < m_aabbMin.z) m_aabbMin.z = m_vertices[k + 1];
+			else if (m_vertices[k + 1] > m_aabbMax.z) m_aabbMax.z = m_vertices[k + 1];
 		}
 	}
 
@@ -883,6 +874,10 @@ void Terrain::applyNoise(Perlin2D& perlin2D, bool _computeNoiseTexture)
 		computeNoiseTexture(perlin2D);
 		generateTerrainTexture();
 	}
+
+	//init physics : 
+	updateCollider();
+	
 }
 
 void Terrain::generateTerrain()
@@ -951,11 +946,65 @@ void Terrain::generateTerrain()
 		}
 	}
 
+	//update flat aabb :
+	m_aabbMin = m_offset - glm::vec3(0,-0.1,0);
+	m_aabbMax = m_offset + glm::vec3((m_subdivision - 1)*paddingX, 0.1, (m_subdivision - 1)*paddingZ);
+
+	//init graphics :
 	initGl();
+	//init physics : 
+	updateCollider();
+}
+
+void Terrain::generateCollider()
+{
+	if (m_terrainCollider != nullptr)
+		delete m_terrainCollider;
+
+	if (m_triangleIndexVertexArray != nullptr)
+		delete m_triangleIndexVertexArray;
+
+	//generate the new triangleIndexVertexArray :
+	m_triangleIndexVertexArray = new btTriangleIndexVertexArray(m_triangleIndex.size() / 3, &m_triangleIndex[0], 3 * sizeof(int), m_vertices.size() / 3.f, (btScalar*)&m_vertices[0], 3 * sizeof(float));
+	//generate the new terrainCollider :
+	float aabbOffset = 5;
+	m_terrainCollider = new btBvhTriangleMeshShape(m_triangleIndexVertexArray, true, btVector3(m_aabbMin.x - aabbOffset, m_aabbMin.y - aabbOffset, m_aabbMin.z - aabbOffset),
+																								btVector3(m_aabbMax.x + aabbOffset, m_aabbMax.y + aabbOffset, m_aabbMax.z + aabbOffset));
+}
+
+void Terrain::updateCollider()
+{
+	if (m_ptrToPhysicWorld == nullptr || m_terrainRigidbody == nullptr) 
+		return;
+
+	//pop from simulation :
+	if (m_terrainRigidbody->isInWorld())
+	{
+		m_ptrToPhysicWorld->removeRigidBody(m_terrainRigidbody);
+	}
+
+	m_terrainRigidbody->setCollisionShape(nullptr);
+	
+	//make a new collider for this terrain, removing the older one :
+	generateCollider();
+
+	m_terrainRigidbody->setCollisionShape(m_terrainCollider);
+
+	//push to simulation :
+	m_ptrToPhysicWorld->addRigidBody(m_terrainRigidbody);
+}
+
+btBvhTriangleMeshShape * Terrain::getColliderShape() const
+{
+	return m_terrainCollider;
 }
 
 void Terrain::updateTerrain()
 {
+	//init aabb :
+	m_aabbMin = m_vertices.size() > 0 ? glm::vec3(m_vertices[0], m_vertices[1], m_vertices[2]) : glm::vec3(0, 0, 0);
+	m_aabbMax = m_vertices.size() > 0 ? glm::vec3(m_vertices[0], m_vertices[1], m_vertices[2]) : glm::vec3(0, 0, 0);
+
 	float paddingZ = m_depth / (float)m_subdivision;
 	float paddingX = m_width / (float)m_subdivision;
 
@@ -966,6 +1015,14 @@ void Terrain::updateTerrain()
 			m_vertices[k] = i*paddingX + m_offset.x;
 			m_vertices[k+1] = m_heightMap[l] * m_height + m_offset.y;
 			m_vertices[k+2] = j*paddingZ + m_offset.z;
+
+			//update aabb :
+			if (m_vertices[k] < m_aabbMin.x) m_aabbMin.x = m_vertices[k];
+			else if (m_vertices[k] > m_aabbMax.x) m_aabbMax.x = m_vertices[k];
+			if (m_vertices[k + 1] < m_aabbMin.y) m_aabbMin.y = m_vertices[k + 1];
+			else if (m_vertices[k + 1] > m_aabbMax.y) m_aabbMax.y = m_vertices[k + 1];
+			if (m_vertices[k + 2] < m_aabbMin.z) m_aabbMin.z = m_vertices[k + 2];
+			else if (m_vertices[k + 2] > m_aabbMax.z) m_aabbMax.z = m_vertices[k + 2];
 		}
 	}
 
@@ -980,6 +1037,9 @@ void Terrain::updateTerrain()
 	m_grassLayoutDepth = m_depth / (float)m_grassLayoutDelta;
 	resize2DArray<int>(m_grassLayout, grassLayoutOldWidth, grassLayoutOldDepth, m_grassLayoutWidth, m_grassLayoutDepth);
 	//TODO resize grass field
+
+	//init physics : 
+	updateCollider();
 }
 
 //initialize vbos and vao, based on the informations of the mesh.
@@ -1036,10 +1096,21 @@ void Terrain::freeGl()
 	glDeleteBuffers(1, &vbo_uvs);
 	glDeleteBuffers(1, &vbo_normals);
 	glDeleteBuffers(1, &vbo_tangents);
+
+	m_material.textureDiffuse = nullptr; // detach texture as the texture is inside the terrain and will be destroyed
+
+	glDeleteFramebuffers(1, &m_terrainFbo);
+
+	m_terrainDiffuse.freeGL();
+	m_terrainBump.freeGL();
+	m_terrainSpecular.freeGL();
+	m_noiseTexture.freeGL();
+	m_filterTexture->freeGL();
 }
 
 void Terrain::clear()
 {
+	//graphics :
 	freeGl();
 
 	m_triangleIndex.clear();
@@ -1053,7 +1124,41 @@ void Terrain::clear()
 	m_textureRepetitions.clear();
 	m_grassLayout.clear();
 	
+	//grassfield :
 	m_grassField.clear();
+
+	//physic :
+	if (m_ptrToPhysicWorld != nullptr && m_terrainRigidbody != nullptr) {
+		m_ptrToPhysicWorld->removeRigidBody(m_terrainRigidbody);
+	}
+	if (m_terrainRigidbody != nullptr) {
+		m_terrainRigidbody->setCollisionShape(nullptr);
+	}
+	if (m_terrainCollider != nullptr) {
+		delete m_terrainCollider;
+		m_terrainCollider = nullptr;
+	}
+	if (m_terrainRigidbody != nullptr) {
+		delete m_terrainRigidbody;
+		m_terrainRigidbody = nullptr;
+	}
+	m_ptrToPhysicWorld = nullptr;
+	if (m_triangleIndexVertexArray != nullptr) {
+		delete m_triangleIndexVertexArray;
+		m_triangleIndexVertexArray = nullptr;
+	}
+}
+
+void Terrain::initPhysics(btDiscreteDynamicsWorld* physicWorld)
+{
+	//set ptr to bullet physic simulation :
+	m_ptrToPhysicWorld = physicWorld;
+	//generate collider : 
+	generateCollider();
+	//generate terrain rigidbody :
+	m_terrainRigidbody = new btRigidBody(0, nullptr, m_terrainCollider);
+	//add the terrain rigidbody to the simulation : 
+	m_ptrToPhysicWorld->addRigidBody(m_terrainRigidbody);
 }
 
 void Terrain::drawGrassOnTerrain(const glm::vec3 position)

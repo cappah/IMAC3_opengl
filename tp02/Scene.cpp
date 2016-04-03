@@ -5,6 +5,7 @@
 
 Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true), m_isDebugPhysicVisible(true)
 {
+	m_terrain.initPhysics(m_physicManager.getBulletDynamicSimulation());
 }
 
 Scene::~Scene()
@@ -80,6 +81,7 @@ void Scene::clear()
 
 	//clear systems : 
 	m_terrain.clear();
+	m_physicManager.clear();
 	//m_skybox.clear(); //TODO
 }
 
@@ -587,6 +589,7 @@ void Scene::load(const std::string & path)
 
 	//TODO
 	m_terrain.load(root["terrain"]);
+	//m_terrain.initPhysics(m_physicManager.getBulletDynamicSimulation()); //TODO automatize this process in loading ? 
 	m_skybox.load(root["skybox"]);
 
 }

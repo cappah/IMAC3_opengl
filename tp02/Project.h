@@ -13,7 +13,7 @@
 
 class Project
 {
-	enum SceneStatus {DEFAULT, EDITED};
+public : enum SceneStatus {DEFAULT, EDITED, TEMPORARY};
 
 private:
 	// mapping scenes name <-> scenes path 
@@ -53,6 +53,7 @@ public:
 	void exitApplication();
 
 	Scene* getActiveScene() const;
+	Project::SceneStatus getActiveSceneStatus() const;
 	void loadScene(const std::string& sceneName);
 	void addDefaultScene(const std::string& sceneName);
 	void addSceneFromActive(const std::string& sceneName);

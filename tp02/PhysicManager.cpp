@@ -49,7 +49,7 @@ namespace Physic {
 	//////////////////////////////////////////////////
 
 
-	PhysicManager::PhysicManager(const glm::vec3& _gravity) : m_gravity(_gravity)
+	PhysicManager::PhysicManager(const glm::vec3& _gravity) : m_gravity(_gravity), m_physicWorld(nullptr)
 	{
 		//build the bullet physic world : 
 		m_collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -75,15 +75,37 @@ namespace Physic {
 
 	PhysicManager::~PhysicManager()
 	{
-		delete m_physicWorld;
+		clear();
+	}
 
-		delete m_sequentialImpulseConstraintSolver;
-		delete m_broadPhase;
-		delete m_dispatcher;
-		delete m_collisionConfiguration;
+	void PhysicManager::clear()
+	{
+		if (m_physicWorld != nullptr) {
+			delete m_physicWorld;
+			m_physicWorld = nullptr;
+		}
+		if (m_sequentialImpulseConstraintSolver != nullptr) {
+			delete m_sequentialImpulseConstraintSolver;
+			m_sequentialImpulseConstraintSolver = nullptr;
+		}
+		if (m_broadPhase != nullptr) {
+			delete m_broadPhase;
+			m_broadPhase = nullptr;
+		}
+		if (m_dispatcher != nullptr) {
+			delete m_dispatcher;
+			m_dispatcher = nullptr;
+		}
+		if (m_collisionConfiguration != nullptr) {
+			delete m_collisionConfiguration;
+			m_collisionConfiguration = nullptr;
+		}
 
 		// debug :
-		delete m_debugDrawerPhysicWorld;
+		if (m_debugDrawerPhysicWorld != nullptr) {
+			delete m_debugDrawerPhysicWorld;
+			m_debugDrawerPhysicWorld = nullptr;
+		}
 	}
 
 	void PhysicManager::setGravity(const glm::vec3&  g)

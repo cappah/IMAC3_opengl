@@ -794,7 +794,8 @@ void Renderer::debugDrawDeferred()
 
 
 	glViewport(0, 0, width, height);
-	
+
+	glEnable(GL_DEPTH_TEST);
 	///////////// end draw blit quad
 }
 

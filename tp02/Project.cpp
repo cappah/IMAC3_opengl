@@ -280,7 +280,6 @@ void Project::edit()
 		//update editor : 
 		editor.update(*scene, window);
 
-
 		//synchronize input handler : 
 		InputHandler::synchronize();
 
@@ -349,16 +348,28 @@ Scene* Project::getActiveScene() const
 	return m_activeScene;
 }
 
+Project::SceneStatus Project::getActiveSceneStatus() const
+{
+	auto findIt = m_scenesStatus.find(m_activeSceneName);
+	if (findIt == m_scenesStatus.end())
+		return Project::SceneStatus::TEMPORARY;
+	else
+		return findIt->second;
+}
+
 void Project::loadScene(const std::string& sceneName)
 {
 	if (m_scenes.find(sceneName) == m_scenes.end())
 		return;
 
-	if (m_activeScene != nullptr && m_scenes.find(m_activeSceneName) != m_scenes.end())
+	if (m_activeScene != nullptr)
 	{
-		std::string activeScenePath = m_scenes[m_activeSceneName];// m_path + "/scenes/" + m_activeSceneName + ".txt";
-		addDirectories(m_path + "/scenes/");
-		m_activeScene->save(activeScenePath);
+		if (m_scenes.find(m_activeSceneName) != m_scenes.end())
+		{
+			std::string activeScenePath = m_scenes[m_activeSceneName];// m_path + "/scenes/" + m_activeSceneName + ".txt";
+			addDirectories(m_path + "/scenes/");
+			m_activeScene->save(activeScenePath);
+		}
 
 		//m_activeScene->clear();
 		delete m_activeScene;

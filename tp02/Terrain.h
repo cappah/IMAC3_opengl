@@ -18,6 +18,9 @@
 #include "Link.h"
 #include "WindZone.h"
 
+#include "btBulletCollisionCommon.h"
+#include "btBulletDynamicsCommon.h"
+
 //forwards : 
 class Ray;
 
@@ -204,6 +207,14 @@ private:
 	float m_grassDensity;
 	char m_newGrassTextureName[30];
 
+	//for physic : 
+	btBvhTriangleMeshShape* m_terrainCollider;
+	btRigidBody* m_terrainRigidbody;
+	btDiscreteDynamicsWorld* m_ptrToPhysicWorld;
+	btTriangleIndexVertexArray* m_triangleIndexVertexArray;
+	glm::vec3 m_aabbMin;
+	glm::vec3 m_aabbMax;
+
 
 public:
 
@@ -213,6 +224,8 @@ public:
 	void initGl();
 	void freeGl(); // delete gl information from GPU memory
 	void clear(); //delete everything from memory.
+	//init physics, must be called before all physic function call : 
+	void initPhysics(btDiscreteDynamicsWorld* physicWorld);
 
 	// simply draw the vertices, using vao.
 	void render(const glm::mat4& projection, const glm::mat4& view);
@@ -223,9 +236,18 @@ public:
 
 	void computeNormals();
 
+	//generate new positions for vertices of the terrain, update normals, and update the terrain texture, call this function after modifying the noise of the terrain :  
 	void applyNoise(Perlin2D& perlin2D, bool _computeNoiseTexture = true);
+	//Quickly update vertices and grass on terrain, call this function after scaling the terrain : 
 	void updateTerrain();
+	//regenerate a flat terrain :
 	void generateTerrain();
+	//generate the appropriate btCollider for this terrain, don't set it to the rigidbody :
+	void generateCollider();
+	//regenerate the appropriate btCollider for this terrain and set it to the rigidbody, removing the old collider : 
+	void updateCollider(); 
+	//get the generated btCollider : generateCollider
+	btBvhTriangleMeshShape* getColliderShape() const;
 
 	void computeNoiseTexture(Perlin2D& perlin2D);
 	void generateTerrainTexture();

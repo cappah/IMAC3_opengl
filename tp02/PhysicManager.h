@@ -46,6 +46,7 @@ namespace Physic {
 	public:
 		PhysicManager(const glm::vec3& _gravity = glm::vec3(0.f,-9.8f,0.f));
 		~PhysicManager();
+		void clear();
 
 		void setGravity(const glm::vec3& g);
 		glm::vec3 getGravity() const;
