@@ -18,7 +18,7 @@ ComponentFactory::ComponentFactory()
 	add(Component::ComponentType::BILLBOARD, new Billboard());
 	add(Component::ComponentType::RIGIDBODY, new Rigidbody());
 
-	assert(m_components.size() == Component::ComponentType::COMPONENT_COUNT);
+	assert(m_components.size() == Component::ComponentType::INTERNAL_COMPONENT_COUNT);
 }
 
 void ComponentFactory::add(const Component::ComponentType& type, Component* component)

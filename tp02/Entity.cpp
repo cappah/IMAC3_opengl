@@ -1,7 +1,9 @@
 #include "Entity.h"
+//forwards : 
 #include "Component.h"
 #include "Scene.h"
 #include "ComponentFactory.h"
+#include "BehaviorFactory.h"
 
 Entity::Entity(Scene* scene) : TransformNode(), m_scene(scene), m_isSelected(false), m_name("default_entity"), m_parent(nullptr)
 {
@@ -258,11 +260,8 @@ void Entity::drawUI(Scene& scene)
 
 	if (ImGui::BeginPopupModal("add component window", &addComponentWindowOpened))
 	{
-		Component* newComponent = nullptr;
 		ComponentFactory::get().drawModalWindow(this);
-
-		if(newComponent != nullptr)
-			newComponent->addToEntity(*this);
+		BehaviorFactory::get().drawModalWindow(this);
 
 		ImGui::EndPopup();
 	}
@@ -420,6 +419,17 @@ Entity & Entity::add(Rigidbody* rigidbody)
 	//special stuff for rigidbody :
 	rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
 	rigidbody->init(m_scene->getPhysicManager().getBulletDynamicSimulation()); //must be call after the rigidbody has been attached to an entity
+
+	return *this;
+}
+
+Entity & Entity::add(Behavior * behavior)
+{
+	behavior->attachToEntity(this);
+
+	m_scene->add(behavior);
+	m_components.push_back(behavior);
+
 
 	return *this;
 }
@@ -586,6 +596,19 @@ Entity & Entity::erase(Rigidbody * rigidbody)
 	return *this;
 }
 
+Entity & Entity::erase(Behavior * behavior)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), behavior);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(behavior);
+	}
+
+	return *this;
+}
+
 void Entity::endCreation()
 {
 	Collider* colliderComponent = static_cast<Collider*>(getComponent(Component::ComponentType::COLLIDER));
@@ -689,6 +712,15 @@ int Entity::getChildCount() const
 	return m_childs.size();
 }
 
+void Entity::updateCoroutines()
+{
+	float currentTime = Application::get().getTime();
+	for (auto& c : m_coroutines) {
+		if (c->getNextExecutionTime() <= currentTime)
+			c->execute(currentTime);
+	}
+}
+
 void Entity::save(Json::Value& entityRoot) const
 {
 	TransformNode::save(entityRoot);
@@ -732,7 +764,15 @@ void Entity::load(Json::Value& entityRoot)
 	{
 		Component* newComponent;
 		Component::ComponentType type = (Component::ComponentType)entityRoot["components"][i].get("type", 0).asInt();
-		newComponent = ComponentFactory::get().getInstance(type);
+		if (type == Component::ComponentType::BEHAVIOR) {
+			std::string behaviourTypeIndexName = entityRoot["components"][i].get("typeIndexName", "NONE").asString();
+			if (behaviourTypeIndexName == "NONE")
+				continue;
+			newComponent = BehaviorFactory::get().getInstance(behaviourTypeIndexName);
+		}
+		else {
+			newComponent = ComponentFactory::get().getInstance(type);
+		}
 		newComponent->load(entityRoot["components"][i]);
 
 		newComponent->addToEntity(*this);

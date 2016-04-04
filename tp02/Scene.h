@@ -10,6 +10,7 @@
 #include "Billboard.h"
 #include "Rigidbody.h"
 #include "Camera.h"
+#include "Behavior.h"
 
 #include "PhysicManager.h"
 #include "PathManager.h"
@@ -17,6 +18,7 @@
 #include "Renderer.h"
 #include "Terrain.h"
 #include "Skybox.h"
+#include "BehaviorManager.h"
 
 #include "jsoncpp/json/json.h"
 #include <iostream>
@@ -61,6 +63,9 @@ private:
 	//rigidbodies : 
 	std::vector<Rigidbody*> m_rigidbodies;
 
+	//behaviors : 
+	std::vector<Behavior*> m_behaviors;
+
 	//special components : 
 	//terrain : 
 	Terrain m_terrain;
@@ -73,6 +78,7 @@ private:
 	Renderer* m_renderer;
 	Physic::PhysicManager m_physicManager;
 	PathManager m_pathManager;
+	BehaviorManager m_behaviorManager;
 	//TODO
 	//CloudSystem m_cloudSystem;
 
@@ -105,6 +111,7 @@ public:
 	Scene& add(Camera* camera);
 	Scene& add(Physic::WindZone* windZone);
 	Scene& add(Rigidbody* rigidbody);
+	Scene& add(Behavior* behavior);
 
 	Scene& erase(Entity* entity);
 	Scene& erase(PointLight* pointLight);
@@ -119,6 +126,7 @@ public:
 	Scene& erase(Camera* camera);
 	Scene& erase(Physic::WindZone* windZone);
 	Scene& erase(Rigidbody* rigidbody);
+	Scene& erase(Behavior* behavior);
 
 	void render(const BaseCamera& camera);
 	void renderColliders(const BaseCamera& camera);
@@ -130,6 +138,8 @@ public:
 
 	void updatePhysic(float deltaTime, const BaseCamera& camera);
 	void updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode);
+
+	void updateBehaviours();
 
 	void toggleColliderVisibility();
 	void toggleDebugDeferredVisibility();

@@ -213,6 +213,7 @@ void Project::load()
 		std::string scenePath = m_path + "/scenes/" + sceneName + ".txt";
 		SceneStatus sceneStatus = (SceneStatus)rootProject["sceneInfos"][i]["status"].asInt();
 		m_scenes[sceneName] = scenePath;
+		m_scenesStatus[sceneName] = sceneStatus;
 	}
 
 	//load the active scene : 
@@ -272,8 +273,7 @@ void Project::edit()
 
 		//Update behaviours :
 		if (editor.getIsPlaying()) {
-			//TODO
-			//scene->updateBehaviours();
+			scene->updateBehaviours();
 		}
 
 

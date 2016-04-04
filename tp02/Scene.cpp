@@ -168,6 +168,12 @@ Scene & Scene::add(Rigidbody* rigidbody)
 	return *this;
 }
 
+Scene & Scene::add(Behavior * behavior)
+{
+	m_behaviors.push_back(behavior);
+	return *this;
+}
+
 
 Scene& Scene::erase(Entity* entity)
 {
@@ -332,6 +338,19 @@ Scene & Scene::erase(Rigidbody* rigidbody)
 	return *this;
 }
 
+Scene & Scene::erase(Behavior * behavior)
+{
+	auto findIt = std::find(m_behaviors.begin(), m_behaviors.end(), behavior);
+
+	if (findIt != m_behaviors.end())
+	{
+		delete behavior;
+		m_behaviors.erase(findIt);
+	}
+
+	return *this;
+}
+
 void Scene::render(const BaseCamera& camera)
 {
 	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters);
@@ -383,6 +402,12 @@ void Scene::updatePhysic(float deltaTime, const BaseCamera& camera)
 void Scene::updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode)
 {
 	m_physicManager.update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters, updateInEditMode);
+}
+
+void Scene::updateBehaviours()
+{
+	m_behaviorManager.update(*this, m_behaviors);
+	m_behaviorManager.updateCoroutines(m_entities);
 }
 
 void Scene::toggleColliderVisibility()

@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="aogl.cpp" />
-    <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Link.cpp">
       <Filter>Physic</Filter>
     </ClCompile>
@@ -122,11 +121,28 @@
     <ClCompile Include="Rigidbody.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="MotionState.cpp" />
     <ClCompile Include="DebugDrawer.cpp" />
+    <ClCompile Include="Behavior.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviorFactory.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviorManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="TestBehavior.cpp">
+      <Filter>Behaviors</Filter>
+    </ClCompile>
+    <ClCompile Include="Ray.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="MotionState.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="Coroutine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Ray.h" />
     <ClInclude Include="Link.h">
       <Filter>Physic</Filter>
     </ClInclude>
@@ -255,8 +271,26 @@
     <ClInclude Include="Rigidbody.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="MotionState.h" />
     <ClInclude Include="DebugDrawer.h" />
+    <ClInclude Include="Behavior.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviorFactory.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviorManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="TestBehavior.h">
+      <Filter>Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="MotionState.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="Coroutine.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -291,6 +325,9 @@
     </Filter>
     <Filter Include="Interfaces">
       <UniqueIdentifier>{f9d16c95-f06d-4e9b-b3db-7ab4d3406483}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Behaviors">
+      <UniqueIdentifier>{e8126796-ebb6-4859-89e5-dc1e9667e22b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

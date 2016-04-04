@@ -220,12 +220,16 @@
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="BehaviorFactory.cpp" />
+    <ClCompile Include="Behavior.cpp" />
+    <ClCompile Include="BehaviorManager.cpp" />
     <ClCompile Include="Billboard.cpp" />
     <ClCompile Include="BSpline.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentFactory.cpp" />
+    <ClCompile Include="Coroutine.cpp" />
     <ClCompile Include="CSpline.cpp" />
     <ClCompile Include="DebugDrawer.cpp" />
     <ClCompile Include="Editor.cpp" />
@@ -260,6 +264,7 @@
     <ClCompile Include="SerializeUtils.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="TestBehavior.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TransformNode.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -291,12 +296,16 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="BehaviorFactory.h" />
+    <ClInclude Include="Behavior.h" />
+    <ClInclude Include="BehaviorManager.h" />
     <ClInclude Include="Billboard.h" />
     <ClInclude Include="BSpline.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentFactory.h" />
+    <ClInclude Include="Coroutine.h" />
     <ClInclude Include="CSpline.h" />
     <ClInclude Include="DebugDrawer.h" />
     <ClInclude Include="dirent.h" />
@@ -334,6 +343,7 @@
     <ClInclude Include="SerializeUtils.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="TestBehavior.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TransformNode.h" />
     <ClInclude Include="Utils.h" />
