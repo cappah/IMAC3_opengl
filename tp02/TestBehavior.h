@@ -13,6 +13,7 @@ public:
 
 	virtual void start(Scene& scene) override;
 	virtual void update(Scene& scene) override;
+	virtual void onColliderEnter(const CollisionInfo& collisionInfo) override;
 
 	// Hérité via Behavior
 	virtual void save(Json::Value & entityRoot) const override;

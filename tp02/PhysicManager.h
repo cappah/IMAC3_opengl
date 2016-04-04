@@ -5,10 +5,12 @@
 #include "Terrain.h"
 #include "ParticleEmitter.h"
 #include "Camera.h"
+#include "Rigidbody.h"
 
 #include "btBulletCollisionCommon.h"
 #include "btBulletDynamicsCommon.h"
 #include "linearMath/btIDebugDraw.h"
+
 
 namespace Physic {
 
@@ -55,7 +57,9 @@ namespace Physic {
 
 		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters);
 		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters, bool updateRigidbodies);
-	
+		void physicLateUpdate();
+		bool onCollisionBegin( btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0, int partId0, int index0, const btCollisionObjectWrapper* colObj1, int partId1, int index1);
+
 		void debugDraw(const glm::mat4& projection, const glm::mat4& view) const;
 	};
 }

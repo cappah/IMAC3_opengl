@@ -25,12 +25,18 @@ TestBehavior::~TestBehavior()
 
 void TestBehavior::start(Scene& scene)
 {
+	std::cout << "testBehaviour start" << std::endl;
 	entity()->startCoroutine < void > (std::function<void()>([]() { std::cout << "coroutine called !" << std::endl; }), 1.f);
 }
 
 void TestBehavior::update(Scene& scene)
 {
-	std::cout << "testBehaviour update" << std::endl;
+	//std::cout << "testBehaviour update" << std::endl;
+}
+
+void TestBehavior::onColliderEnter(const CollisionInfo& collisionInfo) 
+{
+	std::cout << "collision begin at point : ("<<collisionInfo.point.x <<", "<< collisionInfo.point.y <<", "<< collisionInfo.point.z <<")"<< std::endl;
 }
 
 void TestBehavior::save(Json::Value & entityRoot) const

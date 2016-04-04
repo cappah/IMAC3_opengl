@@ -207,6 +207,8 @@ public:
 	void startCoroutine(std::function<R(Args...)> action, float callDeltaTime);
 	void updateCoroutines();
 
+	void onCollisionBegin(const CollisionInfo& collisionInfo);
+
 	virtual void save(Json::Value& entityRoot) const override;
 	virtual void load(Json::Value& entityRoot) override;
 

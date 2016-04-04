@@ -5,7 +5,7 @@
 
 
 Rigidbody::Rigidbody() : Component(ComponentType::RIGIDBODY),
-m_translation(0,0,0), m_scale(1,1,1), m_mass(0), m_inertia(0,0,0), 
+m_translation(0,0,0), m_scale(1,1,1), m_mass(0), m_inertia(0,0,0), m_isTrigger(false),
 m_bulletRigidbody(nullptr), m_motionState(nullptr), m_shape(nullptr), m_ptrToPhysicWorld(nullptr)
 {
 
@@ -90,12 +90,31 @@ void Rigidbody::init(btDiscreteDynamicsWorld* physicSimulation)
 	if (m_bulletRigidbody != nullptr)
 		delete m_bulletRigidbody;
 	m_bulletRigidbody = new btRigidBody(constructorInfo);
+	m_bulletRigidbody->setUserPointer(this);
+	m_bulletRigidbody->setUserIndex(1);
+	m_bulletRigidbody->setCollisionFlags(m_bulletRigidbody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 
 	//if the rigidbody already has a collider shape, set it to the rigidbody and push rigidbody to simulation
-	if (m_shape != nullptr) {
-		popFromSimulation();
-			m_bulletRigidbody->setCollisionShape(m_shape);
-	}
+	//if (m_shape != nullptr) {
+	//	popFromSimulation();
+	//		m_bulletRigidbody->setCollisionShape(m_shape);
+	//}
+
+	//if trigger, disable contact response
+	if (m_isTrigger)
+		m_bulletRigidbody->setCollisionFlags(m_bulletRigidbody->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	else
+		m_bulletRigidbody->setCollisionFlags(m_bulletRigidbody->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	
+	pushToSimulation();
+
+	popFromSimulation();
+	btVector3 newInertia;
+	m_bulletRigidbody->getCollisionShape()->calculateLocalInertia(m_mass, newInertia);
+	m_bulletRigidbody->setMassProps(m_mass, newInertia);
+	m_bulletRigidbody->updateInertiaTensor();
+	//m_target->forceActivationState(DISABLE_DEACTIVATION);
+	m_bulletRigidbody->activate(true);
 	pushToSimulation();
 }
 
@@ -155,11 +174,28 @@ void Rigidbody::removeAllColliders()
 	m_colliders.clear();
 }
 
+void Rigidbody::setIsTrigger(bool state)
+{
+	m_isTrigger = state;
+	popFromSimulation();
+
+	//if trigger, disable contact response
+	if (m_isTrigger)
+		m_bulletRigidbody->setCollisionFlags(m_bulletRigidbody->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+	else
+		m_bulletRigidbody->setCollisionFlags(m_bulletRigidbody->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE);
+
+	pushToSimulation();
+}
+
 void Rigidbody::drawUI(Scene & scene)
 {
 	float tmpMass = m_mass;
 	if (ImGui::InputFloat("mass", &tmpMass)) {
 		setMass(tmpMass);
+	}
+	if (ImGui::RadioButton("isTrigger", m_isTrigger)) {
+		setIsTrigger(!m_isTrigger);
 	}
 }
 
@@ -194,7 +230,10 @@ void Rigidbody::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 	else {
 		popFromSimulation();
 		pushToSimulation();
+		m_bulletRigidbody->activate(true);
 	}
+
+	m_ptrToPhysicWorld->updateSingleAabb(m_bulletRigidbody);
 
 
 	m_translation = translation;
@@ -247,6 +286,7 @@ void Rigidbody::save(Json::Value & componentRoot) const
 
 	componentRoot["mass"] = m_mass*BT_ONE;
 	componentRoot["inertia"] = toJsonValue(glm::vec3(m_inertia.x(), m_inertia.y(), m_inertia.z()));
+	componentRoot["isTrigger"] = m_isTrigger;
 }
 
 void Rigidbody::load(Json::Value & componentRoot)
@@ -260,6 +300,8 @@ void Rigidbody::load(Json::Value & componentRoot)
 	m_mass = btScalar(componentRoot.get("mass", 0.0f).asFloat());
 	glm::vec3 tmpInertia = fromJsonValue<glm::vec3>(componentRoot["inertia"], glm::vec3(0,0,0));
 	m_inertia = btVector3(tmpInertia.x, tmpInertia.y, tmpInertia.z);
+	m_isTrigger = componentRoot.get("isTrigger", false).asBool();
+
 
 	m_bulletRigidbody = nullptr;
 	m_motionState = nullptr;

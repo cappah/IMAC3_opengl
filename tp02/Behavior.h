@@ -34,7 +34,7 @@ public:
 
 	virtual void start(Scene& scene);
 	virtual void update(Scene& scene);
-	virtual void onColliderEnter(Collider& other);
+	virtual void onColliderEnter(const CollisionInfo& collisionInfo);
 	virtual void onColliderExit(Collider& other);
 	virtual void onColliderStay(Collider& other);
 

@@ -47,7 +47,27 @@ namespace Physic {
 	}
 
 	//////////////////////////////////////////////////
+	bool _onCollisionBegin(btManifoldPoint& pt, const btCollisionObjectWrapper* obA, int partId0, int index0, const btCollisionObjectWrapper* obB, int partId1, int index1)
+	{
+		CollisionInfo collisionInfo;
+		if (pt.getDistance() < 0.f)
+		{
+			//const btVector3& ptA = pt.getPositionWorldOnA();
+			const btVector3& ptB = pt.getPositionWorldOnB();
+			const btVector3& normalOnB = pt.m_normalWorldOnB;
 
+			collisionInfo.normal = glm::vec3(normalOnB.x(), normalOnB.y(), normalOnB.z());
+			collisionInfo.point = glm::vec3(ptB.x(), ptB.y(), ptB.z());
+		}
+		//if (obB->getCollisionObject()->getUserPointer() != nullptr) {
+			collisionInfo.rigidbody = static_cast<Rigidbody*>(obB->getCollisionObject()->getUserPointer());
+			Entity* entity = collisionInfo.rigidbody->entity();
+			if(entity != nullptr)
+				entity->onCollisionBegin(collisionInfo);
+		//}
+
+		return false;
+	}
 
 	PhysicManager::PhysicManager(const glm::vec3& _gravity) : m_gravity(_gravity), m_physicWorld(nullptr)
 	{
@@ -70,6 +90,8 @@ namespace Physic {
 		m_debugDrawerPhysicWorld->setDefaultColors(debugColors);
 		m_debugDrawerPhysicWorld->setDebugMode(btIDebugDraw::DBG_DrawAabb | btIDebugDraw::DBG_DrawWireframe);
 		m_physicWorld->setDebugDrawer(m_debugDrawerPhysicWorld);
+
+		//gContactAddedCallback = _onCollisionBegin;
 	}
 
 
@@ -128,6 +150,7 @@ namespace Physic {
 	{
 		//update bullet internal physic :
 		m_physicWorld->stepSimulation(Application::get().getFixedDeltaTime(), 10);
+		physicLateUpdate();
 
 		//update the reste of physic : 
 
@@ -160,6 +183,7 @@ namespace Physic {
 		if (updateRigidbodies) {
 			//update bullet internal physic :
 			m_physicWorld->stepSimulation(Application::get().getFixedDeltaTime(), 10);
+			physicLateUpdate();
 		}
 
 		//update flags :
@@ -183,6 +207,67 @@ namespace Physic {
 		{
 			particleEmitters[i]->update(deltaTime, camera.getCameraPosition());
 		}
+	}
+
+	void PhysicManager::physicLateUpdate()
+	{
+		int numManifolds = m_physicWorld->getDispatcher()->getNumManifolds();
+		for (int i = 0; i < numManifolds; i++)
+		{
+			btPersistentManifold* contactManifold = m_physicWorld->getDispatcher()->getManifoldByIndexInternal(i);
+			const btCollisionObject* obA = contactManifold->getBody0();
+			const btCollisionObject* obB = contactManifold->getBody1();
+
+			CollisionInfo collisionInfo01;
+			CollisionInfo collisionInfo02;
+
+			int numContacts = contactManifold->getNumContacts();
+			for (int j = 0; j < numContacts; j++)
+			{
+				btManifoldPoint& pt = contactManifold->getContactPoint(j);
+				if (pt.getDistance() < 0.f)
+				{
+					const btVector3& ptA = pt.getPositionWorldOnA();
+					const btVector3& ptB = pt.getPositionWorldOnB();
+					const btVector3& normalOnB = pt.m_normalWorldOnB;
+
+					collisionInfo01.normal = glm::vec3(normalOnB.x(), normalOnB.y(), normalOnB.z());
+					collisionInfo01.point = glm::vec3(ptB.x(), ptB.y(), ptB.z());
+
+					collisionInfo02.normal = glm::vec3(-normalOnB.x(), -normalOnB.y(), -normalOnB.z());
+					collisionInfo02.point = glm::vec3(ptA.x(), ptA.y(), ptA.z());
+
+					break;
+				}
+			}
+
+			if (obB->getUserIndex() == 1) {
+				collisionInfo01.rigidbody = static_cast<Rigidbody*>(obB->getUserPointer());
+				collisionInfo01.rigidbody->entity()->onCollisionBegin(collisionInfo01);
+			}
+			if (obA->getUserIndex() == 1) {
+				collisionInfo02.rigidbody = static_cast<Rigidbody*>(obA->getUserPointer());
+				collisionInfo02.rigidbody->entity()->onCollisionBegin(collisionInfo02);
+			}
+		}
+	}
+
+	bool PhysicManager::onCollisionBegin(btManifoldPoint& pt, const btCollisionObjectWrapper* obA, int partId0, int index0, const btCollisionObjectWrapper* obB, int partId1, int index1)
+	{
+		CollisionInfo collisionInfo;
+		if (pt.getDistance() < 0.f)
+		{
+			//const btVector3& ptA = pt.getPositionWorldOnA();
+			const btVector3& ptB = pt.getPositionWorldOnB();
+			const btVector3& normalOnB = pt.m_normalWorldOnB;
+
+			collisionInfo.normal = glm::vec3(normalOnB.x(), normalOnB.y(), normalOnB.z());
+			collisionInfo.point = glm::vec3(ptB.x(), ptB.y(), ptB.z());
+		}
+		collisionInfo.rigidbody = static_cast<Rigidbody*>(obB->getCollisionObject()->getUserPointer());
+		collisionInfo.rigidbody->entity()->onCollisionBegin(collisionInfo);
+
+		return false;
 	}
 
 	void PhysicManager::debugDraw(const glm::mat4 & projection, const glm::mat4 & view) const

@@ -29,6 +29,8 @@ namespace patch
 	}
 }
 
+
+
 // Shader utils
 int check_link_error(GLuint program);
 int check_compile_error(GLuint shader, const char ** sourceBuffer);

@@ -22,6 +22,16 @@
 //forward
 class Ray;
 class Entity;
+class Rigidbody;
+
+
+struct CollisionInfo {
+	Rigidbody* rigidbody;
+	glm::vec3 point;
+	glm::vec3 normal;
+
+	CollisionInfo(Rigidbody* _rigidbody = nullptr, const glm::vec3& _point = glm::vec3(0, 0, 0), const glm::vec3& _normal = glm::vec3(0, 0, 0));
+};
 
 struct Collider : public Component
 {

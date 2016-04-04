@@ -14,11 +14,11 @@
 //forwards :
 class Terrain;
 
-//small struct to store infos about a collision
-struct CollisionInfo {
-	glm::vec3 normal;
-	glm::vec3 point;
-};
+////small struct to store infos about a collision
+//struct CollisionInfo {
+//	glm::vec3 normal;
+//	glm::vec3 point;
+//};
 
 class Ray
 {

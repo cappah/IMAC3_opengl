@@ -721,6 +721,14 @@ void Entity::updateCoroutines()
 	}
 }
 
+void Entity::onCollisionBegin(const CollisionInfo & collisionInfo)
+{
+	auto behaviors = getComponents<Behavior>(Component::ComponentType::BEHAVIOR);
+	for (auto& b : behaviors) {
+		b->onColliderEnter(collisionInfo);
+	}
+}
+
 void Entity::save(Json::Value& entityRoot) const
 {
 	TransformNode::save(entityRoot);

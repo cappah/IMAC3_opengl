@@ -6,6 +6,11 @@
 #include "Factories.h"
 #include "Rigidbody.h"
 
+CollisionInfo::CollisionInfo(Rigidbody* _rigidbody, const glm::vec3& _point, const glm::vec3& _normal) : rigidbody(_rigidbody), point(_point), normal(_normal)
+{ }
+
+///////////////////////////////
+
 Collider::Collider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial) : Component(COLLIDER), visualMesh(_visualMesh), visualMaterial(_visualMaterial), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1), origin(0,0,0)
 {
 

@@ -7,6 +7,8 @@
 #include "Component.h"
 #include "Collider.h"
 
+
+
 class Rigidbody : public Component
 {
 private:
@@ -16,6 +18,8 @@ private:
 
 	btScalar m_mass;
 	btVector3 m_inertia;
+
+	bool m_isTrigger;
 
 	btRigidBody* m_bulletRigidbody;
 
@@ -27,6 +31,7 @@ private:
 
 public:
 	Rigidbody();
+	//TODO deep copy
 	~Rigidbody();
 
     /**
@@ -64,6 +69,8 @@ public:
 	void removeCollider(Collider* collider);
 	//only remove all colliders from the rigidbody, don't destroy them.
 	void removeAllColliders();
+
+	void setIsTrigger(bool state);
 
 
 	virtual void drawUI(Scene& scene) override;

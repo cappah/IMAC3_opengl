@@ -28,7 +28,7 @@ void Behavior::update(Scene& scene)
 	//to override
 }
 
-void Behavior::onColliderEnter(Collider & other)
+void Behavior::onColliderEnter(const CollisionInfo& collisionInfo)
 {
 	//to override
 }
