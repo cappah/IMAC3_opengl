@@ -1,11 +1,13 @@
 #include "Scene.h"
 //forwards :
 #include "OctreeDrawer.h"
+#include "PhysicManager.h"
 
 
 Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true), m_isDebugPhysicVisible(true)
 {
-	m_terrain.initPhysics(m_physicManager.getBulletDynamicSimulation());
+	m_physicManager = new Physic::PhysicManager();
+	m_terrain.initPhysics(m_physicManager->getBulletDynamicSimulation());
 }
 
 Scene::~Scene()
@@ -81,7 +83,8 @@ void Scene::clear()
 
 	//clear systems : 
 	m_terrain.clear();
-	m_physicManager.clear();
+	m_physicManager->clear();
+	delete m_physicManager;
 	//m_skybox.clear(); //TODO
 }
 
@@ -391,23 +394,29 @@ void Scene::renderDebugOctrees(const BaseCamera & camera)
 void Scene::renderDebugPhysic(const BaseCamera & camera)
 {
 	if (m_isDebugPhysicVisible)
-		m_physicManager.debugDraw(camera.getProjectionMatrix(), camera.getViewMatrix());
+		m_physicManager->debugDraw(camera.getProjectionMatrix(), camera.getViewMatrix());
 }
 
 void Scene::updatePhysic(float deltaTime, const BaseCamera& camera)
 {
-	m_physicManager.update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters);
+	m_physicManager->update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters);
 }
 
 void Scene::updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode)
 {
-	m_physicManager.update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters, updateInEditMode);
+	m_physicManager->update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters, updateInEditMode);
 }
 
 void Scene::updateBehaviours()
 {
 	m_behaviorManager.update(*this, m_behaviors);
 	m_behaviorManager.updateCoroutines(m_entities);
+
+	//TODO speed up this process :
+	for (auto& entity : m_entities) {
+		if (entity->getCollisionState() == Entity::CollisionState::END)
+			entity->resetCollision();
+	}
 }
 
 void Scene::toggleColliderVisibility()
@@ -512,7 +521,7 @@ Renderer& Scene::getRenderer()
 
 Physic::PhysicManager& Scene::getPhysicManager()
 {
-	return m_physicManager;
+	return *m_physicManager;
 }
 
 std::string Scene::getName() const

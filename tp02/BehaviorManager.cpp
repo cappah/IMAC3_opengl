@@ -20,6 +20,21 @@ void BehaviorManager::update(Scene& scene, const std::vector<Behavior*> behavior
 			behaviors[i]->start(scene);
 			behaviors[i]->m_isInitialized = true;
 		}
+		//apply collisions callbacks on behaviours : 
+		auto entity = behaviors[i]->entity();
+		switch (entity->getCollisionState()) {
+		case Entity::CollisionState::BEGIN :
+			behaviors[i]->onCollisionEnter(scene, entity->getCollisionInfo());
+			break;
+		case Entity::CollisionState::STAY:
+			behaviors[i]->onCollisionStay(scene, entity->getCollisionInfo());
+			break;
+		case Entity::CollisionState::END:
+			behaviors[i]->onCollisionEnd(scene, entity->getCollisionInfo());
+			break;
+		default:
+			break;
+		}
 		//apply the update of behaviours :
 		behaviors[i]->update(scene);
 	}

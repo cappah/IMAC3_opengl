@@ -73,6 +73,9 @@ public :
 
 class Entity : public TransformNode
 {
+public:
+	enum CollisionState { BEGIN, STAY, END, NONE };
+
 private:
 
 	Scene* m_scene;
@@ -86,6 +89,10 @@ private:
 
 	//coroutines :
 	std::vector<BaseCoroutine*> m_coroutines;
+
+	//for collisions : 
+	CollisionState m_collisionState;
+	CollisionInfo m_collisionInfo;
 
 	//for editing : 
 	bool m_isSelected;
@@ -115,6 +122,10 @@ public:
 
 	//return the value of m_isSelected
 	bool getIsSelected() const ;
+
+	CollisionState getCollisionState() const;
+	CollisionInfo getCollisionInfo() const;
+	void resetCollision();
 
 	//get the name of this entity
 	std::string getName() const;
@@ -208,6 +219,8 @@ public:
 	void updateCoroutines();
 
 	void onCollisionBegin(const CollisionInfo& collisionInfo);
+	void onCollisionStay(const CollisionInfo& collisionInfo);
+	void onCollisionEnd(const CollisionInfo& collisionInfo);
 
 	virtual void save(Json::Value& entityRoot) const override;
 	virtual void load(Json::Value& entityRoot) override;

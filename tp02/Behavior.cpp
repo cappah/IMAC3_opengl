@@ -28,17 +28,17 @@ void Behavior::update(Scene& scene)
 	//to override
 }
 
-void Behavior::onColliderEnter(const CollisionInfo& collisionInfo)
+void Behavior::onCollisionEnter(Scene& scene, const CollisionInfo& collisionInfo)
 {
 	//to override
 }
 
-void Behavior::onColliderExit(Collider & other)
+void Behavior::onCollisionEnd(Scene& scene, const CollisionInfo& collisionInfo)
 {
 	//to override
 }
 
-void Behavior::onColliderStay(Collider & other)
+void Behavior::onCollisionStay(Scene& scene, const CollisionInfo& collisionInfo)
 {
 	//to override
 }

@@ -34,9 +34,9 @@ public:
 
 	virtual void start(Scene& scene);
 	virtual void update(Scene& scene);
-	virtual void onColliderEnter(const CollisionInfo& collisionInfo);
-	virtual void onColliderExit(Collider& other);
-	virtual void onColliderStay(Collider& other);
+	virtual void onCollisionEnter(Scene& scene, const CollisionInfo& collisionInfo);
+	virtual void onCollisionEnd(Scene& scene, const CollisionInfo& collisionInfo);
+	virtual void onCollisionStay(Scene& scene, const CollisionInfo& collisionInfo);
 
 	virtual void drawUI(Scene & scene) override;
 	virtual void eraseFromScene(Scene & scene) override;

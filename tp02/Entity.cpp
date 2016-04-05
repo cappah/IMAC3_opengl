@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "ComponentFactory.h"
 #include "BehaviorFactory.h"
+#include "PhysicManager.h"
 
 Entity::Entity(Scene* scene) : TransformNode(), m_scene(scene), m_isSelected(false), m_name("default_entity"), m_parent(nullptr)
 {
@@ -271,6 +272,24 @@ void Entity::drawUI(Scene& scene)
 bool Entity::getIsSelected() const
 {
 	return m_isSelected;
+}
+
+Entity::CollisionState Entity::getCollisionState() const
+{
+	return m_collisionState;
+}
+
+CollisionInfo Entity::getCollisionInfo() const
+{
+	return m_collisionInfo;
+}
+
+void Entity::resetCollision()
+{
+	m_collisionInfo.receiver = nullptr;
+	m_collisionInfo.rigidbody = nullptr;
+
+	m_collisionState = CollisionState::NONE;
 }
 
 std::string Entity::getName() const
@@ -723,10 +742,35 @@ void Entity::updateCoroutines()
 
 void Entity::onCollisionBegin(const CollisionInfo & collisionInfo)
 {
-	auto behaviors = getComponents<Behavior>(Component::ComponentType::BEHAVIOR);
-	for (auto& b : behaviors) {
-		b->onColliderEnter(collisionInfo);
-	}
+	//TODO speed up this operation
+	//auto behaviors = getComponents<Behavior>(Component::ComponentType::BEHAVIOR);
+	//for (auto& b : behaviors) {
+	//	b->onColliderEnter(collisionInfo);
+	//}
+	m_collisionState = CollisionState::BEGIN;
+	m_collisionInfo = collisionInfo;
+}
+
+void Entity::onCollisionStay(const CollisionInfo & collisionInfo)
+{
+	//TODO speed up this operation
+	//auto behaviors = getComponents<Behavior>(Component::ComponentType::BEHAVIOR);
+	//for (auto& b : behaviors) {
+	//	b->onColliderEnter(collisionInfo);
+	//}
+	m_collisionState = CollisionState::STAY;
+	m_collisionInfo = collisionInfo;
+}
+
+void Entity::onCollisionEnd(const CollisionInfo & collisionInfo)
+{
+	//TODO speed up this operation
+	//auto behaviors = getComponents<Behavior>(Component::ComponentType::BEHAVIOR);
+	//for (auto& b : behaviors) {
+	//	b->onColliderEnter(collisionInfo);
+	//}
+	m_collisionState = CollisionState::END;
+	m_collisionInfo = collisionInfo;
 }
 
 void Entity::save(Json::Value& entityRoot) const

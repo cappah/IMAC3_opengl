@@ -34,9 +34,19 @@ void TestBehavior::update(Scene& scene)
 	//std::cout << "testBehaviour update" << std::endl;
 }
 
-void TestBehavior::onColliderEnter(const CollisionInfo& collisionInfo) 
+void TestBehavior::onCollisionEnter(Scene& scene, const CollisionInfo& collisionInfo)
 {
 	std::cout << "collision begin at point : ("<<collisionInfo.point.x <<", "<< collisionInfo.point.y <<", "<< collisionInfo.point.z <<")"<< std::endl;
+}
+
+void TestBehavior::onCollisionStay(Scene & scene, const CollisionInfo & collisionInfo)
+{
+	std::cout << "collision stay at point : (" << collisionInfo.point.x << ", " << collisionInfo.point.y << ", " << collisionInfo.point.z << ")" << std::endl;
+}
+
+void TestBehavior::onCollisionEnd(Scene & scene, const CollisionInfo & collisionInfo)
+{
+	std::cout << "collision end at point : (" << collisionInfo.point.x << ", " << collisionInfo.point.y << ", " << collisionInfo.point.z << ")" << std::endl;
 }
 
 void TestBehavior::save(Json::Value & entityRoot) const

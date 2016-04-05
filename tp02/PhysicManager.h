@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <unordered_map>
+
 #include "Flag.h"
 #include "WindZone.h"
 #include "Terrain.h"
@@ -12,7 +15,71 @@
 #include "linearMath/btIDebugDraw.h"
 
 
+
 namespace Physic {
+
+	struct CollisionKey {
+		const btCollisionObject* objA;
+		const btCollisionObject* objB;
+
+		CollisionKey(const btCollisionObject* A, const btCollisionObject* B): objA(A), objB(B)
+		{ }
+
+		inline bool operator==(const CollisionKey& other) const {
+			return (objA == other.objA && objB == other.objB) || (objA == other.objB && objB == other.objA);
+		}
+	};
+
+	struct CollisionPair
+	{
+		enum CollisionState { BEGIN, STAY, END };
+
+		//Rigidbody* rigidbodyA;
+		//Rigidbody* rigidbodyB;
+		CollisionInfo collisionInfoA;
+		CollisionInfo collisionInfoB;
+		CollisionState collisionState;
+
+		CollisionPair(CollisionInfo _collisionInfoA = CollisionInfo(), CollisionInfo _collisionInfoB = CollisionInfo()) : collisionInfoA(_collisionInfoA), collisionInfoB(_collisionInfoB), collisionState(BEGIN)
+		{ }
+
+		void onCollisionBegin();
+		void onCollisionStay();
+		void onCollisionEnd();
+
+		//friend bool operator<(const CollisionPair& A, const CollisionPair& B);
+		inline bool operator<(const CollisionPair& other) const {
+			return collisionInfoA.point.x < other.collisionInfoA.point.x;
+		}
+		//inline bool operator==(const CollisionPair& other) const {
+		//	return ((collisionInfoA.receiver == other.collisionInfoA.receiver) && (collisionInfoB.receiver == other.collisionInfoB.receiver))
+		//		||((collisionInfoA.receiver == other.collisionInfoA.rigidbody) && (collisionInfoB.receiver == other.collisionInfoB.rigidbody))
+		//		|| ((collisionInfoA.receiver == other.collisionInfoA.rigidbody) && (collisionInfoB.receiver == other.collisionInfoB.receiver))
+		//		|| ((collisionInfoA.receiver == other.collisionInfoA.receiver) && (collisionInfoB.receiver == other.collisionInfoB.rigidbody));
+		//}
+		bool operator==(const CollisionPair& other) const;
+	};
+
+	struct MapCollisionPairEqual_to {
+
+		inline bool operator()(const Physic::CollisionPair* lhs, const Physic::CollisionPair* rhs) const {
+			return *lhs == *rhs;
+		}
+	};
+
+
+	struct MapCollisionPairHasher
+	{
+		std::size_t operator()(const Physic::CollisionKey& k) const
+		{
+			using std::size_t;
+			using std::hash;
+
+			return hash<int>()((int)k.objA);
+		}
+	};
+
+
 
 	class DebugDrawerPhysicWorld : public btIDebugDraw
 	{
@@ -30,11 +97,15 @@ namespace Physic {
 		void setDebugMode(int debugMode);
 		int getDebugMode() const;
 	};
-	
+
+
 	class PhysicManager
 	{
+		
 	private:
 		glm::vec3 m_gravity;
+
+		std::unordered_map<CollisionKey, CollisionPair, MapCollisionPairHasher> m_collisionPairUpdateState;
 
 		btDefaultCollisionConfiguration* m_collisionConfiguration;
 		btCollisionDispatcher* m_dispatcher;
@@ -63,4 +134,7 @@ namespace Physic {
 		void debugDraw(const glm::mat4& projection, const glm::mat4& view) const;
 	};
 }
-
+//
+//bool operator<(const Physic::CollisionPair& A, const Physic::CollisionPair& B) {
+//	return A.collisionInfoB.point.x < B.collisionInfoB.point.x;
+//}

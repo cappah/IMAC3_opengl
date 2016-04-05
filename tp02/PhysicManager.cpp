@@ -1,11 +1,40 @@
 #include "PhysicManager.h"
 //forwards :
 #include "Application.h"
-#include "Entity.h" // TODO remove 
+#include "Entity.h"
 #include "DebugDrawer.h"
 
 namespace Physic {
 
+	bool CollisionPair:: operator==(const CollisionPair& other) const {
+		return ( ((collisionInfoA.receiver == other.collisionInfoA.receiver) && (collisionInfoA.rigidbody == other.collisionInfoA.rigidbody))
+			|| ((collisionInfoA.receiver == other.collisionInfoA.rigidbody) && (collisionInfoA.rigidbody == other.collisionInfoA.receiver)) );
+	}
+	
+	/////////////////////////////////////
+
+	void CollisionPair::onCollisionBegin() {
+		if (collisionInfoA.receiver->entity() != nullptr)
+			collisionInfoA.receiver->entity()->onCollisionBegin(collisionInfoA);
+		if (collisionInfoB.receiver->entity() != nullptr)
+			collisionInfoB.receiver->entity()->onCollisionBegin(collisionInfoB);
+	}
+
+	void CollisionPair::onCollisionStay() {
+		if (collisionInfoA.receiver->entity() != nullptr)
+			collisionInfoA.receiver->entity()->onCollisionStay(collisionInfoA);
+		if (collisionInfoB.receiver->entity() != nullptr)
+			collisionInfoB.receiver->entity()->onCollisionStay(collisionInfoB);
+	}
+
+	void CollisionPair::onCollisionEnd() {
+		if (collisionInfoA.receiver->entity() != nullptr)
+			collisionInfoA.receiver->entity()->onCollisionEnd(collisionInfoA);
+		if (collisionInfoB.receiver->entity() != nullptr)
+			collisionInfoB.receiver->entity()->onCollisionEnd(collisionInfoB);
+	}
+
+	////////////////////////////////
 
 	DebugDrawerPhysicWorld::DebugDrawerPhysicWorld() : m_debugMode(DBG_DrawWireframe | DBG_DrawAabb)
 	{
@@ -241,13 +270,50 @@ namespace Physic {
 				}
 			}
 
-			if (obB->getUserIndex() == 1) {
-				collisionInfo01.rigidbody = static_cast<Rigidbody*>(obB->getUserPointer());
-				collisionInfo01.rigidbody->entity()->onCollisionBegin(collisionInfo01);
+			collisionInfo01.receiver = (obA->getUserIndex() == 1) ? static_cast<Rigidbody*>(obA->getUserPointer()) : nullptr; // rigidbody A ...
+			collisionInfo01.rigidbody = (obB->getUserIndex() == 1) ? static_cast<Rigidbody*>(obB->getUserPointer()) : nullptr; // ... collide with rigidbody B.
+			//collisionInfo01.receiver->entity()->onCollisionBegin(collisionInfo01); 
+
+			collisionInfo02.receiver = (obB->getUserIndex() == 1) ? static_cast<Rigidbody*>(obB->getUserPointer()) : nullptr; // rigidbody B ...
+			collisionInfo02.rigidbody = (obA->getUserIndex() == 1) ? static_cast<Rigidbody*>(obA->getUserPointer()) : nullptr; // ... collide with rigidbody A.
+			//collisionInfo02.receiver->entity()->onCollisionBegin(collisionInfo02);
+
+			CollisionPair collisionPair(collisionInfo01, collisionInfo02);
+			CollisionKey collisionKey(obA, obB);
+
+			//the pair already exists, the collision continues :
+			auto findIt = m_collisionPairUpdateState.find(collisionKey);
+			if(findIt != m_collisionPairUpdateState.end()) {
+				findIt->second.collisionState = CollisionPair::CollisionState::STAY;
+				std::cout << "collision stay !" << std::endl;
+				//we update the collisions infos :
+				findIt->second.collisionInfoA = collisionInfo01;
+				findIt->second.collisionInfoB = collisionInfo02;
+				//trigger collision stays :
+				collisionPair.onCollisionStay();
 			}
-			if (obA->getUserIndex() == 1) {
-				collisionInfo02.rigidbody = static_cast<Rigidbody*>(obA->getUserPointer());
-				collisionInfo02.rigidbody->entity()->onCollisionBegin(collisionInfo02);
+			//the pair doesn't exists, the collision begins :
+			else {
+				//we add the new collision pair to the map :
+				m_collisionPairUpdateState[collisionKey] = collisionPair;
+				std::cout << "collision begin !" << std::endl;
+				//trigger collision begins :
+				collisionPair.onCollisionBegin();
+			}
+		}
+
+		for (auto it = m_collisionPairUpdateState.begin(); it != m_collisionPairUpdateState.end(); ){
+			//collision state already marked as ended, we need to remove this collision pair :
+			if (it->second.collisionState == CollisionPair::CollisionState::END) {
+				std::cout << "collision end !" << std::endl;
+				//trigger collision ends :
+				it->second.onCollisionEnd();
+				//delete it->first;
+				/*it = */m_collisionPairUpdateState.erase(it++);
+			}
+			else {
+				it->second.collisionState = CollisionPair::CollisionState::END;
+				++it;
 			}
 		}
 	}

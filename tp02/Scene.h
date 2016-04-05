@@ -12,7 +12,6 @@
 #include "Camera.h"
 #include "Behavior.h"
 
-#include "PhysicManager.h"
 #include "PathManager.h"
 #include "LightManager.h"
 #include "Renderer.h"
@@ -23,6 +22,10 @@
 #include "jsoncpp/json/json.h"
 #include <iostream>
 #include <fstream>
+
+namespace Physic{
+	class PhysicManager;
+}
 
 class Scene
 {
@@ -76,7 +79,7 @@ private:
 
 	//systems : 
 	Renderer* m_renderer;
-	Physic::PhysicManager m_physicManager;
+	Physic::PhysicManager* m_physicManager;
 	PathManager m_pathManager;
 	BehaviorManager m_behaviorManager;
 	//TODO

@@ -26,6 +26,7 @@ class Rigidbody;
 
 
 struct CollisionInfo {
+	Rigidbody* receiver;
 	Rigidbody* rigidbody;
 	glm::vec3 point;
 	glm::vec3 normal;
