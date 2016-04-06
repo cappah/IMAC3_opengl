@@ -17,6 +17,8 @@
 
 #include "ISerializable.h"
 
+static const unsigned int MAX_BONE_COUNT = 100;
+
 struct Material
 {
 	std::string name;
@@ -34,10 +36,14 @@ struct Material3DObject : public Material
 {
 	GLuint uniform_MVP;
 	GLuint uniform_normalMatrix;
+	GLuint uniform_bonesTransform;
+	GLuint uniform_useSkeleton;
 
 	Material3DObject(GLuint _glProgram = 0);
 	void setUniform_MVP(glm::mat4& mvp);
 	void setUniform_normalMatrix(glm::mat4& normalMatrix);
+	void setUniformBonesTransform(const std::vector<glm::mat4>& bonesTransform);
+	void setUniformUseSkeleton(bool useSkeleton);
 };
 
 
@@ -81,11 +87,10 @@ public:
 
 	//void setUniform_MVP(glm::mat4& mvp);
 	//void setUniform_normalMatrix(glm::mat4& normalMatrix);
+	//void setUniformBonesTransform(const std::vector<glm::mat4>& bonesTransform);
 
 	virtual void use() override;
-
 	virtual void drawUI() override;
-
 	virtual void initGL() override;
 
 	// Hérité via ISerializable

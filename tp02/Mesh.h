@@ -103,11 +103,12 @@ struct Mesh
 	bool isIntersectedByRay(const Ray& ray, CollisionInfo& collisionInfo) const;
 
 	Skeleton* getSkeleton() const;
+	bool getIsSkeletalMesh() const;
 
 private:
 	bool initFromScene(const aiScene* pScene, const std::string& Filename);
 	void initMesh(unsigned int Index, const aiMesh* paiMesh);
 	//Check if the mesh has bones. If true, create the appropriate skeleton :  
 	void loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode * rootNode, unsigned int firstVertexId);
-	void loadAnimations(const aiScene& scene);
+	void loadAnimations(const aiScene* scene);
 };

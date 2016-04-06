@@ -25,7 +25,9 @@ void Animator::addAnimation(SkeletalAnimation * animation)
 
 void Animator::removeAnimation(SkeletalAnimation * animation)
 {
-	m_animations.erase(std::remove(m_animations.begin(), m_animations.end(), animation), m_animations.end());
+	auto findIt = std::find_if(m_animations.begin(), m_animations.end(), [&animation](const std::pair<std::string, SkeletalAnimation*>& key) { return key.second == animation; });
+	m_animations.erase(findIt);
+	//m_animations.erase(std::remove(m_animations.begin(), m_animations.end(), animation), m_animations.end());
 }
 
 void Animator::updateAnimations(float timeInSecond)
@@ -66,8 +68,8 @@ void Animator::drawUI(Scene & scene)
 		m_animationName = tmpAnimationName;
 	ImGui::SameLine();
 	if (ImGui::Button("add")){
-		if (AnimationFactory::get().contains(m_animationName)) {
-			SkeletalAnimation* tmpAnim = static_cast<SkeletalAnimation*>(AnimationFactory::get().get(m_animationName)); // TODO
+		if (SkeletalAnimationFactory::get().contains(m_animationName)) {
+			SkeletalAnimation* tmpAnim = SkeletalAnimationFactory::get().get(m_animationName);
 			if (tmpAnim != nullptr)
 				m_animations[m_animationName] = tmpAnim;
 		}
@@ -118,4 +120,14 @@ Component * Animator::clone(Entity * entity)
 	newAnimator->attachToEntity(entity);
 
 	return newAnimator;
+}
+
+void Animator::save(Json::Value & componentRoot) const
+{
+	//TODO
+}
+
+void Animator::load(Json::Value & componentRoot)
+{
+	//TODO
 }

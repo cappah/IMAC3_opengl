@@ -12,7 +12,6 @@ Skeleton::Skeleton(const aiMesh* pMesh, const aiNode* rootNode, unsigned int fir
 	loadBones(pMesh, firstVertexId);
 }
 
-
 Skeleton::~Skeleton()
 {
 }

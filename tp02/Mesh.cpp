@@ -5,7 +5,7 @@
 #include "Utils.h"
 #include "Factories.h"
 
-Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage)
+Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage), isSkeletalMesh(false)
 {
 	subMeshCount = 1;
 	totalTriangleCount = 0;
@@ -13,7 +13,7 @@ Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVer
 	indexOffsets.push_back(0);
 }
 
-Mesh::Mesh(const std::string& _path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW)
+Mesh::Mesh(const std::string& _path) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW), isSkeletalMesh(false)
 {
 	path = _path;
 
@@ -316,11 +316,15 @@ bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) co
 	return false;
 }
 
-Skeleton * Mesh::getSkeleton() const
+Skeleton* Mesh::getSkeleton() const
 {
 	return skeleton;
 }
 
+bool Mesh::getIsSkeletalMesh() const
+{
+	return isSkeletalMesh;
+}
 
 bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 {
@@ -335,6 +339,10 @@ bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 	indexOffsets.clear();
 	subMeshCount = pScene->mNumMeshes;
 	
+	if (skeleton != nullptr)
+		delete skeleton;
+	skeleton = nullptr;
+
 	// Initialize the meshes in the scene one by one
 	for (unsigned int i = 0; i <subMeshCount; i++)
 	{
@@ -347,10 +355,16 @@ bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 		loadBones(i, paiMesh, pScene->mRootNode, triangleIndex.size());
 	}
 
+	//automatically turn on/off bone usage is the mesh has/hasn't got skeleton
+	if (isSkeletalMesh)
+		vbo_usage |= (USE_BONES);
+	else
+		vbo_usage &= ~USE_BONES;
+
 	initGl(); //don't forget to init mesh for opengl
 	computeBoundingBox();
 
-	loadAnimations(scene);
+	loadAnimations(pScene);
 
 	return true;
 }
@@ -423,21 +437,23 @@ void Mesh::loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode *
 {
 	if (mesh->mNumBones != 0) {
 		isSkeletalMesh = true;
-		if (skeleton != nullptr)
-			delete skeleton;
-		skeleton = new Skeleton(mesh, rootNode, firstVertexId);
+		if (skeleton == nullptr)
+			skeleton = new Skeleton(mesh, rootNode, firstVertexId);
+		else
+			skeleton->loadBones(mesh, firstVertexId);
 	}
 	else
 		return;
 }
 
-void Mesh::loadAnimations(const aiScene & scene)
+void Mesh::loadAnimations(const aiScene* scene)
 {
-	if (!scene.HasAnimations())
+	if (!scene->HasAnimations())
 		return;
 
-	for (int i = 0; i < scene.mNumAnimations; i++) {
-		Animation* newAnimation = new Animation(scene.mAnimations[i]);
-		AnimationFactory::get().add(newAnimation->getName(), newAnimation);
+	for (int i = 0; i < scene->mNumAnimations; i++) {
+		SkeletalAnimation* newAnimation = new SkeletalAnimation(scene->mAnimations[i]);
+		std::string animationKey = name +"::"+ newAnimation->getName();
+		SkeletalAnimationFactory::get().add(animationKey, newAnimation);
 	}
 }

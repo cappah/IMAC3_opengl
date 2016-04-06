@@ -146,6 +146,7 @@
     <ClCompile Include="Animator.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="SplineAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -301,6 +302,7 @@
     <ClInclude Include="Animator.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="SplineAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

@@ -21,6 +21,13 @@ struct BoneInfo {
 struct VertexBoneData {
 	unsigned int ids[MAX_BONE_DATA_PER_VERTEX];
 	float weights[MAX_BONE_DATA_PER_VERTEX];
+
+	inline VertexBoneData() {
+		for (int i = 0; i < MAX_BONE_DATA_PER_VERTEX; i++) {
+			ids[i] = 0;
+			weights[i] = i == 0 ? 1 : 0;
+		}
+	}
 };
 
 class Skeleton
@@ -43,9 +50,9 @@ public:
 	const std::vector<VertexBoneData>& getBoneDatas() const;
 
 	void playAnimationStep(float timeInSecond, const SkeletalAnimation& animation);
+	void loadBones(const aiMesh* pMesh, unsigned int firstVertexId);
 
 private:
-	void loadBones(const aiMesh* pMesh, unsigned int firstVertexId);
 	void readNodeHierarchy(float animationTime, const SkeletalAnimation& animation, const aiNode* node, const aiMatrix4x4& parentTransform);
 
 	unsigned int findPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);

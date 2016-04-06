@@ -763,12 +763,12 @@ void MeshFactory::load(Json::Value & entityRoot)
 
 /////////////////////////////////////////
 
-AnimationFactory::AnimationFactory()
+SkeletalAnimationFactory::SkeletalAnimationFactory()
 {
 	
 }
 
-void AnimationFactory::add(const std::string& name, Animation* animation)
+void SkeletalAnimationFactory::add(const std::string& name, SkeletalAnimation* animation)
 {
 	if (std::find(m_defaults.begin(), m_defaults.end(), name) != m_defaults.end()) //can't override default key
 		return;
@@ -776,19 +776,19 @@ void AnimationFactory::add(const std::string& name, Animation* animation)
 	m_animations[name] = animation;
 }
 
-Animation* AnimationFactory::get(const std::string& name)
+SkeletalAnimation* SkeletalAnimationFactory::get(const std::string& name)
 {
 	return m_animations[name];
 }
 
-bool AnimationFactory::contains(const std::string& name)
+bool SkeletalAnimationFactory::contains(const std::string& name)
 {
 	return m_animations.find(name) != m_animations.end();
 }
 
-void AnimationFactory::drawUI()
+void SkeletalAnimationFactory::drawUI()
 {
-	ImGui::PushID("animationFactory");
+	ImGui::PushID("skeletalAnimationFactory");
 
 	/*
 	ImGui::PushItemWidth(70);
@@ -807,7 +807,7 @@ void AnimationFactory::drawUI()
 
 	for (auto& m : m_animations)
 	{
-		if (&m == nullptr)
+		if (m.second == nullptr)
 			continue;
 
 		ImGui::Text(m.first.c_str());
@@ -818,7 +818,7 @@ void AnimationFactory::drawUI()
 	ImGui::PopID();
 }
 
-void AnimationFactory::clear()
+void SkeletalAnimationFactory::clear()
 {
 	for (auto& it = m_animations.begin(); it != m_animations.end();)
 	{
@@ -833,8 +833,8 @@ void AnimationFactory::clear()
 	}
 }
 
-// TDODO : for the moment animations are synchronized with meshes : 
-void AnimationFactory::save(Json::Value & entityRoot) const
+// TODO : for the moment animations are synchronized with meshes : 
+void SkeletalAnimationFactory::save(Json::Value & entityRoot) const
 {
 	//entityRoot["size"] = m_animations.size();
 	//int i = 0;
@@ -846,7 +846,7 @@ void AnimationFactory::save(Json::Value & entityRoot) const
 	//}
 }
 
-void AnimationFactory::load(Json::Value & entityRoot)
+void SkeletalAnimationFactory::load(Json::Value & entityRoot)
 {
 	//int size = entityRoot.get("size", 0).asInt();
 	//for (int i = 0; i < size; i++)

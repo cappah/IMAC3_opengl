@@ -266,6 +266,7 @@
     <ClCompile Include="SkeletalAnimation.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="SplineAnimation.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TestBehavior.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -348,6 +349,7 @@
     <ClInclude Include="SkeletalAnimation.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="Skybox.h" />
+    <ClInclude Include="SplineAnimation.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TestBehavior.h" />
     <ClInclude Include="Texture.h" />

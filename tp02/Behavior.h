@@ -21,7 +21,7 @@ class Scene;
 //	BehaviorFactory::get().add(std::type_index(typeid(T)), this);
 //}
 
-class Behavior : public Component, public ISerializable
+class Behavior : public Component
 {
 private:
 	friend class BehaviorManager;

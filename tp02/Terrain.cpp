@@ -1424,6 +1424,9 @@ void Terrain::drawUI()
 
 		if (ImGui::InputInt("terrain subdivision", &m_subdivision))
 		{
+			if (m_subdivision < 5)
+				m_subdivision = 5;
+
 			generateTerrain();
 			applyNoise(m_terrainNoise, false);
 		}

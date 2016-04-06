@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Materials.h"
 #include "Texture.h"
+#include "SkeletalAnimation.h"
 
 #include "ISerializable.h"
 
@@ -179,11 +180,11 @@ public:
 
 ///////////////////////////////
 
-class AnimationFactory : public ISerializable
+class SkeletalAnimationFactory : public ISerializable
 {
 
 private:
-	std::map<std::string, Animation*> m_animations;
+	std::map<std::string, SkeletalAnimation*> m_animations;
 
 	//for UI : 
 	char name[20];
@@ -192,8 +193,8 @@ private:
 	std::vector<std::string> m_defaults;
 
 public:
-	void add(const std::string& name, Animation* animation);
-	Animation* get(const std::string& name);
+	void add(const std::string& name, SkeletalAnimation* animation);
+	SkeletalAnimation* get(const std::string& name);
 	bool contains(const std::string& name);
 	void drawUI();
 	void clear();
@@ -203,19 +204,18 @@ public:
 
 	// singleton implementation :
 private:
-	AnimationFactory();
+	SkeletalAnimationFactory();
 
 public:
-	inline static AnimationFactory& get()
+	inline static SkeletalAnimationFactory& get()
 	{
-		static AnimationFactory instance;
+		static SkeletalAnimationFactory instance;
 
 		return instance;
 	}
 
-
-	MeshFactory(const MeshFactory& other) = delete;
-	void operator=(const MeshFactory& other) = delete;
+	SkeletalAnimationFactory(const SkeletalAnimationFactory& other) = delete;
+	void operator=(const SkeletalAnimationFactory& other) = delete;
 };
 
 ////////////////////////////////

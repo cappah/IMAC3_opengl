@@ -4,7 +4,7 @@
 
 class Animation
 {
-private:
+protected:
 	bool m_isPlaying;
 	bool m_isPaused;
 	float m_pauseTime;
@@ -13,22 +13,15 @@ private:
 	float m_duration;
 	bool m_isLooping;
 
-	Math::BSpline<float> m_spline;
-
 public:
-	Animation(bool isLooping = true, float duration = 1.f);
+	Animation(float duration = 0, bool isLooping = false);
 	~Animation();
 
-	void play();
-	void pause();
-	void stop();
-	float getValue() const;
-	float getElapsedTime() const;
-	Math::BSpline<float>& getSpline();
-
-	float getDuration() const;
-	void setDuration(float duration);
-	bool getIsLooping() const;
-	void setIsLooping(bool isLooping);
+	virtual void play();
+	virtual void pause();
+	virtual void stop();
+	virtual float getDuration() const;
+	virtual bool getIsLooping() const;
+	virtual float getElapsedTime() const;
 };
 

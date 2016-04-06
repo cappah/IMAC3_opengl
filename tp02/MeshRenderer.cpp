@@ -201,6 +201,8 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 		material[i]->use();
 		material[i]->setUniform_MVP(mvp);
 		material[i]->setUniform_normalMatrix(normalMatrix);
+		if(mesh->getIsSkeletalMesh())
+			material[i]->setUniformBonesTransform(mesh->getSkeleton()->getBonesTransform());
 
 		mesh->draw(i);	
 	}
@@ -210,6 +212,8 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 		material.back()->use();
 		material.back()->setUniform_MVP(mvp);
 		material.back()->setUniform_normalMatrix(normalMatrix);
+		if (mesh->getIsSkeletalMesh())
+			material[i]->setUniformBonesTransform(mesh->getSkeleton()->getBonesTransform());
 
 		mesh->draw(i);
 	}

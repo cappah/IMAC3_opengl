@@ -11,9 +11,11 @@ public:
 	SkeletalAnimation(aiAnimation* animation);
 	~SkeletalAnimation();
 
+	float getDurationInTick() const;
+	float getAnimationTime() const;
+	void setIsLooping(bool isLooping);
 	std::string getName() const;
 	float getTicksPerSecond() const;
-	float getDuration() const;
 	aiNodeAnim* getNodeAnim(const std::string& nodeName) const;
 };
 
