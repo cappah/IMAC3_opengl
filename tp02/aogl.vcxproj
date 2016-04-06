@@ -215,6 +215,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Animator.cpp" />
     <ClCompile Include="aogl.cpp">
       <ObjectFileName>$(IntDir)aogl.obj</ObjectFileName>
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebugDLL</RuntimeLibrary>
@@ -262,6 +263,8 @@
     <ClCompile Include="Rigidbody.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SerializeUtils.cpp" />
+    <ClCompile Include="SkeletalAnimation.cpp" />
+    <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TestBehavior.cpp" />
@@ -295,6 +298,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="Animator.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="BehaviorFactory.h" />
     <ClInclude Include="Behavior.h" />
@@ -341,6 +345,8 @@
     <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SerializeUtils.h" />
+    <ClInclude Include="SkeletalAnimation.h" />
+    <ClInclude Include="Skeleton.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TestBehavior.h" />

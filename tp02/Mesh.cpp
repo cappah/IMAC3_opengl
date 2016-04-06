@@ -3,6 +3,7 @@
 #include "Collider.h"
 #include "Ray.h"
 #include "Utils.h"
+#include "Factories.h"
 
 Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage)
 {
@@ -91,6 +92,19 @@ void Mesh::initGl()
 		glBufferData(GL_ARRAY_BUFFER, uvs.size()*sizeof(float), &uvs[0], GL_STATIC_DRAW);
 		glVertexAttribPointer(UVS, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (void*)0);
 	}
+
+	if (USE_BONES & vbo_usage && skeleton != nullptr)
+	{
+		glGenBuffers(1, &vbo_bones);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_bones);
+		glBufferData(GL_ARRAY_BUFFER, skeleton->getBoneDatas().size()*sizeof(VertexBoneData), &skeleton->getBoneDatas()[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(BONE_IDS);
+		glVertexAttribPointer(BONE_IDS, MAX_BONE_DATA_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (void*)offsetof(VertexBoneData, ids));
+
+		glEnableVertexAttribArray(BONE_WEIGHTS);
+		glVertexAttribPointer(BONE_WEIGHTS, MAX_BONE_DATA_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (void*)offsetof(VertexBoneData, weights));
+	}
 	/*
 	if (USE_INSTANTIATION & vbo_usage)
 	{
@@ -135,6 +149,9 @@ void Mesh::freeGl()
 	if (vbo_tangents != 0)
 		glDeleteBuffers(1, &vbo_tangents);
 
+	if (vbo_bones != 0)
+		glDeleteBuffers(1, &vbo_bones);
+
 	glDeleteVertexArrays(1, &vao);
 }
 
@@ -174,6 +191,13 @@ void Mesh::updateVBO(Vbo_types type)
 		glBufferData(GL_ARRAY_BUFFER, uvs.size()*sizeof(float), &uvs[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
+
+	if ((type == Vbo_types::BONE_IDS || type == Vbo_types::BONE_WEIGHTS) && (USE_BONES & vbo_usage))
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_bones);
+		glBufferData(GL_ARRAY_BUFFER, skeleton->getBoneDatas().size()*sizeof(VertexBoneData), &skeleton->getBoneDatas()[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 }
 
 void Mesh::updateAllVBOs()
@@ -210,6 +234,13 @@ void Mesh::updateAllVBOs()
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_uvs);
 		glBufferData(GL_ARRAY_BUFFER, uvs.size()*sizeof(float), &uvs[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	if (USE_BONES & vbo_usage)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_bones);
+		glBufferData(GL_ARRAY_BUFFER, skeleton->getBoneDatas().size()*sizeof(VertexBoneData), &skeleton->getBoneDatas()[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
@@ -285,6 +316,11 @@ bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) co
 	return false;
 }
 
+Skeleton * Mesh::getSkeleton() const
+{
+	return skeleton;
+}
+
 
 bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 {
@@ -308,9 +344,13 @@ bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 		triangleCount.push_back((triangleIndex.size() / 3) - totalTriangleCount);
 		totalTriangleCount += triangleCount.back();
 
+		loadBones(i, paiMesh, pScene->mRootNode, triangleIndex.size());
 	}
+
 	initGl(); //don't forget to init mesh for opengl
 	computeBoundingBox();
+
+	loadAnimations(scene);
 
 	return true;
 }
@@ -377,4 +417,27 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 		triangleIndex.push_back(offsetGlIdx + Face.mIndices[2]);
 	}
 
+}
+
+void Mesh::loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode * rootNode, unsigned int firstVertexId)
+{
+	if (mesh->mNumBones != 0) {
+		isSkeletalMesh = true;
+		if (skeleton != nullptr)
+			delete skeleton;
+		skeleton = new Skeleton(mesh, rootNode, firstVertexId);
+	}
+	else
+		return;
+}
+
+void Mesh::loadAnimations(const aiScene & scene)
+{
+	if (!scene.HasAnimations())
+		return;
+
+	for (int i = 0; i < scene.mNumAnimations; i++) {
+		Animation* newAnimation = new Animation(scene.mAnimations[i]);
+		AnimationFactory::get().add(newAnimation->getName(), newAnimation);
+	}
 }

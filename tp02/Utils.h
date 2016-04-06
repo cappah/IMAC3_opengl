@@ -10,6 +10,8 @@
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 #include "GLFW/glfw3.h"
 
+#include "assimp/matrix4x4.h"
+
 #include <vector>
 #include <map>
 #include <sstream>
@@ -29,7 +31,9 @@ namespace patch
 	}
 }
 
-
+//assimp to glm conversion : 
+glm::mat4 assimpMat4ToglmMat4(const aiMatrix4x4& aiMat);
+void assimpMat4ToglmMat4(const aiMatrix4x4 & aiMat, glm::mat4& glMat);
 
 // Shader utils
 int check_link_error(GLuint program);

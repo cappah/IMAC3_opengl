@@ -442,13 +442,22 @@ Entity & Entity::add(Rigidbody* rigidbody)
 	return *this;
 }
 
+Entity & Entity::add(Animator * animator)
+{
+	animator->attachToEntity(this);
+
+	m_scene->add(animator);
+	m_components.push_back(animator);
+
+	return *this;
+}
+
 Entity & Entity::add(Behavior * behavior)
 {
 	behavior->attachToEntity(this);
 
 	m_scene->add(behavior);
 	m_components.push_back(behavior);
-
 
 	return *this;
 }
@@ -610,6 +619,19 @@ Entity & Entity::erase(Rigidbody * rigidbody)
 	{
 		m_components.erase(findIt);
 		m_scene->erase(rigidbody);
+	}
+
+	return *this;
+}
+
+Entity & Entity::erase(Animator * animator)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), animator);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(animator);
 	}
 
 	return *this;

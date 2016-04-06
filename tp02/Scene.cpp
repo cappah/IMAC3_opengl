@@ -171,6 +171,12 @@ Scene & Scene::add(Rigidbody* rigidbody)
 	return *this;
 }
 
+Scene & Scene::add(Animator * animator)
+{
+	m_animators.push_back(animator);
+	return *this;
+}
+
 Scene & Scene::add(Behavior * behavior)
 {
 	m_behaviors.push_back(behavior);
@@ -341,6 +347,19 @@ Scene & Scene::erase(Rigidbody* rigidbody)
 	return *this;
 }
 
+Scene & Scene::erase(Animator * animator)
+{
+	auto findIt = std::find(m_animators.begin(), m_animators.end(), animator);
+
+	if (findIt != m_animators.end())
+	{
+		delete animator;
+		m_animators.erase(findIt);
+	}
+
+	return *this;
+}
+
 Scene & Scene::erase(Behavior * behavior)
 {
 	auto findIt = std::find(m_behaviors.begin(), m_behaviors.end(), behavior);
@@ -405,6 +424,14 @@ void Scene::updatePhysic(float deltaTime, const BaseCamera& camera)
 void Scene::updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode)
 {
 	m_physicManager->update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters, updateInEditMode);
+}
+
+void Scene::updateAnimations(float time)
+{
+	// TODO animatorManager ? 
+	for (int i = 0; i < m_animators.size(); i++) {
+		m_animators[i]->updateAnimations(time);
+	}
 }
 
 void Scene::updateBehaviours()

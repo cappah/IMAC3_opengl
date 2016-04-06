@@ -25,6 +25,7 @@
 #include "Camera.h"
 #include "WindZone.h"
 #include "Rigidbody.h"
+#include "Animator.h"
 #include "Behavior.h"
 
 #include "glm/gtc/quaternion.hpp"
@@ -161,6 +162,8 @@ public:
 	// function to add a component. 
 	Entity& add(Rigidbody* rigidbody);
 	// function to add a component. 
+	Entity& add(Animator* animator);
+	// function to add a component. 
 	Entity& add(Behavior* behavior);
 
 	// function to erase a component.
@@ -187,6 +190,8 @@ public:
 	Entity& erase(Physic::WindZone* windZone);
 	// function to erase a component.
 	Entity& erase(Rigidbody* rigidbody);
+	// function to erase a component.
+	Entity& erase(Animator* animator);
 	// function to erase a component.
 	Entity& erase(Behavior* behavior);
 

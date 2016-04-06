@@ -256,6 +256,19 @@ int check_compile_error(GLuint shader, const char ** sourceBuffer)
 	return 0;
 }
 
+glm::mat4 assimpMat4ToglmMat4(const aiMatrix4x4 & aiMat)
+{
+	return glm::mat4(aiMat.a1, aiMat.b1, aiMat.c1, aiMat.d1, aiMat.a2, aiMat.b2, aiMat.c2, aiMat.d2, aiMat.a3, aiMat.b3, aiMat.c3, aiMat.d3, aiMat.a4, aiMat.b4, aiMat.c4, aiMat.d4);
+}
+
+void assimpMat4ToglmMat4(const aiMatrix4x4 & aiMat, glm::mat4& glMat)
+{
+	glMat[0][0] = aiMat.a1; glMat[0][1] = aiMat.b1; glMat[0][2] = aiMat.c1; glMat[0][3] = aiMat.d1;
+	glMat[1][0] = aiMat.a2; glMat[1][1] = aiMat.b2; glMat[1][2] = aiMat.c2; glMat[1][3] = aiMat.d2;
+	glMat[2][0] = aiMat.a3; glMat[2][1] = aiMat.b3; glMat[2][2] = aiMat.c3; glMat[2][3] = aiMat.d3;
+	glMat[3][0] = aiMat.a4; glMat[3][1] = aiMat.b4; glMat[3][2] = aiMat.c4; glMat[3][3] = aiMat.d4;
+}
+
 int check_link_error(GLuint program)
 {
 	// Get link error log size and print it eventually

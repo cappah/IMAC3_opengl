@@ -11,6 +11,7 @@
 #include "Rigidbody.h"
 #include "Camera.h"
 #include "Behavior.h"
+#include "Animator.h"
 
 #include "PathManager.h"
 #include "LightManager.h"
@@ -66,6 +67,9 @@ private:
 	//rigidbodies : 
 	std::vector<Rigidbody*> m_rigidbodies;
 
+	//animators : 
+	std::vector<Animator*> m_animators;
+
 	//behaviors : 
 	std::vector<Behavior*> m_behaviors;
 
@@ -114,6 +118,7 @@ public:
 	Scene& add(Camera* camera);
 	Scene& add(Physic::WindZone* windZone);
 	Scene& add(Rigidbody* rigidbody);
+	Scene& add(Animator* animator);
 	Scene& add(Behavior* behavior);
 
 	Scene& erase(Entity* entity);
@@ -129,6 +134,7 @@ public:
 	Scene& erase(Camera* camera);
 	Scene& erase(Physic::WindZone* windZone);
 	Scene& erase(Rigidbody* rigidbody);
+	Scene& erase(Animator* animator);
 	Scene& erase(Behavior* behavior);
 
 	void render(const BaseCamera& camera);
@@ -141,6 +147,8 @@ public:
 
 	void updatePhysic(float deltaTime, const BaseCamera& camera);
 	void updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode);
+
+	void updateAnimations(float time);
 
 	void updateBehaviours();
 

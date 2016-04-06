@@ -761,6 +761,105 @@ void MeshFactory::load(Json::Value & entityRoot)
 	}
 }
 
+/////////////////////////////////////////
+
+AnimationFactory::AnimationFactory()
+{
+	
+}
+
+void AnimationFactory::add(const std::string& name, Animation* animation)
+{
+	if (std::find(m_defaults.begin(), m_defaults.end(), name) != m_defaults.end()) //can't override default key
+		return;
+
+	m_animations[name] = animation;
+}
+
+Animation* AnimationFactory::get(const std::string& name)
+{
+	return m_animations[name];
+}
+
+bool AnimationFactory::contains(const std::string& name)
+{
+	return m_animations.find(name) != m_animations.end();
+}
+
+void AnimationFactory::drawUI()
+{
+	ImGui::PushID("animationFactory");
+
+	/*
+	ImGui::PushItemWidth(70);
+	ImGui::InputText("name", name, 20);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(180);
+	ImGui::InputFilePath("path", path, 50);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	if (ImGui::SmallButton("add"))
+	{
+		add(name, path);
+	}*/
+
+
+	for (auto& m : m_animations)
+	{
+		if (&m == nullptr)
+			continue;
+
+		ImGui::Text(m.first.c_str());
+		//ImGui::SameLine();
+		//ImGui::Text(m.second->path.c_str());
+	}
+
+	ImGui::PopID();
+}
+
+void AnimationFactory::clear()
+{
+	for (auto& it = m_animations.begin(); it != m_animations.end();)
+	{
+		if (std::find(m_defaults.begin(), m_defaults.end(), it->first) == m_defaults.end()) // we keep defaults alive
+		{
+			//it->second->freeGl();
+			delete it->second;
+			it = m_animations.erase(it);
+		}
+		else
+			it++;
+	}
+}
+
+// TDODO : for the moment animations are synchronized with meshes : 
+void AnimationFactory::save(Json::Value & entityRoot) const
+{
+	//entityRoot["size"] = m_animations.size();
+	//int i = 0;
+	//for (auto it = m_animations.begin(); it != m_animations.end(); it++)
+	//{
+	//	entityRoot["keys"][i] = it->first;
+	//	entityRoot["values"][i] = it->second != nullptr ? it->second->path : "";
+	//	i++;
+	//}
+}
+
+void AnimationFactory::load(Json::Value & entityRoot)
+{
+	//int size = entityRoot.get("size", 0).asInt();
+	//for (int i = 0; i < size; i++)
+	//{
+	//	std::string animationName = entityRoot["keys"][i].asString();
+	//	std::string animationPath = entityRoot["values"][i].asString();
+
+	//	//don't laod mesh without mesh path these meshes are renerated with code : 
+	//	if (animationPath != "")
+	//		add(animationName, animationPath);
+	//}
+}
+
 
 //////////////////////////////////////////
 

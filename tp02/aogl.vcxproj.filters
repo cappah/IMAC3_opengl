@@ -141,6 +141,11 @@
       <Filter>Physic</Filter>
     </ClCompile>
     <ClCompile Include="Coroutine.cpp" />
+    <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="SkeletalAnimation.cpp" />
+    <ClCompile Include="Animator.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -291,6 +296,11 @@
       <Filter>Physic</Filter>
     </ClInclude>
     <ClInclude Include="Coroutine.h" />
+    <ClInclude Include="Skeleton.h" />
+    <ClInclude Include="SkeletalAnimation.h" />
+    <ClInclude Include="Animator.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

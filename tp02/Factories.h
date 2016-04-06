@@ -174,6 +174,50 @@ public:
 	void operator=(const MeshFactory& other) = delete;
 };
 
+
+
+
+///////////////////////////////
+
+class AnimationFactory : public ISerializable
+{
+
+private:
+	std::map<std::string, Animation*> m_animations;
+
+	//for UI : 
+	char name[20];
+	char path[50];
+
+	std::vector<std::string> m_defaults;
+
+public:
+	void add(const std::string& name, Animation* animation);
+	Animation* get(const std::string& name);
+	bool contains(const std::string& name);
+	void drawUI();
+	void clear();
+
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(Json::Value & entityRoot) override;
+
+	// singleton implementation :
+private:
+	AnimationFactory();
+
+public:
+	inline static AnimationFactory& get()
+	{
+		static AnimationFactory instance;
+
+		return instance;
+	}
+
+
+	MeshFactory(const MeshFactory& other) = delete;
+	void operator=(const MeshFactory& other) = delete;
+};
+
 ////////////////////////////////
 
 class MaterialFactory : public ISerializable

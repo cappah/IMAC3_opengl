@@ -8,10 +8,11 @@
 #include "glm/glm.hpp"
 #include "glm/common.hpp"
 
-
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+
+#include "Skeleton.h"
 
 //forwards : 
 class Ray;
@@ -44,19 +45,22 @@ struct Mesh
 
 	std::string path;
 
-	enum Vbo_usage { USE_INDEX = 1 << 0, USE_VERTICES = 1 << 1, USE_UVS = 1 << 2, USE_NORMALS = 1 << 3, USE_TANGENTS = 1 << 4 /* , USE_INSTANTIATION = 1 << 5 */};
-	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, INDEX, /* INSTANCE_TRANSFORM */};
+	enum Vbo_usage { USE_INDEX = 1 << 0, USE_VERTICES = 1 << 1, USE_UVS = 1 << 2, USE_NORMALS = 1 << 3, USE_TANGENTS = 1 << 4 , USE_BONES = 1 << 5/* , USE_INSTANTIATION = 1 << 5 */};
+	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, INDEX, BONE_IDS, BONE_WEIGHTS /* INSTANCE_TRANSFORM */};
 
 	int subMeshCount;
 	int totalTriangleCount;
 	std::vector<int> triangleCount;
 	std::vector<GLuint> indexOffsets;
+	Skeleton* skeleton;
+	bool isSkeletalMesh; //true if the mesh owns a skeleton.
 
 	std::vector<int> triangleIndex;
 	std::vector<float> uvs;
 	std::vector<float> vertices;
 	std::vector<float> normals;
 	std::vector<float> tangents;
+	
 	//std::vector<glm::mat4> transforms;
 
 	GLuint vbo_index;
@@ -64,6 +68,7 @@ struct Mesh
 	GLuint vbo_uvs;
 	GLuint vbo_normals;
 	GLuint vbo_tangents;
+	GLuint vbo_bones;
 	//GLuint vbo_transforms[4];
 	GLuint vao;
 
@@ -97,7 +102,12 @@ struct Mesh
 
 	bool isIntersectedByRay(const Ray& ray, CollisionInfo& collisionInfo) const;
 
+	Skeleton* getSkeleton() const;
+
 private:
 	bool initFromScene(const aiScene* pScene, const std::string& Filename);
 	void initMesh(unsigned int Index, const aiMesh* paiMesh);
+	//Check if the mesh has bones. If true, create the appropriate skeleton :  
+	void loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode * rootNode, unsigned int firstVertexId);
+	void loadAnimations(const aiScene& scene);
 };
