@@ -4,7 +4,7 @@
 
 
 
-Skeleton::Skeleton(const aiMesh* pMesh, const aiNode* rootNode, unsigned int firstVertexId): m_rootNode(rootNode)
+Skeleton::Skeleton(const aiMesh* pMesh, const aiNode* rootNode, unsigned int firstVertexId): m_rootNode(rootNode), m_boneCount(0)
 {
 	m_globalInverseTransform = rootNode->mTransformation;
 	m_globalInverseTransform.Inverse();
@@ -14,6 +14,7 @@ Skeleton::Skeleton(const aiMesh* pMesh, const aiNode* rootNode, unsigned int fir
 
 Skeleton::~Skeleton()
 {
+	delete m_rootNode;
 }
 
 unsigned int Skeleton::getBoneCount() const
@@ -31,6 +32,12 @@ const std::vector<glm::mat4>& Skeleton::getBonesTransform() const
 	return m_bonesTransform;
 }
 
+const glm::mat4 & Skeleton::getBoneTransform(int i) const
+{
+	assert(i >= 0 && i < m_bonesTransform.size());
+	return m_bonesTransform[i];
+}
+
 const std::vector<VertexBoneData>& Skeleton::getBoneDatas() const
 {
 	return m_boneDatas;
@@ -38,9 +45,7 @@ const std::vector<VertexBoneData>& Skeleton::getBoneDatas() const
 
 void Skeleton::playAnimationStep(float timeInSecond, const SkeletalAnimation& animation)
 {
-	float ticksPerSecond = animation.getTicksPerSecond() != 0 ? animation.getTicksPerSecond() : 25.0f;
-	float timeInTicks = timeInSecond * ticksPerSecond;
-	float animationTime = fmod(timeInTicks, animation.getDuration());
+	float animationTime = animation.getAnimationTime();
 
 	aiMatrix4x4 identity;
 	readNodeHierarchy(animationTime, animation, m_rootNode, identity );
@@ -48,7 +53,7 @@ void Skeleton::playAnimationStep(float timeInSecond, const SkeletalAnimation& an
 
 void Skeleton::loadBones(const aiMesh* pMesh, unsigned int firstVertexId)
 {
-	m_bonesTransform.resize(pMesh->mNumBones);
+	m_bonesTransform.resize(pMesh->mNumBones, glm::mat4(1));
 	m_bonesOffset.resize(pMesh->mNumBones);
 
 	for (unsigned int i = 0; i < pMesh->mNumBones; i++) {
@@ -72,6 +77,9 @@ void Skeleton::loadBones(const aiMesh* pMesh, unsigned int firstVertexId)
 				continue;
 
 			unsigned int vertexId = pMesh->mBones[i]->mWeights[j].mVertexId + firstVertexId;
+
+			if (vertexId + 1 > m_boneDatas.size())
+				m_boneDatas.resize(vertexId + 1);
 
 			for (int k = 0; k < MAX_BONE_DATA_PER_VERTEX; k++) {
 				if (m_boneDatas[vertexId].weights[k] == 0) {
@@ -219,7 +227,7 @@ void Skeleton::readNodeHierarchy(float animationTime, const SkeletalAnimation& a
 	if (m_boneMapping.find(nodeName) != m_boneMapping.end()) {
 
 		unsigned int boneIndex = m_boneMapping[nodeName];
-		assimpMat4ToglmMat4( m_globalInverseTransform * globalTransformation * m_bonesOffset[boneIndex], m_bonesTransform[boneIndex]);
+		m_bonesTransform[boneIndex] = assimpMat4ToglmMat4( m_globalInverseTransform * globalTransformation * m_bonesOffset[boneIndex]);
 	}
 
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {

@@ -201,8 +201,11 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 		material[i]->use();
 		material[i]->setUniform_MVP(mvp);
 		material[i]->setUniform_normalMatrix(normalMatrix);
-		if(mesh->getIsSkeletalMesh())
-			material[i]->setUniformBonesTransform(mesh->getSkeleton()->getBonesTransform());
+		if (mesh->getIsSkeletalMesh()) {
+			for (int boneIdx = 0; boneIdx < mesh->getSkeleton()->getBoneCount(); boneIdx++)
+				material[i]->setUniformBonesTransform(boneIdx, mesh->getSkeleton()->getBoneTransform(boneIdx));
+		}
+		material[i]->setUniformUseSkeleton(mesh->getIsSkeletalMesh());
 
 		mesh->draw(i);	
 	}
@@ -213,7 +216,9 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 		material.back()->setUniform_MVP(mvp);
 		material.back()->setUniform_normalMatrix(normalMatrix);
 		if (mesh->getIsSkeletalMesh())
-			material[i]->setUniformBonesTransform(mesh->getSkeleton()->getBonesTransform());
+			for (int boneIdx = 0; boneIdx < mesh->getSkeleton()->getBoneCount(); boneIdx++)
+				material[i]->setUniformBonesTransform(boneIdx, mesh->getSkeleton()->getBoneTransform(boneIdx));
+		material[i]->setUniformUseSkeleton(mesh->getIsSkeletalMesh());
 
 		mesh->draw(i);
 	}

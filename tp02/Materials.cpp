@@ -18,7 +18,8 @@ Material3DObject::Material3DObject(GLuint _glProgram) : Material(_glProgram)
 {
 	uniform_MVP = glGetUniformLocation(glProgram, "MVP");
 	uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
-	uniform_bonesTransform = glGetUniformLocation(glProgram, "BonesTransform");
+	for (int i = 0; i < MAX_BONE_COUNT; i++)
+		uniform_bonesTransform[i] = glGetUniformLocation(glProgram, ("BonesTransform["+std::to_string(i)+"]").c_str() );
 	uniform_useSkeleton = glGetUniformLocation(glProgram, "UseSkeleton");
 }
 
@@ -33,10 +34,10 @@ void Material3DObject::setUniform_normalMatrix(glm::mat4& normalMatrix)
 	glUniformMatrix4fv(uniform_normalMatrix, 1, false, glm::value_ptr(normalMatrix));
 }
 
-void Material3DObject::setUniformBonesTransform(const std::vector<glm::mat4>& bonesTransform)
+void Material3DObject::setUniformBonesTransform(unsigned int idx, const glm::mat4& boneTransform)
 {
-	assert(bonesTransform.size() < MAX_BONE_COUNT);
-	glUniformMatrix4fv(uniform_bonesTransform, bonesTransform.size(), false, &bonesTransform[0][0][0]);
+	assert(idx < MAX_BONE_COUNT);
+	glUniformMatrix4fv(uniform_bonesTransform[idx], 1, false, glm::value_ptr(boneTransform));
 }
 
 void Material3DObject::setUniformUseSkeleton(bool useSkeleton)

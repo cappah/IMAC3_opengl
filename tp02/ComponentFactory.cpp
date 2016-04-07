@@ -17,6 +17,7 @@ ComponentFactory::ComponentFactory()
 	add(Component::ComponentType::WIND_ZONE, new Physic::WindZone());
 	add(Component::ComponentType::BILLBOARD, new Billboard());
 	add(Component::ComponentType::RIGIDBODY, new Rigidbody());
+	add(Component::ComponentType::ANIMATOR, new Animator());
 
 	assert(m_components.size() == Component::ComponentType::INTERNAL_COMPONENT_COUNT);
 }

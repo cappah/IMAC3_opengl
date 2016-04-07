@@ -37,6 +37,8 @@ class CollisionInfo;
 
 struct Mesh
 {
+	Assimp::Importer* importer;
+
 	std::string name;
 
 	glm::vec3 topRight;
@@ -46,7 +48,7 @@ struct Mesh
 	std::string path;
 
 	enum Vbo_usage { USE_INDEX = 1 << 0, USE_VERTICES = 1 << 1, USE_UVS = 1 << 2, USE_NORMALS = 1 << 3, USE_TANGENTS = 1 << 4 , USE_BONES = 1 << 5/* , USE_INSTANTIATION = 1 << 5 */};
-	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, INDEX, BONE_IDS, BONE_WEIGHTS /* INSTANCE_TRANSFORM */};
+	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, BONE_IDS, BONE_WEIGHTS /* INSTANCE_TRANSFORM */, INDEX };
 
 	int subMeshCount;
 	int totalTriangleCount;
@@ -80,9 +82,10 @@ struct Mesh
 	GLenum drawUsage;
 
 	Mesh(GLenum _primitiveType = GL_TRIANGLES, unsigned int _vbo_usage = (USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS), int _coordCountByVertex = 3, GLenum _drawUsage = GL_STATIC_DRAW);
-	Mesh(const std::string& _path);
+	Mesh(const std::string& _path, const std::string& meshName = "");
 
 	~Mesh();
+	void clear();
 
 	//initialize vbos and vao, based on the informations of the mesh.
 	void initGl();

@@ -36,13 +36,13 @@ struct Material3DObject : public Material
 {
 	GLuint uniform_MVP;
 	GLuint uniform_normalMatrix;
-	GLuint uniform_bonesTransform;
+	GLuint uniform_bonesTransform[MAX_BONE_COUNT];
 	GLuint uniform_useSkeleton;
 
 	Material3DObject(GLuint _glProgram = 0);
 	void setUniform_MVP(glm::mat4& mvp);
 	void setUniform_normalMatrix(glm::mat4& normalMatrix);
-	void setUniformBonesTransform(const std::vector<glm::mat4>& bonesTransform);
+	void setUniformBonesTransform(unsigned int idx, const glm::mat4& boneTransform);
 	void setUniformUseSkeleton(bool useSkeleton);
 };
 

@@ -17,6 +17,7 @@
 #include "WindZone.h"
 #include "Billboard.h"
 #include "Rigidbody.h"
+#include "Animator.h"
 
 class ComponentFactory
 {

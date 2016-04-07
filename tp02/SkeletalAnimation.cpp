@@ -3,9 +3,10 @@
 #include "Application.h"
 
 
-SkeletalAnimation::SkeletalAnimation(aiAnimation* animation): Animation(), m_animation(animation)
+SkeletalAnimation::SkeletalAnimation(aiAnimation* animation): Animation(0.0, true), m_animation(animation)
 {
-	m_duration = getTicksPerSecond() * getDuration();
+	float ticksPerSecond = getTicksPerSecond() == 0 ? 25 : getTicksPerSecond();
+	m_duration = getDurationInTick() / ticksPerSecond;
 }
 
 SkeletalAnimation::~SkeletalAnimation()
@@ -36,7 +37,7 @@ float SkeletalAnimation::getAnimationTime() const
 {
 	float ticksPerSecond = getTicksPerSecond() != 0 ? getTicksPerSecond() : 25.0f;
 	float timeInTicks = getElapsedTime() * ticksPerSecond;
-	return fmod(timeInTicks, getDuration()); //note : the fmod is normally not necessary since getElapsedTime already loop the time of the animation.
+	return fmod(timeInTicks, getDurationInTick()); //note : the fmod is normally not necessary since getElapsedTime already loop the time of the animation.
 }
 
 float SkeletalAnimation::getDurationInTick() const

@@ -273,6 +273,7 @@ void Project::edit()
 
 		//Update behaviours :
 		if (editor.getIsPlaying()) {
+			scene->updateAnimations(Application::get().getTime());
 			scene->updateBehaviours();
 		}
 

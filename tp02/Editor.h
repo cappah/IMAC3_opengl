@@ -99,6 +99,7 @@ private:
 	bool m_meshFactoryVisible;
 	bool m_programFactoryVisible;
 	bool m_materialFactoryVisible;
+	bool m_skeletalAnimationFactoryVisible;
 	bool m_sceneManagerVisible;
 
 	bool m_multipleEditing;

@@ -12,7 +12,7 @@
 precision highp float;
 precision highp int;
 
-const unsigned int MAX_BONE_COUNT = 5;
+const unsigned int MAX_BONE_COUNT = 100;
 
 uniform mat4 MVP;
 uniform mat4 NormalMatrix;
@@ -49,7 +49,7 @@ void main()
 	vec3 pos = Position;
 
 	Out.TexCoord = TexCoord * TextureRepetition;
-	Out.Position = pos;
+	Out.Position = vec3(boneTransform * vec4(pos, 1));
 	//Out.Normal =  normalize( vec3(NormalMatrix * vec4(Normal, 0)) );
 
 	//calculate TBN matrix : 

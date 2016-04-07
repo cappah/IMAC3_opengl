@@ -184,19 +184,18 @@ class SkeletalAnimationFactory : public ISerializable
 {
 
 private:
-	std::map<std::string, SkeletalAnimation*> m_animations;
+	std::map<std::string, std::map<std::string, SkeletalAnimation*>> m_animations;
 
 	//for UI : 
 	char name[20];
 	char path[50];
 
-	std::vector<std::string> m_defaults;
-
 public:
-	void add(const std::string& name, SkeletalAnimation* animation);
-	SkeletalAnimation* get(const std::string& name);
-	bool contains(const std::string& name);
+	void add(const std::string& meshName, const std::string& animationName, SkeletalAnimation* animation);
+	SkeletalAnimation* get(const std::string& meshName, const std::string& animationName);
+	bool contains(const std::string& meshName, const std::string& animationName);
 	void drawUI();
+	std::map<std::string, std::map<std::string, SkeletalAnimation*>>::iterator clear(const std::string& meshName);
 	void clear();
 
 	virtual void save(Json::Value & entityRoot) const override;

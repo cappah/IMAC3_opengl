@@ -9,7 +9,9 @@ class Animator: public Component
 private:
 	Skeleton* m_skeleton;
 	std::string m_currentAnimName;
+	std::string m_currentSkeletonName;
 	std::map<std::string, SkeletalAnimation*> m_animations;
+	bool m_isPlaying;
 
 	//for ui : 
 	std::string m_skeletonName;
@@ -24,6 +26,7 @@ public:
 	void removeAnimation(SkeletalAnimation* animation);
 	void updateAnimations(float timeInSecond);
 
+	void play();
 	void play(const std::string& animationName);
 
 	virtual void drawUI(Scene & scene) override;

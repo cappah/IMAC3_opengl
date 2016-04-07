@@ -260,6 +260,7 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	m_programFactoryVisible = false;
 	m_materialFactoryVisible = false;
 	m_sceneManagerVisible = false;
+	m_skeletalAnimationFactoryVisible = false;
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -409,6 +410,7 @@ void Editor::hideAllToolsUI()
 	m_meshFactoryVisible = false;
 	m_programFactoryVisible = false;
 	m_materialFactoryVisible = false;
+	m_skeletalAnimationFactoryVisible = false;
 	m_sceneManagerVisible = false;
 }
 
@@ -979,6 +981,11 @@ void Editor::displayBottomWindow(Project& project)
 		hideAllToolsUI();
 		m_materialFactoryVisible = true;
 	}
+	if (ImGui::RadioButton("skeletal animation factory", m_skeletalAnimationFactoryVisible))
+	{
+		hideAllToolsUI();
+		m_skeletalAnimationFactoryVisible = true;
+	}
 	if (ImGui::RadioButton("scene manager", m_sceneManagerVisible))
 	{
 		hideAllToolsUI();
@@ -1034,6 +1041,13 @@ void Editor::displayBottomWindow(Project& project)
 	{
 		ImGui::BeginChild("Material factory");
 		MaterialFactory::get().drawUI();
+		ImGui::End();
+	}
+
+	if (m_skeletalAnimationFactoryVisible)
+	{
+		ImGui::BeginChild("SkeletalAnimation factory");
+		SkeletalAnimationFactory::get().drawUI();
 		ImGui::End();
 	}
 

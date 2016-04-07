@@ -673,9 +673,9 @@ void MeshFactory::add(const std::string & name, const std::string & path)
 	if (std::find(m_defaults.begin(), m_defaults.end(), name) != m_defaults.end()) //can't override default key
 		return;
 
-	Mesh* newMesh = new Mesh(path);
+	Mesh* newMesh = new Mesh(path, name);
 
-	newMesh->name = name;
+	//newMesh->name = name;
 	m_meshes[name] = newMesh;
 }
 
@@ -768,22 +768,19 @@ SkeletalAnimationFactory::SkeletalAnimationFactory()
 	
 }
 
-void SkeletalAnimationFactory::add(const std::string& name, SkeletalAnimation* animation)
+void SkeletalAnimationFactory::add(const std::string& meshName, const std::string& animationName, SkeletalAnimation* animation)
 {
-	if (std::find(m_defaults.begin(), m_defaults.end(), name) != m_defaults.end()) //can't override default key
-		return;
-
-	m_animations[name] = animation;
+	m_animations[meshName][animationName] = animation;
 }
 
-SkeletalAnimation* SkeletalAnimationFactory::get(const std::string& name)
+SkeletalAnimation* SkeletalAnimationFactory::get(const std::string& meshName, const std::string& animationName)
 {
-	return m_animations[name];
+	return m_animations[meshName][animationName];
 }
 
-bool SkeletalAnimationFactory::contains(const std::string& name)
+bool SkeletalAnimationFactory::contains(const std::string& meshName, const std::string& animationName)
 {
-	return m_animations.find(name) != m_animations.end();
+	return m_animations.find(meshName) != m_animations.end() && m_animations[meshName].find(animationName) != m_animations[meshName].end();
 }
 
 void SkeletalAnimationFactory::drawUI()
@@ -805,31 +802,36 @@ void SkeletalAnimationFactory::drawUI()
 	}*/
 
 
-	for (auto& m : m_animations)
+	for (auto& mesh : m_animations)
 	{
-		if (m.second == nullptr)
-			continue;
+		for (auto& anim : mesh.second)
+		{
+			if (anim.second == nullptr)
+				continue;
 
-		ImGui::Text(m.first.c_str());
-		//ImGui::SameLine();
-		//ImGui::Text(m.second->path.c_str());
+			ImGui::Text( (mesh.first +"::"+ anim.first).c_str() );
+		}
 	}
 
 	ImGui::PopID();
+}
+
+std::map<std::string, std::map<std::string, SkeletalAnimation*>>::iterator SkeletalAnimationFactory::clear(const std::string& meshName)
+{
+	for (auto& it = m_animations[meshName].begin(); it != m_animations[meshName].end(); it++)
+	{
+		delete it->second;
+
+	}
+
+	return m_animations.erase(m_animations.find(meshName));
 }
 
 void SkeletalAnimationFactory::clear()
 {
 	for (auto& it = m_animations.begin(); it != m_animations.end();)
 	{
-		if (std::find(m_defaults.begin(), m_defaults.end(), it->first) == m_defaults.end()) // we keep defaults alive
-		{
-			//it->second->freeGl();
-			delete it->second;
-			it = m_animations.erase(it);
-		}
-		else
-			it++;
+		it = clear(it->first);
 	}
 }
 

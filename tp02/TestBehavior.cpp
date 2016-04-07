@@ -3,6 +3,7 @@
 #include "BehaviorFactory.h"
 #include "Scene.h"
 #include "Coroutine.h"
+#include "Animator.h"
 
 
 //constexpr int tatu() {
@@ -27,6 +28,10 @@ void TestBehavior::start(Scene& scene)
 {
 	std::cout << "testBehaviour start" << std::endl;
 	entity()->startCoroutine < void > (std::function<void()>([]() { std::cout << "coroutine called !" << std::endl; }), 1.f);
+	Animator* animator = getComponent<Animator>(ComponentType::ANIMATOR);
+	if (animator != nullptr) {
+		animator->play();
+	}
 }
 
 void TestBehavior::update(Scene& scene)

@@ -25,7 +25,7 @@ struct VertexBoneData {
 	inline VertexBoneData() {
 		for (int i = 0; i < MAX_BONE_DATA_PER_VERTEX; i++) {
 			ids[i] = 0;
-			weights[i] = i == 0 ? 1 : 0;
+			weights[i] = 0;
 		}
 	}
 };
@@ -47,6 +47,7 @@ public:
 	unsigned int getBoneCount() const;
 	const std::vector<aiMatrix4x4>& getBonesOffset() const;
 	const std::vector<glm::mat4>& getBonesTransform() const;
+	const glm::mat4& getBoneTransform(int i) const;
 	const std::vector<VertexBoneData>& getBoneDatas() const;
 
 	void playAnimationStep(float timeInSecond, const SkeletalAnimation& animation);
