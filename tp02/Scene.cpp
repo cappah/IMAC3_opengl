@@ -177,6 +177,12 @@ Scene & Scene::add(Animator * animator)
 	return *this;
 }
 
+Scene & Scene::add(CharacterController * characterController)
+{
+	m_characterControllers.push_back(characterController);
+	return *this;
+}
+
 Scene & Scene::add(Behavior * behavior)
 {
 	m_behaviors.push_back(behavior);
@@ -355,6 +361,19 @@ Scene & Scene::erase(Animator * animator)
 	{
 		delete animator;
 		m_animators.erase(findIt);
+	}
+
+	return *this;
+}
+
+Scene & Scene::erase(CharacterController * characterController)
+{
+	auto findIt = std::find(m_characterControllers.begin(), m_characterControllers.end(), characterController);
+
+	if (findIt != m_characterControllers.end())
+	{
+		delete characterController;
+		m_characterControllers.erase(findIt);
 	}
 
 	return *this;

@@ -11,7 +11,7 @@ CollisionInfo::CollisionInfo(Rigidbody* _rigidbody, const glm::vec3& _point, con
 
 ///////////////////////////////
 
-Collider::Collider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial) : Component(COLLIDER), visualMesh(_visualMesh), visualMaterial(_visualMaterial), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1), origin(0,0,0)
+Collider::Collider(ComponentType colliderType, Mesh* _visualMesh, MaterialUnlit* _visualMaterial) : Component(colliderType), visualMesh(_visualMesh), visualMaterial(_visualMaterial), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1), origin(0,0,0)
 {
 
 }
@@ -217,7 +217,7 @@ void Collider::drawUI(Scene& scene)
 
 ///////////////////////////////////////////
 
-BoxCollider::BoxCollider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial): Collider(_visualMesh, _visualMaterial)
+BoxCollider::BoxCollider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial): Collider(BOX_COLLIDER, _visualMesh, _visualMaterial)
 {
 	localTopRight = glm::vec3(0.5f, 0.5f, 0.5f);
 	localBottomLeft = glm::vec3(-0.5f, -0.5f, -0.5f);
@@ -423,3 +423,86 @@ void BoxCollider::load(Json::Value & rootComponent)
 	bottomLeft = fromJsonValue<glm::vec3>(rootComponent["bottomLeft"], glm::vec3());
 }
 
+//////////////////////////////////////////////
+
+CapsuleCollider::CapsuleCollider(): Collider(CAPSULE_COLLIDER)
+{
+}
+
+void CapsuleCollider::render(const glm::mat4 & projection, const glm::mat4 & view, const glm::vec3 & color)
+{
+	//nothing
+}
+
+void CapsuleCollider::debugLog()
+{
+	//nothing
+}
+
+bool CapsuleCollider::isIntersectedByRay(const Ray & ray, float * t)
+{
+	//nothing
+	return false;
+}
+
+void CapsuleCollider::drawUI(Scene & scene)
+{
+	Collider::drawUI(scene);
+	if (ImGui::InputFloat("height", &height))
+		updateOffsetMatrix();
+	if (ImGui::InputFloat("radius", &radius))
+		updateOffsetMatrix();
+}
+
+Component* CapsuleCollider::clone(Entity* entity)
+{
+	CapsuleCollider* newCollider = new CapsuleCollider(*this);
+
+	newCollider->attachToEntity(entity);
+
+	return newCollider;
+}
+
+void CapsuleCollider::addToScene(Scene& scene)
+{
+	scene.add(this);
+}
+
+void CapsuleCollider::addToEntity(Entity & entity)
+{
+	entity.add(this);
+}
+
+void CapsuleCollider::eraseFromEntity(Entity& entity)
+{
+	entity.erase(this);
+}
+
+void CapsuleCollider::coverMesh(Mesh & mesh)
+{
+	//TODO
+}
+
+void CapsuleCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin)
+{
+	//TODO
+}
+
+btCollisionShape * CapsuleCollider::makeShape()
+{
+	return new btCapsuleShape(radius, height);
+}
+
+void CapsuleCollider::save(Json::Value & rootComponent) const
+{
+	Collider::save(rootComponent);
+	rootComponent["height"] = height;
+	rootComponent["radius"] = radius;
+}
+
+void CapsuleCollider::load(Json::Value & rootComponent)
+{
+	Collider::load(rootComponent);
+	height = rootComponent.get("height", 1).asFloat();
+	radius = rootComponent.get("radius", 1).asFloat();
+}

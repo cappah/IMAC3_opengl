@@ -186,7 +186,7 @@ void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id
 	ImGui::SameLine();
 
 
-	ImGui::Text(Component::ComponentTypeName[component->type()].c_str());//, ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
+	ImGui::Text(Component::ComponentTypeName[flagBitToInt(component->type())].c_str());//, ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
 
 	ImGui::SameLine();
 	if (ImGui::Button("remove"))
@@ -311,6 +311,7 @@ void Entity::deselect()
 {
 	m_isSelected = false;
 }
+
 
 Entity& Entity::add(PointLight* pointLight)
 {
@@ -448,6 +449,16 @@ Entity & Entity::add(Animator * animator)
 
 	m_scene->add(animator);
 	m_components.push_back(animator);
+
+	return *this;
+}
+
+Entity& Entity::add(CharacterController* characterController)
+{
+	characterController->attachToEntity(this);
+
+	m_scene->add(characterController);
+	m_components.push_back(characterController);
 
 	return *this;
 }
@@ -637,6 +648,19 @@ Entity & Entity::erase(Animator * animator)
 	return *this;
 }
 
+Entity & Entity::erase(CharacterController * characterController)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), characterController);
+
+	if (findIt != m_components.end())
+	{
+		m_components.erase(findIt);
+		m_scene->erase(characterController);
+	}
+
+	return *this;
+}
+
 Entity & Entity::erase(Behavior * behavior)
 {
 	auto findIt = std::find(m_components.begin(), m_components.end(), behavior);
@@ -649,6 +673,7 @@ Entity & Entity::erase(Behavior * behavior)
 
 	return *this;
 }
+
 
 void Entity::endCreation()
 {

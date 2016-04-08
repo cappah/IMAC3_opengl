@@ -31,6 +31,9 @@ namespace patch
 	}
 }
 
+//conversion flag bit to int :
+int flagBitToInt(int flagBit);
+
 //assimp to glm conversion : 
 glm::mat4 assimpMat4ToglmMat4(const aiMatrix4x4& aiMat);
 void assimpMat4ToglmMat4(const aiMatrix4x4 & aiMat, glm::mat4& glMat);

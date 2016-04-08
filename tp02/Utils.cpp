@@ -7,6 +7,16 @@
 #include <Windows.h>
 #endif // _WIN32 
 
+int flagBitToInt(int flagBit)
+{
+	int toInt = -1;
+	do {
+		toInt++;
+		flagBit &= ~(1 << toInt);
+	} while (flagBit != 0);
+	return toInt;
+}
+
 void AutoCompletion::addWord(std::string word)
 {
 	char* newWord = new char[word.size()+1];

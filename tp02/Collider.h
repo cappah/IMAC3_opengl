@@ -51,7 +51,7 @@ struct Collider : public Component
 	glm::quat rotation;
 	glm::mat4 modelMatrix;
 
-	Collider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial);
+	Collider(ComponentType colliderType, Mesh* _visualMesh = nullptr, MaterialUnlit* _visualMaterial = nullptr);
 	virtual ~Collider();
 
 	//add a visual representation to this collider
@@ -147,6 +147,30 @@ struct BoxCollider : public Collider
 
 	virtual void updateModelMatrix() override;
 	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1,0,0)) override;
+	virtual void debugLog() override;
+	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) override;
+	virtual void drawUI(Scene& scene) override;
+	virtual Component* clone(Entity* entity) override;
+	virtual void addToScene(Scene& scene) override;
+	virtual void addToEntity(Entity& entity) override;
+	virtual void eraseFromEntity(Entity& entity) override;
+	virtual void coverMesh(Mesh& mesh) override;
+	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
+	virtual btCollisionShape* makeShape() override;
+
+	virtual void save(Json::Value& rootComponent) const override;
+	virtual void load(Json::Value& rootComponent) override;
+};
+
+
+struct CapsuleCollider : public Collider
+{
+	float height;
+	float radius;
+
+	CapsuleCollider();
+
+	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1, 0, 0)) override;
 	virtual void debugLog() override;
 	virtual bool isIntersectedByRay(const Ray& ray, float* t = nullptr) override;
 	virtual void drawUI(Scene& scene) override;

@@ -28,6 +28,8 @@ private:
 	std::vector<Collider*> m_colliders;
 
 	btDiscreteDynamicsWorld* m_ptrToPhysicWorld;
+	bool m_frozenAxis[3];
+	bool m_frozenAngles[3];
 
 public:
 	Rigidbody();
@@ -69,6 +71,8 @@ public:
 	void removeCollider(Collider* collider);
 	//only remove all colliders from the rigidbody, don't destroy them.
 	void removeAllColliders();
+	void freezeAxis(bool x, bool y, bool z);
+	void freezeAngles(bool x, bool y, bool z);
 
 	void setIsTrigger(bool state);
 

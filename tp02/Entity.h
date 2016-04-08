@@ -26,6 +26,7 @@
 #include "WindZone.h"
 #include "Rigidbody.h"
 #include "Animator.h"
+#include "CharacterController.h"
 #include "Behavior.h"
 
 #include "glm/gtc/quaternion.hpp"
@@ -137,7 +138,7 @@ public:
 	void select();
 	//deselect this entity, set m_isSelected to false
 	void deselect();
-
+	
 	// function to add a component. 
 	Entity& add(PointLight* pointLight);
 	// function to add a component. 
@@ -163,6 +164,8 @@ public:
 	Entity& add(Rigidbody* rigidbody);
 	// function to add a component. 
 	Entity& add(Animator* animator);
+	// function to add a component. 
+	Entity& add(CharacterController* characterController);
 	// function to add a component. 
 	Entity& add(Behavior* behavior);
 
@@ -193,7 +196,11 @@ public:
 	// function to erase a component.
 	Entity& erase(Animator* animator);
 	// function to erase a component.
+	Entity& erase(CharacterController* characterController);
+	// function to erase a component.
 	Entity& erase(Behavior* behavior);
+
+
 
 	//finalyze the creation of the entity, should be called after all components has been added to the entity : 
 	//One of the goal of this function is to properly set up the collider such that it cover well all the components of the entity.
@@ -244,9 +251,9 @@ std::vector<T*> Entity::getComponents(Component::ComponentType type)
 	std::vector<T*> foundComponents;
 
 	for (int i = 0; i < m_components.size(); i++) {
-		if (m_components[i]->type() == type) {
+		if ((m_components[i]->type() & type) != 0) {
 			
-			if (type == Component::ComponentType::BEHAVIOR) {
+			if ((type & Component::ComponentType::BEHAVIOR) != 0) {
 				T* foundComponent = dynamic_cast<T*>(m_components[i]);
 				if(foundComponent != nullptr)
 					foundComponents.push_back(foundComponent);
@@ -272,9 +279,9 @@ void Entity::startCoroutine(std::function<R(Args...)> action, float callDeltaTim
 template<typename T = Component>
 T* Entity::getComponent(Component::ComponentType type)
 {
-	if (type == Component::ComponentType::BEHAVIOR) {
+	if ((type & Component::ComponentType::BEHAVIOR) != 0) {
 		for (int i = 0; i < m_components.size(); i++) {
-			if (m_components[i]->type() == Component::ComponentType::BEHAVIOR) {
+			if ((m_components[i]->type() & Component::ComponentType::BEHAVIOR) != 0) {
 				T* foundComponent = dynamic_cast<T*>(m_components[i]);
 				if (foundComponent != nullptr)
 					return foundComponent;
@@ -282,7 +289,7 @@ T* Entity::getComponent(Component::ComponentType type)
 		}
 	}
 	else {
-		auto findIt = std::find_if(m_components.begin(), m_components.end(), [type](Component* c) { return c->type() == type; });
+		auto findIt = std::find_if(m_components.begin(), m_components.end(), [type](Component* c) { return ((c->type() & type) != 0); });
 		if (findIt != m_components.end()){
 			assert(dynamic_cast<T*>(*findIt) == *findIt);
 			T* foundComponent = static_cast<T*>(*findIt);
@@ -292,3 +299,4 @@ T* Entity::getComponent(Component::ComponentType type)
 
 	return nullptr;
 }
+

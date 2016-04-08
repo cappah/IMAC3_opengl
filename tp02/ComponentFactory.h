@@ -18,6 +18,7 @@
 #include "Billboard.h"
 #include "Rigidbody.h"
 #include "Animator.h"
+#include "CharacterController.h"
 
 class ComponentFactory
 {

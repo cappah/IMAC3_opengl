@@ -227,6 +227,7 @@
     <ClCompile Include="Billboard.cpp" />
     <ClCompile Include="BSpline.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CharacterController.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentFactory.cpp" />
@@ -307,6 +308,7 @@
     <ClInclude Include="Billboard.h" />
     <ClInclude Include="BSpline.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CharacterController.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentFactory.h" />

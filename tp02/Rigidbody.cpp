@@ -1,6 +1,7 @@
 #include "Rigidbody.h"
 //forwards : 
 #include "Scene.h"
+#include "Entity.h"
 
 
 
@@ -174,6 +175,24 @@ void Rigidbody::removeAllColliders()
 	m_colliders.clear();
 }
 
+void Rigidbody::freezeAxis(bool x, bool y, bool z)
+{
+	m_frozenAxis[0] = x;
+	m_frozenAxis[1] = y;
+	m_frozenAxis[2] = z;
+	if (m_bulletRigidbody != nullptr)
+		m_bulletRigidbody->setLinearFactor(btVector3((x == true ? 0 : 1), (y == true ? 0 : 1), (z == true ? 0 : 1)));
+}
+
+void Rigidbody::freezeAngles(bool x, bool y, bool z)
+{
+	m_frozenAngles[0] = x;
+	m_frozenAngles[1] = y;
+	m_frozenAngles[2] = z;
+	if (m_bulletRigidbody != nullptr)
+		m_bulletRigidbody->setAngularFactor(btVector3((x == true ? 0 : 1), (y == true ? 0 : 1), (z == true ? 0 : 1)));
+}
+
 void Rigidbody::setIsTrigger(bool state)
 {
 	m_isTrigger = state;
@@ -197,6 +216,29 @@ void Rigidbody::drawUI(Scene & scene)
 	if (ImGui::RadioButton("isTrigger", m_isTrigger)) {
 		setIsTrigger(!m_isTrigger);
 	}
+
+	ImGui::BeginChild("linear constraint", ImVec2(0, 20));
+	if (ImGui::RadioButton("x", m_frozenAxis[0]))
+		freezeAxis(!m_frozenAxis[0], m_frozenAxis[1], m_frozenAxis[2]);
+	ImGui::SameLine();
+	if (ImGui::RadioButton("y", m_frozenAxis[1]))
+		freezeAxis(m_frozenAxis[0], !m_frozenAxis[1], m_frozenAxis[2]);
+	ImGui::SameLine();
+	if (ImGui::RadioButton("z", m_frozenAxis[2]))
+		freezeAxis(m_frozenAxis[0], m_frozenAxis[1], !m_frozenAxis[2]);
+	ImGui::EndChild();
+
+	ImGui::BeginChild("angular constraint", ImVec2(0, 20));
+	if (ImGui::RadioButton("x", m_frozenAngles[0]))
+		freezeAngles(!m_frozenAngles[0], m_frozenAngles[1], m_frozenAngles[2]);
+	ImGui::SameLine();
+	if (ImGui::RadioButton("y", m_frozenAngles[1]))
+		freezeAngles(m_frozenAngles[0], !m_frozenAngles[1], m_frozenAngles[2]);
+	ImGui::SameLine();
+	if (ImGui::RadioButton("z", m_frozenAngles[2]))
+		freezeAngles(m_frozenAngles[0], m_frozenAngles[1], !m_frozenAngles[2]);
+	ImGui::EndChild();
+
 }
 
 void Rigidbody::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)

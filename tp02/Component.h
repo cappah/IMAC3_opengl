@@ -17,10 +17,31 @@
 class Entity;
 class Scene;
 
+
 class Component : public ISerializable
 {
 public:
-	enum ComponentType { COLLIDER, MESH_RENDERER, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, FLAG, PARTICLE_EMITTER, PATH_POINT, BILLBOARD, CAMERA, WIND_ZONE, RIGIDBODY, ANIMATOR, INTERNAL_COMPONENT_COUNT, BEHAVIOR, LIGHT, NONE };
+	enum ComponentType {
+		BOX_COLLIDER = 1 << 0, CAPSULE_COLLIDER = 1 << 1, SPHERE_COLLIDER = 1 << 2, MESH_COLLIDER = 1 << 3,
+		MESH_RENDERER = 1 << 4,
+		POINT_LIGHT = 1 << 5, DIRECTIONAL_LIGHT = 1 << 6, SPOT_LIGHT = 1 << 7,
+		FLAG = 1 << 8,
+		PARTICLE_EMITTER = 1 << 9,
+		PATH_POINT = 1 << 10,
+		BILLBOARD = 1 << 11,
+		CAMERA = 1 << 12,
+		WIND_ZONE = 1 << 13,
+		RIGIDBODY = 1 << 14,
+		ANIMATOR = 1 << 15,
+		CHARACTER_CONTROLLER = 1 << 16,
+		INTERNAL_COMPONENT_COUNT = 1 << 17,
+		COLLIDER = (BOX_COLLIDER | CAPSULE_COLLIDER | SPHERE_COLLIDER | MESH_COLLIDER),
+		LIGHT = (POINT_LIGHT|DIRECTIONAL_LIGHT|SPOT_LIGHT),
+		BEHAVIOR = 1 << 18,
+		NONE = 1 << 19
+		};
+
+	
 	static const std::vector<std::string> ComponentTypeName;
 protected:
 	Entity* m_entity;

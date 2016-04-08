@@ -1,7 +1,7 @@
 #include "Component.h"
 #include "Entity.h"
 
-const std::vector<std::string> Component::ComponentTypeName = { "collider", "mesh renderer", "point light", "directional light", "spot light", "flag", "particle emitter", "path point", "billboard", "camera", "wind zone", "rigidbody", "animator", "componentCount", "behavior", "light", "none" };
+const std::vector<std::string> Component::ComponentTypeName = { "box collider", "capsule collider", "sphere collider", "mesh collider", "mesh renderer", "point light", "directional light", "spot light", "flag", "particle emitter", "path point", "billboard", "camera", "wind zone", "rigidbody", "animator", "character controller", "componentCount", "behavior", "light", "none" };
 
 
 Component::Component(Component::ComponentType type) : m_entity(nullptr), m_type(type)

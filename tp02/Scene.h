@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Behavior.h"
 #include "Animator.h"
+#include "CharacterController.h"
 
 #include "PathManager.h"
 #include "LightManager.h"
@@ -70,6 +71,9 @@ private:
 	//animators : 
 	std::vector<Animator*> m_animators;
 
+	//character controllers : 
+	std::vector<CharacterController*> m_characterControllers;
+
 	//behaviors : 
 	std::vector<Behavior*> m_behaviors;
 
@@ -119,6 +123,7 @@ public:
 	Scene& add(Physic::WindZone* windZone);
 	Scene& add(Rigidbody* rigidbody);
 	Scene& add(Animator* animator);
+	Scene& add(CharacterController* characterController);
 	Scene& add(Behavior* behavior);
 
 	Scene& erase(Entity* entity);
@@ -135,6 +140,7 @@ public:
 	Scene& erase(Physic::WindZone* windZone);
 	Scene& erase(Rigidbody* rigidbody);
 	Scene& erase(Animator* animator);
+	Scene& erase(CharacterController* characterController);
 	Scene& erase(Behavior* behavior);
 
 	void render(const BaseCamera& camera);
