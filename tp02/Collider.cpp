@@ -209,9 +209,6 @@ void Collider::drawUI(Scene& scene)
 	glm::vec3 tmpOffset = offsetPosition;
 	if (ImGui::InputFloat3("offset position", &tmpOffset[0]))
 		setOffsetPosition(tmpOffset);
-	glm::vec3 tmpOffsetScale = offsetScale;
-	if (ImGui::InputFloat3("offset scale", &tmpOffsetScale[0]))
-		setOffsetScale(tmpOffsetScale);
 }
 
 
@@ -350,6 +347,9 @@ bool BoxCollider::isIntersectedByRay(const Ray& ray, float* t)
 void BoxCollider::drawUI(Scene& scene)
 {
 	Collider::drawUI(scene);
+	glm::vec3 tmpOffsetScale = offsetScale;
+	if (ImGui::InputFloat3("offset scale", &tmpOffsetScale[0]))
+		setOffsetScale(tmpOffsetScale);
 }
 
 Component* BoxCollider::clone(Entity* entity)
@@ -379,11 +379,12 @@ void BoxCollider::eraseFromEntity(Entity& entity)
 void BoxCollider::coverMesh(Mesh& mesh)
 {
 	origin = mesh.origin;
-	glm::vec3 dimensions = (mesh.topRight - mesh.bottomLeft);
+	glm::vec3 dimensions = (mesh.topRight - mesh.bottomLeft)*scale;
 
 	offsetScale = dimensions;
-	offsetPosition = dimensions * 0.5f + origin*dimensions + mesh.bottomLeft;// -translation;
+	offsetPosition = dimensions * 0.5f + origin*dimensions + mesh.bottomLeft*scale;// -translation;
 
+	updateOffsetMatrix();
 	updateModelMatrix();
 }
 
@@ -395,12 +396,13 @@ void BoxCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 _origin)
 	offsetScale = dimensions;
 	offsetPosition = dimensions * 0.5f + origin*dimensions + min;// -translation;
 
+	updateOffsetMatrix();
 	updateModelMatrix();
 }
 
 btCollisionShape * BoxCollider::makeShape()
 {
-	return new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+	return new btBoxShape(btVector3(0.5f*offsetScale.x, 0.5f*offsetScale.y, 0.5f*offsetScale.z));
 }
 
 void BoxCollider::save(Json::Value & rootComponent) const
@@ -425,13 +427,27 @@ void BoxCollider::load(Json::Value & rootComponent)
 
 //////////////////////////////////////////////
 
-CapsuleCollider::CapsuleCollider(): Collider(CAPSULE_COLLIDER)
+CapsuleCollider::CapsuleCollider(): Collider(CAPSULE_COLLIDER, MeshFactory::get().get("capsuleWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe")),
+									radius(0.5f), height(2.f)
 {
+
 }
 
 void CapsuleCollider::render(const glm::mat4 & projection, const glm::mat4 & view, const glm::vec3 & color)
 {
-	//nothing
+	if (visualMesh == nullptr || visualMaterial == nullptr)
+		return;
+
+	glm::mat4 mvp = projection * view * modelMatrix;
+
+	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visualMaterial);
+
+	unlitMat->use();
+	unlitMat->setUniform_MVP(mvp);
+	unlitMat->setUniform_normalMatrix(glm::mat4(1)); //no need normals
+	unlitMat->setUniform_color(color);
+
+	visualMesh->draw();
 }
 
 void CapsuleCollider::debugLog()
@@ -448,10 +464,18 @@ bool CapsuleCollider::isIntersectedByRay(const Ray & ray, float * t)
 void CapsuleCollider::drawUI(Scene & scene)
 {
 	Collider::drawUI(scene);
-	if (ImGui::InputFloat("height", &height))
+	if (ImGui::InputFloat("height", &height)) {
+		offsetScale.y = height*0.5f;
+		offsetScale.x = radius * 2.f;
+		offsetScale.z = radius * 2.f;
 		updateOffsetMatrix();
-	if (ImGui::InputFloat("radius", &radius))
+	}
+	if (ImGui::InputFloat("radius", &radius)) {
+		offsetScale.y = height*0.5f;
+		offsetScale.x = radius * 2.f;
+		offsetScale.z = radius * 2.f;
 		updateOffsetMatrix();
+	}
 }
 
 Component* CapsuleCollider::clone(Entity* entity)
@@ -480,17 +504,34 @@ void CapsuleCollider::eraseFromEntity(Entity& entity)
 
 void CapsuleCollider::coverMesh(Mesh & mesh)
 {
-	//TODO
+	origin = mesh.origin;
+	glm::vec3 dimensions = (mesh.topRight - mesh.bottomLeft)*scale;
+
+	offsetScale = dimensions;
+	offsetPosition = dimensions * 0.5f + origin*dimensions + mesh.bottomLeft*scale;// -translation;
+
+	updateOffsetMatrix();
+	updateModelMatrix();
 }
 
-void CapsuleCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin)
+void CapsuleCollider::cover(glm::vec3 min, glm::vec3 max, glm::vec3 _origin)
 {
-	//TODO
+	origin = _origin;
+	glm::vec3 dimensions = (min - max)*scale;
+
+	offsetScale = dimensions;
+	offsetPosition = dimensions * 0.5f + origin*dimensions + min*scale;// -translation;
+
+	height = offsetScale.y * 2.f;
+	radius = offsetScale.x*0.5f;
+
+	updateOffsetMatrix();
+	updateModelMatrix();
 }
 
 btCollisionShape * CapsuleCollider::makeShape()
 {
-	return new btCapsuleShape(radius, height);
+	return new btCapsuleShape(0.5f*offsetScale.x, 2.f*offsetScale.y);
 }
 
 void CapsuleCollider::save(Json::Value & rootComponent) const

@@ -626,6 +626,87 @@ MeshFactory::MeshFactory()
 	cubeWireFrame->path = "";
 	cubeWireFrame->computeBoundingBox();
 
+	std::vector<float> tmpVertices;
+	Mesh* capsuleWireFrame = new Mesh(GL_LINES, (Mesh::USE_VERTICES));
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
+		float y = 0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f);
+		y = y > 0 ? y + 1.f : y - 1.f;
+		tmpVertices.push_back(y); //y
+		tmpVertices.push_back(0); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0); //x
+		float y = 0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f);
+		y = y > 0 ? y + 1.f : y - 1.f;
+		tmpVertices.push_back(y); //y
+		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
+		tmpVertices.push_back(1.f); //y
+		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
+		tmpVertices.push_back(-1.f); //y
+		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0); //x
+		tmpVertices.push_back(-1.f + (i/9.f)*2.f); //y
+		tmpVertices.push_back(-0.5f); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0); //x
+		tmpVertices.push_back(-1.f + (i / 9.f)*2.f); //y
+		tmpVertices.push_back(0.5f); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(-0.5); //x
+		tmpVertices.push_back(-1.f + (i / 9.f)*2.f); //y
+		tmpVertices.push_back(0); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0.5); //x
+		tmpVertices.push_back(-1.f + (i / 9.f)*2.f); //y
+		tmpVertices.push_back(0); //z
+	}
+	//CapsuleWireFrame->triangleIndex = { };
+	//CapsuleWireFrame->uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
+	capsuleWireFrame->vertices = tmpVertices;
+	//CapsuleWireFrame->normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
+	capsuleWireFrame->initGl();
+	capsuleWireFrame->name = "capsuleWireframe";
+	capsuleWireFrame->path = "";
+	capsuleWireFrame->computeBoundingBox();
+	
+	tmpVertices.clear();
+
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
+		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //y
+		tmpVertices.push_back(0); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
+		tmpVertices.push_back(0); //y
+		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
+	}
+	for (int i = 0; i < 10; i++) {
+		tmpVertices.push_back(0); //x
+		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //y
+		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
+	}
+
+	Mesh* sphereWireFrame = new Mesh(GL_LINES, (Mesh::USE_VERTICES));
+	sphereWireFrame->vertices = tmpVertices;
+	sphereWireFrame->initGl();
+	sphereWireFrame->name = "sphereWireframe";
+	sphereWireFrame->path = "";
+	sphereWireFrame->computeBoundingBox();
+	tmpVertices.clear();
+
 	Mesh* plane = new Mesh();
 	plane->triangleIndex = { 0, 1, 2, 2, 3, 0 };
 	plane->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
@@ -649,12 +730,16 @@ MeshFactory::MeshFactory()
 	m_meshes["default"] = cube;
 	m_meshes["cube"] = cube;
 	m_meshes["cubeWireframe"] = cubeWireFrame;
+	m_meshes["capsuleWireframe"] = capsuleWireFrame;
+	m_meshes["sphereWireframe"] = sphereWireFrame;
 	m_meshes["plane"] = plane;
 	m_meshes["quad"] = plane;
 
 	m_defaults.push_back("default");
 	m_defaults.push_back("cube");
 	m_defaults.push_back("cubeWireframe");
+	m_defaults.push_back("capsuleWireframe");
+	m_defaults.push_back("sphereWireframe");
 	m_defaults.push_back("plane");
 	m_defaults.push_back("quad");
 }

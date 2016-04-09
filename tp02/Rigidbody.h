@@ -2,6 +2,7 @@
 
 #include "btBulletCollisionCommon.h"
 #include "btBulletDynamicsCommon.h"
+#include "BulletCollision/CollisionDispatch/btGhostObject.h"
 
 #include "MotionState.h"
 #include "Component.h"
@@ -30,10 +31,12 @@ private:
 	btDiscreteDynamicsWorld* m_ptrToPhysicWorld;
 	bool m_frozenAxis[3];
 	bool m_frozenAngles[3];
+	bool m_useGravity;
 
 public:
 	Rigidbody();
-	//TODO deep copy
+	Rigidbody(const Rigidbody& other);
+	Rigidbody& operator=(const Rigidbody& other);
 	~Rigidbody();
 
     /**
@@ -73,6 +76,7 @@ public:
 	void removeAllColliders();
 	void freezeAxis(bool x, bool y, bool z);
 	void freezeAngles(bool x, bool y, bool z);
+	void setUseGravity(bool useGravity);
 
 	void setIsTrigger(bool state);
 
@@ -81,7 +85,7 @@ public:
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat());
 	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat());
-	void applyTransformFromPhysicSimulation();
+	//void applyTransformFromPhysicSimulation();
 
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual void addToScene(Scene& scene) override;

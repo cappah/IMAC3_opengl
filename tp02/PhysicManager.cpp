@@ -14,23 +14,23 @@ namespace Physic {
 	/////////////////////////////////////
 
 	void CollisionPair::onCollisionBegin() {
-		if (collisionInfoA.receiver->entity() != nullptr)
+		if (collisionInfoA.receiver != nullptr && collisionInfoA.receiver->entity() != nullptr)
 			collisionInfoA.receiver->entity()->onCollisionBegin(collisionInfoA);
-		if (collisionInfoB.receiver->entity() != nullptr)
+		if (collisionInfoB.receiver != nullptr && collisionInfoB.receiver->entity() != nullptr)
 			collisionInfoB.receiver->entity()->onCollisionBegin(collisionInfoB);
 	}
 
 	void CollisionPair::onCollisionStay() {
-		if (collisionInfoA.receiver->entity() != nullptr)
+		if (collisionInfoA.receiver != nullptr && collisionInfoA.receiver->entity() != nullptr)
 			collisionInfoA.receiver->entity()->onCollisionStay(collisionInfoA);
-		if (collisionInfoB.receiver->entity() != nullptr)
+		if (collisionInfoB.receiver != nullptr && collisionInfoB.receiver->entity() != nullptr)
 			collisionInfoB.receiver->entity()->onCollisionStay(collisionInfoB);
 	}
 
 	void CollisionPair::onCollisionEnd() {
-		if (collisionInfoA.receiver->entity() != nullptr)
+		if (collisionInfoA.receiver != nullptr && collisionInfoA.receiver->entity() != nullptr)
 			collisionInfoA.receiver->entity()->onCollisionEnd(collisionInfoA);
-		if (collisionInfoB.receiver->entity() != nullptr)
+		if (collisionInfoB.receiver != nullptr && collisionInfoB.receiver->entity() != nullptr)
 			collisionInfoB.receiver->entity()->onCollisionEnd(collisionInfoB);
 	}
 
@@ -273,6 +273,10 @@ namespace Physic {
 			collisionInfo01.receiver = (obA->getUserIndex() == 1) ? static_cast<Rigidbody*>(obA->getUserPointer()) : nullptr; // rigidbody A ...
 			collisionInfo01.rigidbody = (obB->getUserIndex() == 1) ? static_cast<Rigidbody*>(obB->getUserPointer()) : nullptr; // ... collide with rigidbody B.
 			//collisionInfo01.receiver->entity()->onCollisionBegin(collisionInfo01); 
+
+			//if two collider are on the same rigidbody, don't send callback :
+			if (collisionInfo01.receiver == collisionInfo01.rigidbody)
+				continue;
 
 			collisionInfo02.receiver = (obB->getUserIndex() == 1) ? static_cast<Rigidbody*>(obB->getUserPointer()) : nullptr; // rigidbody B ...
 			collisionInfo02.rigidbody = (obA->getUserIndex() == 1) ? static_cast<Rigidbody*>(obA->getUserPointer()) : nullptr; // ... collide with rigidbody A.

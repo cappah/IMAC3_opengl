@@ -6,12 +6,44 @@
 
 
 Rigidbody::Rigidbody() : Component(ComponentType::RIGIDBODY),
-m_translation(0,0,0), m_scale(1,1,1), m_mass(0), m_inertia(0,0,0), m_isTrigger(false),
+m_translation(0,0,0), m_scale(1,1,1), m_mass(0), m_inertia(0,0,0), m_isTrigger(false), m_useGravity(true),
 m_bulletRigidbody(nullptr), m_motionState(nullptr), m_shape(nullptr), m_ptrToPhysicWorld(nullptr)
 {
-
+	for (int i = 0; i < 3; i++) {
+		m_frozenAxis[i] = false;
+		m_frozenAngles[i] = false;
+	}
 }
 
+Rigidbody::Rigidbody(const Rigidbody & other): Component(other),
+m_translation(other.m_translation), m_scale(other.m_scale), m_mass(other.m_mass), m_inertia(other.m_inertia), m_isTrigger(other.m_isTrigger), m_useGravity(other.m_useGravity),
+m_bulletRigidbody(nullptr), m_motionState(nullptr), m_shape(nullptr), m_ptrToPhysicWorld(other.m_ptrToPhysicWorld)
+{
+	for (int i = 0; i < 3; i++) {
+		m_frozenAxis[i] = other.m_frozenAxis[i];
+		m_frozenAngles[i] = other.m_frozenAngles[i];
+	}
+}
+
+Rigidbody & Rigidbody::operator=(const Rigidbody & other)
+{
+	Component::operator=(other);
+	m_translation = other.m_translation;
+	m_scale = other.m_scale;
+	m_mass = other.m_mass;
+	m_inertia = other.m_inertia;
+	m_isTrigger = other.m_isTrigger;
+	m_useGravity = other.m_useGravity;
+	m_bulletRigidbody = nullptr;
+	m_motionState = nullptr;
+	m_shape = nullptr;
+	m_ptrToPhysicWorld = other.m_ptrToPhysicWorld;
+
+	for (int i = 0; i < 3; i++) {
+		m_frozenAxis[i] = other.m_frozenAxis[i];
+		m_frozenAngles[i] = other.m_frozenAngles[i];
+	}
+}
 
 Rigidbody::~Rigidbody()
 {
@@ -24,21 +56,17 @@ Rigidbody::~Rigidbody()
 
 void Rigidbody::pushToSimulation()
 {
-	//target already pushed to world
-	if (m_bulletRigidbody != nullptr && m_bulletRigidbody->isInWorld())
-		return;
-
-	//add it to the world :
-	m_ptrToPhysicWorld->addRigidBody(m_bulletRigidbody);
+	if (m_bulletRigidbody != nullptr && !m_bulletRigidbody->isInWorld()) {
+		m_ptrToPhysicWorld->addRigidBody(m_bulletRigidbody);
+		setUseGravity(m_useGravity);
+	}
 }
 
 void Rigidbody::popFromSimulation()
 {
 	//remove btRigidBody from the world :
-	if (m_bulletRigidbody->isInWorld())
-	{
+	if (m_bulletRigidbody != nullptr && m_bulletRigidbody->isInWorld())
 		m_ptrToPhysicWorld->removeRigidBody(m_bulletRigidbody);
-	}
 }
 
 void Rigidbody::makeShape()
@@ -56,7 +84,8 @@ void Rigidbody::makeShape()
 		btCollisionShape* childShape = collider->makeShape();
 		btTransform childTransform;
 		childTransform.setIdentity();
-		childTransform.setFromOpenGLMatrix(glm::value_ptr(collider->getOffsetMatrix()));
+		childTransform.setOrigin(btVector3(collider->offsetPosition.x, collider->offsetPosition.y, collider->offsetPosition.z));
+		//childTransform.setFromOpenGLMatrix(glm::value_ptr(collider->getOffsetMatrix()));
 
 		m_shape->addChildShape(childTransform, childShape);
 	}
@@ -76,6 +105,8 @@ void Rigidbody::makeShape()
 void Rigidbody::init(btDiscreteDynamicsWorld* physicSimulation)
 {
 	m_ptrToPhysicWorld = physicSimulation;
+	//call it in case rigidbody or ghost object already is in world : 
+	popFromSimulation();
 
 	//calculate mass, motion state and inertia :
 	if (m_mass != 0)
@@ -93,7 +124,11 @@ void Rigidbody::init(btDiscreteDynamicsWorld* physicSimulation)
 	m_bulletRigidbody = new btRigidBody(constructorInfo);
 	m_bulletRigidbody->setUserPointer(this);
 	m_bulletRigidbody->setUserIndex(1);
-	m_bulletRigidbody->setCollisionFlags(m_bulletRigidbody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+	m_bulletRigidbody->setCollisionFlags(m_bulletRigidbody->getCollisionFlags() /*| btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK*/ /*| btCollisionObject::CF_KINEMATIC_OBJECT*/);
+	freezeAxis(m_frozenAxis[0], m_frozenAxis[1], m_frozenAxis[2]);
+	freezeAngles(m_frozenAngles[0], m_frozenAngles[1], m_frozenAngles[2]);
+	setUseGravity(m_useGravity);
+	
 
 	//if the rigidbody already has a collider shape, set it to the rigidbody and push rigidbody to simulation
 	//if (m_shape != nullptr) {
@@ -193,6 +228,13 @@ void Rigidbody::freezeAngles(bool x, bool y, bool z)
 		m_bulletRigidbody->setAngularFactor(btVector3((x == true ? 0 : 1), (y == true ? 0 : 1), (z == true ? 0 : 1)));
 }
 
+void Rigidbody::setUseGravity(bool useGravity)
+{
+	m_useGravity = useGravity;
+	btVector3 gravity = useGravity == false ? btVector3(0, 0, 0) : (m_ptrToPhysicWorld == nullptr ? btVector3(0, -9.8, 0) : m_ptrToPhysicWorld->getGravity());
+	m_bulletRigidbody->setGravity(gravity);
+}
+
 void Rigidbody::setIsTrigger(bool state)
 {
 	m_isTrigger = state;
@@ -213,11 +255,16 @@ void Rigidbody::drawUI(Scene & scene)
 	if (ImGui::InputFloat("mass", &tmpMass)) {
 		setMass(tmpMass);
 	}
-	if (ImGui::RadioButton("isTrigger", m_isTrigger)) {
+	if (ImGui::RadioButton("is trigger", m_isTrigger)) {
 		setIsTrigger(!m_isTrigger);
 	}
+	if (ImGui::RadioButton("use gravity", m_useGravity)) {
+		setUseGravity(!m_useGravity);
+	}
 
-	ImGui::BeginChild("linear constraint", ImVec2(0, 20));
+	ImGui::BeginChild("linear constraint", ImVec2(0, 22));
+	ImGui::Text("linear constraint");
+	ImGui::SameLine();
 	if (ImGui::RadioButton("x", m_frozenAxis[0]))
 		freezeAxis(!m_frozenAxis[0], m_frozenAxis[1], m_frozenAxis[2]);
 	ImGui::SameLine();
@@ -228,7 +275,9 @@ void Rigidbody::drawUI(Scene & scene)
 		freezeAxis(m_frozenAxis[0], m_frozenAxis[1], !m_frozenAxis[2]);
 	ImGui::EndChild();
 
-	ImGui::BeginChild("angular constraint", ImVec2(0, 20));
+	ImGui::BeginChild("angular constraint", ImVec2(0, 22));
+	ImGui::Text("angular constraint");
+	ImGui::SameLine();
 	if (ImGui::RadioButton("x", m_frozenAngles[0]))
 		freezeAngles(!m_frozenAngles[0], m_frozenAngles[1], m_frozenAngles[2]);
 	ImGui::SameLine();
@@ -272,9 +321,9 @@ void Rigidbody::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 	else {
 		popFromSimulation();
 		pushToSimulation();
-		m_bulletRigidbody->activate(true);
 	}
 
+	m_bulletRigidbody->activate(true);
 	m_ptrToPhysicWorld->updateSingleAabb(m_bulletRigidbody);
 
 
@@ -329,6 +378,12 @@ void Rigidbody::save(Json::Value & componentRoot) const
 	componentRoot["mass"] = m_mass*BT_ONE;
 	componentRoot["inertia"] = toJsonValue(glm::vec3(m_inertia.x(), m_inertia.y(), m_inertia.z()));
 	componentRoot["isTrigger"] = m_isTrigger;
+	componentRoot["useGravity"] = m_useGravity;
+
+	for (int i = 0; i < 3; i++)
+		componentRoot["frozenAxis"][i] = m_frozenAxis[i];
+	for (int i = 0; i < 3; i++)
+		componentRoot["frozenAngles"][i] = m_frozenAngles[i];
 }
 
 void Rigidbody::load(Json::Value & componentRoot)
@@ -343,6 +398,12 @@ void Rigidbody::load(Json::Value & componentRoot)
 	glm::vec3 tmpInertia = fromJsonValue<glm::vec3>(componentRoot["inertia"], glm::vec3(0,0,0));
 	m_inertia = btVector3(tmpInertia.x, tmpInertia.y, tmpInertia.z);
 	m_isTrigger = componentRoot.get("isTrigger", false).asBool();
+	m_useGravity = componentRoot.get("useGravity", true).asBool();
+
+	for (int i = 0; i < 3; i++)
+		m_frozenAxis[i] = componentRoot["frozenAxis"][i].asBool();
+	for (int i = 0; i < 3; i++)
+		m_frozenAngles[i] = componentRoot["frozenAngles"][i].asBool();
 
 
 	m_bulletRigidbody = nullptr;

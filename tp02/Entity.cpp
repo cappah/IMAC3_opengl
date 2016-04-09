@@ -354,6 +354,7 @@ Entity& Entity::add(Collider * collider)
 	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
 	if (rigidbody != nullptr)
 		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
+	applyTransform();
 
 	return *this;
 }
@@ -439,6 +440,7 @@ Entity & Entity::add(Rigidbody* rigidbody)
 	//special stuff for rigidbody :
 	rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
 	rigidbody->init(m_scene->getPhysicManager().getBulletDynamicSimulation()); //must be call after the rigidbody has been attached to an entity
+	applyTransform();
 
 	return *this;
 }
@@ -459,6 +461,11 @@ Entity& Entity::add(CharacterController* characterController)
 
 	m_scene->add(characterController);
 	m_components.push_back(characterController);
+
+	//special stuff for characterController :
+	characterController->makeShape(); 
+	characterController->init(m_scene->getPhysicManager().getBulletDynamicSimulation());
+	applyTransform();
 
 	return *this;
 }
