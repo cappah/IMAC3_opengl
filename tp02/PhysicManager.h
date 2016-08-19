@@ -18,6 +18,18 @@
 
 namespace Physic {
 
+	enum CollisionMasks {
+		STATIC = 1 << 0,
+		DYNAMIC = 1 << 1,
+		TRIGGER = 1 << 2,
+		ACTOR = 1 << 3,
+
+		STATIC_GROUP = STATIC | ACTOR,
+		DYNAMIC_GROUP = STATIC | DYNAMIC | TRIGGER | ACTOR,
+		TRIGGER_GROUP = DYNAMIC | ACTOR,
+		ACTOR_GROUP = STATIC | DYNAMIC | TRIGGER | ACTOR,
+	};
+
 	struct CollisionKey {
 		const btCollisionObject* objA;
 		const btCollisionObject* objB;

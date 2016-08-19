@@ -2,6 +2,7 @@
 //forwards : 
 #include "Scene.h"
 #include "Entity.h"
+#include "PhysicManager.h"
 
 
 
@@ -43,6 +44,8 @@ Rigidbody & Rigidbody::operator=(const Rigidbody & other)
 		m_frozenAxis[i] = other.m_frozenAxis[i];
 		m_frozenAngles[i] = other.m_frozenAngles[i];
 	}
+
+	return *this;
 }
 
 Rigidbody::~Rigidbody()
@@ -57,7 +60,7 @@ Rigidbody::~Rigidbody()
 void Rigidbody::pushToSimulation()
 {
 	if (m_bulletRigidbody != nullptr && !m_bulletRigidbody->isInWorld()) {
-		m_ptrToPhysicWorld->addRigidBody(m_bulletRigidbody);
+		m_ptrToPhysicWorld->addRigidBody(m_bulletRigidbody, Physic::DYNAMIC_GROUP, Physic::DYNAMIC); //TODO
 		setUseGravity(m_useGravity);
 	}
 }

@@ -155,7 +155,7 @@ public:
 	void updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode);
 
 	void updateAnimations(float time);
-
+	void updateControllers(float deltaTime);
 	void updateBehaviours();
 
 	void toggleColliderVisibility();

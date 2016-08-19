@@ -4,7 +4,8 @@
 #include "Scene.h"
 #include "Coroutine.h"
 #include "Animator.h"
-
+#include "InputHandler.h"
+#include "CharacterController.h"
 
 //constexpr int tatu() {
 //	static int tutu;
@@ -37,6 +38,18 @@ void TestBehavior::start(Scene& scene)
 void TestBehavior::update(Scene& scene)
 {
 	//std::cout << "testBehaviour update" << std::endl;
+	auto* characterController = getComponent<CharacterController>(ComponentType::CHARACTER_CONTROLLER);
+	if (characterController != nullptr)
+	{
+		if (InputHandler::getKey(GLFW_KEY_Z, InputHandler::FOCUSING_GAME))
+			characterController->move(glm::vec3(0.f, 0.f, 4.f));
+		if (InputHandler::getKey(GLFW_KEY_Q, InputHandler::FOCUSING_GAME))
+			characterController->move(glm::vec3(-4.f, 0.f, 0.f));
+		if (InputHandler::getKey(GLFW_KEY_D, InputHandler::FOCUSING_GAME))
+			characterController->move(glm::vec3(4.f, 0.f, 0.f));
+		if (InputHandler::getKey(GLFW_KEY_S, InputHandler::FOCUSING_GAME))
+			characterController->move(glm::vec3(0.f, 0.f, -4.f));
+	}
 }
 
 void TestBehavior::onCollisionEnter(Scene& scene, const CollisionInfo& collisionInfo)

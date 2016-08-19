@@ -2,6 +2,7 @@
 //forwards :
 #include "Scene.h"
 #include "Entity.h"
+#include "PhysicManager.h"
 
 CharacterController::CharacterController(): Component(ComponentType::CHARACTER_CONTROLLER),
 m_translation(0, 0, 0), m_scale(1, 1, 1), m_height(2.f), m_radius(0.5f), m_jumpFactor(1.f), m_gravityFactor(1.f),
@@ -45,6 +46,8 @@ CharacterController & CharacterController::operator=(const CharacterController &
 		for (int i = 0; i < 4; i++) {
 		m_speedFactor[i] = other.m_speedFactor[i];
 	}
+
+	return *this;
 }
 
 CharacterController::~CharacterController()
@@ -60,15 +63,19 @@ CharacterController::~CharacterController()
 
 void CharacterController::pushToSimulation()
 {
-	if (m_bulletGhostbody != nullptr && !m_isGhostInWorld)
-		m_ptrToPhysicWorld->addCollisionObject(m_bulletGhostbody);
+	if (m_bulletGhostbody != nullptr && !m_isGhostInWorld){
+		m_ptrToPhysicWorld->addCollisionObject(m_bulletGhostbody, Physic::ACTOR_GROUP, Physic::ACTOR);
+		m_isGhostInWorld = true;
+	}
 }
 
 void CharacterController::popFromSimulation()
 {
 	//remove btRigidBody from the world :
-	if (m_bulletGhostbody != nullptr && m_isGhostInWorld)
+	if (m_bulletGhostbody != nullptr && m_isGhostInWorld) {
 		m_ptrToPhysicWorld->removeCollisionObject(m_bulletGhostbody);
+		m_isGhostInWorld = false;
+	}
 }
 
 void CharacterController::makeShape()
@@ -99,6 +106,12 @@ void CharacterController::init(btDiscreteDynamicsWorld* physicSimulation)
 	m_bulletGhostbody = new btPairCachingGhostObject();
 	m_bulletGhostbody->setUserPointer(this);
 	m_bulletGhostbody->setUserIndex(2); //TODO
+	m_bulletGhostbody->setCollisionFlags(m_bulletGhostbody->getCollisionFlags() | btCollisionObject::CF_CHARACTER_OBJECT);
+
+	if (m_shape!= nullptr)
+		delete m_shape;
+	m_shape = new btCapsuleShape(m_radius, m_height);
+	m_bulletGhostbody->setCollisionShape(m_shape);
 
 	pushToSimulation();
 }
@@ -138,6 +151,11 @@ void CharacterController::applyTransformFromPhysicSimulation(const glm::vec3 & t
 
 void CharacterController::checkBlockingByCollision(glm::vec3& nextPosition)
 {
+	const btVector3 tickSpeed(nextPosition.x - m_translation.x, nextPosition.y - m_translation.y, nextPosition.z - m_translation.z);
+	btVector3 tickSpeedAfterCollisionThroughX(tickSpeed.x(), 0.f, 0.f);
+	btVector3 tickSpeedAfterCollisionThroughY(0.f, tickSpeed.y(), 0.f);
+	btVector3 tickSpeedAfterCollisionThroughZ(0.f, 0.f, tickSpeed.z());
+
 	btTransform nextTransform_x;
 	nextTransform_x.setRotation(btQuaternion(m_rotation.x, m_rotation.y, m_rotation.z, m_rotation.w));
 	nextTransform_x.setOrigin(btVector3(nextPosition.x, m_translation.y, m_translation.z));
@@ -150,37 +168,73 @@ void CharacterController::checkBlockingByCollision(glm::vec3& nextPosition)
 	nextTransform_z.setRotation(btQuaternion(m_rotation.x, m_rotation.y, m_rotation.z, m_rotation.w));
 	nextTransform_z.setOrigin(btVector3(m_translation.x, m_translation.y, nextPosition.z));
 
-	btCollisionWorld::ClosestConvexResultCallback cb_x(btVector3(m_translation.x, m_translation.y, m_translation.z), btVector3(nextPosition.x, m_translation.y, m_translation.z));
+	btKinematicClosestNotMeConvexResultCallback cb_x(m_bulletGhostbody, btVector3(0.f, 1.f, 0.f), btScalar(0.5f));
+	cb_x.m_collisionFilterGroup = m_bulletGhostbody->getBroadphaseHandle()->m_collisionFilterGroup;
+	cb_x.m_collisionFilterMask = m_bulletGhostbody->getBroadphaseHandle()->m_collisionFilterMask;
 	m_bulletGhostbody->convexSweepTest(m_shape, m_bulletGhostbody->getWorldTransform(), nextTransform_x, cb_x);
 	if (cb_x.hasHit())
-		nextPosition.x = m_translation.x;
+	{
+		const btVector3 hitNormal = cb_x.m_hitNormalWorld;
+		const btVector3 hitTangent1 = btCross(hitNormal, btVector3(1, 0, 0));
+		const btVector3 hitTangent2 = btCross(hitNormal, hitTangent1);
+
+		const float speedProjectedOnTangent1 = btDot(hitTangent1, tickSpeed);
+		const float speedProjectedOnTangent2 = btDot(hitTangent2, tickSpeed);
+
+		tickSpeedAfterCollisionThroughX = speedProjectedOnTangent1 * hitTangent1 + speedProjectedOnTangent2 * hitTangent2;
+	}
 	
-	btCollisionWorld::ClosestConvexResultCallback cb_y(btVector3(m_translation.x, m_translation.y, m_translation.z), btVector3(m_translation.x, nextPosition.y, m_translation.z));
+	btKinematicClosestNotMeConvexResultCallback cb_y(m_bulletGhostbody, btVector3(0.f, 1.f, 0.f), btScalar(0.5f));
+	cb_y.m_collisionFilterGroup = m_bulletGhostbody->getBroadphaseHandle()->m_collisionFilterGroup;
+	cb_y.m_collisionFilterMask = m_bulletGhostbody->getBroadphaseHandle()->m_collisionFilterMask;
 	m_bulletGhostbody->convexSweepTest(m_shape, m_bulletGhostbody->getWorldTransform(), nextTransform_y, cb_y);
-	if (cb_y.hasHit()) {
-		nextPosition.y = m_translation.y;
+	if (cb_y.hasHit()) 
+	{
+		const btVector3 hitNormal = cb_y.m_hitNormalWorld;
+		const btVector3 hitTangent1 = btCross(hitNormal, btVector3(1, 0, 0));
+		const btVector3 hitTangent2 = btCross(hitNormal, hitTangent1);
+
+		const float speedProjectedOnTangent1 = btDot(hitTangent1, tickSpeed);
+		const float speedProjectedOnTangent2 = btDot(hitTangent2, tickSpeed);
+
+		tickSpeedAfterCollisionThroughY = speedProjectedOnTangent1 * hitTangent1 + speedProjectedOnTangent2 * hitTangent2;
+
 		m_isOnGround = true;
 	}
 
-	btCollisionWorld::ClosestConvexResultCallback cb_z(btVector3(m_translation.x, m_translation.y, m_translation.z), btVector3(m_translation.x, m_translation.y, nextPosition.z));
+	btKinematicClosestNotMeConvexResultCallback cb_z(m_bulletGhostbody, btVector3(0.f, 1.f, 0.f), btScalar(0.5f));
+	cb_z.m_collisionFilterGroup = m_bulletGhostbody->getBroadphaseHandle()->m_collisionFilterGroup;
+	cb_z.m_collisionFilterMask = m_bulletGhostbody->getBroadphaseHandle()->m_collisionFilterMask;
 	m_bulletGhostbody->convexSweepTest(m_shape, m_bulletGhostbody->getWorldTransform(), nextTransform_z, cb_z);
 	if (cb_z.hasHit())
-		nextPosition.z = m_translation.z;
+	{
+		const btVector3 hitNormal = cb_z.m_hitNormalWorld;
+		const btVector3 hitTangent1 = btCross(hitNormal, btVector3(1, 0, 0));
+		const btVector3 hitTangent2 = btCross(hitNormal, hitTangent1);
+
+		const float speedProjectedOnTangent1 = btDot(hitTangent1, tickSpeed);
+		const float speedProjectedOnTangent2 = btDot(hitTangent2, tickSpeed);
+
+		tickSpeedAfterCollisionThroughZ = speedProjectedOnTangent1 * hitTangent1 + speedProjectedOnTangent2 * hitTangent2;
+	}
+
+	nextPosition.x = m_translation.x + (tickSpeedAfterCollisionThroughX.x() + tickSpeedAfterCollisionThroughY.x() + tickSpeedAfterCollisionThroughZ.x()) / 3.f;
+	nextPosition.y = m_translation.y + (tickSpeedAfterCollisionThroughX.y() + tickSpeedAfterCollisionThroughY.y() + tickSpeedAfterCollisionThroughZ.y()) / 3.f;
+	nextPosition.z = m_translation.z + (tickSpeedAfterCollisionThroughX.z() + tickSpeedAfterCollisionThroughY.z() + tickSpeedAfterCollisionThroughZ.z()) / 3.f;
 }
 
 void CharacterController::update(float deltaTime)
 {
-	if (m_force.x*m_force.x + m_force.y*m_force.y + m_force.z*m_force.z < 0.001f)
-		return;
-	glm::vec3 nextPosition;
+	m_force += m_gravityFactor * glm::vec3(0.f, -1.f, 0.f);
 
+	glm::vec3 nextPosition;
 	m_speed += (deltaTime / 1.f)*m_force;
-	m_translation += deltaTime*m_speed;
+	nextPosition = m_translation + deltaTime*m_speed;
 
 	checkBlockingByCollision(nextPosition);
 
 	if (m_entity != nullptr)
-		entity()->translate(nextPosition);
+		entity()->setTranslation(nextPosition);
 
 	m_force = glm::vec3(0, 0, 0);
 }
@@ -255,8 +309,8 @@ void CharacterController::jump()
 
 void CharacterController::move(glm::vec3 direction)
 {
-	float xSpeed = direction.x * (direction.x > 0 ? m_speedFactor[Direction::RIGHT] : m_speedFactor[Direction::LEFT]);
-	float zSpeed = direction.z * (direction.z > 0 ? m_speedFactor[Direction::FORWARD]: m_speedFactor[Direction::BACKWARD]);
+	float xSpeed = direction.x > 0 ? m_speedFactor[Direction::RIGHT] : m_speedFactor[Direction::LEFT];
+	float zSpeed = direction.z > 0 ? m_speedFactor[Direction::FORWARD]: m_speedFactor[Direction::BACKWARD];
 	float ySpeed = 1.f;
 
 	m_force += glm::vec3(direction.x * xSpeed, direction.y * ySpeed, direction.z * zSpeed);
@@ -314,6 +368,8 @@ void CharacterController::eraseFromEntity(Entity& entity)
 
 void CharacterController::save(Json::Value & componentRoot) const
 {
+	Component::save(componentRoot);
+
 	componentRoot["translation"] = toJsonValue(m_translation);
 	componentRoot["rotation"] = toJsonValue(m_rotation);
 	componentRoot["scale"] = toJsonValue(m_scale);
@@ -334,6 +390,8 @@ void CharacterController::save(Json::Value & componentRoot) const
 
 void CharacterController::load(Json::Value & componentRoot)
 {
+	Component::load(componentRoot);
+
 	m_translation = fromJsonValue<glm::vec3>(componentRoot["translation"], glm::vec3(0, 0, 0));
 	m_rotation = fromJsonValue<glm::quat>(componentRoot["rotation"], glm::quat());
 	m_scale = fromJsonValue<glm::vec3>(componentRoot["scale"], glm::vec3(0, 0, 0));

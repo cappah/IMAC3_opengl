@@ -453,6 +453,14 @@ void Scene::updateAnimations(float time)
 	}
 }
 
+void Scene::updateControllers(float deltaTime)
+{ 
+	// TODO controllerManager ? 
+	for (auto& controller : m_characterControllers) {
+		controller->update(deltaTime);
+	}
+}
+
 void Scene::updateBehaviours()
 {
 	m_behaviorManager.update(*this, m_behaviors);

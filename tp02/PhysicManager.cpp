@@ -108,6 +108,10 @@ namespace Physic {
 
 		m_physicWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_broadPhase, m_sequentialImpulseConstraintSolver, m_collisionConfiguration);
 
+		//ghost callback :
+		btGhostPairCallback* ghostPairCallback = new btGhostPairCallback();
+		m_physicWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(ghostPairCallback);
+
 		// debug :
 		m_debugDrawerPhysicWorld = new DebugDrawerPhysicWorld();
 
