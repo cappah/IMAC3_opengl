@@ -129,6 +129,7 @@ private:
 
 	//is the game playing in edit mode ? 
 	bool m_isPlaying;
+	bool m_isOwningPlayer;
 
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
@@ -178,6 +179,9 @@ public:
 	void updateCameraMovement_fps(GLFWwindow* window);
 
 	bool getIsPlaying() const;
+	bool getIsOwningPlayer() const;
+	void possessPawn();
+	void ejectPlayerFromPawn();
 
 	//for multiple editing : 
 	void clearSelectedComponents();

@@ -231,7 +231,9 @@ void init_gui_states(GUIStates & guiStates)
 
 /////////////////////////////////// EDITOR
 
-Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false), m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f), m_isPlaying(false)
+Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false)
+, m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f)
+, m_isPlaying(false), m_isOwningPlayer(true)
 {
 	m_savePath[0] = '\0';
 	m_loadPath[0] = '\0';
@@ -663,13 +665,31 @@ void Editor::displayMenuBar(Project& project)
 			ImGui::EndMenu();
 		}
 
-		if (!m_isPlaying){
+		if (!m_isPlaying)
+		{
 			if (ImGui::Button("play"))
 				launchGameInEditMode(project);
 		}
 		else{
 			if (ImGui::Button("stop"))
+			{
 				stopGameInEditMode(project);
+			}
+			ImGui::SameLine();
+			if (m_isOwningPlayer) 
+			{
+				if (ImGui::Button("eject"))
+				{
+					ejectPlayerFromPawn();
+				}
+			}
+			else 
+			{
+				if (ImGui::Button("possess"))
+				{
+					possessPawn();
+				}
+			}
 		}
 		ImGui::SameLine();
 		ImGui::Text("                     Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -693,6 +713,7 @@ void Editor::launchGameInEditMode(Project& project)
 	project.saveActiveScene();
 	//setPlaying mode to true : 
 	m_isPlaying = true;
+	possessPawn();
 }
 
 void  Editor::stopGameInEditMode(Project& project)
@@ -704,6 +725,7 @@ void  Editor::stopGameInEditMode(Project& project)
 	m_isPlaying = false;
 	//reload the current scene : 
 	project.reloadActiveScene();
+	ejectPlayerFromPawn();
 }
 
 
@@ -1466,13 +1488,13 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 
 		glm::vec3 translateDirection = glm::vec3(0,0,0);
 
-		if (m_guiStates.leftPressed)
+		if (InputHandler::getKey(GLFW_KEY_Q, InputHandler::FOCUSING_EDITOR))
 			translateDirection += glm::vec3(-1, 0, 0);
-		if (m_guiStates.rightPressed)
+		if (InputHandler::getKey(GLFW_KEY_D, InputHandler::FOCUSING_EDITOR))
 			translateDirection += glm::vec3(1, 0, 0);
-		if (m_guiStates.forwardPressed)
+		if (InputHandler::getKey(GLFW_KEY_Z, InputHandler::FOCUSING_EDITOR))
 			translateDirection += glm::vec3(0, 0, 1);
-		if (m_guiStates.backwardPressed)
+		if (InputHandler::getKey(GLFW_KEY_S, InputHandler::FOCUSING_EDITOR))
 			translateDirection += glm::vec3(0, 0, -1);
 
 		if (translateDirection != glm::vec3(0, 0, 0))
@@ -1498,6 +1520,23 @@ bool Editor::getIsPlaying() const
 	return m_isPlaying;
 }
 
+bool Editor::getIsOwningPlayer() const
+{
+	return m_isOwningPlayer;
+}
+
+void Editor::possessPawn()
+{
+	m_isOwningPlayer = true;
+	InputHandler::setFocusState( (InputHandler::getFocusState() | InputHandler::FOCUSING_GAME) & ~InputHandler::FOCUSING_EDITOR);
+}
+
+void Editor::ejectPlayerFromPawn()
+{
+	m_isOwningPlayer = false;
+	InputHandler::setFocusState((InputHandler::getFocusState() | InputHandler::FOCUSING_EDITOR) & ~InputHandler::FOCUSING_GAME);
+}
+
 
 void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 {
@@ -1507,7 +1546,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 	//update tools : 
 	if (m_terrainToolVisible) // for terrain
 	{
-		if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_1) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
+		if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_1, InputHandler::FOCUSING_EDITOR) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
 		{
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
@@ -1544,19 +1583,19 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 	if (!m_guiStates.UICaptureKeyboard)
 	{
 		// ui visibility : 
-		if (InputHandler::getKeyDown(GLFW_KEY_TAB) && m_guiStates.ctrlPressed)
+		if (InputHandler::getKeyDown(GLFW_KEY_TAB, InputHandler::FOCUSING_EDITOR) && m_guiStates.ctrlPressed)
 		{
 			this->toggleDebugVisibility(scene);
 		}
 
 		//entity copy / past : 
-		if (InputHandler::getKeyDown(GLFW_KEY_D) && m_guiStates.ctrlPressed)
+		if (InputHandler::getKeyDown(GLFW_KEY_D, InputHandler::FOCUSING_EDITOR) && m_guiStates.ctrlPressed)
 		{
 			this->duplicateSelected();
 		}
 
 		//delete selected : 
-		if (InputHandler::getKeyDown(GLFW_KEY_DELETE))
+		if (InputHandler::getKeyDown(GLFW_KEY_DELETE, InputHandler::FOCUSING_EDITOR))
 		{
 			this->deleteSelected(scene);
 		}
@@ -1567,7 +1606,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 	{
 		//object picking : 
 		if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
-			&& InputHandler::getMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
+			&& InputHandler::getMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT, InputHandler::FOCUSING_EDITOR))
 		{
 
 			glm::vec3 origin = m_camera->getCameraPosition();
@@ -1624,12 +1663,12 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 
 	}
 
-	if (InputHandler::getMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT))
+	if (InputHandler::getMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT, InputHandler::FOCUSING_EDITOR))
 	{
 		if (this->isMovingGizmo())
 			this->endMoveGizmo();
 	}
-	if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_LEFT))
+	if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_LEFT, InputHandler::FOCUSING_EDITOR))
 	{
 		if (this->isMovingGizmo())
 		{
