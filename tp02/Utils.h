@@ -21,6 +21,16 @@ class BaseCamera;
 #include "Point.h"
 #include "Link.h"
 
+
+#define ENUM_MASK_IMPLEMENTATION(T)\
+inline T operator~ (T a) { return (T)~(int)a; }\
+inline T operator| (T a, T b) { return (T)((int)a | (int)b); }\
+inline T operator& (T a, T b) { return (T)((int)a & (int)b); }\
+inline T operator^ (T a, T b) { return (T)((int)a ^ (int)b); }\
+inline T& operator|= (T& a, T b) { return (T&)((int&)a |= (int)b); }\
+inline T& operator&= (T& a, T b) { return (T&)((int&)a &= (int)b); }\
+inline T& operator^= (T& a, T b) { return (T&)((int&)a ^= (int)b); }\
+
 namespace patch
 {
 	template < typename T > std::string to_string(const T& n)
