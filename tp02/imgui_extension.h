@@ -12,4 +12,5 @@ namespace ImGui {
 	bool MyTreeNode2(const char* ptr_id);
 	bool MyCollapsingHeader(const char* label, const char* str_id = NULL, bool display_frame = true, bool default_open = false);
 	bool InputFilePath(const char* label, char* entry, size_t stringSize);
+	bool IsMouseClickedAnyButton();
 }

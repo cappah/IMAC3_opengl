@@ -5,8 +5,6 @@
 
 namespace ImGui {
 
-
-
 	bool MyTreeNode(const char* label, ImVec2& itemPos, ImVec2& itemSize)
 	{
 		ImGuiState& g = *GImGui;
@@ -224,5 +222,16 @@ namespace ImGui {
 
 	}
 
+	bool IsMouseClickedAnyButton()
+	{
+		ImGuiState& g = *GImGui;
+		int arraySize = IM_ARRAYSIZE(g.IO.MouseDown);
+		for (int i = 0; i < arraySize; i++)
+		{
+			if (IsMouseClicked(i))
+				return true;
+		}
+		return false;
+	}
 }
 

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <memory>
+
 #include "Entity.h"
 #include "Gizmo.h"
+#include "ResourceTree.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -131,6 +134,9 @@ private:
 	bool m_isPlaying;
 	bool m_isOwningPlayer;
 
+	//windows
+	std::vector<std::shared_ptr<EditorWindow>> m_editorWindows;
+
 public:
 	Editor(MaterialUnlit* _unlitMaterial);
 
@@ -154,6 +160,8 @@ public:
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();
 	void renderUI(Project& project);
+	void displayDockedWindows(Project& project);
+	void displayFloatingWindows(Project& project);
 
 	bool testGizmoIntersection(const Ray& ray);
 	void beginMoveGizmo();

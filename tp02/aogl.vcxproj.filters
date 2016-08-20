@@ -148,6 +148,15 @@
     </ClCompile>
     <ClCompile Include="SplineAnimation.cpp" />
     <ClCompile Include="CharacterController.cpp" />
+    <ClCompile Include="ResourceTree.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorGUI.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -305,6 +314,18 @@
     </ClInclude>
     <ClInclude Include="SplineAnimation.h" />
     <ClInclude Include="CharacterController.h" />
+    <ClInclude Include="ResourceTree.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="ISingleton.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorGUI.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -342,6 +363,9 @@
     </Filter>
     <Filter Include="Behaviors">
       <UniqueIdentifier>{e8126796-ebb6-4859-89e5-dc1e9667e22b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{b3bffcbf-307b-4fa3-b608-de14c9a5f480}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

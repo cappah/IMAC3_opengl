@@ -263,6 +263,9 @@ Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovi
 	m_materialFactoryVisible = false;
 	m_sceneManagerVisible = false;
 	m_skeletalAnimationFactoryVisible = false;
+
+	//Open default windows : 
+	m_editorWindows.push_back(std::make_shared<ResourceTreeWindow>()); //ResourceWindow
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -1099,6 +1102,7 @@ void Editor::onResizeWindow()
 
 void Editor::renderUI(Project& project)
 {
+
 	Scene& scene = *project.getActiveScene();
 
 	if (!m_isUIVisible)
@@ -1106,6 +1110,23 @@ void Editor::renderUI(Project& project)
 
 	displayMenuBar(project);
 
+	displayDockedWindows(project);
+	displayFloatingWindows(project);
+
+	displayModals(project);
+
+}
+
+void Editor::displayFloatingWindows(Project& project)
+{
+	for (int i = 0; i < m_editorWindows.size(); i++)
+	{
+		m_editorWindows[i]->drawUI();
+	}
+}
+
+void Editor::displayDockedWindows(Project& project)
+{
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1, 0.1, 0.1, 255));
@@ -1116,48 +1137,48 @@ void Editor::renderUI(Project& project)
 	ImGui::SetNextWindowPos(ImVec2(m_topLeftPanelRect.x, m_topLeftPanelRect.y));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 	ImGui::Begin("leftWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
-		ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z -30, m_windowRect.w));
+	ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_windowRect.w));
 
-		ImGui::SetNextWindowContentWidth(m_topLeftPanelRect.z - 30);
-			ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
-				displayTopLeftWindow(project);
-			ImGui::EndChild();
+	ImGui::SetNextWindowContentWidth(m_topLeftPanelRect.z - 30);
+	ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
+	displayTopLeftWindow(project);
+	ImGui::EndChild();
 
 
-				//ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
-				//if (ImGui::IsItemActive())
-				//{
-				//	m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
-				//	if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
-				//	else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
-				//	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
-				//}
-			ImGui::Separator();
-				ImGui::InvisibleButton("hSplitter1", ImVec2(m_topLeftPanelRect.z, 8.f));
-				if (ImGui::IsItemActive())
-				{
-					m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
-					if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
-					else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
-					updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
-				}
-			ImGui::Separator();
+	//ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
+	//if (ImGui::IsItemActive())
+	//{
+	//	m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
+	//	if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
+	//	else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
+	//	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+	//}
+	ImGui::Separator();
+	ImGui::InvisibleButton("hSplitter1", ImVec2(m_topLeftPanelRect.z, 8.f));
+	if (ImGui::IsItemActive())
+	{
+		m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
+		if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
+		else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
+		updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+	}
+	ImGui::Separator();
 
-			ImGui::BeginChild("bottomLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_bottomLeftPanelRect.w - 16.f));
-				displayBottomLeftWindow(project);
-			ImGui::EndChild();
+	ImGui::BeginChild("bottomLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_bottomLeftPanelRect.w - 16.f));
+	displayBottomLeftWindow(project);
+	ImGui::EndChild();
 
-		ImGui::EndChild();
-		ImGui::SameLine();
+	ImGui::EndChild();
+	ImGui::SameLine();
 
-		ImGui::InvisibleButton("vSplitter", ImVec2(20.f, m_windowRect.w));
-		if (ImGui::IsItemActive())
-		{
-			m_topLeftPanelRect.z += ImGui::GetIO().MouseDelta.x;
-			if (m_topLeftPanelRect.z < 10) m_topLeftPanelRect.z = 10;
-			else if (m_topLeftPanelRect.z > m_windowRect.z - 10) m_topLeftPanelRect.z = m_windowRect.z - 10;
-			updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
-		}
+	ImGui::InvisibleButton("vSplitter", ImVec2(20.f, m_windowRect.w));
+	if (ImGui::IsItemActive())
+	{
+		m_topLeftPanelRect.z += ImGui::GetIO().MouseDelta.x;
+		if (m_topLeftPanelRect.z < 10) m_topLeftPanelRect.z = 10;
+		else if (m_topLeftPanelRect.z > m_windowRect.z - 10) m_topLeftPanelRect.z = m_windowRect.z - 10;
+		updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+	}
 
 	ImGui::End();
 	ImGui::PopStyleVar();
@@ -1168,7 +1189,7 @@ void Editor::renderUI(Project& project)
 	ImGui::SetNextWindowPos(ImVec2(m_bottomPanelRect.x, m_bottomPanelRect.y));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 	ImGui::Begin("bottomWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
-	
+
 	ImGui::InvisibleButton("hsplitter", ImVec2(m_bottomPanelRect.z, 20.f));
 	//ImGui::Separator();
 	if (ImGui::IsItemActive())
@@ -1180,7 +1201,7 @@ void Editor::renderUI(Project& project)
 	}
 
 	ImGui::BeginChild("bottomWindowContent");
-		displayBottomWindow(project);
+	displayBottomWindow(project);
 	ImGui::EndChild();
 
 	ImGui::End();
@@ -1191,9 +1212,6 @@ void Editor::renderUI(Project& project)
 
 	//ImGui::BeginChild("bottomWindow", ImVec2(screenWidth, screenHeight - m_leftPanelHeight));
 	//ImGui::EndChild();
-
-	displayModals(project);
-
 }
 
 bool Editor::testGizmoIntersection(const Ray & ray)

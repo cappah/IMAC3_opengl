@@ -315,7 +315,11 @@ void Project::edit()
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI(*this);
 
+		//TODO : bouger ça là où il faut
+		DragAndDropManager::updateDragAndDrop();
+
 		ImGui::Render();
+
 
 		glDisable(GL_BLEND);
 #endif

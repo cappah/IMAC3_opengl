@@ -12,6 +12,19 @@
 #include "ISerializable.h"
 
 
+enum ResourceType
+{
+	NONE,
+	PROGRAME,
+	TEXTURE,
+	CUBE_TEXTURE,
+	MESH,
+	SKELETAL_ANIMATION,
+	MATERIAL,
+};
+ENUM_MASK_IMPLEMENTATION(ResourceType);
+
+
 class ProgramFactory : public ISerializable
 {
 
@@ -26,6 +39,8 @@ public:
 	bool contains(const std::string& name);
 	void drawUI();
 	void clear();
+	//std::map<std::string, GLuint>::iterator begin() { return m_programs.begin(); }
+	//std::map<std::string, GLuint>::iterator end() { return m_programs.end(); };
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -69,6 +84,8 @@ public:
 	bool contains(const std::string& name);
 	void drawUI();
 	void clear();
+	//std::map<std::string, Texture*>::iterator begin() { return m_textures.begin(); }
+	//std::map<std::string, Texture*>::iterator end() { return m_textures.end(); };
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -110,6 +127,8 @@ public:
 	bool contains(const std::string& name);
 	void drawUI();
 	void clear();
+	//std::map<std::string, CubeTexture*>::iterator begin() { return m_textures.begin(); }
+	//std::map<std::string, CubeTexture*>::iterator end() { return m_textures.end(); };
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -154,6 +173,8 @@ public:
 	bool contains(const std::string& name);
 	void drawUI();
 	void clear();
+	//std::map<std::string, Mesh*>::iterator begin() { return m_meshes.begin(); }
+	//std::map<std::string, Mesh*>::iterator end() { return m_meshes.end(); };
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -197,6 +218,7 @@ public:
 	void drawUI();
 	std::map<std::string, std::map<std::string, SkeletalAnimation*>>::iterator clear(const std::string& meshName);
 	void clear();
+	//TODO : begin() et end()
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
@@ -238,6 +260,8 @@ public:
 	bool contains(const std::string& name);
 	void drawUI();
 	void clear();
+	//std::map<std::string, Material*>::iterator begin() { return m_materials.begin(); }
+	//std::map<std::string, Material*>::iterator end() { return m_materials.end(); };
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
