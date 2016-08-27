@@ -10,6 +10,7 @@
 #include "Factories.h"
 #include "Scene.h"
 #include "Editor.h"
+#include "FileHandler.h"
 
 class Project
 {
@@ -17,7 +18,7 @@ public : enum SceneStatus {DEFAULT, EDITED, TEMPORARY};
 
 private:
 	// mapping scenes name <-> scenes path 
-	std::map<std::string, std::string> m_scenes;
+	std::map<std::string, FileHandler::CompletePath> m_scenes;
 	std::map<std::string, SceneStatus> m_scenesStatus;
 	std::string m_activeSceneName;
 	Scene* m_activeScene;
@@ -25,8 +26,8 @@ private:
 	Renderer* m_renderer;
 
 	//meta : 
-	std::string m_name;
-	std::string m_path;
+	static FileHandler::Path m_projectPath;
+	static FileHandler::Path m_assetFolderPath;
 
 	//For ui : 
 	char m_newSceneName[30];
@@ -39,7 +40,7 @@ public:
 	void init();
 	//deallocate project memory.
 	void clear();
-	void open(const std::string& projectName, const std::string& projectPath);
+	void open(const std::string& projectName, const FileHandler::Path& projectPath);
 
 	void saveProjectInfos();
 	//save all scenes and resources.
@@ -64,14 +65,14 @@ public:
 
 	void loadDefaultScene(Scene* scene);
 
-	void setName(const std::string& name);
-	std::string getName() const;
-
-	void setPath(const std::string& path);
-	std::string getPath() const;
-
 	void drawUI();
-
+	
+	//accessing global meta data about project.
+	static void setName(const std::string& name);
+	static std::string getName();
+	static void setPath(const FileHandler::Path& path);
+	static const FileHandler::Path& getPath();
+	static const FileHandler::Path& getAssetsFolderPath();
 
 private :
 	GLFWwindow* Project::initGLFW(int width, int height);

@@ -157,6 +157,9 @@
     <ClCompile Include="GUI.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
+    <ClCompile Include="FileHandler.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -325,6 +328,9 @@
     </ClInclude>
     <ClInclude Include="GUI.h">
       <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="FileHandler.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

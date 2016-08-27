@@ -110,22 +110,6 @@ inline void resize2DArray(std::vector<T>& container, int width, int height, int 
 	}
 }
 
-//fill a vector with all directories's names in the directory at given path.
-std::vector<std::string> getAllDirNames(const std::string& path);
-//fill a vector with all files' and directories' names in the directory at given path.
-std::vector<std::string> getAllFileAndDirNames(const std::string& path);
-
-bool directoryExists(const std::string& path);
-bool directoryExists(const std::string& name, const std::string& path);
-
-void addDirectories(const std::string& path);
-void addDirectory(const std::string& name, const std::string& path);
-
-std::vector<std::string> splitString(const std::string& s, char delim);
-std::vector<std::string> splitString(const std::string& s, char delim01, char delim02);
-
-std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& path, std::string& filename);
-
 class AutoCompletion
 {
 private:

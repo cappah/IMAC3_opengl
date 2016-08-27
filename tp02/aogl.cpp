@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 	project.init();
 
 	//open default project : 
-	project.open("", "save/tmp");
+	project.open("defaultProject", FileHandler::Path("save/tmp"));
 
 	//edit or play project : 
 	//project.play();

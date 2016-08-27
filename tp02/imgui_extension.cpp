@@ -2,6 +2,7 @@
 //forwards : 
 #include "dirent.h"
 #include "Utils.h"
+#include "FileHandler.h"
 
 namespace ImGui {
 
@@ -183,13 +184,13 @@ namespace ImGui {
 			
 			std::string path;
 			std::string filename;
-			std::size_t splitLocation = splitPathFileName(entry, path, filename);
+			std::size_t splitLocation = FileHandler::splitPathFileName(entry, path, filename);
 			if (path == "")
 				path = "." + path;
 			else
 				path += "/";
 
-			std::vector<std::string> fileAndDirNames = getAllFileAndDirNames( path );
+			std::vector<std::string> fileAndDirNames = FileHandler::getAllFileAndDirNames( path );
 			AutoCompletion::get().clearWords();
 
 			for (auto& name : fileAndDirNames) {

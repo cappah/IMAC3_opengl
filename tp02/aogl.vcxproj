@@ -238,6 +238,7 @@
     <ClCompile Include="EditorGUI.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Factories.cpp" />
+    <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Flag.cpp" />
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="GUI.cpp" />
@@ -323,6 +324,7 @@
     <ClInclude Include="EditorGUI.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Factories.h" />
+    <ClInclude Include="FileHandler.h" />
     <ClInclude Include="Flag.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GUI.h" />

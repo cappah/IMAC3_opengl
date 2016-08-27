@@ -60,6 +60,12 @@
 //	loadRecursivly(root);
 //}
 
+//TODO
+//void ResourceTreeWindow::GetDatasFromExplorer()
+//{
+//	//TODO
+//}
+
 ResourceTreeWindow::ResourceTreeWindow()
 	: m_folderWeRightClicOn(nullptr)
 {

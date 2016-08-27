@@ -750,7 +750,7 @@ void Editor::displayModals(Project& project)
 			std::string loadPath = ("save/" + std::string(m_loadPath));
 
 			//Verify the validity of path :
-			std::vector<std::string> dirNames = getAllDirNames("save/");
+			std::vector<std::string> dirNames = FileHandler::getAllDirNames(FileHandler::Path("save/"));
 			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_loadPath)) != dirNames.end());
 
 			if (m_loadPath != "" && dirAlreadyExists)
@@ -780,7 +780,7 @@ void Editor::displayModals(Project& project)
 			std::string savePath = ("save/" + std::string(m_savePath));
 
 			//Verify the validity of path :
-			std::vector<std::string> dirNames = getAllDirNames("save/");
+			std::vector<std::string> dirNames = FileHandler::getAllDirNames(FileHandler::Path("save/"));
 			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_savePath)) != dirNames.end());
 
 			if (m_savePath != "" && !dirAlreadyExists)

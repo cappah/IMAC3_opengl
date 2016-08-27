@@ -593,7 +593,7 @@ void Scene::resolveEntityChildSaving(Json::Value & rootComponent, Entity* curren
 	}
 }
 
-void Scene::save(const std::string & path)
+void Scene::save(const FileHandler::CompletePath& path)
 {
 	Json::Value root;
 
@@ -618,10 +618,10 @@ void Scene::save(const std::string & path)
 	//std::cout << root;
 
 	std::ofstream stream;
-	stream.open(path);
+	stream.open(path.toString());
 	if (!stream.is_open())
 	{
-		std::cout << "error, can't save scene at path : " << path << std::endl;
+		std::cout << "error, can't save scene at path : " << path.toString() << std::endl;
 		return;
 	}
 	//save scene
@@ -647,15 +647,15 @@ void Scene::resolveEntityChildLoading(Json::Value & rootComponent, Entity* curre
 	}
 }
 
-void Scene::load(const std::string & path)
+void Scene::load(const FileHandler::CompletePath& path)
 {
 	Json::Value root;
 
 	std::ifstream stream;
-	stream.open(path);
+	stream.open(path.toString());
 	if (!stream.is_open())
 	{
-		std::cout << "error, can't load scene at path : " << path << std::endl;
+		std::cout << "error, can't load scene at path : " << path.toString() << std::endl;
 		return;
 	}
 	stream >> root;

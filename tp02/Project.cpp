@@ -9,9 +9,14 @@ void onWindowResize(GLFWwindow* window, int width, int height)
 	Application::get().setWindowHeight(height);
 }
 
+//statics : 
+FileHandler::Path Project::m_projectPath = FileHandler::Path();
+FileHandler::Path Project::m_assetFolderPath = FileHandler::Path();
+////
 
-Project::Project() : m_activeSceneName(""), m_name(""), m_path(""), m_renderer(nullptr), m_activeScene(nullptr)
+Project::Project() : m_activeSceneName(""), m_renderer(nullptr), m_activeScene(nullptr)
 {
+	m_projectPath = FileHandler::Path();
 	m_newSceneName[0] = '\0';
 }
 
@@ -65,8 +70,7 @@ void Project::init()
 
 void Project::clear()
 {
-	m_name = "";
-	m_path = "";
+	m_projectPath = FileHandler::Path();
 	m_activeSceneName = "";
 
 	//clear scene :
@@ -89,16 +93,17 @@ void Project::clear()
 	ProgramFactory::get().clear();
 }
 
-void Project::open(const std::string & projectName, const std::string & projectPath)
+void Project::open(const std::string & projectName, const FileHandler::Path & projectPath)
 {
 	clear(); //clear the current project (scenes + resources + systems)
 	initProject(); //init systems and resources
 
-	m_name = projectName;
-	m_path = projectPath;
+	m_projectPath = FileHandler::Path(projectPath.toString() + projectName);
+	m_assetFolderPath = FileHandler::Path(projectPath.toString() + "assets/");
 
 	//load the project.
-	load();
+	if(FileHandler::directoryExists(m_projectPath))
+		load();
 
 	//create a default sceen if there are no scene in the project.
 	if (m_scenes.size() == 0)
@@ -116,17 +121,17 @@ void Project::saveProjectInfos()
 	for (auto& it = m_scenes.begin(); it != m_scenes.end(); it++)
 	{
 		rootProject["sceneInfos"][sceneIdx]["name"] = it->first;
-		rootProject["sceneInfos"][sceneIdx]["path"] = it->second;
+		rootProject["sceneInfos"][sceneIdx]["path"] = it->second.toString();
 		rootProject["sceneInfos"][sceneIdx]["status"] = m_scenesStatus[it->first];
 		sceneIdx++;
 	}
 	rootProject["activeSceneName"] = m_activeSceneName;
 
 	std::ofstream streamProject;
-	streamProject.open(m_path + "/projectInfos.txt");
+	streamProject.open(m_projectPath.toString() + "/projectInfos.txt");
 	if (!streamProject.is_open())
 	{
-		std::cout << "error, can't save project infos at path : " << m_path << std::endl;
+		std::cout << "error, can't save project infos at path : " << m_projectPath.toString() << std::endl;
 		return;
 	}
 	streamProject << rootProject;
@@ -135,15 +140,15 @@ void Project::saveProjectInfos()
 
 void Project::save()
 {
-	std::string activeScenePath = m_path + "/scenes/" + m_activeScene->getName() + ".txt";
-	std::string resourcesPath = m_path + "/resources.txt";
+	FileHandler::CompletePath activeScenePath(m_projectPath.toString() + "scenes/", m_activeScene->getName(), ".txt");
+	FileHandler::CompletePath resourcesPath(m_projectPath, "/resources", ".txt");
 
-	addDirectories(m_path + "/scenes/");
-	addDirectories(m_path);
+	addDirectories(FileHandler::Path(m_projectPath.toString() + "scenes/"));
+	addDirectories(m_projectPath);
 
 	std::cout << "begin project save" << std::endl;
-	std::cout << "active scene path : " << activeScenePath << std::endl;
-	std::cout << "resources path : " << resourcesPath << std::endl;
+	std::cout << "active scene path : " << activeScenePath.toString() << std::endl;
+	std::cout << "resources path : " << resourcesPath.toString() << std::endl;
 
 	//save project infos : 
 	saveProjectInfos();
@@ -162,10 +167,10 @@ void Project::save()
 	CubeTextureFactory::get().save(rootResources["cubeTextureFactory"]);
 
 	std::ofstream streamResources;
-	streamResources.open(resourcesPath);
+	streamResources.open(resourcesPath.toString());
 	if (!streamResources.is_open())
 	{
-		std::cout << "error, can't save resources at path : " << resourcesPath << std::endl;
+		std::cout << "error, can't save resources at path : " << resourcesPath.toString() << std::endl;
 		return;
 	}
 	streamResources << rootResources;
@@ -176,22 +181,22 @@ void Project::save()
 void Project::load()
 {
 	//load project infos : 
-	std::string projectPath = m_path + "/projectInfos.txt";
+	FileHandler::CompletePath projectPath(m_projectPath, "projectInfos", ".txt");
 	std::ifstream streamProject;
-	streamProject.open(projectPath);
+	streamProject.open(projectPath.toString());
 	if (!streamProject.is_open())
 	{
-		std::cout << "error, can't load project infos at path : " << projectPath << std::endl;
+		std::cout << "error, can't load project infos at path : " << projectPath.toString() << std::endl;
 		return;
 	}
 
 	//load resources : 
-	std::string resourcePath = m_path + "/resources.txt";
+	FileHandler::CompletePath resourcePath(m_projectPath, "resources", ".txt");
 	std::ifstream streamResources;
-	streamResources.open(resourcePath);
+	streamResources.open(resourcePath.toString());
 	if (!streamResources.is_open())
 	{
-		std::cout << "error, can't load project resources at path : " << resourcePath << std::endl;
+		std::cout << "error, can't load project resources at path : " << resourcePath.toString() << std::endl;
 		return;
 	}
 	Json::Value rootResources;
@@ -210,7 +215,7 @@ void Project::load()
 	for (int i = 0; i < sceneCount; i++)
 	{
 		std::string sceneName = rootProject["sceneInfos"][i]["name"].asString();
-		std::string scenePath = m_path + "/scenes/" + sceneName + ".txt";
+		FileHandler::CompletePath scenePath( m_projectPath.toString() + "scenes/", sceneName, ".txt");
 		SceneStatus sceneStatus = (SceneStatus)rootProject["sceneInfos"][i]["status"].asInt();
 		m_scenes[sceneName] = scenePath;
 		m_scenesStatus[sceneName] = sceneStatus;
@@ -372,8 +377,8 @@ void Project::loadScene(const std::string& sceneName)
 	{
 		if (m_scenes.find(m_activeSceneName) != m_scenes.end())
 		{
-			std::string activeScenePath = m_scenes[m_activeSceneName];// m_path + "/scenes/" + m_activeSceneName + ".txt";
-			addDirectories(m_path + "/scenes/");
+			FileHandler::CompletePath activeScenePath = m_scenes[m_activeSceneName];// m_path + "/scenes/" + m_activeSceneName + ".txt";
+			addDirectories( FileHandler::Path(m_projectPath.toString() + "scenes/"));
 			m_activeScene->save(activeScenePath);
 		}
 
@@ -398,7 +403,7 @@ void Project::addDefaultScene(const std::string& sceneName)
 	if (m_scenes.find(sceneName) != m_scenes.end())
 		return;
 
-	std::string scenePath = m_path + "/scenes/" + sceneName + ".txt";
+	FileHandler::CompletePath scenePath(FileHandler::Path(m_projectPath.toString() + "scenes/"), sceneName, ".txt");
 	m_scenes[sceneName] = scenePath;
 	m_scenesStatus[sceneName] = SceneStatus::DEFAULT;
 
@@ -410,7 +415,7 @@ void Project::addSceneFromActive(const std::string& sceneName)
 	if (m_scenes.find(sceneName) != m_scenes.end())
 		return;
 
-	std::string scenePath = m_path + "/scenes/" + sceneName + ".txt";
+	FileHandler::CompletePath scenePath(FileHandler::Path(m_projectPath.toString() + "scenes/"), sceneName, ".txt");
 	m_scenes[sceneName] = scenePath;
 	m_scenesStatus[sceneName] = SceneStatus::EDITED;
 
@@ -560,22 +565,30 @@ void Project::loadDefaultScene(Scene* scene)
 
 void Project::setName(const std::string & name)
 {
-	m_name = name;
+	assert(false);
+	//TODO
 }
 
-std::string Project::getName() const
+std::string Project::getName()
 {
-	return m_name;
+	return m_projectPath[m_projectPath.size() - 1];
 }
 
-void Project::setPath(const std::string & path)
+void Project::setPath(const FileHandler::Path& path)
 {
-	m_path = path;
+	assert(false);
+	//TODO
+	//m_projectPath = path;
 }
 
-std::string Project::getPath() const
+const FileHandler::Path& Project::getPath()
 {
-	return m_path;
+	return m_projectPath;
+}
+
+const FileHandler::Path& Project::getAssetsFolderPath()
+{
+	return m_assetFolderPath;
 }
 
 void Project::drawUI()
