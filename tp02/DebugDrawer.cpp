@@ -22,8 +22,8 @@ DebugDrawer::DebugDrawer() : m_maxPoint(10000), m_material(nullptr)
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	m_material = MaterialFactory::get().get<MaterialDebugDrawer>("debugDrawer");
-	assert(m_material != nullptr);
+	m_material = getMaterialFactory().getDefault("debugDrawer");
+	assert(m_material.isValid());
 }
 
 void DebugDrawer::drawLine_internal(const glm::vec3 & from, const glm::vec3 & to, const glm::vec3 & color)
@@ -43,8 +43,10 @@ void DebugDrawer::render_internal(const glm::mat4 & projection, const glm::mat4 
 
 	glm::mat4 MVP = projection * view;
 
-	m_material->use();
-	m_material->setUniform_MVP(MVP);
+	MaterialDebugDrawer* castedMaterial = static_cast<MaterialDebugDrawer*>(m_material); //TODO : changer ça apres la refonte du pipeline de rendu
+
+	castedMaterial->use();
+	castedMaterial->setUniform_MVP(MVP);
 
 	draw_internal();
 }

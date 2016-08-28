@@ -3,18 +3,20 @@
 #include "Entity.h"
 #include "Factories.h"
 
-MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), mesh(MeshFactory::get().get("default")), meshName("default"), materialName("default")
+#include "EditorGUI.h"
+
+MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), mesh(getMeshFactory().getDefault("default")), meshName("default"), materialName("default")
 {
-	if(mesh != nullptr)
+	if(mesh.isValid())
 		meshName = mesh->name;
 	materialName = '\0';
 
-	material.push_back(MaterialFactory::get().get<Material3DObject>("default"));
+	material.push_back(getMaterialFactory().getDefault("default"));
 }
 
-MeshRenderer::MeshRenderer(Mesh* _mesh, Material3DObject* _material) : Component(MESH_RENDERER), mesh(_mesh), meshName("default"), materialName("default")
+MeshRenderer::MeshRenderer(ResourcePtr<Mesh> _mesh, ResourcePtr<Material> _material) : Component(MESH_RENDERER), mesh(_mesh), meshName("default"), materialName("default")
 {
-	if (mesh != nullptr)
+	if (mesh.isValid())
 		meshName = mesh->name;
 	materialName = '\0';
 
@@ -23,7 +25,7 @@ MeshRenderer::MeshRenderer(Mesh* _mesh, Material3DObject* _material) : Component
 
 MeshRenderer::~MeshRenderer()
 {
-	mesh = nullptr;
+	mesh.reset();
 	material.clear();
 }
 
@@ -37,9 +39,9 @@ void MeshRenderer::drawUI(Scene& scene)
 	//{
 	//	materialName = tmpMaterialName;
 
-	//	if (MaterialFactory::get().contains<Material3DObject>(materialName))
+	//	if (getMaterialFactory().contains<Material3DObject>(materialName))
 	//	{
-	//		Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
+	//		Material3DObject* tmpMat = getMaterialFactory().get<Material3DObject>(materialName);
 	//		if (tmpMat != nullptr)
 	//			material = tmpMat;
 	//	}
@@ -49,16 +51,23 @@ void MeshRenderer::drawUI(Scene& scene)
 	materialName.copy(tmpMaterialName, materialName.size());
 	tmpMaterialName[materialName.size()] = '\0';
 
-	if(ImGui::InputText("materialName", tmpMaterialName, 20))
+	//%NOCOMMIT%
+	/*if(ImGui::InputText("materialName", tmpMaterialName, 20))
 		materialName = tmpMaterialName;
 	ImGui::SameLine();
 	if (ImGui::Button("add"))
 	{
-		if (MaterialFactory::get().contains<Material3DObject>(materialName)) {
-			Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>(materialName);
+		if (getMaterialFactory().contains<Material3DObject>(materialName)) {
+			Material3DObject* tmpMat = getMaterialFactory().get<Material3DObject>(materialName);
 			if (tmpMat != nullptr)
 				material.push_back(tmpMat);
 		}
+	}*/
+	ResourcePtr<Material> materialQuery;
+	EditorGUI::ResourceField<Material>(materialQuery, "materialName", tmpMaterialName, 20);
+	if (materialQuery.isValid())
+	{
+		material.push_back(materialQuery);
 	}
 
 	for (int i = 0; i < material.size(); i++)
@@ -79,15 +88,23 @@ void MeshRenderer::drawUI(Scene& scene)
 	char tmpMeshName[20];
 	meshName.copy(tmpMeshName, meshName.size());
 	tmpMeshName[meshName.size()] = '\0';
+	
+	// TODO
+	//if (ImGui::InputText("meshName", tmpMeshName, 20))
+	//{
+	//	meshName = tmpMeshName;
 
-	if (ImGui::InputText("meshName", tmpMeshName, 20))
+	//	if (MeshFactory().contains(tmpMeshName))
+	//	{
+	//		setMesh(MeshFactory().get(tmpMeshName));
+	//	}
+	//}
+
+	ResourcePtr<Mesh> meshQuery;
+	EditorGUI::ResourceField<Mesh>(meshQuery, "meshName", tmpMeshName, 20);
+	if (meshQuery.isValid())
 	{
-		meshName = tmpMeshName;
-
-		if (MeshFactory::get().contains(tmpMeshName))
-		{
-			setMesh(MeshFactory::get().get(tmpMeshName));
-		}
+		setMesh(meshQuery);
 	}
 }
 
@@ -120,9 +137,9 @@ void MeshRenderer::eraseFromEntity(Entity& entity)
 	entity.erase(this);
 }
 
-void MeshRenderer::setMesh(Mesh* _mesh)
+void MeshRenderer::setMesh(ResourcePtr<Mesh> _mesh)
 {
-	if(_mesh != nullptr)
+	if(_mesh.isValid())
 		meshName = _mesh->name;
 
 	mesh = _mesh;
@@ -135,7 +152,7 @@ void MeshRenderer::setMesh(Mesh* _mesh)
 	}
 }
 
-void MeshRenderer::addMaterial(Material3DObject* _material)
+void MeshRenderer::addMaterial(ResourcePtr<Material> _material)
 {
 	material.push_back(_material);
 }
@@ -147,7 +164,7 @@ void MeshRenderer::removeMaterial(int idx)
 	material.erase(material.begin() + idx);
 }
 
-void MeshRenderer::setMaterial(Material3DObject * _material, int idx)
+void MeshRenderer::setMaterial(ResourcePtr<Material> _material, int idx)
 {
 	assert(idx >= 0 && idx < material.size());
 
@@ -162,14 +179,14 @@ void MeshRenderer::setMaterial(Material3DObject * _material, int idx)
 //	material = _material;
 //}
 
-Material3DObject * MeshRenderer::getMaterial(int idx) const
+const Material* MeshRenderer::getMaterial(int idx) const
 {
-	return material[idx];
+	return material[idx].get();
 }
 
-Mesh * MeshRenderer::getMesh() const
+const Mesh* MeshRenderer::getMesh() const
 {
-	return mesh;
+	return mesh.get();
 }
 
 std::string MeshRenderer::getMaterialName(int idx) const
@@ -198,27 +215,31 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 	int minMatMeshCount = std::min((int)material.size(), mesh->subMeshCount);
 	for (int i = 0; i < minMatMeshCount; i++)
 	{
-		material[i]->use();
-		material[i]->setUniform_MVP(mvp);
-		material[i]->setUniform_normalMatrix(normalMatrix);
+		Material3DObject* castedMaterial = static_cast<Material3DObject*>(material[i].get()); //TODO : a enlever lors de l'upgrade du pipeline graphique.
+
+		castedMaterial->use();
+		castedMaterial->setUniform_MVP(mvp);
+		castedMaterial->setUniform_normalMatrix(normalMatrix);
 		if (mesh->getIsSkeletalMesh()) {
 			for (int boneIdx = 0; boneIdx < mesh->getSkeleton()->getBoneCount(); boneIdx++)
-				material[i]->setUniformBonesTransform(boneIdx, mesh->getSkeleton()->getBoneTransform(boneIdx));
+				castedMaterial->setUniformBonesTransform(boneIdx, mesh->getSkeleton()->getBoneTransform(boneIdx));
 		}
-		material[i]->setUniformUseSkeleton(mesh->getIsSkeletalMesh());
+		castedMaterial->setUniformUseSkeleton(mesh->getIsSkeletalMesh());
 
 		mesh->draw(i);	
 	}
 	//if there are more sub mesh than materials draw them with the last material
 	for (int i = minMatMeshCount; i < mesh->subMeshCount; i++)
 	{
-		material.back()->use();
-		material.back()->setUniform_MVP(mvp);
-		material.back()->setUniform_normalMatrix(normalMatrix);
+		Material3DObject* castedMaterial = static_cast<Material3DObject*>(material.back().get()); //TODO : a enlever lors de l'upgrade du pipeline graphique.
+
+		castedMaterial->use();
+		castedMaterial->setUniform_MVP(mvp);
+		castedMaterial->setUniform_normalMatrix(normalMatrix);
 		if (mesh->getIsSkeletalMesh())
 			for (int boneIdx = 0; boneIdx < mesh->getSkeleton()->getBoneCount(); boneIdx++)
-				material[i]->setUniformBonesTransform(boneIdx, mesh->getSkeleton()->getBoneTransform(boneIdx));
-		material[i]->setUniformUseSkeleton(mesh->getIsSkeletalMesh());
+				castedMaterial->setUniformBonesTransform(boneIdx, mesh->getSkeleton()->getBoneTransform(boneIdx));
+		castedMaterial->setUniformUseSkeleton(mesh->getIsSkeletalMesh());
 
 		mesh->draw(i);
 	}
@@ -228,26 +249,29 @@ void MeshRenderer::save(Json::Value & rootComponent) const
 {
 	Component::save(rootComponent);
 
-	rootComponent["meshName"] = mesh->name;
+	mesh.save(rootComponent["mesh"]);
+
+	//rootComponent["meshKey"] = mesh->name;
 
 	rootComponent["materialCount"] = material.size();
 	for (int i = 0; i < material.size(); i++)
-		rootComponent["materialName"][i] = material[i]->name;
+		material[i].save(rootComponent["material"][i]);
 }
 
 void MeshRenderer::load(Json::Value & rootComponent)
 {
 	Component::load(rootComponent);
 
-	meshName = rootComponent.get("meshName", "").asString();
-	mesh = MeshFactory::get().get(meshName);
+	//meshName = rootComponent.get("meshName", "").asString();
+
+	mesh.load(rootComponent["mesh"]);
 
 	int materialCount = rootComponent.get("materialCount", 0).asInt();
 	material.clear();
 	for (int i = 0; i < materialCount; i++)
 	{
-		materialName = rootComponent["materialName"][i].asString();
-		material.push_back(MaterialFactory::get().get<Material3DObject>(materialName));
+		ResourcePtr<Material> materialName(rootComponent["material"][i]);
+		material.push_back(materialName);
 		material.back()->initGL();
 	}
 	materialName = '\0'; //rootComponent.get("materialName", "").asString();

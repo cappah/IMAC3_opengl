@@ -1,9 +1,22 @@
 #include "Materials.h"
 #include "Factories.h"//forward
+#include "EditorGUI.h"
+
 
 Material::Material(GLuint _glProgram) : glProgram(_glProgram)
 {
 
+}
+
+Material::Material(ResourcePtr<ShaderProgram> _glProgram) 
+	: Material(_glProgram->id)
+{
+
+}
+
+void Material::init(const FileHandler::CompletePath & path)
+{
+	Resource::init(path);
 }
 
 Material::~Material()
@@ -22,6 +35,10 @@ Material3DObject::Material3DObject(GLuint _glProgram) : Material(_glProgram)
 		uniform_bonesTransform[i] = glGetUniformLocation(glProgram, ("BonesTransform["+std::to_string(i)+"]").c_str() );
 	uniform_useSkeleton = glGetUniformLocation(glProgram, "UseSkeleton");
 }
+
+Material3DObject::Material3DObject(ResourcePtr<ShaderProgram> _glProgram)
+	: Material3DObject(_glProgram->id)
+{}
 
 
 void Material3DObject::setUniform_MVP(glm::mat4& mvp)
@@ -47,7 +64,7 @@ void Material3DObject::setUniformUseSkeleton(bool useSkeleton)
 
 ///////////////////////////////////////////
 
-MaterialLit::MaterialLit() : Material3DObject(ProgramFactory::get().get("defaultLit")), textureDiffuse(TextureFactory::get().get("default")), specularPower(10), textureSpecular(TextureFactory::get().get("default")), textureBump(TextureFactory::get().get("default")), textureRepetition(1, 1)
+MaterialLit::MaterialLit() : Material3DObject(getProgramFactory().getDefault("defaultLit")), textureDiffuse(getTextureFactory().getDefault("default")), specularPower(10), textureSpecular(getTextureFactory().getDefault("default")), textureBump(getTextureFactory().getDefault("default")), textureRepetition(1, 1)
 {
 	diffuseTextureName = textureDiffuse->name;
 	specularTextureName = textureSpecular->name;
@@ -64,7 +81,7 @@ MaterialLit::MaterialLit() : Material3DObject(ProgramFactory::get().get("default
 		exit(1);
 }
 
-MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _textureSpecular, Texture* _textureBump, float _specularPower) :
+MaterialLit::MaterialLit(GLuint _glProgram, ResourcePtr<Texture> _textureDiffuse, ResourcePtr<Texture> _textureSpecular, ResourcePtr<Texture> _textureBump, float _specularPower) :
 	Material3DObject(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureBump(_textureBump) , textureRepetition(1, 1)
 {
 	diffuseTextureName = textureDiffuse->name;
@@ -86,35 +103,58 @@ MaterialLit::MaterialLit(GLuint _glProgram, Texture* _textureDiffuse, Texture* _
 	//textureSpecular->initGL();
 }
 
-void MaterialLit::setDiffuse(Texture * _textureDiffuse)
+MaterialLit::MaterialLit(ResourcePtr<ShaderProgram> _glProgram, ResourcePtr<Texture> _textureDiffuse, ResourcePtr<Texture> _textureSpecular, ResourcePtr<Texture> _textureBump, float _specularPower)
+	: MaterialLit(_glProgram->id, _textureDiffuse, _textureSpecular, _textureBump, _specularPower)
+{
+
+}
+
+void MaterialLit::init(const FileHandler::CompletePath & path)
+{
+	Material::init(path);
+
+	std::ifstream stream;
+	stream.open(path.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load material at path : " << path.toString() << std::endl;
+		return;
+	}
+	Json::Value root;
+	stream >> root;
+
+	load(root);
+}
+
+void MaterialLit::setDiffuse(ResourcePtr<Texture> _textureDiffuse)
 {
 	diffuseTextureName = _textureDiffuse->name;
 	textureDiffuse = _textureDiffuse;
 }
 
-void MaterialLit::setSpecular(Texture * _textureSpecular)
+void MaterialLit::setSpecular(ResourcePtr<Texture> _textureSpecular)
 {
 	specularTextureName = _textureSpecular->name;
 	textureSpecular = _textureSpecular;
 }
 
-void MaterialLit::setBump(Texture * _textureBump)
+void MaterialLit::setBump(ResourcePtr<Texture> _textureBump)
 {
 	bumpTextureName = _textureBump->name;
 	textureBump = _textureBump;
 }
 
-Texture * MaterialLit::getDiffuse() const
+ResourcePtr<Texture> MaterialLit::getDiffuse() const
 {
 	return textureDiffuse;
 }
 
-Texture * MaterialLit::getSpecular() const
+ResourcePtr<Texture> MaterialLit::getSpecular() const
 {
 	return textureSpecular;
 }
 
-Texture * MaterialLit::getBump() const
+ResourcePtr<Texture> MaterialLit::getBump() const
 {
 	return textureBump;
 }
@@ -151,61 +191,89 @@ void MaterialLit::drawUI()
 
 	ImGui::InputFloat2("texture repetition", &textureRepetition[0]);
 
-	char tmpTxt01[30];
-	diffuseTextureName.copy(tmpTxt01, glm::min(30, (int)diffuseTextureName.size()), 0);
+	char tmpTxt01[100];
+	diffuseTextureName.copy(tmpTxt01, glm::min(100, (int)diffuseTextureName.size()), 0);
 	tmpTxt01[diffuseTextureName.size()] = '\0';
-	if (ImGui::InputText("diffuse texture name", tmpTxt01, 20))
-	{
-		diffuseTextureName = tmpTxt01;
+	//%NOCOMMIT%
+	//if (ImGui::InputText("diffuse texture name", tmpTxt01, 20))
+	//{
+	//	diffuseTextureName = tmpTxt01;
 
-		if (TextureFactory::get().contains(tmpTxt01))
-		{
-			//textureDiffuse->freeGL();
-			textureDiffuse = TextureFactory::get().get(diffuseTextureName);
-			textureDiffuse->initGL();
-		}
+	//	if (getTextureFactory().contains(tmpTxt01))
+	//	{
+	//		//textureDiffuse->freeGL();
+	//		textureDiffuse = getTextureFactory().get(diffuseTextureName);
+	//		textureDiffuse->initGL();
+	//	}
+	//}
+
+	ResourcePtr<Texture> texturePtrQuery;
+	EditorGUI::ResourceField<Texture>(texturePtrQuery, "diffuse texture name", tmpTxt01, 100);
+	if (texturePtrQuery.isValid())
+	{
+		textureDiffuse = texturePtrQuery;
+		textureDiffuse->initGL();
+		texturePtrQuery.reset();
 	}
 
-	char tmpTxt02[30];
-	specularTextureName.copy(tmpTxt02, glm::min(30, (int)specularTextureName.size()), 0);
+	char tmpTxt02[100];
+	specularTextureName.copy(tmpTxt02, glm::min(100, (int)specularTextureName.size()), 0);
 	tmpTxt02[specularTextureName.size()] = '\0';
-	if (ImGui::InputText("specular texture name", tmpTxt02, 20))
-	{
-		specularTextureName = tmpTxt02;
+	//%NOCOMMIT%
+	//if (ImGui::InputText("specular texture name", tmpTxt02, 20))
+	//{
+	//	specularTextureName = tmpTxt02;
 
-		if (TextureFactory::get().contains(specularTextureName))
-		{
-			//textureSpecular->freeGL();
-			textureSpecular = TextureFactory::get().get(specularTextureName);
-			textureSpecular->initGL();
-		}
+	//	if (getTextureFactory().contains(specularTextureName))
+	//	{
+	//		//textureSpecular->freeGL();
+	//		textureSpecular = getTextureFactory().get(specularTextureName);
+	//		textureSpecular->initGL();
+	//	}
+	//}
+
+	EditorGUI::ResourceField<Texture>(texturePtrQuery, "specular texture name", tmpTxt02, 100);
+	if (texturePtrQuery.isValid())
+	{
+		textureSpecular = texturePtrQuery;
+		textureSpecular->initGL();
+		texturePtrQuery.reset();
 	}
 
-	char tmpTxt03[30];
-	bumpTextureName.copy(tmpTxt03, glm::min(30, (int)bumpTextureName.size()), 0);
+	char tmpTxt03[100];
+	bumpTextureName.copy(tmpTxt03, glm::min(100, (int)bumpTextureName.size()), 0);
 	tmpTxt03[bumpTextureName.size()] = '\0';
-	if (ImGui::InputText("bump texture name", tmpTxt03, 20))
-	{
-		bumpTextureName = tmpTxt03;
+	//%NOCOMMIT%
+	//if (ImGui::InputText("bump texture name", tmpTxt03, 20))
+	//{
+	//	bumpTextureName = tmpTxt03;
 
-		if (TextureFactory::get().contains(bumpTextureName))
-		{
-			//textureBump->freeGL();
-			textureBump = TextureFactory::get().get(bumpTextureName);
-			textureBump->initGL();
-		}
+	//	if (getTextureFactory().contains(bumpTextureName))
+	//	{
+	//		//textureBump->freeGL();
+	//		textureBump = getTextureFactory().get(bumpTextureName);
+	//		textureBump->initGL();
+	//	}
+	//}
+
+	EditorGUI::ResourceField<Texture>(texturePtrQuery, "bump texture name", tmpTxt03, 100);
+	if (texturePtrQuery.isValid())
+	{
+		textureBump = texturePtrQuery;
+		textureBump->initGL();
+		texturePtrQuery.reset();
 	}
 }
 
 void MaterialLit::initGL()
 {
-	if(textureDiffuse != nullptr)
+	if(textureDiffuse.isValid())
 		textureDiffuse->initGL();
 
-	if(textureSpecular != nullptr)
+	if(textureSpecular.isValid())
 		textureSpecular->initGL();
 
-	if(textureBump != nullptr)
+	if(textureBump.isValid())
 		textureBump->initGL();
 }
 
@@ -220,13 +288,13 @@ void MaterialLit::save(Json::Value & objectRoot) const
 
 void MaterialLit::load(Json::Value & objectRoot)
 {
-	glProgram = ProgramFactory::get().get("defaultLit");
+	glProgram = getProgramFactory().getDefault("defaultLit")->id;
 	std::string textureDiffuseName = objectRoot.get("textureDiffuseName", "default").asString();
-	textureDiffuse = TextureFactory::get().get(textureDiffuseName);
+	textureDiffuse = getTextureFactory().get(textureDiffuseName);
 	std::string textureSpecularName = objectRoot.get("textureSpecularName", "default").asString();
-	textureSpecular = TextureFactory::get().get(textureSpecularName);
+	textureSpecular = getTextureFactory().get(textureSpecularName);
 	std::string textureBumpName = objectRoot.get("textureBumpName", "default").asString();
-	textureBump = TextureFactory::get().get(textureBumpName);
+	textureBump = getTextureFactory().get(textureBumpName);
 	specularPower = objectRoot.get("specularPower", 10).asFloat();
 	textureRepetition = fromJsonValue<glm::vec2>(objectRoot["textureRepetition"], glm::vec2(1,1));
 
@@ -338,7 +406,7 @@ void MaterialDebugDrawer::initGL()
 
 ///////////////////////////////////////////////
 
-MaterialSkybox::MaterialSkybox() : Material(ProgramFactory::get().get("defaultSkybox")), textureDiffuse(CubeTextureFactory::get().get("default"))
+MaterialSkybox::MaterialSkybox() : Material(getProgramFactory().getDefault("defaultSkybox")), textureDiffuse(getCubeTextureFactory().getDefault("default"))
 {
 	diffuseTextureName = textureDiffuse->name;
 
@@ -381,35 +449,44 @@ void MaterialSkybox::use()
 
 void MaterialSkybox::drawUI()
 {
-	char tmpTxt[30];
-	diffuseTextureName.copy(tmpTxt, glm::min(30, (int)diffuseTextureName.size()), 0);
+	char tmpTxt[100];
+	diffuseTextureName.copy(tmpTxt, glm::min(100, (int)diffuseTextureName.size()), 0);
 	tmpTxt[diffuseTextureName.size()] = '\0';
+	//%NOCOMMIT%
+	//if (ImGui::InputText("diffuse texture name", tmpTxt, 20))
+	//{
+	//	diffuseTextureName = tmpTxt;
 
-	if (ImGui::InputText("diffuse texture name", tmpTxt, 20))
+	//	if (getCubeTextureFactory().contains(tmpTxt))
+	//	{
+	//		textureDiffuse = getCubeTextureFactory().get(diffuseTextureName);
+	//		textureDiffuse->initGL();
+	//	}
+	//}
+
+	ResourcePtr<CubeTexture> texturePtrQuery;
+	EditorGUI::ResourceField<CubeTexture>(texturePtrQuery, "diffuse texture name", tmpTxt, 100);
+	if (texturePtrQuery.isValid())
 	{
-		diffuseTextureName = tmpTxt;
-
-		if (CubeTextureFactory::get().contains(tmpTxt))
-		{
-			textureDiffuse = CubeTextureFactory::get().get(diffuseTextureName);
-			textureDiffuse->initGL();
-		}
+		textureDiffuse = texturePtrQuery;
+		textureDiffuse->initGL();
+		texturePtrQuery.reset();
 	}
 }
 
 void MaterialSkybox::initGL()
 {
-	if (textureDiffuse != nullptr)
+	if (textureDiffuse.isValid())
 		textureDiffuse->initGL();
 }
 
-void MaterialSkybox::setDiffuseTexture(CubeTexture* texture)
+void MaterialSkybox::setDiffuseTexture(ResourcePtr<CubeTexture> texture)
 {
 	diffuseTextureName = texture->name;
 	textureDiffuse = texture;
 }
 
-CubeTexture* MaterialSkybox::getDiffuseTexture() const
+ResourcePtr<CubeTexture> MaterialSkybox::getDiffuseTexture() const
 {
 	return textureDiffuse;
 }
@@ -446,7 +523,7 @@ void MaterialShadow::initGL()
 ////////////////////////////////////////////////////////
 
 
-MaterialTerrain::MaterialTerrain() : Material3DObject(ProgramFactory::get().get("defaultLit")), textureDiffuse(TextureFactory::get().get("default")), specularPower(10), textureSpecular(TextureFactory::get().get("default")), textureBump(TextureFactory::get().get("default")), textureRepetition(1, 1)
+MaterialTerrain::MaterialTerrain() : Material3DObject(getProgramFactory().getDefault("defaultLit")), textureDiffuse(getTextureFactory().getDefault("default")), specularPower(10), textureSpecular(getTextureFactory().getDefault("default")), textureBump(getTextureFactory().getDefault("default")), textureRepetition(1, 1)
 {
 	diffuseTextureName = textureDiffuse->name;
 	specularTextureName = textureSpecular->name;
@@ -519,13 +596,13 @@ void MaterialTerrain::drawUI()
 
 void MaterialTerrain::initGL()
 {
-	if(textureDiffuse != nullptr)
+	if(textureDiffuse.isValid())
 		textureDiffuse->initGL();
 
-	if(textureSpecular != nullptr)
+	if(textureSpecular.isValid())
 		textureSpecular->initGL();
 
-	if(textureBump != nullptr)
+	if(textureBump.isValid())
 		textureBump->initGL();
 }
 
@@ -659,10 +736,10 @@ void MaterialTerrainEdition::drawUI()
 	{
 		diffuseTextureName = tmpTxt01;
 
-		if (TextureFactory::get().contains(tmpTxt01))
+		if (getTextureFactory().contains(tmpTxt01))
 		{
 			textureDiffuse->freeGL();
-			textureDiffuse = TextureFactory::get().get(diffuseTextureName);
+			textureDiffuse = getTextureFactory().get(diffuseTextureName);
 			textureDiffuse->initGL();
 		}
 	}
@@ -675,10 +752,10 @@ void MaterialTerrainEdition::drawUI()
 	{
 		specularTextureName = tmpTxt02;
 
-		if (TextureFactory::get().contains(specularTextureName))
+		if (getTextureFactory().contains(specularTextureName))
 		{
 			textureSpecular->freeGL();
-			textureSpecular = TextureFactory::get().get(specularTextureName);
+			textureSpecular = getTextureFactory().get(specularTextureName);
 			textureSpecular->initGL();
 		}
 	}
@@ -690,10 +767,10 @@ void MaterialTerrainEdition::drawUI()
 	{
 		bumpTextureName = tmpTxt03;
 
-		if (TextureFactory::get().contains(bumpTextureName))
+		if (getTextureFactory().contains(bumpTextureName))
 		{
 			textureBump->freeGL();
-			textureBump = TextureFactory::get().get(bumpTextureName);
+			textureBump = getTextureFactory().get(bumpTextureName);
 			textureBump->initGL();
 		}
 	}
@@ -702,13 +779,13 @@ void MaterialTerrainEdition::drawUI()
 
 void MaterialTerrainEdition::initGL()
 {
-	if (textureDiffuse != nullptr)
+	if (textureDiffuse.isValid())
 		textureDiffuse->initGL();
 
-	if (textureSpecular != nullptr)
+	if (textureSpecular.isValid())
 		textureSpecular->initGL();
 
-	if (textureBump != nullptr)
+	if (textureBump.isValid())
 		textureBump->initGL();
 }
 
@@ -757,7 +834,7 @@ void MaterialDrawOnTexture::initGL()
 
 ////////////////////////// GRASS FIELD //////////////////
 
-MaterialGrassField::MaterialGrassField(): Material(ProgramFactory::get().get("defaultGrassField"))
+MaterialGrassField::MaterialGrassField(): Material(getProgramFactory().getDefault("defaultGrassField"))
 {
 	if (glProgram == 0)
 		std::cerr << "wrong initialization of material of type MaterialGrassField, program with name defaultGrassField doesn't exist in ProgramFactory." << std::endl;
@@ -808,7 +885,7 @@ void MaterialGrassField::initGL()
 
 MaterialBillboard::MaterialBillboard()
 {
-	MaterialBillboard(ProgramFactory::get().get("defaultBillboard"));
+	MaterialBillboard(getProgramFactory().getDefault("defaultBillboard"));
 }
 
 MaterialBillboard::MaterialBillboard(GLuint _glProgram) : Material(_glProgram)
@@ -876,7 +953,7 @@ void MaterialBillboard::setUniformColor(const glm::vec4 & color)
 
 ///////////////////////////////////////////////
 
-MaterialParticlesCPU::MaterialParticlesCPU() : Material(ProgramFactory::get().get("defaultParticlesCPU"))
+MaterialParticlesCPU::MaterialParticlesCPU() : Material(getProgramFactory().getDefault("defaultParticlesCPU"))
 {
 	m_uniformVP = glGetUniformLocation(glProgram, "VP");
 	m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
@@ -930,7 +1007,7 @@ void MaterialParticlesCPU::setUniformCameraUp(const glm::vec3& camUp)
 
 ///////////////////////////////////////////////
 
-MaterialParticles::MaterialParticles(): Material(ProgramFactory::get().get("defaultParticles"))
+MaterialParticles::MaterialParticles(): Material(getProgramFactory().getDefault("defaultParticles"))
 {
 	m_uniformVP = glGetUniformLocation(glProgram, "VP");
 	m_uniformTexture = glGetUniformLocation(glProgram, "Texture");
@@ -983,7 +1060,7 @@ void MaterialParticles::setUniformCameraUp(const glm::vec3& camUp)
 
 ///////////////////////////////////////////
 
-MaterialParticleSimulation::MaterialParticleSimulation(): Material(ProgramFactory::get().get("particleSimulation"))
+MaterialParticleSimulation::MaterialParticleSimulation(): Material(getProgramFactory().getDefault("particleSimulation"))
 {
 	m_uniformDeltaTime = glGetUniformLocation(glProgram, "DeltaTime");
 }

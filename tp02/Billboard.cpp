@@ -3,13 +3,14 @@
 #include "Factories.h"
 #include "Scene.h"
 #include "SerializeUtils.h"
+#include "EditorGUI.h"
 
 
 Billboard::Billboard(): Component(ComponentType::BILLBOARD), m_translation(0,0,0), m_scale(1,1), m_textureName("default"), m_color(1,1,1,1)
 {
-	m_quadMesh = MeshFactory::get().get("plane");
-	m_billboardMaterial =  MaterialFactory::get().get<MaterialBillboard>("billboard");
-	m_texture = TextureFactory::get().get("default");
+	m_quadMesh = getMeshFactory().getDefault("plane");
+	m_billboardMaterial = getMaterialFactory().getDefault("billboard");
+	m_texture = getTextureFactory().getDefault("default");
 	m_texture->initGL();
 }
 
@@ -26,18 +27,20 @@ void Billboard::render(const glm::mat4 & projection, const glm::mat4 & view)
 	glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
 	glm::vec3 CameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
 
-	m_billboardMaterial->use();
+	MaterialBillboard* castedBillboardMaterial = static_cast<MaterialBillboard*>(m_billboardMaterial.get()); //TODO essayer d'enlever ça avec l'upgrade du pipeline de rendu
+
+	castedBillboardMaterial->use();
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture->glId);
 
-	m_billboardMaterial->setUniformMVP(MVP);
-	m_billboardMaterial->setUniformCameraRight(CameraRight);
-	m_billboardMaterial->setUniformCameraUp(CameraUp);
-	m_billboardMaterial->setUniformScale(m_scale);
-	m_billboardMaterial->setUniformTexture(0);
-	m_billboardMaterial->setUniformTranslation(m_translation);
-	m_billboardMaterial->setUniformColor(m_color);
+	castedBillboardMaterial->setUniformMVP(MVP);
+	castedBillboardMaterial->setUniformCameraRight(CameraRight);
+	castedBillboardMaterial->setUniformCameraUp(CameraUp);
+	castedBillboardMaterial->setUniformScale(m_scale);
+	castedBillboardMaterial->setUniformTexture(0);
+	castedBillboardMaterial->setUniformTranslation(m_translation);
+	castedBillboardMaterial->setUniformColor(m_color);
 
 	m_quadMesh->draw();
 }
@@ -82,19 +85,21 @@ void Billboard::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 
 void Billboard::drawUI(Scene & scene)
 {
-	char texName[20];
-	int stringLength = std::min((int)m_textureName.size(), 20);
+	char texName[100];
+	int stringLength = std::min((int)m_textureName.size(), 100);
 	m_textureName.copy(texName, stringLength);
 	texName[stringLength] = '\0';
-	if (ImGui::InputText("textureName", texName, 20))
-	{
-		m_textureName = texName;
+	//%NOCOMMIT%
+	//if (ImGui::InputText("textureName", texName, 20))
+	//{
+	//	m_textureName = texName;
 
-		if (TextureFactory::get().contains(m_textureName))
-		{
-			m_texture = TextureFactory::get().get(m_textureName);
-		}
-	}
+	//	if (getTextureFactory().contains(m_textureName))
+	//	{
+	//		m_texture = getTextureFactory().get(m_textureName);
+	//	}
+	//}
+	EditorGUI::ResourceField(m_texture, "textureName", texName, 100);
 
 	ImGui::ColorEdit4("Color", glm::value_ptr(m_color));
 }
@@ -141,7 +146,7 @@ void Billboard::load(Json::Value& rootComponent)
 	m_scale = fromJsonValue<glm::vec2>(rootComponent["scale"], glm::vec2(0, 0));
 
 	m_textureName = rootComponent.get("textureName", "").asString();
-	m_texture = TextureFactory::get().get(m_textureName);
+	m_texture = getTextureFactory().get(m_textureName);
 
 	m_color = fromJsonValue<glm::vec4>(rootComponent["color"], glm::vec4(1, 1, 1, 1));
 }

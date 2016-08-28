@@ -36,8 +36,8 @@ struct CollisionInfo {
 
 struct Collider : public Component
 {
-	MaterialUnlit* visualMaterial;
-	Mesh* visualMesh;
+	ResourcePtr<Material> visualMaterial;
+	ResourcePtr<Mesh> visualMesh;
 
 	//the offsetPosition is an offset added to the position of the collider
 	glm::vec3 offsetPosition;
@@ -51,11 +51,11 @@ struct Collider : public Component
 	glm::quat rotation;
 	glm::mat4 modelMatrix;
 
-	Collider(ComponentType colliderType, Mesh* _visualMesh = nullptr, MaterialUnlit* _visualMaterial = nullptr);
+	Collider(ComponentType colliderType, ResourcePtr<Mesh> _visualMesh = ResourcePtr<Mesh>(), ResourcePtr<Material> _visualMaterial = ResourcePtr<Material>());
 	virtual ~Collider();
 
 	//add a visual representation to this collider
-	void setVisual(Mesh* _visualMesh, MaterialUnlit* _visualMaterial);
+	void setVisual(ResourcePtr<Mesh> _visualMesh, ResourcePtr<Material> _visualMaterial);
 
 	//apply transform operation to this collider
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale, const glm::quat& rotation) override;
@@ -111,7 +111,7 @@ struct Collider : public Component
 	virtual void updateOffsetMatrix();
 
 	//render this collider, if it has a visual representation. With the given color.
-	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1, 0, 0)) = 0;
+	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1, 0, 0));
 
 	//print collider info in the console.
 	virtual void debugLog() = 0;
@@ -143,7 +143,7 @@ struct BoxCollider : public Collider
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
 
-	BoxCollider(Mesh* _visualMesh = nullptr, MaterialUnlit* _visualMaterial = nullptr);
+	BoxCollider(ResourcePtr<Mesh> _visualMesh = ResourcePtr<Mesh>(), ResourcePtr<Material> _visualMaterial = ResourcePtr<Material>());
 
 	virtual void updateModelMatrix() override;
 	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1,0,0)) override;

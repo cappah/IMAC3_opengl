@@ -10,9 +10,9 @@ class Billboard : public Component
 private:
 	glm::vec3 m_translation;
 	glm::vec2 m_scale;
-	Mesh* m_quadMesh;
-	MaterialBillboard* m_billboardMaterial;
-	Texture* m_texture;
+	ResourcePtr<Mesh> m_quadMesh;
+	ResourcePtr<Material> m_billboardMaterial;
+	ResourcePtr<Texture> m_texture;
 	std::string m_textureName;
 	glm::vec4 m_color;
 

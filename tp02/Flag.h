@@ -39,7 +39,7 @@ namespace Physic {
 		Mesh m_mesh;
 
 		std::string m_materialName;
-		Material3DObject *m_material;
+		ResourcePtr<Material> m_material;
 
 		float m_width;
 		float m_height;
@@ -57,7 +57,7 @@ namespace Physic {
 
 	public:
 		Flag();
-		Flag(Material3DObject* material, int subdivision = 10, float width = 10.f, float height = 10.f);
+		Flag(ResourcePtr<Material> material, int subdivision = 10, float width = 10.f, float height = 10.f);
 		Flag(const Flag& other);
 		Flag& operator=(const Flag& other);
 		~Flag();

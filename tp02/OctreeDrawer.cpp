@@ -3,7 +3,7 @@
 #include "Factories.h"
 #include "Materials.h"
 
-OctreeDrawer::OctreeDrawer() : material(MaterialFactory::get().get<MaterialInstancedUnlit>("wireframeInstanced"))
+OctreeDrawer::OctreeDrawer() : material(getMaterialFactory().get<MaterialInstancedUnlit>("wireframeInstanced"))
 {
 	//push wireframe cube : 
 	//up face :

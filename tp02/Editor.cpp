@@ -5,6 +5,7 @@
 #include "Factories.h"
 #include "InputHandler.h"
 #include "Project.h"
+#include "EditorGUI.h"
 
 
 
@@ -154,14 +155,24 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 	tmpName.copy(textValue, tmpName.size(), 0);
 	textValue[tmpName.size()] = '\0';
 
-	if (ImGui::InputText("materialName", textValue, 20))
+	//%NOCOMMIT%
+	//if (ImGui::InputText("materialName", textValue, 20))
+	//{
+	//	if (getMaterialFactory().contains<Material3DObject>(textValue))
+	//	{
+	//		for (auto& meshRenderer : meshRenderers)
+	//		{
+	//			meshRenderer->setMaterial( getMaterialFactory().get<Material3DObject>(textValue), 0);
+	//		}
+	//	}
+	//}
+	ResourcePtr<Material> materialPtrQuery;
+	EditorGUI::ResourceField<Material>(materialPtrQuery, "materialName", textValue, 100);
+	if (materialPtrQuery.isValid())
 	{
-		if (MaterialFactory::get().contains<Material3DObject>(textValue))
+		for (auto& meshRenderer : meshRenderers)
 		{
-			for (auto& meshRenderer : meshRenderers)
-			{
-				meshRenderer->setMaterial( MaterialFactory::get().get<Material3DObject>(textValue), 0);
-			}
+			meshRenderer->setMaterial(materialPtrQuery, 0);
 		}
 	}
 
@@ -171,14 +182,23 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 	tmpName.copy(textValue, tmpName.size(), 0);
 	textValue[tmpName.size()] = '\0';
 
-	if (ImGui::InputText("meshName", textValue, 20))
+	//if (ImGui::InputText("meshName", textValue, 20))
+	//{
+	//	if (getMeshFactory().contains(textValue))
+	//	{
+	//		for (auto& meshRenderer : meshRenderers)
+	//		{
+	//			meshRenderer->setMesh( getMeshFactory().get(textValue) );
+	//		}
+	//	}
+	//}
+	ResourcePtr<Mesh> meshPtrQuery;
+	EditorGUI::ResourceField<Mesh>(meshPtrQuery, "meshName", textValue, 100);
+	if (meshPtrQuery.isValid())
 	{
-		if (MeshFactory::get().contains(textValue))
+		for (auto& meshRenderer : meshRenderers)
 		{
-			for (auto& meshRenderer : meshRenderers)
-			{
-				meshRenderer->setMesh( MeshFactory::get().get(textValue) );
-			}
+			meshRenderer->setMesh(meshPtrQuery);
 		}
 	}
 }
@@ -231,14 +251,14 @@ void init_gui_states(GUIStates & guiStates)
 
 /////////////////////////////////// EDITOR
 
-Editor::Editor(MaterialUnlit* _unlitMaterial) : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false)
+Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false)
 , m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f)
 , m_isPlaying(false), m_isOwningPlayer(true)
 {
 	m_savePath[0] = '\0';
 	m_loadPath[0] = '\0';
 
-	m_gizmo = new Gizmo(_unlitMaterial, this);
+	m_gizmo = new Gizmo(getMaterialFactory().getDefault("wireframe"), this);
 
 	m_camera = new CameraEditor();
 	m_camera->setFPSMode(m_cameraFPS);
@@ -489,7 +509,7 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add empty entity"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				newEntity->add(newCollider);
 
 				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
@@ -499,9 +519,9 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add pointLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				auto light = new PointLight();
-				light->setBoundingBoxVisual( MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				light->setBoundingBoxVisual( getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("point light");
 
@@ -512,7 +532,7 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add directionalLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				auto light = new DirectionalLight();
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("directional light");
@@ -524,9 +544,9 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add spotLight"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				auto light = new SpotLight();
-				light->setBoundingBoxVisual(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				light->setBoundingBoxVisual(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				newEntity->add(newCollider).add(light);
 				newEntity->setName("spot light");
 
@@ -537,8 +557,8 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add cube"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
-				auto meshRenderer = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get<Material3DObject>("brick"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+				auto meshRenderer = new MeshRenderer(getMeshFactory().getDefault("cube"), getMaterialFactory().getDefault("brick"));
 				newEntity->add(newCollider).add(meshRenderer);
 				newEntity->setName("cube");
 
@@ -549,7 +569,7 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add Camera"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				auto camera = new Camera();
 				newEntity->add(newCollider).add(camera);
 				newEntity->setName("camera");
@@ -561,8 +581,8 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add flag"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
-				auto flag = new Physic::Flag(MaterialFactory::get().get<Material3DObject>("default"), 10);
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+				auto flag = new Physic::Flag(getMaterialFactory().getDefault("default"), 10);
 				newEntity->add(newCollider).add(flag);
 				newEntity->setName("flag");
 
@@ -573,7 +593,7 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add path point"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				auto pathPoint = new PathPoint();
 				newEntity->add(newCollider).add(pathPoint);
 				newEntity->setName("path point");
@@ -585,7 +605,7 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add wind zone"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				auto windZone = new Physic::WindZone();
 				newEntity->add(newCollider).add(windZone);
 				newEntity->setName("wind zone");
@@ -597,7 +617,7 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add billboard"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				auto billboard = new Billboard();
 				newEntity->add(newCollider).add(billboard);
 				newEntity->setName("billboard");
@@ -606,7 +626,7 @@ void Editor::displayMenuBar(Project& project)
 			if (ImGui::Button("add particle emitter"))
 			{
 				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 				auto particleEmitter = new Physic::ParticleEmitter();
 				newEntity->add(newCollider).add(particleEmitter);
 				newEntity->setName("particle emitter");
@@ -1033,48 +1053,49 @@ void Editor::displayBottomWindow(Project& project)
 		scene.getSkybox().drawUI();
 		ImGui::End();
 	}
-
+	//%NOCOMMIT%
+/*
 	if (m_textureFactoryVisible)
 	{
 		ImGui::BeginChild("Texture factory");
-		TextureFactory::get().drawUI();
+		getTextureFactory().drawUI();
 		ImGui::End();
 	}
 
 	if (m_cubeTextureFactoryVisible)
 	{
 		ImGui::BeginChild("Cube Texture factory");
-		CubeTextureFactory::get().drawUI();
+		getCubeTextureFactory().drawUI();
 		ImGui::End();
 	}
 
 	if (m_meshFactoryVisible)
 	{
 		ImGui::BeginChild("Mesh factory");
-		MeshFactory::get().drawUI();
+		getMeshFactory().drawUI();
 		ImGui::End();
 	}
 
 	if (m_programFactoryVisible)
 	{
 		ImGui::BeginChild("Program factory");
-		ProgramFactory::get().drawUI();
+		getProgramFactory().drawUI();
 		ImGui::End();
 	}
 
 	if (m_materialFactoryVisible)
 	{
 		ImGui::BeginChild("Material factory");
-		MaterialFactory::get().drawUI();
+		getMaterialFactory().drawUI();
 		ImGui::End();
 	}
 
 	if (m_skeletalAnimationFactoryVisible)
 	{
 		ImGui::BeginChild("SkeletalAnimation factory");
-		SkeletalAnimationFactory::get().drawUI();
+		getSkeletalAnimationFactory().drawUI();
 		ImGui::End();
-	}
+	}*/
 
 	if (m_sceneManagerVisible)
 	{

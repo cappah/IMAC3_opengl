@@ -7,7 +7,7 @@ private:
 	void operator=(const T& other){}
 
 public:
-	static T& get()
+	static T& instance()
 	{
 		static T instance;
 

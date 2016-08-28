@@ -1,12 +1,44 @@
 #include "Texture.h"
 
+#include "jsoncpp/json/json.h"
 
-Texture::Texture() : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), comp(3), pixels(0), w(1), h(1), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)
+
+Texture::Texture() 
+	: glId(0)
+	, path("")
+	, internalFormat(GL_RGB)
+	, format(GL_RGB)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
+	, comp(3)
+	, pixels(0)
+	, w(1)
+	, h(1)
+	, textureWrapping_u(GL_REPEAT)
+	, textureWrapping_v(GL_REPEAT)
+	, minFilter(GL_LINEAR)
+	, magFilter(GL_LINEAR)
 {
 
 }
 
-Texture::Texture(int width, int height) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), comp(3), pixels(0), w(width), h(height), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)
+Texture::Texture(int width, int height) 
+	: glId(0)
+	, path("")
+	, internalFormat(GL_RGB)
+	, format(GL_RGB)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
+	, comp(3)
+	, pixels(0)
+	, w(width)
+	, h(height)
+	, textureWrapping_u(GL_REPEAT)
+	, textureWrapping_v(GL_REPEAT)
+	, minFilter(GL_LINEAR)
+	, magFilter(GL_LINEAR)
 {
 	//pixels = new unsigned char[3*width*height];
 	//for (int i = 0; i < 3*width*height; i++) {
@@ -14,7 +46,18 @@ Texture::Texture(int width, int height) : glId(0), path(""), internalFormat(GL_R
 	//}
 }
 
-Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)
+Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) 
+	: glId(0)
+	, path("")
+	, internalFormat(GL_RGB)
+	, format(GL_RGB)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
+	, textureWrapping_u(GL_REPEAT)
+	, textureWrapping_v(GL_REPEAT)
+	, minFilter(GL_LINEAR)
+	, magFilter(GL_LINEAR)
 {
 	comp = _comp;
 	w = width;
@@ -23,7 +66,18 @@ Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) : gl
 	pixels = _pixels;
 }
 
-Texture::Texture(char r, char g, char b) : glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)
+Texture::Texture(char r, char g, char b) 
+	: glId(0)
+	, path("")
+	, internalFormat(GL_RGB)
+	, format(GL_RGB)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
+	, textureWrapping_u(GL_REPEAT)
+	, textureWrapping_v(GL_REPEAT)
+	, minFilter(GL_LINEAR)
+	, magFilter(GL_LINEAR)
 {
 	comp = 4;
 	w = 1;
@@ -35,7 +89,15 @@ Texture::Texture(char r, char g, char b) : glId(0), path(""), internalFormat(GL_
 }
 
 
-Texture::Texture(const std::string& _path, bool alphaChannel) : glId(0), path(_path), generateMipMap(true), m_textureUseCounts(0), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)
+Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel) 
+	: glId(0)
+	, path(_path)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
+	, textureWrapping_u(GL_REPEAT)
+	, textureWrapping_v(GL_REPEAT)
+	, minFilter(GL_LINEAR)
+	, magFilter(GL_LINEAR)
 {
 	if (!alphaChannel)
 	{
@@ -53,7 +115,20 @@ Texture::Texture(const std::string& _path, bool alphaChannel) : glId(0), path(_p
 	}
 }
 
-Texture::Texture(int width, int height, const glm::vec4 & color) : w(width), h(height), glId(0), path(""), internalFormat(GL_RGBA), format(GL_RGBA), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)
+Texture::Texture(int width, int height, const glm::vec4 & color) 
+	: w(width)
+	, h(height)
+	, glId(0)
+	, path("")
+	, internalFormat(GL_RGBA)
+	, format(GL_RGBA)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
+	, textureWrapping_u(GL_REPEAT)
+	, textureWrapping_v(GL_REPEAT)
+	, minFilter(GL_LINEAR)
+	, magFilter(GL_LINEAR)
 {
 	comp = 4;
 	pixels = new unsigned char[4*width*height];
@@ -66,7 +141,20 @@ Texture::Texture(int width, int height, const glm::vec4 & color) : w(width), h(h
 	}
 }
 
-Texture::Texture(int width, int height, const glm::vec3 & color) : w(width), h(height), glId(0), path(""), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0), textureWrapping_u(GL_REPEAT), textureWrapping_v(GL_REPEAT), minFilter(GL_LINEAR), magFilter(GL_LINEAR)
+Texture::Texture(int width, int height, const glm::vec3 & color) 
+	: w(width)
+	, h(height)
+	, glId(0)
+	, path("")
+	, internalFormat(GL_RGB)
+	, format(GL_RGB)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
+	, textureWrapping_u(GL_REPEAT)
+	, textureWrapping_v(GL_REPEAT)
+	, minFilter(GL_LINEAR)
+	, magFilter(GL_LINEAR)
 {
 	comp = 3;
 	pixels = new unsigned char[3 * width*height];
@@ -78,6 +166,15 @@ Texture::Texture(int width, int height, const glm::vec3 & color) : w(width), h(h
 	}
 }
 
+void Texture::init(const FileHandler::CompletePath& path)
+{
+	Resource::init(path);
+
+	internalFormat = GL_RGB;
+	format = GL_RGB;
+	type = GL_UNSIGNED_BYTE;
+	pixels = stbi_load(path.c_str(), &w, &h, &comp, 3);
+}
 
 Texture::~Texture()
 {
@@ -131,13 +228,14 @@ void Texture::freeGL()
 //////////////////////////////////////////
 
 
-CubeTexture::CubeTexture(char r, char g, char b) : glId(0), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
+CubeTexture::CubeTexture(char r, char g, char b) 
+	: glId(0)
+	, internalFormat(GL_RGB)
+	, format(GL_RGB)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
 {
-	for (int i = 0; i < 6; i++)
-	{
-		paths.push_back( "" );
-	}
-
 	comp = 4;
 	w = 1;
 	h = 1;
@@ -149,14 +247,21 @@ CubeTexture::CubeTexture(char r, char g, char b) : glId(0), internalFormat(GL_RG
 		pixels[i][1] = g;
 		pixels[i][2] = b;
 	}
-
 }
 
-
-CubeTexture::CubeTexture(const std::vector<std::string>& _paths) : glId(0), paths(_paths), internalFormat(GL_RGB), format(GL_RGB), type(GL_UNSIGNED_BYTE), generateMipMap(true), m_textureUseCounts(0)
+CubeTexture::CubeTexture(const std::vector<FileHandler::CompletePath>& _paths) 
+	: glId(0)
+	, internalFormat(GL_RGB)
+	, format(GL_RGB)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(true)
+	, m_textureUseCounts(0)
 {
 	for (int i = 0; i < 6; i++)
+	{
+		paths[i] = _paths[i];
 		pixels[i] = stbi_load(paths[i].c_str(), &w, &h, &comp, 3);
+	}
 }
 
 
@@ -211,4 +316,59 @@ void CubeTexture::freeGL()
 	if (glId > 0){
 			glDeleteTextures(1, &glId);
 	}
+}
+
+void CubeTexture::init(const FileHandler::CompletePath & path)
+{
+	Resource::init(path);
+
+	load(path);
+}
+
+void CubeTexture::load(const FileHandler::CompletePath & path)
+{
+	std::ifstream stream;
+	stream.open(path.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load cube texture at path : " << path.toString() << std::endl;
+		return;
+	}
+	Json::Value root;
+	stream >> root;
+
+	for (int i = 0; i < 6; i++)
+	{
+		const std::string strPath = root[i]["path"].asString();
+		paths[i] = FileHandler::CompletePath(strPath);
+	}
+
+	internalFormat = root["internalFormat"].asInt();
+	format = root["format"].asInt();
+	type = root["type"].asInt();
+	generateMipMap = root["generateMipMap"].asBool();
+}
+
+void CubeTexture::save(const FileHandler::CompletePath & path) const
+{
+	Json::Value root;
+
+	for (int i = 0; i < 6; i++)
+	{
+		root[i]["path"] = paths[i].toString();
+	}
+
+	root["internalFormat"] = (int)internalFormat;
+	root["format"] = (int)format;
+	root["type"] = (int)type;
+	root["generateMipMap"] = generateMipMap;
+
+	std::ofstream stream;
+	stream.open(path.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load cube texture at path : " << path.toString() << std::endl;
+		return;
+	}
+	stream << root;
 }

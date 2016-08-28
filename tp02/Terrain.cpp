@@ -9,7 +9,7 @@
 
 GrassField::GrassField() : mass(0.005f), rigidity(0.05f), viscosity(0.003f), lockYPlane(true)
 {
-	grassTexture = TextureFactory::get().get("default");
+	grassTexture = getTextureFactory().get("default");
 
 	float pi_3 = glm::pi<float>() / 3.f;
 
@@ -189,7 +189,7 @@ void GrassField::clear()
 {
 	freeGl();
 
-	grassTexture = TextureFactory::get().get("default");
+	grassTexture = getTextureFactory().get("default");
 
 	triangleIndex.clear();
 	vertices.clear();
@@ -467,7 +467,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
 			m_maxGrassDensity(1.f), m_grassDensity(0), m_grassLayoutDelta(0.3f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
-			m_material(ProgramFactory::get().get("defaultTerrain")), m_terrainMaterial(ProgramFactory::get().get("defaultTerrainEdition")), m_drawOnTextureMaterial(ProgramFactory::get().get("defaultDrawOnTexture")), //matertials
+			m_material(getProgramFactory().get("defaultTerrain")), m_terrainMaterial(getProgramFactory().get("defaultTerrainEdition")), m_drawOnTextureMaterial(getProgramFactory().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
 			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024), //textures
 			m_terrainBump(1024, 1024), m_terrainSpecular(1024, 1024), m_drawMatTexture(1024, 1024),
@@ -1305,8 +1305,8 @@ void Terrain::load(Json::Value & rootComponent)
 		glm::vec2 textureRepetition = fromJsonValue<glm::vec2>(rootComponent["materialLayouts"][i]["textureRepetition"], glm::vec2(1, 1));
 		m_textureRepetitions.push_back(textureRepetition);
 		std::string materialLayoutName = rootComponent["materialLayouts"][i]["materialName"].asString();
-		if (MaterialFactory::get().contains<MaterialLit>(materialLayoutName)) {
-			m_terrainLayouts.push_back(MaterialFactory::get().get<MaterialLit>(materialLayoutName));
+		if (getMaterialFactory().contains<MaterialLit>(materialLayoutName)) {
+			m_terrainLayouts.push_back(getMaterialFactory().get<MaterialLit>(materialLayoutName));
 		}
 	}
 	//recreate m_filterTexture : 
@@ -1499,9 +1499,9 @@ void Terrain::drawUI()
 		ImGui::SameLine();
 		if (ImGui::SmallButton("add"))
 		{
-			if (MaterialFactory::get().contains<MaterialLit>(m_newLayoutName))
+			if (getMaterialFactory().contains<MaterialLit>(m_newLayoutName))
 			{
-				m_terrainLayouts.push_back(MaterialFactory::get().get<MaterialLit>(m_newLayoutName));
+				m_terrainLayouts.push_back(getMaterialFactory().get<MaterialLit>(m_newLayoutName));
 				//m_terrainLayouts.back()->initGL();
 				m_textureRepetitions.push_back(glm::vec2(1.f, 1.f));
 
@@ -1589,10 +1589,10 @@ void Terrain::drawUI()
 
 		if (ImGui::InputText("grass texture name", m_newGrassTextureName, 30))
 		{
-			if (TextureFactory::get().contains(m_newGrassTextureName))
+			if (getTextureFactory().contains(m_newGrassTextureName))
 			{
 				//set the texture used by the grass field : 
-				m_grassField.grassTexture = TextureFactory::get().get(m_newGrassTextureName);
+				m_grassField.grassTexture = getTextureFactory().get(m_newGrassTextureName);
 			}
 		}
 

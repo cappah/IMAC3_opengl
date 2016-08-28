@@ -9,11 +9,11 @@ namespace Physic {
 	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), 
 	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), m_emitInShape(false), m_sortParticles(false),
 	m_translation(glm::vec3(0,0,0)), m_scale(1,1,1),
-	m_materialParticules(MaterialFactory::get().get<MaterialParticlesCPU>("particlesCPU")),
-	//m_materialParticuleSimulation(MaterialFactory::get().get<MaterialParticleSimulation>("particleSimulation")),
+	m_materialParticules(getMaterialFactory().get<MaterialParticlesCPU>("particlesCPU")),
+	//m_materialParticuleSimulation(getMaterialFactory().get<MaterialParticleSimulation>("particleSimulation")),
 	m_triangleIndex({ 0, 1, 2, 2, 3, 0 }),
 	m_uvs({ 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f }), m_vertices({ -0.5, 0.0, -0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.5 }), 
-	m_normals({ 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }), m_particleTexture(TextureFactory::get().get("default"))
+	m_normals({ 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }), m_particleTexture(getTextureFactory().get("default"))
 	{
 		//add default color step :
 		m_colorSteps_times.push_back(0);
@@ -408,9 +408,9 @@ namespace Physic {
 		{
 			m_particleTextureName = texName;
 
-			if (TextureFactory::get().contains(m_particleTextureName))
+			if (getTextureFactory().contains(m_particleTextureName))
 			{
-				m_particleTexture = TextureFactory::get().get(m_particleTextureName);
+				m_particleTexture = getTextureFactory().get(m_particleTextureName);
 				m_particleTexture->initGL();
 			}
 		}
@@ -595,8 +595,8 @@ namespace Physic {
 		m_initialVelocityInterval = fromJsonValue(rootComponent["initialVelocityInterval"], glm::vec2(0, 0));
 		m_lifeTimeInterval = fromJsonValue(rootComponent["lifeTimeInterval"], glm::vec2(1,10));
 		m_particleTextureName = rootComponent.get("particleTextureName", "default").asString();
-		if (TextureFactory::get().contains(m_particleTextureName)) {
-			m_particleTexture = TextureFactory::get().get(m_particleTextureName);
+		if (getTextureFactory().contains(m_particleTextureName)) {
+			m_particleTexture = getTextureFactory().get(m_particleTextureName);
 			m_particleTexture->initGL();
 		}
 		m_particleCountBySecond = rootComponent.get("particleCountBySecond", 10).asFloat();

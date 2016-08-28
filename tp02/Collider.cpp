@@ -11,7 +11,15 @@ CollisionInfo::CollisionInfo(Rigidbody* _rigidbody, const glm::vec3& _point, con
 
 ///////////////////////////////
 
-Collider::Collider(ComponentType colliderType, Mesh* _visualMesh, MaterialUnlit* _visualMaterial) : Component(colliderType), visualMesh(_visualMesh), visualMaterial(_visualMaterial), translation(0,0,0), scale(1,1,1), offsetPosition(0,0,0), offsetScale(1,1,1), origin(0,0,0)
+Collider::Collider(ComponentType colliderType, ResourcePtr<Mesh> _visualMesh, ResourcePtr<Material> _visualMaterial)
+	: Component(colliderType)
+	, visualMesh(_visualMesh)
+	, visualMaterial(_visualMaterial)
+	, translation(0,0,0)
+	, scale(1,1,1)
+	, offsetPosition(0,0,0)
+	, offsetScale(1,1,1)
+	, origin(0,0,0)
 {
 
 }
@@ -21,7 +29,7 @@ Collider::~Collider()
 
 }
 
-void Collider::setVisual(Mesh* _visualMesh, MaterialUnlit* _visualMaterial)
+void Collider::setVisual(ResourcePtr<Mesh> _visualMesh, ResourcePtr<Material> _visualMaterial)
 {
 	visualMesh = _visualMesh;
 	visualMaterial = _visualMaterial;
@@ -166,12 +174,29 @@ void Collider::eraseFromScene(Scene & scene)
 	scene.erase(this);
 }
 
+void Collider::render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color)
+{
+	if (visualMesh.isValid() || visualMaterial.isValid())
+		return;
+
+	glm::mat4 mvp = projection * view * modelMatrix;
+
+	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visualMaterial.get()); //TODO : à modifier avec l'upgrade du pipeline de visualisation
+
+	unlitMat->use();
+	unlitMat->setUniform_MVP(mvp);
+	unlitMat->setUniform_normalMatrix(glm::mat4(1)); //no need normals
+	unlitMat->setUniform_color(color);
+
+	visualMesh->draw();
+}
+
 void Collider::save(Json::Value & rootComponent) const
 {
 	Component::save(rootComponent);
  
-	rootComponent["visualMaterialName"] = visualMaterial == nullptr ? "" : visualMaterial->name;
-	rootComponent["visualMeshName"] =  visualMesh == nullptr ? "" : visualMesh->name;
+	rootComponent["visualMaterialName"] = visualMaterial.isValid() ? "" : visualMaterial->name;
+	rootComponent["visualMeshName"] =  visualMesh.isValid() ? "" : visualMesh->name;
 
 	rootComponent["offsetPosition"] = toJsonValue(offsetPosition);
 	rootComponent["offsetScale"] = toJsonValue(offsetScale);
@@ -188,11 +213,11 @@ void Collider::load(Json::Value & rootComponent)
 
 	std::string visualMaterialName = rootComponent.get("visualMaterialName", "").asString();
 	if (visualMaterialName != "")
-		visualMaterial = MaterialFactory::get().get<MaterialUnlit>(visualMaterialName);
+		visualMaterial = getMaterialFactory().getDefault(visualMaterialName);
 
 	std::string visualMeshName = rootComponent.get("visualMeshName", "").asString();
 	if (visualMeshName != "")
-		visualMesh = MeshFactory::get().get(visualMeshName);
+		visualMesh = getMeshFactory().getDefault(visualMeshName);
 
 
 	offsetPosition = fromJsonValue<glm::vec3>(rootComponent["offsetPosition"], glm::vec3());
@@ -214,7 +239,8 @@ void Collider::drawUI(Scene& scene)
 
 ///////////////////////////////////////////
 
-BoxCollider::BoxCollider(Mesh* _visualMesh, MaterialUnlit* _visualMaterial): Collider(BOX_COLLIDER, _visualMesh, _visualMaterial)
+BoxCollider::BoxCollider(ResourcePtr<Mesh> _visualMesh, ResourcePtr<Material> _visualMaterial)
+	: Collider(BOX_COLLIDER, getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"))
 {
 	localTopRight = glm::vec3(0.5f, 0.5f, 0.5f);
 	localBottomLeft = glm::vec3(-0.5f, -0.5f, -0.5f);
@@ -234,19 +260,7 @@ void BoxCollider::updateModelMatrix()
 
 void BoxCollider::render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color)
 {
-	if (visualMesh == nullptr || visualMaterial == nullptr)
-		return;
-
-	glm::mat4 mvp = projection * view * modelMatrix;
-
-	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visualMaterial);
-
-	unlitMat->use();
-	unlitMat->setUniform_MVP(mvp);
-	unlitMat->setUniform_normalMatrix(glm::mat4(1)); //no need normals
-	unlitMat->setUniform_color(color);
-
-	visualMesh->draw();
+	Collider::render(projection, view, color);
 }
 
 void BoxCollider::debugLog()
@@ -427,27 +441,17 @@ void BoxCollider::load(Json::Value & rootComponent)
 
 //////////////////////////////////////////////
 
-CapsuleCollider::CapsuleCollider(): Collider(CAPSULE_COLLIDER, MeshFactory::get().get("capsuleWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe")),
-									radius(0.5f), height(2.f)
+CapsuleCollider::CapsuleCollider()
+	: Collider(CAPSULE_COLLIDER, getMeshFactory().getDefault("capsuleWireframe"), getMaterialFactory().getDefault("wireframe"))
+	, radius(0.5f)
+	, height(2.f)
 {
 
 }
 
 void CapsuleCollider::render(const glm::mat4 & projection, const glm::mat4 & view, const glm::vec3 & color)
 {
-	if (visualMesh == nullptr || visualMaterial == nullptr)
-		return;
-
-	glm::mat4 mvp = projection * view * modelMatrix;
-
-	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visualMaterial);
-
-	unlitMat->use();
-	unlitMat->setUniform_MVP(mvp);
-	unlitMat->setUniform_normalMatrix(glm::mat4(1)); //no need normals
-	unlitMat->setUniform_color(color);
-
-	visualMesh->draw();
+	Collider::render(projection, view, color);
 }
 
 void CapsuleCollider::debugLog()

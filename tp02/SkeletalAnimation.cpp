@@ -1,7 +1,41 @@
 #include "SkeletalAnimation.h"
 //forwards :
 #include "Application.h"
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
+//MESh ANIMATION
+MeshAnimations::MeshAnimations(const FileHandler::CompletePath& scenePath)
+{
+	Assimp::Importer* importer = new Assimp::Importer();
+	const aiScene* pScene = importer->ReadFile(scenePath.c_str());
+
+	for (int i = 0; i < scene.mNumAnimations; i++) {
+		const std::string animName = scene.mAnimations[i]->mName.data;
+		m_animations[animName] = SkeletalAnimation(scene.mAnimations[i]);
+	}
+}
+
+bool MeshAnimations::contains(const std::string& name)
+{
+	return m_animations.find(name) != m_animations.end();
+}
+
+SkeletalAnimation& MeshAnimations::get(const std::string& name)
+{
+	return m_animations[name];
+}
+
+
+//SKELETAL ANIMATION
+
+SkeletalAnimation::SkeletalAnimation()
+	: Animation(0.0, true)
+	, m_animation(nullptr)
+{
+
+}
 
 SkeletalAnimation::SkeletalAnimation(aiAnimation* animation): Animation(0.0, true), m_animation(animation)
 {

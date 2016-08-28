@@ -123,7 +123,7 @@ void PointLight::eraseFromEntity(Entity& entity)
 	entity.erase(this);
 }
 
-void PointLight::setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial)
+void PointLight::setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<Material> visualMaterial)
 {
 	boundingBox.setVisual(visualMesh, visualMaterial);
 }
@@ -293,7 +293,7 @@ void SpotLight::eraseFromEntity(Entity& entity)
 	entity.erase(this);
 }
 
-void SpotLight::setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial)
+void SpotLight::setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<Material> visualMaterial)
 {
 	boundingBox.setVisual(visualMesh, visualMaterial);
 }

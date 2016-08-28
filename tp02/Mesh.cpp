@@ -14,10 +14,20 @@ skeleton(nullptr), isSkeletalMesh(false), importer(nullptr)
 	indexOffsets.push_back(0);
 }
 
-Mesh::Mesh(const std::string& _path, const std::string& meshName) : primitiveType(GL_TRIANGLES), coordCountByVertex(3), vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(GL_STATIC_DRAW),
-skeleton(nullptr), isSkeletalMesh(false), name(meshName), importer(nullptr)
+Mesh::Mesh(const FileHandler::CompletePath& _path, const std::string& meshName) 
+	: primitiveType(GL_TRIANGLES)
+	, coordCountByVertex(3)
+	, vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), vbo_index(0), vbo_vertices(0)
+	, vbo_uvs(0)
+	, vbo_normals(0)
+	, vbo_tangents(0)
+	, drawUsage(GL_STATIC_DRAW)
+	, skeleton(nullptr)
+	, isSkeletalMesh(false)
+	, name(meshName)
+	, importer(nullptr)
+	, path(_path)
 {
-	path = _path;
 
 	subMeshCount = 1;
 	totalTriangleCount = 0;
@@ -33,7 +43,44 @@ skeleton(nullptr), isSkeletalMesh(false), name(meshName), importer(nullptr)
 		Ret = initFromScene(pScene, path);
 	}
 	else {
-		std::cout << "Error parsing " << path << " : " << importer->GetErrorString() << std::endl;
+		std::cout << "Error parsing " << path.toString() << " : " << importer->GetErrorString() << std::endl;
+	}
+}
+
+void Mesh::init(const FileHandler::CompletePath & path)
+{
+	Resource::init(path);
+
+	primitiveType = GL_TRIANGLES;
+	coordCountByVertex = 3;
+	vbo_usage = (USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS);
+	vbo_index = 0;
+	vbo_vertices = 0;
+	vbo_uvs = 0;
+	vbo_normals = 0;
+	vbo_tangents = 0;
+	drawUsage = GL_STATIC_DRAW;
+
+	skeleton = nullptr;
+	isSkeletalMesh = false;
+
+	subMeshCount = 1;
+	totalTriangleCount = 0;
+	triangleCount.push_back(0);
+	indexOffsets.push_back(0);
+
+	bool Ret = false;
+	if (importer != nullptr)
+		delete importer;
+	importer = new Assimp::Importer();
+
+	const aiScene* pScene = importer->ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+
+	if (pScene) {
+		Ret = initFromScene(pScene, path);
+	}
+	else {
+		std::cout << "Error parsing " << path.toString() << " : " << importer->GetErrorString() << std::endl;
 	}
 }
 
@@ -45,7 +92,7 @@ Mesh::~Mesh()
 void Mesh::clear()
 {
 	delete skeleton;
-	SkeletalAnimationFactory::get().clear(name);
+	getSkeletalAnimationFactory().erase(path);
 
 	freeGl();
 
@@ -339,7 +386,7 @@ bool Mesh::getIsSkeletalMesh() const
 	return isSkeletalMesh;
 }
 
-bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
+bool Mesh::initFromScene(const aiScene* pScene, const FileHandler::CompletePath& scenePath)
 {
 	triangleIndex.clear();
 	uvs.clear();
@@ -378,7 +425,8 @@ bool Mesh::initFromScene(const aiScene* pScene, const std::string& Filename)
 	initGl(); //don't forget to init mesh for opengl
 	computeBoundingBox();
 
-	loadAnimations(pScene);
+	//load animation if possible
+	loadAnimations(scenePath, pScene);
 
 	return true;
 }
@@ -436,7 +484,7 @@ void Mesh::initMesh(unsigned int Index, const aiMesh* paiMesh)
 	}
 
 	int offsetGlIdx = triangleIndex.size();
-	for (unsigned int i = 0; i < paiMesh->mNumFaces; i++) 
+	for (unsigned int i = 0; i < paiMesh->mNumFaces; i++)
 	{
 		const aiFace& Face = paiMesh->mFaces[i];
 		assert(Face.mNumIndices == 3);
@@ -460,13 +508,10 @@ void Mesh::loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode *
 		return;
 }
 
-void Mesh::loadAnimations(const aiScene* scene)
+void Mesh::loadAnimations(const FileHandler::CompletePath& scenePath, const aiScene* scene)
 {
 	if (!scene->HasAnimations())
 		return;
 
-	for (int i = 0; i < scene->mNumAnimations; i++) {
-		SkeletalAnimation* newAnimation = new SkeletalAnimation( scene->mAnimations[i] );
-		SkeletalAnimationFactory::get().add(name, newAnimation->getName(), newAnimation);
-	}
+	getSkeletalAnimationFactory().add(scenePath);
 }

@@ -9,6 +9,7 @@
 #include "GUI.h"
 #include "Utils.h"
 #include "Factories.h"
+#include "ResourcePointer.h"
 
 class ResourceFolder;
 class ResourceFile;
@@ -62,8 +63,53 @@ public:
 	virtual void updateOperation() override;
 };
 
+
 namespace EditorGUI {
 
-bool ResourceField(ResourceType resourceType, const std::string& label, char* buf, int bufSize);
+	template<typename T>
+	bool ResourceField(ResourcePtr<T> resourcePtr, const std::string& label, char* buf, int bufSize)
+	{
+		ResourceType resourceType = getResourceType<T>();
+		bool canDropIntoField = DragAndDropManager::canDropInto(&resourceType);
+		bool isTextEdited = false;
 
+		int colStyleCount = 0;
+		if (canDropIntoField)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
+			colStyleCount++;
+		}
+
+		bool enterPressed = ImGui::InputText(label.c_str(), buf, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
+		isTextEdited = (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
+
+		//borders if can drop here : 
+		if (ImGui::IsItemHovered() && canDropIntoField)
+		{
+			ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 2.f);
+		}
+
+		//drop resource : 
+		if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0))
+		{
+			std::string droppedResourceName;
+			DragAndDropManager::dropDraggedItem(&droppedResourceName, (EditorDropContext::DropIntoResourceField));
+			assert(droppedResourceName.size() < bufSize);
+			strcpy(buf, droppedResourceName.c_str());
+			isTextEdited = true;
+		}
+
+		ImGui::PopStyleColor(colStyleCount);
+
+		if (isTextEdited)
+		{
+			std::string resourceName(buf);
+			if (getResourceFactory<T>.contains(resourceName))
+			{
+				resourcePtr = getResourceFactory<T>.get(resourceName);
+			}
+		}
+
+		return isTextEdited;
+	}
 }

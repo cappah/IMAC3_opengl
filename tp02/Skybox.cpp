@@ -3,7 +3,7 @@
 #include "Factories.h"
 
 
-Skybox::Skybox() : material(ProgramFactory::get().get("defaultSkybox"), CubeTextureFactory::get().get("default")) , mesh(GL_TRIANGLES, (Mesh::Vbo_usage::USE_INDEX | Mesh::Vbo_usage::USE_UVS | Mesh::Vbo_usage::USE_VERTICES) )
+Skybox::Skybox() : material(getProgramFactory().getDefault("defaultSkybox"), getCubeTextureFactory().getDefault("default")) , mesh(GL_TRIANGLES, (Mesh::Vbo_usage::USE_INDEX | Mesh::Vbo_usage::USE_UVS | Mesh::Vbo_usage::USE_VERTICES) )
 {
 	mesh.vertices = { 1,1,-1,  1,1,1,  1,-1,1,  1,-1,-1,
 					-1,1,-1,  -1,1,1,  -1,-1,1,  -1,-1,-1,
@@ -64,8 +64,8 @@ void Skybox::save(Json::Value & rootComponent) const
 void Skybox::load(Json::Value & rootComponent)
 {
 	std::string textureName = rootComponent.get("textureName", "default").asString();
-	if (CubeTextureFactory::get().contains(textureName)) {
-		material.setDiffuseTexture(CubeTextureFactory::get().get(textureName));
-		CubeTextureFactory::get().get(textureName)->initGL();
+	if (getCubeTextureFactory().contains(textureName)) {
+		material.setDiffuseTexture(getCubeTextureFactory().get(textureName));
+		getCubeTextureFactory().get(textureName)->initGL();
 	}
 }

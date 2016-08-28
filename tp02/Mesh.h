@@ -13,6 +13,7 @@
 #include <assimp/scene.h>
 
 #include "Skeleton.h"
+#include "Resource.h"
 
 //forwards : 
 class Ray;
@@ -35,9 +36,9 @@ class CollisionInfo;
 //
 //};
 
-struct Mesh
+struct Mesh : public Resource
 {
-	Assimp::Importer* importer;
+	Assimp::Importer* importer; //TODO : a quoi ça sert de laisser ça là ??? En fait ça doit servir pour gerer la durée de vie des animations, mais c'est pas cool...
 
 	std::string name;
 
@@ -45,7 +46,7 @@ struct Mesh
 	glm::vec3 bottomLeft;
 	glm::vec3 origin;
 
-	std::string path;
+	FileHandler::CompletePath path;
 
 	enum Vbo_usage { USE_INDEX = 1 << 0, USE_VERTICES = 1 << 1, USE_UVS = 1 << 2, USE_NORMALS = 1 << 3, USE_TANGENTS = 1 << 4 , USE_BONES = 1 << 5/* , USE_INSTANTIATION = 1 << 5 */};
 	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, BONE_IDS, BONE_WEIGHTS /* INSTANCE_TRANSFORM */, INDEX };
@@ -82,7 +83,8 @@ struct Mesh
 	GLenum drawUsage;
 
 	Mesh(GLenum _primitiveType = GL_TRIANGLES, unsigned int _vbo_usage = (USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS), int _coordCountByVertex = 3, GLenum _drawUsage = GL_STATIC_DRAW);
-	Mesh(const std::string& _path, const std::string& meshName = "");
+	Mesh(const FileHandler::CompletePath& _path, const std::string& meshName = "");
+	void init(const FileHandler::CompletePath& path) override;
 
 	~Mesh();
 	void clear();
@@ -109,9 +111,9 @@ struct Mesh
 	bool getIsSkeletalMesh() const;
 
 private:
-	bool initFromScene(const aiScene* pScene, const std::string& Filename);
+	bool initFromScene(const aiScene* pScene, const FileHandler::CompletePath& scenePath);
 	void initMesh(unsigned int Index, const aiMesh* paiMesh);
 	//Check if the mesh has bones. If true, create the appropriate skeleton :  
 	void loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode * rootNode, unsigned int firstVertexId);
-	void loadAnimations(const aiScene* scene);
+	void loadAnimations(const FileHandler::CompletePath& scenePath, const aiScene* scene);
 };

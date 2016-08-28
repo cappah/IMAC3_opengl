@@ -52,6 +52,7 @@ public:
 	void push_back(const Path& subPath);
 	void pop_back();
 	void format();
+	bool empty() const;
 };
 
 std::ofstream& operator<<(std::ofstream& os, const Path& path);
@@ -68,6 +69,7 @@ private:
 
 public:
 	CompletePath();
+	CompletePath(const std::string& completePath);
 	CompletePath(Path path, const std::string& fileName, const std::string& extention);
 	CompletePath(Path path, const std::string& fileNameAndExtention);
 
@@ -84,6 +86,7 @@ public:
 	bool hasValidFileName() const;
 	bool hasValidExtention() const;
 	void format();
+	bool empty() const;
 
 	FileType getFileType() const;
 };
@@ -114,6 +117,7 @@ void addDirectory(const std::string& name, const Path& path);
 std::vector<std::string> splitString(const std::string& s, char delim);
 std::vector<std::string> splitString(const std::string& s, char delim01, char delim02);
 std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& path, std::string& filename);
+std::size_t splitPathFileNameExtention(const std::string& pathAndFileNameAndExtention, std::string& path, std::string& filename, std::string& extention);
 
 void copyFilePastToNewFile(const CompletePath &from, const Path &to);
 void deleteFile(const CompletePath& completePath);

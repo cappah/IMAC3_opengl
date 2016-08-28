@@ -72,7 +72,7 @@ ResourceTreeWindow::ResourceTreeWindow()
 	
 	//std::vector<const std::string&> resourcePath;
 	////Meshes :
-	//for (auto& it = MeshFactory::get().begin(); it != MeshFactory::get().end(); it++)
+	//for (auto& it = getMeshFactory().begin(); it != getMeshFactory().end(); it++)
 	//{
 	//	const std::string& resourceName = it->first;
 	//	ResourceFile resource(resourceName, ResourceType::MESH);

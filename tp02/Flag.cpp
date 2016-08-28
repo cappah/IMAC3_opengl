@@ -4,17 +4,32 @@
 #include "Entity.h"
 #include "Factories.h"
 #include "OctreeDrawer.h"
+#include "EditorGUI.h"
 
 namespace Physic {
 
-	Flag::Flag() : Flag(MaterialFactory::get().get<Material3DObject>("default"))
+	Flag::Flag() : Flag(getMaterialFactory().getDefault("default"))
 	{
 
 	}
 
-	Flag::Flag(Material3DObject* material, int subdivision, float width, float height) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW), m_material(material), m_subdivision(subdivision), m_width(width), m_height(height), translation(0,0,0), scale(1,1,1),
-		m_mass(0.1f), m_rigidity(0.03f), m_viscosity(0.003f), m_autoCollisionDistance(0.01f), m_autoCollisionRigidity(0.01f), m_autoCollisionViscosity(0.001f),
-		m_materialName("default"), m_computeAutoCollision(false)
+	Flag::Flag(ResourcePtr<Material> material, int subdivision, float width, float height) 
+		: Component(FLAG)
+		, m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW)
+		, m_material(material)
+		, m_subdivision(subdivision)
+		, m_width(width)
+		, m_height(height)
+		, translation(0,0,0)
+		, scale(1,1,1)
+		, m_mass(0.1f)
+		, m_rigidity(0.03f)
+		, m_viscosity(0.003f)
+		, m_autoCollisionDistance(0.01f)
+		, m_autoCollisionRigidity(0.01f)
+		, m_autoCollisionViscosity(0.001f)
+		, m_materialName("default")
+		, m_computeAutoCollision(false)
 	{
 		modelMatrix = glm::mat4(1);
 
@@ -598,6 +613,7 @@ namespace Physic {
 		rootComponent["modelMatrix"] = toJsonValue(modelMatrix);
 		
 		rootComponent["materialName"] = m_materialName;
+		m_material.save(rootComponent["material"]);
 
 		rootComponent["width"] = m_width;
 		rootComponent["height"] = m_height;
@@ -623,8 +639,8 @@ namespace Physic {
 		rotation = fromJsonValue<glm::quat>(rootComponent["rotation"], glm::quat());
 		modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"], glm::mat4());
 
-		m_materialName = rootComponent.get("materialName", "default").asString();
-		m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
+		m_materialName = rootComponent.get("materialName", "default").asString(); //TODO : remove ? 
+		m_material.load(rootComponent["material"]);
 
 		m_width = rootComponent.get("width", 10).asFloat();
 		m_height = rootComponent.get("height", 10).asFloat();
@@ -811,9 +827,11 @@ namespace Physic {
 		glm::mat4 mvp = projection * view * modelMatrix;
 		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
-		m_material->use();
-		m_material->setUniform_MVP(mvp);
-		m_material->setUniform_normalMatrix(normalMatrix);
+		Material3DObject* castedMaterial = static_cast<Material3DObject*>(m_material.get());
+
+		castedMaterial->use();
+		castedMaterial->setUniform_MVP(mvp);
+		castedMaterial->setUniform_normalMatrix(normalMatrix);
 
 		m_mesh.draw();
 	}
@@ -844,19 +862,21 @@ namespace Physic {
 		ImGui::InputFloat("autoCollisionRigidity", &m_autoCollisionRigidity);
 		ImGui::InputFloat("autoCollisionViscosity", &m_autoCollisionViscosity);
 
-		char tmpMaterialName[20];
+		char tmpMaterialName[100];
 		m_materialName.copy(tmpMaterialName, m_materialName.size());
 		tmpMaterialName[m_materialName.size()] = '\0';
+		//%NOCOMMIT%
+		//if (ImGui::InputText("materialName", tmpMaterialName, 20))
+		//{
+		//	m_materialName = tmpMaterialName;
 
-		if (ImGui::InputText("materialName", tmpMaterialName, 20))
-		{
-			m_materialName = tmpMaterialName;
+		//	if (getMaterialFactory().contains(m_materialName))
+		//	{
+		//		m_material = getMaterialFactory().getDefault(m_materialName);
+		//	}
+		//}
 
-			if (MaterialFactory::get().contains<Material3DObject>(m_materialName))
-			{
-				m_material = MaterialFactory::get().get<Material3DObject>(m_materialName);
-			}
-		}
+		EditorGUI::ResourceField(m_material, "materialName", tmpMaterialName, 100);
 
 		//m_material->drawUI();
 	}

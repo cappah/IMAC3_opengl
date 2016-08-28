@@ -1,7 +1,11 @@
 #include "Gizmo.h"
 #include "Editor.h"
 
-Gizmo::Gizmo(MaterialUnlit* _material, Editor* _editor) : position(0,0,0), material(_material), mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES)), editor(_editor)
+Gizmo::Gizmo(ResourcePtr<Material> _material, Editor* _editor) 
+	: position(0,0,0)
+	, material(_material)
+	, mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES))
+	, editor(_editor)
 {
 	//init mesh
 	mesh.triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
@@ -104,25 +108,27 @@ void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatri
 
 	translation = glm::translate(glm::mat4(1), position);
 
-	material->use();
-	material->setUniform_normalMatrix(glm::mat4(1));
+	MaterialUnlit* castedMaterial = static_cast<MaterialUnlit*>(material.get()); //TODO : changer ça appres la refonte du pipeline de rendu
+
+	castedMaterial->use();
+	castedMaterial->setUniform_normalMatrix(glm::mat4(1));
 
 	//x : 
 	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(scale, 0.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(scale*2.f, scale*0.1f, scale*0.1f));
-	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
-	material->setUniform_color(glm::vec3(1, 0, 0));
+	castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	castedMaterial->setUniform_color(glm::vec3(1, 0, 0));
 	mesh.draw();
 
 	//y : 
-	material->setUniform_color(glm::vec3(0, 1, 0));
+	castedMaterial->setUniform_color(glm::vec3(0, 1, 0));
 	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, scale, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(scale*0.1f, scale*2.f, scale*0.1f));
-	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
 	mesh.draw();
 
 	//z : 
-	material->setUniform_color(glm::vec3(0, 0, 1));
+	castedMaterial->setUniform_color(glm::vec3(0, 0, 1));
 	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 0.f, scale)) * glm::scale(glm::mat4(1), glm::vec3(scale*0.1f, scale*0.1f, scale*2.f));
-	material->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
 	mesh.draw();
 }
 

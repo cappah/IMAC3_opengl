@@ -5,7 +5,7 @@
 ComponentFactory::ComponentFactory()
 {
 	//COLLIDER, MESH_RENDERER, LIGHT, POINT_LIGHT, DIRECTIONAL_LIGHT, SPOT_LIGHT, COMPONENT_COUNT, FLAG, PARTICLE_EMITTER, PATH_POINT, CAMERA, WIND_ZONE, RIGIDBODY;
-	add(Component::ComponentType::BOX_COLLIDER, new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe")));
+	add(Component::ComponentType::BOX_COLLIDER, new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe")));
 	add(Component::ComponentType::CAPSULE_COLLIDER, new CapsuleCollider());
 	add(Component::ComponentType::SPHERE_COLLIDER, new CapsuleCollider()); //TODO
 	add(Component::ComponentType::MESH_COLLIDER, new CapsuleCollider()); //TODO
@@ -13,7 +13,7 @@ ComponentFactory::ComponentFactory()
 	add(Component::ComponentType::POINT_LIGHT, new PointLight());
 	add(Component::ComponentType::DIRECTIONAL_LIGHT, new DirectionalLight());
 	add(Component::ComponentType::SPOT_LIGHT, new SpotLight());
-	add(Component::ComponentType::FLAG, new Physic::Flag(MaterialFactory::get().get<Material3DObject>("default")));
+	add(Component::ComponentType::FLAG, new Physic::Flag(getMaterialFactory().getDefault("default")));
 	add(Component::ComponentType::PARTICLE_EMITTER, new Physic::ParticleEmitter());
 	add(Component::ComponentType::PATH_POINT, new PathPoint());
 	add(Component::ComponentType::CAMERA, new Camera());

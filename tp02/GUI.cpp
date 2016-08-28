@@ -2,7 +2,7 @@
 
 bool DragAndDropManager::beginDragAndDrop(std::shared_ptr<DragAndDropOperation> operation)
 {
-	auto& This = DragAndDropManager::get();
+	auto& This = DragAndDropManager::instance();
 
 	if (This.m_isDragAndDropping)
 		return false;
@@ -16,7 +16,7 @@ bool DragAndDropManager::beginDragAndDrop(std::shared_ptr<DragAndDropOperation> 
 
 DragAndDropOperation& DragAndDropManager::cancelDragAndDrop()
 {
-	auto& This = DragAndDropManager::get();
+	auto& This = DragAndDropManager::instance();
 
 	if (This.m_isDragAndDropping)
 		This.m_currentDragAndDropOperation->cancelOperation();
@@ -28,7 +28,7 @@ DragAndDropOperation& DragAndDropManager::cancelDragAndDrop()
 
 DragAndDropOperation& DragAndDropManager::dropDraggedItem(void* customData, int currentOperationType)
 {
-	auto& This = DragAndDropManager::get();
+	auto& This = DragAndDropManager::instance();
 
 	if ((currentOperationType & This.getValidDropContext()) == 0)
 		return cancelDragAndDrop();
@@ -42,7 +42,7 @@ DragAndDropOperation& DragAndDropManager::dropDraggedItem(void* customData, int 
 
 DragAndDropOperation& DragAndDropManager::updateDragAndDrop()
 {
-	auto& This = DragAndDropManager::get();
+	auto& This = DragAndDropManager::instance();
 
 	if (This.m_isDragAndDropping)
 	{
@@ -66,28 +66,28 @@ DragAndDropOperation& DragAndDropManager::updateDragAndDrop()
 
 bool DragAndDropManager::isDragAndDropping()
 {
-	auto& This = DragAndDropManager::get();
+	auto& This = DragAndDropManager::instance();
 
 	return This.m_isDragAndDropping;
 }
 
 int DragAndDropManager::getOperationType()
 {
-	auto& This = DragAndDropManager::get();
+	auto& This = DragAndDropManager::instance();
 
 	return This.m_currentDragAndDropOperation ? This.m_currentDragAndDropOperation->getType() : 0;
 }
 
 int DragAndDropManager::getValidDropContext()
 {
-	auto& This = DragAndDropManager::get();
+	auto& This = DragAndDropManager::instance();
 
 	return This.m_currentDragAndDropOperation ? This.m_currentDragAndDropOperation->getValidDropContext() : 0;
 }
 
 bool DragAndDropManager::canDropInto(void* data)
 {
-	auto& This = DragAndDropManager::get();
+	auto& This = DragAndDropManager::instance();
 
 	return (
 		DragAndDropManager::isDragAndDropping()

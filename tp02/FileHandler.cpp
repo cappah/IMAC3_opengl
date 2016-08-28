@@ -120,6 +120,11 @@ void Path::format()
 	}
 }
 
+bool Path::empty() const
+{
+	return m_data.empty();
+}
+
 const std::string& Path::toString() const
 {
 	return m_data;
@@ -139,6 +144,21 @@ CompletePath::CompletePath()
 	, m_extention("")
 	, m_complete(false)
 {
+	format();
+}
+
+CompletePath::CompletePath(const std::string & completePath)
+	: m_fileName("")
+	, m_extention("")
+	, m_complete(false)
+{
+	std::string path = "";
+	splitPathFileNameExtention(completePath, path, m_fileName, m_extention);
+	if (path != "")
+	{
+		m_path = Path(path);
+	}
+
 	format();
 }
 
@@ -245,6 +265,11 @@ void CompletePath::format()
 			m_extention.insert(m_extention.begin(), '.');
 		}
 	}
+}
+
+bool CompletePath::empty() const
+{
+	return m_path.empty() && m_extention.empty() && m_fileName.empty();
 }
 
 bool CompletePath::hasValidExtention() const 
@@ -491,6 +516,27 @@ std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& p
 	}
 	return pathLength;
 }
+
+std::size_t splitPathFileNameExtention(const std::string& pathAndFileNameAndExtention, std::string& path, std::string& filename, std::string& extention)
+{
+	std::string filenameAndExtention;
+
+	splitPathFileName(pathAndFileNameAndExtention, path, filenameAndExtention);
+
+	std::size_t fileNameLength = filenameAndExtention.find_last_of(".");
+	if (fileNameLength == std::string::npos) {
+		//No extention found
+		fileNameLength = filenameAndExtention.size();
+		filename = filenameAndExtention;
+		extention = "";
+	}
+	else {
+		filename = filenameAndExtention.substr(0, fileNameLength);
+		extention = filenameAndExtention.substr(fileNameLength + 1);
+	}
+	return fileNameLength;
+}
+
 
 void copyFilePastToNewFile(const CompletePath& from, const Path& to)
 {

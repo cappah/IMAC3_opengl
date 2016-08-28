@@ -86,11 +86,11 @@ void Project::clear()
 		delete m_renderer;
 
 	//clear all resources : 
-	MeshFactory::get().clear();
-	MaterialFactory::get().clear();
-	TextureFactory::get().clear();
-	CubeTextureFactory::get().clear();
-	ProgramFactory::get().clear();
+	getMeshFactory().clear();
+	getMaterialFactory().clear();
+	getTextureFactory().clear();
+	getCubeTextureFactory().clear();
+	getProgramFactory().clear();
 }
 
 void Project::open(const std::string & projectName, const FileHandler::Path & projectPath)
@@ -161,10 +161,10 @@ void Project::save()
 
 	//save resources : 
 	Json::Value rootResources;
-	MeshFactory::get().save(rootResources["meshFactory"]);
-	MaterialFactory::get().save(rootResources["materialFactory"]);
-	TextureFactory::get().save(rootResources["textureFactory"]);
-	CubeTextureFactory::get().save(rootResources["cubeTextureFactory"]);
+	getMeshFactory().save(rootResources["meshFactory"]);
+	getMaterialFactory().save(rootResources["materialFactory"]);
+	getTextureFactory().save(rootResources["textureFactory"]);
+	getCubeTextureFactory().save(rootResources["cubeTextureFactory"]);
 
 	std::ofstream streamResources;
 	streamResources.open(resourcesPath.toString());
@@ -202,10 +202,10 @@ void Project::load()
 	Json::Value rootResources;
 	streamResources >> rootResources;
 
-	MeshFactory::get().load(rootResources["meshFactory"]);
-	TextureFactory::get().load(rootResources["textureFactory"]);
-	CubeTextureFactory::get().load(rootResources["cubeTextureFactory"]);
-	MaterialFactory::get().load(rootResources["materialFactory"]);
+	getMeshFactory().load(rootResources["meshFactory"]);
+	getTextureFactory().load(rootResources["textureFactory"]);
+	getCubeTextureFactory().load(rootResources["cubeTextureFactory"]);
+	getMaterialFactory().load(rootResources["materialFactory"]);
 
 	//load scenes : 
 	Json::Value rootProject;
@@ -243,7 +243,7 @@ void Project::play()
 void Project::edit()
 {
 	//Create the editor : 
-	Editor editor(MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+	Editor editor;
 
 	GLFWwindow* window = Application::get().getActiveWindow();
 	Scene* scene = getActiveScene();
@@ -474,8 +474,8 @@ void Project::loadDefaultScene(Scene* scene)
 
 	// mesh renderer for colliders : 
 	MeshRenderer cubeWireFrameRenderer;
-	cubeWireFrameRenderer.setMesh( MeshFactory::get().get("cubeWireframe") );
-	cubeWireFrameRenderer.setMaterial( MaterialFactory::get().get<Material3DObject>("wireframe"), 0);
+	cubeWireFrameRenderer.setMesh( getMeshFactory().getDefault("cubeWireframe") );
+	cubeWireFrameRenderer.setMaterial( getMaterialFactory().getDefault("wireframe"), 0);
 
 	//int r = 5;
 	//float omega = 0;
@@ -497,28 +497,28 @@ void Project::loadDefaultScene(Scene* scene)
 
 	// an entity with a light : 
 	Entity* newEntity = new Entity(scene);
-	BoxCollider* boxColliderLight = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+	BoxCollider* boxColliderLight = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
 	PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
-	pointLight->setBoundingBoxVisual(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+	pointLight->setBoundingBoxVisual(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 	newEntity->add(boxColliderLight).add(pointLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 	newEntity->setName("point light");
 
 
 	//renderers : 
-	MeshRenderer* cubeRenderer01 = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get<Material3DObject>("brick"));
-	MeshRenderer* cubeRenderer02 = new MeshRenderer(MeshFactory::get().get("cube"), MaterialFactory::get().get<Material3DObject>("brick"));
+	MeshRenderer* cubeRenderer01 = new MeshRenderer(getMeshFactory().getDefault("cube"), getMaterialFactory().getDefault("brick"));
+	MeshRenderer* cubeRenderer02 = new MeshRenderer(getMeshFactory().getDefault("cube"), getMaterialFactory().getDefault("brick"));
 
 	//MeshRenderer cubeRenderer02;
 	//cubeRenderer02.mesh = &cube;
 	//cubeRenderer02.material = &brickMaterial;
 
-	MeshRenderer* planeRenderer = new MeshRenderer(MeshFactory::get().get("plane"), MaterialFactory::get().get<Material3DObject>("brick"));
+	MeshRenderer* planeRenderer = new MeshRenderer(getMeshFactory().getDefault("plane"), getMaterialFactory().getDefault("brick"));
 
 	//colliders : 
-	BoxCollider* boxCollider01 = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
-	BoxCollider* boxCollider02 = new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe"));
+	BoxCollider* boxCollider01 = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+	BoxCollider* boxCollider02 = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 
 	//entities : 
 
@@ -553,11 +553,10 @@ void Project::loadDefaultScene(Scene* scene)
 	*/
 
 	//flage entity : 
-	Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>("default");
-	Physic::Flag* flag = new Physic::Flag(tmpMat);
+	Physic::Flag* flag = new Physic::Flag(getMaterialFactory().getDefault("default"));
 
 	Entity* entity_flag = new Entity(scene);
-	entity_flag->add(new BoxCollider(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<MaterialUnlit>("wireframe")));
+	entity_flag->add(new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe")));
 	entity_flag->add(flag);
 	entity_flag->setName("flag");
 	entity_flag->endCreation();
@@ -947,38 +946,38 @@ void Project::initDefaultAssets()
 	// So initialyzing materials before TextureFectory initialysation will create materials with wrong texture and mesh names. 
 
 	////////// INITIALYZE DEFAULT TEXTURES IN FACTORY : 
-	TextureFactory::get().add("brickDiffuse", diffuseTexture);
-	TextureFactory::get().add("brickSpecular", specularTexture);
-	TextureFactory::get().add("brickBump", bumpTexture);
-	TextureFactory::get().add("grass01Diffuse", grassTextureDiffuse);
+	getTextureFactory().addDefault("brickDiffuse", diffuseTexture);
+	getTextureFactory().addDefault("brickSpecular", specularTexture);
+	getTextureFactory().addDefault("brickBump", bumpTexture);
+	getTextureFactory().addDefault("grass01Diffuse", grassTextureDiffuse);
 
 	// materials : 
-	//MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, TextureFactory::get().get("default"), TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
-	MaterialLit* brickMaterial = new MaterialLit(ProgramFactory::get().get("defaultLit") /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
+	//MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, getTextureFactory().get("default"), getTextureFactory().get("default"), getTextureFactory().get("default"), 50);
+	MaterialLit* brickMaterial = new MaterialLit(getProgramFactory().getDefault("defaultLit")->id /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
 	//MaterialUnlit* wireframeMaterial = new MaterialUnlit(programObject_wireframe);
 	//MaterialGrassField* grassFieldMaterial = new MaterialGrassField(programObject_grassField);
 
 	////////// INITIALYZE DEFAULT MATERIALS IN FACTORY : 
-	//MaterialFactory::get().add("default", defaultMaterial);
-	MaterialFactory::get().add("brick", brickMaterial);
-	//MaterialFactory::get().add("wireframe", wireframeMaterial);
-	//MaterialFactory::get().add("grassField", grassFieldMaterial);
+	//getMaterialFactory().add("default", defaultMaterial);
+	getMaterialFactory().addDefault("brick", brickMaterial);
+	//getMaterialFactory().add("wireframe", wireframeMaterial);
+	//getMaterialFactory().add("grassField", grassFieldMaterial);
 
 	////////// INITIALYZE DEFAULT MESHES IN FACTORY : 
-	//MeshFactory::get().add("cube", cube);
-	//MeshFactory::get().add("cubeWireframe", cubeWireFrame);
-	//MeshFactory::get().add("plane", plane);
+	//getMeshFactory().add("cube", cube);
+	//getMeshFactory().add("cubeWireframe", cubeWireFrame);
+	//getMeshFactory().add("plane", plane);
 
-	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
+	getCubeTextureFactory().addDefault("plaineSkybox", defaultSkybox);
 
 	////////// INITIALYZE DEFAULT PROGRAMS IN FACTORY : 
-	//ProgramFactory::get().add("defaultLit", programObject_gPass);
-	//ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
-	//ProgramFactory::get().add("defaultSkybox", programObject_skybox);
-	//ProgramFactory::get().add("defaultTerrain", programObject_terrain);
-	//ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
-	//ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
-	//ProgramFactory::get().add("defaultGrassField", programObject_grassField);
+	//getProgramFactory().add("defaultLit", programObject_gPass);
+	//getProgramFactory().add("defaultUnlit", programObject_wireframe);
+	//getProgramFactory().add("defaultSkybox", programObject_skybox);
+	//getProgramFactory().add("defaultTerrain", programObject_terrain);
+	//getProgramFactory().add("defaultTerrainEdition", programObject_terrainEdition);
+	//getProgramFactory().add("defaultDrawOnTexture", programObject_drawOnTexture);
+	//getProgramFactory().add("defaultGrassField", programObject_grassField);
 
 	///////////////////// END RESSOURCES 
 

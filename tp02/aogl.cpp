@@ -447,41 +447,41 @@ int main( int argc, char **argv )
 	// So initialyzing materials before TextureFectory initialysation will create materials with wrong texture and mesh names. 
 
 	//texture factories : 
-	TextureFactory::get().add("brickDiffuse", diffuseTexture);
-	TextureFactory::get().add("brickSpecular", specularTexture);
-	TextureFactory::get().add("brickBump", bumpTexture);
-	TextureFactory::get().add("grass01Diffuse", grassTextureDiffuse);
+	getTextureFactory().add("brickDiffuse", diffuseTexture);
+	getTextureFactory().add("brickSpecular", specularTexture);
+	getTextureFactory().add("brickBump", bumpTexture);
+	getTextureFactory().add("grass01Diffuse", grassTextureDiffuse);
 
 	// materials : 
-	MaterialLit defaultMaterial(programObject_gPass, TextureFactory::get().get("default") , TextureFactory::get().get("default"), TextureFactory::get().get("default"), 50);
+	MaterialLit defaultMaterial(programObject_gPass, getTextureFactory().get("default") , getTextureFactory().get("default"), getTextureFactory().get("default"), 50);
 	MaterialLit brickMaterial(programObject_gPass, diffuseTexture, specularTexture, bumpTexture, 50);
 	MaterialUnlit wireframeMaterial(programObject_wireframe);
 	MaterialBillboard billboardMaterial(programObject_billboard);
 	MaterialGrassField grassFieldMaterial(programObject_grassField);
 
 	//material factories : 
-	MaterialFactory::get().add("default", &defaultMaterial);
-	MaterialFactory::get().add("brick", &brickMaterial);
-	MaterialFactory::get().add("wireframe", &wireframeMaterial);
-	MaterialFactory::get().add("billboard", &billboardMaterial);
-	MaterialFactory::get().add("grassField", &grassFieldMaterial);
+	getMaterialFactory().add("default", &defaultMaterial);
+	getMaterialFactory().add("brick", &brickMaterial);
+	getMaterialFactory().add("wireframe", &wireframeMaterial);
+	getMaterialFactory().add("billboard", &billboardMaterial);
+	getMaterialFactory().add("grassField", &grassFieldMaterial);
 
 	//mesh factories : 
-	MeshFactory::get().add("cube", &cube);
-	MeshFactory::get().add("cubeWireframe", &cubeWireFrame);
-	MeshFactory::get().add("plane", &plane);
+	getMeshFactory().add("cube", &cube);
+	getMeshFactory().add("cubeWireframe", &cubeWireFrame);
+	getMeshFactory().add("plane", &plane);
 
-	CubeTextureFactory::get().add("plaineSkybox", defaultSkybox);
+	getCubeTextureFactory().add("plaineSkybox", defaultSkybox);
 
 	////////// INITIALYZE DEFAULT MATERIAL IN FACTORY : 
-	ProgramFactory::get().add("defaultLit", programObject_gPass);
-	ProgramFactory::get().add("defaultUnlit", programObject_wireframe);
-	ProgramFactory::get().add("defaultSkybox", programObject_skybox);
-	ProgramFactory::get().add("defaultBillboard", programObject_billboard);
-	ProgramFactory::get().add("defaultTerrain", programObject_terrain);
-	ProgramFactory::get().add("defaultTerrainEdition", programObject_terrainEdition);
-	ProgramFactory::get().add("defaultDrawOnTexture", programObject_drawOnTexture);
-	ProgramFactory::get().add("defaultGrassField", programObject_grassField);
+	getProgramFactory().add("defaultLit", programObject_gPass);
+	getProgramFactory().add("defaultUnlit", programObject_wireframe);
+	getProgramFactory().add("defaultSkybox", programObject_skybox);
+	getProgramFactory().add("defaultBillboard", programObject_billboard);
+	getProgramFactory().add("defaultTerrain", programObject_terrain);
+	getProgramFactory().add("defaultTerrainEdition", programObject_terrainEdition);
+	getProgramFactory().add("defaultDrawOnTexture", programObject_drawOnTexture);
+	getProgramFactory().add("defaultGrassField", programObject_grassField);
 
 	///////////////////// END RESSOURCES 
 
@@ -529,7 +529,7 @@ int main( int argc, char **argv )
 	//SpotLight* spotLight = new SpotLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
 	//PointLight* pointLight = new PointLight(10, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f), glm::vec3(0, 0, 0));
 	DirectionalLight* directionalLight = new DirectionalLight(1, glm::vec3(rand() % 255 / 255.f, rand() % 255 / 255.f, rand() % 255 / 255.f));
-	//boxColliderLight->setBoundingBoxVisual(new MeshRenderer(MeshFactory::get().get("cubeWireframe"), MaterialFactory::get().get<Material3DObject>("wireframe")));
+	//boxColliderLight->setBoundingBoxVisual(new MeshRenderer(getMeshFactory().get("cubeWireframe"), getMaterialFactory().get<Material3DObject>("wireframe")));
 	newEntity->add(boxColliderLight).add(directionalLight);
 	newEntity->setTranslation(glm::vec3(0, 1.5, 0));
 	newEntity->setName("point light");
@@ -582,7 +582,7 @@ int main( int argc, char **argv )
 	
 
 	//flage entity : 
-	Material3DObject* tmpMat = MaterialFactory::get().get<Material3DObject>("default");
+	Material3DObject* tmpMat = getMaterialFactory().get<Material3DObject>("default");
 	Physic::Flag* flag = new Physic::Flag(tmpMat);
 
 	Entity* entity_flag = new Entity(&scene);

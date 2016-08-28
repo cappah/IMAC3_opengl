@@ -160,6 +160,9 @@
     <ClCompile Include="FileHandler.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="ResourcePointer.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -331,6 +334,12 @@
     </ClInclude>
     <ClInclude Include="FileHandler.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderProgram.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourcePointer.h">
+      <Filter>Resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

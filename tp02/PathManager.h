@@ -5,11 +5,12 @@
 #include "Path.h"
 #include "Materials.h"
 #include "Camera.h"
+#include "ResourcePointer.h"
 
 class PathManager
 {
 private:
-	Material3DObject* m_material;
+	ResourcePtr<Material> m_material;
 	std::vector<Path*> m_paths;
 
 public:

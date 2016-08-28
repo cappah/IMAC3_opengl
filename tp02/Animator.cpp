@@ -3,6 +3,8 @@
 #include "Scene.h"
 #include "Factories.h"
 
+#include "EditorGUI.h"
+
 
 Animator::Animator(): Component(ComponentType::ANIMATOR), m_skeleton(nullptr), m_currentAnimName(""), m_currentSkeletonName(""), m_isPlaying(false)
 {
@@ -49,21 +51,31 @@ void Animator::play(const std::string & animationName)
 
 void Animator::drawUI(Scene & scene)
 {
-	char tmpSkeletalName[20];
-	m_skeletonName.copy(tmpSkeletalName, m_skeletonName.size());
-	tmpSkeletalName[m_skeletonName.size()] = '\0';
+	char tmpSkeletalPath[100];
+	m_skeletonName.copy(tmpSkeletalPath, m_skeletonName.size());
+	tmpSkeletalPath[m_skeletonName.size()] = '\0';
 
-	if (ImGui::InputText("skeleton/mesh name", tmpSkeletalName, 20)) {
+	//%NOCOMMIT%
+	//if (ImGui::InputText("skeleton/mesh name", tmpSkeletalName, 20)) {
 
-		m_skeletonName = tmpSkeletalName;
+	//	m_skeletonName = tmpSkeletalName;
 
-		if (MeshFactory::get().contains(m_skeletonName)) {
-			Mesh* tmpMesh = MeshFactory::get().get(m_skeletonName);
-			if (tmpMesh != nullptr) {
-				m_currentSkeletonName = m_skeletonName;
-				m_skeleton = tmpMesh->getSkeleton();
-			}
-		}
+	//	if (getMeshFactory().contains(m_skeletonName)) {
+	//		ResourcePtr<Mesh> tmpMesh = getMeshFactory().get(m_skeletonName);
+	//		if (tmpMesh.isValid()) {
+	//			m_currentSkeletonName = m_skeletonName;
+	//			m_skeleton = tmpMesh->getSkeleton();
+	//		}
+	//	}
+	//}
+
+	//Get mesh skeleton from mesh
+	ResourcePtr<Mesh> resourcePtrQuery;
+	EditorGUI::ResourceField<Mesh>(resourcePtrQuery, "skeleton/mesh name", tmpSkeletalPath, 100);
+	if (resourcePtrQuery.isValid())
+	{
+		m_skeleton = resourcePtrQuery->getSkeleton();
+		m_skeletonAnimations = getSkeletalAnimationFactory().get(FileHandler::CompletePath(tmpSkeletalPath));
 	}
 
 
@@ -71,18 +83,27 @@ void Animator::drawUI(Scene & scene)
 	m_animationName.copy(tmpAnimationName, m_animationName.size());
 	tmpAnimationName[m_animationName.size()] = '\0';
 
-	if (ImGui::InputText("animation name", tmpAnimationName, 60))
-		m_animationName = tmpAnimationName;
-	ImGui::SameLine();
-	if (ImGui::Button("add")){
-		if (SkeletalAnimationFactory::get().contains(m_currentSkeletonName, m_animationName)) {
-			SkeletalAnimation* tmpAnim = SkeletalAnimationFactory::get().get(m_currentSkeletonName, m_animationName);
-			if (tmpAnim != nullptr) {
-				if (m_animations.find(m_currentAnimName) == m_animations.end())
-					m_currentAnimName = m_animationName;
-				m_animations[m_animationName] = tmpAnim;
-			}
-		}
+	//%NOCOMMIT%
+	//if (ImGui::InputText("animation name", tmpAnimationName, 60))
+	//	m_animationName = tmpAnimationName;
+	//ImGui::SameLine();
+	//if (ImGui::Button("add")){
+	//	if (getSkeletalAnimationFactory().contains(m_currentSkeletonName, m_animationName)) {
+	//		SkeletalAnimation* tmpAnim = getSkeletalAnimationFactory().get(m_currentSkeletonName, m_animationName);
+	//		if (tmpAnim != nullptr) {
+	//			if (m_animations.find(m_currentAnimName) == m_animations.end())
+	//				m_currentAnimName = m_animationName;
+	//			m_animations[m_animationName] = tmpAnim;
+	//		}
+	//	}
+	//}
+
+	//Get mesh skeleton from mesh
+	ResourcePtr<MeshAnimations> resourcePtrQuery;
+	EditorGUI::ResourceField<MeshAnimations>(resourcePtrQuery, "mesh animations", tmpSkeletalName, 20);
+	if (resourcePtrQuery.isValid())
+	{
+		m_skeleton = resourcePtrQuery->getSkeleton();
 	}
 
 	int imguiId = 0;
@@ -154,8 +175,8 @@ void Animator::load(Json::Value & componentRoot)
 
 	m_currentSkeletonName = componentRoot.get("skeletonName", "").asString();
 	m_skeletonName = m_currentSkeletonName;
-	auto mesh = MeshFactory::get().get(m_currentSkeletonName);
-	if (mesh != nullptr) {
+	auto mesh = getMeshFactory().get(m_currentSkeletonName);
+	if (mesh.isValid()) {
 		m_skeleton = mesh->getSkeleton();
 	}
 
@@ -164,8 +185,8 @@ void Animator::load(Json::Value & componentRoot)
 	for (int i = 0; i < animationCount; i++) {
 
 		std::string animationName = componentRoot["animationName"][i].asString();
-		if (SkeletalAnimationFactory::get().contains(m_currentSkeletonName, animationName)) {
-			SkeletalAnimation* tmpAnim = SkeletalAnimationFactory::get().get(m_currentSkeletonName, animationName);
+		if (getSkeletalAnimationFactory().contains(m_currentSkeletonName, animationName)) {
+			SkeletalAnimation* tmpAnim = getSkeletalAnimationFactory().get(m_currentSkeletonName, animationName);
 			if (tmpAnim != nullptr) {
 				if (m_animations.find(m_currentAnimName) == m_animations.end())
 					m_currentAnimName = animationName;

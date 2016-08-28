@@ -264,6 +264,7 @@
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="ResourcePointer.cpp" />
     <ClCompile Include="ResourceTree.cpp" />
     <ClCompile Include="Rigidbody.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -353,10 +354,12 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="ResourcePointer.h" />
     <ClInclude Include="ResourceTree.h" />
     <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SerializeUtils.h" />
+    <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="SkeletalAnimation.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="Skybox.h" />

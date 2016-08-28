@@ -138,7 +138,7 @@ private:
 	std::vector<std::shared_ptr<EditorWindow>> m_editorWindows;
 
 public:
-	Editor(MaterialUnlit* _unlitMaterial);
+	Editor();
 
 	void changeCurrentSelected(Entity* entity);
 	void changeCurrentSelected(std::vector<Entity*> entities);

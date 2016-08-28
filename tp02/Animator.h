@@ -10,7 +10,7 @@ private:
 	Skeleton* m_skeleton;
 	std::string m_currentAnimName;
 	std::string m_currentSkeletonName;
-	std::map<std::string, SkeletalAnimation*> m_animations;
+	MeshAnimations m_skeletonAnimations;
 	bool m_isPlaying;
 
 	//for ui : 

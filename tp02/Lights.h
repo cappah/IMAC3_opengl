@@ -59,7 +59,7 @@ struct PointLight : public Light
 	virtual void addToEntity(Entity& entity) override;
 	virtual void eraseFromEntity(Entity& entity) override;
 
-	void setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial);
+	void setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<Material> visualMaterial);
 	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
 
 	virtual void save(Json::Value& rootComponent) const override;
@@ -112,7 +112,7 @@ struct SpotLight : public Light
 	virtual void addToEntity(Entity& entity) override;
 	virtual void eraseFromEntity(Entity& entity) override;
 
-	void setBoundingBoxVisual(Mesh* visualMesh, MaterialUnlit* visualMaterial);
+	void setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<Material> visualMaterial);
 	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
 
 	virtual void save(Json::Value& rootComponent) const override;

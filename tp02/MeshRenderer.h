@@ -7,6 +7,7 @@
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "Component.h"
+#include "ResourcePointer.h"
 
 //forward
 class Entity;
@@ -14,8 +15,11 @@ class Entity;
 class MeshRenderer : public Component
 {
 private:
-	Mesh* mesh;
-	std::vector<Material3DObject*> material;
+	//%NOCOMMIT%
+	//Mesh* mesh;
+	//std::vector<Material3DObject*> material;
+	ResourcePtr<Mesh> mesh;
+	std::vector<ResourcePtr<Material>> material;
 
 	//for UI : 
 	std::string meshName;
@@ -23,7 +27,7 @@ private:
 
 public:
 	MeshRenderer();
-	MeshRenderer(Mesh* _mesh, Material3DObject* _material);
+	MeshRenderer(ResourcePtr<Mesh> _mesh, ResourcePtr<Material> _material);
 	virtual ~MeshRenderer();
 
 	virtual void drawUI(Scene& scene) override;
@@ -33,13 +37,13 @@ public:
 	virtual void addToEntity(Entity& entity) override;
 	virtual void eraseFromEntity(Entity& entity) override;
 
-	void setMesh(Mesh* _mesh);
-	void addMaterial(Material3DObject* _material);
+	void setMesh(ResourcePtr<Mesh> _mesh);
+	void addMaterial(ResourcePtr<Material> _material);
 	void removeMaterial(int idx);
-	void setMaterial(Material3DObject* _material, int idx);
+	void setMaterial(ResourcePtr<Material> _material, int idx);
 
-	Material3DObject* getMaterial(int idx) const;
-	Mesh* getMesh() const;
+	const Material* getMaterial(int idx) const;
+	const Mesh* getMesh() const;
 
 	std::string getMaterialName(int idx) const;
 	std::string getMeshName() const;
