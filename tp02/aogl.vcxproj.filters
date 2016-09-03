@@ -142,7 +142,6 @@
     </ClCompile>
     <ClCompile Include="Coroutine.cpp" />
     <ClCompile Include="Skeleton.cpp" />
-    <ClCompile Include="SkeletalAnimation.cpp" />
     <ClCompile Include="Animator.cpp">
       <Filter>Components</Filter>
     </ClCompile>
@@ -161,6 +160,9 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="ResourcePointer.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalAnimation.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -314,7 +316,6 @@
     </ClInclude>
     <ClInclude Include="Coroutine.h" />
     <ClInclude Include="Skeleton.h" />
-    <ClInclude Include="SkeletalAnimation.h" />
     <ClInclude Include="Animator.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -335,10 +336,16 @@
     <ClInclude Include="FileHandler.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderProgram.h">
-      <Filter>shaders</Filter>
-    </ClInclude>
     <ClInclude Include="ResourcePointer.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderProgram.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalAnimation.h">
       <Filter>Resources</Filter>
     </ClInclude>
   </ItemGroup>
@@ -503,6 +510,10 @@
     </None>
     <None Include="debugDrawer.frag">
       <Filter>shaders</Filter>
+    </None>
+    <None Include="ClassDiagram.cd" />
+    <None Include="ResourcePtr.inl">
+      <Filter>Resources</Filter>
     </None>
   </ItemGroup>
 </Project>

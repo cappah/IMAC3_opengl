@@ -195,8 +195,10 @@ void Collider::save(Json::Value & rootComponent) const
 {
 	Component::save(rootComponent);
  
-	rootComponent["visualMaterialName"] = visualMaterial.isValid() ? "" : visualMaterial->name;
-	rootComponent["visualMeshName"] =  visualMesh.isValid() ? "" : visualMesh->name;
+	if (visualMaterial.isValid())
+		visualMaterial.save(rootComponent["visualMaterialName"]);
+	if(visualMesh.isValid())
+		visualMesh.save(rootComponent["visualMeshName"]);
 
 	rootComponent["offsetPosition"] = toJsonValue(offsetPosition);
 	rootComponent["offsetScale"] = toJsonValue(offsetScale);
@@ -211,13 +213,11 @@ void Collider::load(Json::Value & rootComponent)
 {
 	Component::load(rootComponent);
 
-	std::string visualMaterialName = rootComponent.get("visualMaterialName", "").asString();
-	if (visualMaterialName != "")
-		visualMaterial = getMaterialFactory().getDefault(visualMaterialName);
+	if (visualMaterial.isValid())
+		visualMaterial.load(rootComponent["visualMaterialName"]);
+	if (visualMesh.isValid())
+		visualMesh.load(rootComponent["visualMeshName"]);
 
-	std::string visualMeshName = rootComponent.get("visualMeshName", "").asString();
-	if (visualMeshName != "")
-		visualMesh = getMeshFactory().getDefault(visualMeshName);
 
 
 	offsetPosition = fromJsonValue<glm::vec3>(rootComponent["offsetPosition"], glm::vec3());
@@ -390,7 +390,7 @@ void BoxCollider::eraseFromEntity(Entity& entity)
 	entity.erase(this);
 }
 
-void BoxCollider::coverMesh(Mesh& mesh)
+void BoxCollider::coverMesh(const Mesh& mesh)
 {
 	origin = mesh.origin;
 	glm::vec3 dimensions = (mesh.topRight - mesh.bottomLeft)*scale;
@@ -506,7 +506,7 @@ void CapsuleCollider::eraseFromEntity(Entity& entity)
 	entity.erase(this);
 }
 
-void CapsuleCollider::coverMesh(Mesh & mesh)
+void CapsuleCollider::coverMesh(const Mesh & mesh)
 {
 	origin = mesh.origin;
 	glm::vec3 dimensions = (mesh.topRight - mesh.bottomLeft)*scale;

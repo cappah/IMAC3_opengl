@@ -9,11 +9,12 @@
 MeshAnimations::MeshAnimations(const FileHandler::CompletePath& scenePath)
 {
 	Assimp::Importer* importer = new Assimp::Importer();
-	const aiScene* pScene = importer->ReadFile(scenePath.c_str());
+	const aiScene* pScene = importer->ReadFile(scenePath.c_str(), 0); //no flags
 
-	for (int i = 0; i < scene.mNumAnimations; i++) {
-		const std::string animName = scene.mAnimations[i]->mName.data;
-		m_animations[animName] = SkeletalAnimation(scene.mAnimations[i]);
+	for (int i = 0; i < pScene->mNumAnimations; i++)
+	{
+		const std::string animName = pScene->mAnimations[i]->mName.data;
+		m_animations[animName] = SkeletalAnimation(pScene->mAnimations[i]);
 	}
 }
 

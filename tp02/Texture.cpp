@@ -227,6 +227,11 @@ void Texture::freeGL()
 
 //////////////////////////////////////////
 
+CubeTexture::CubeTexture()
+	:CubeTexture(0, 0, 0)
+{
+
+}
 
 CubeTexture::CubeTexture(char r, char g, char b) 
 	: glId(0)

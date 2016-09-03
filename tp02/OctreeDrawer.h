@@ -5,6 +5,9 @@
 #include "glm/glm.hpp"
 #include "glm/common.hpp"
 
+#include "ResourcePointer.h"
+#include "Materials.h"
+
 class MaterialInstancedUnlit;
 
 class OctreeDrawer
@@ -29,7 +32,7 @@ private:
 	int triangleCount;
 	int instanceCount;
 
-	MaterialInstancedUnlit* material;
+	ResourcePtr<Material> material;
 
 public:
 	void initGl();

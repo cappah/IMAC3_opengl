@@ -33,6 +33,9 @@ public:
 	ResourceFactory();
 
 	void add(const FileHandler::CompletePath& path);
+	template<typename U>
+	void add(const FileHandler::CompletePath& path);
+	void add(const FileHandler::CompletePath& path, T* value);
 	void erase(const FileHandler::CompletePath& path);
 	ResourcePtr<T> get(const FileHandler::CompletePath& path);
 	bool contains(const FileHandler::CompletePath& path);
@@ -68,9 +71,29 @@ ResourceFactory<T>::ResourceFactory()
 
 //NOT DEFAULTS
 template<typename T>
+void ResourceFactory<T>::add(const FileHandler::CompletePath& path, T* value)
+{
+	m_resources[path] = value;
+	m_resourceMapping[path] = ++s_resourceCount;
+	m_resourcesFromHashKey[s_resourceCount] = value;
+}
+
+
+template<typename T>
 void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
 {
 	T* newResource = new T(path);
+
+	m_resources[path] = newResource;
+	m_resourceMapping[path] = ++s_resourceCount;
+	m_resourcesFromHashKey[s_resourceCount] = newResource;
+}
+
+template<typename T>
+template<typename U>
+void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
+{
+	T* newResource = static_cast<T>(new U(path));
 
 	m_resources[path] = newResource;
 	m_resourceMapping[path] = ++s_resourceCount;
@@ -95,7 +118,7 @@ template<typename T>
 void ResourceFactory<T>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
 {
 	T* newResource = new T();
-	newResource->load(path);
+	newResource->init(path);
 
 	m_resources[path] = newResource;
 	m_resourceMapping[path] = hashKey;
@@ -105,7 +128,7 @@ void ResourceFactory<T>::add(const FileHandler::CompletePath& path, unsigned int
 template<typename T>
 unsigned int ResourceFactory<T>::getHashKeyForResource(const FileHandler::CompletePath& path) const
 {
-	return m_resourceMapping[path];
+	return m_resourceMapping.at(path);
 }
 
 template<typename T>
@@ -205,7 +228,7 @@ void ResourceFactory<T>::save(Json::Value & entityRoot) const
 	for (auto it = m_resources.begin(); it != m_resources.end(); it++)
 	{
 		entityRoot[i]["path"] = it->first.toString();
-		entityRoot[i]["hashKey"] = getHashKeyForResource(it->first);
+		entityRoot[i]["hashKey"] = getHashKeyForResource(it->first.toString());
 		i++;
 	}
 }
@@ -223,320 +246,50 @@ void ResourceFactory<T>::load(Json::Value & entityRoot)
 		if (resourcePath != "")
 			add(FileHandler::CompletePath(resourcePath), resourceHashKey);
 
-		if (resourceHashKey < resourceCount)
-			resourceHashKey = resourceCount;
+		if (resourceCount < resourceHashKey )
+			s_resourceCount = resourceHashKey;
 	}
 }
 
 //Specialisations : 
 
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
+
+//Initialisations : 
+
 //Shader Programes
 template<>
-void ResourceFactory<ShaderProgram>::initDefaults()
-{
-	//////////////////// CPU PARTICLE shaders ////////////////////////
-	m_defaultResources["defaultParticlesCPU"] = new ShaderProgram(FileHandler::CompletePath("particleCPU.vert"), FileHandler::CompletePath("particleCPU.frag"));
-	
-	//////////////////// PARTICLE shaders ////////////////////////
-	m_defaultResources["defaultParticles"] = new ShaderProgram(FileHandler::CompletePath("particle.vert"), FileHandler::CompletePath("particle.frag"), FileHandler::CompletePath("particle.geom"));
-	
-	//////////////////// PARTICLE SIMULATION shaders ////////////////////////
-	m_defaultResources["particleSimulation"] = new ShaderProgram(FileHandler::CompletePath("particleSimulation.vert"), FileHandler::CompletePath(), FileHandler::CompletePath("particleSimulation.geom"));
-
-	//////////////////// BILLBOARD shaders ////////////////////////
-	m_defaultResources["defaultBillboard"] = new ShaderProgram(FileHandler::CompletePath("billboard.vert"), FileHandler::CompletePath("billboard.frag"));
-	
-	//////////////////// SKYBOX shaders ////////////////////////
-	m_defaultResources["defaultSkybox"] = new ShaderProgram(FileHandler::CompletePath("skybox.vert"), FileHandler::CompletePath("skybox.frag"));
-
-	//////////////////// 3D Gpass shaders ////////////////////////
-	m_defaultResources["defaultLit"] = new ShaderProgram(FileHandler::CompletePath("aogl.vert"), FileHandler::CompletePath("aogl_gPass.frag"));
-	
-	//////////////////// WIREFRAME shaders ////////////////////////
-	m_defaultResources["defaultUnlit"] = new ShaderProgram(FileHandler::CompletePath("wireframe.vert"), FileHandler::CompletePath("wireframe.frag"));
-
-	//////////////////// TERRAIN shaders ////////////////////////
-	m_defaultResources["defaultTerrain"] = new ShaderProgram(FileHandler::CompletePath("terrain.vert"), FileHandler::CompletePath("terrain.frag"));
-
-	//////////////////// TERRAIN EDITION shaders ////////////////////////
-	m_defaultResources["defaultTerrainEdition"] = new ShaderProgram(FileHandler::CompletePath("terrainEdition.vert"), FileHandler::CompletePath("terrainEdition.frag"));
-
-	//////////////////// DRAW ON TEXTURE shaders ////////////////////////
-	m_defaultResources["defaultDrawOnTexture"] = new ShaderProgram(FileHandler::CompletePath("drawOnTexture.vert"), FileHandler::CompletePath("drawOnTexture.frag"));
-
-	//////////////////// GRASS FIELD shaders ////////////////////////
-	m_defaultResources["defaultGrassField"] = new ShaderProgram(FileHandler::CompletePath("grassField.vert"), FileHandler::CompletePath("grassField.frag"));
-
-	//////////////////// GRASS FIELD shaders ////////////////////////
-	m_defaultResources["wireframeInstanced"] = new ShaderProgram(FileHandler::CompletePath("wireframeInstanced.vert"), FileHandler::CompletePath("wireframeInstanced.frag"));
-
-	//////////////////// DEBUG DRAWER shaders ////////////////////////
-	m_defaultResources["debugDrawer"] = new ShaderProgram(FileHandler::CompletePath("debugDrawer.vert"), FileHandler::CompletePath("debugDrawer.frag"));
-}
-
-//Textures
-template<>
-void ResourceFactory<Texture>::initDefaults()
-{
-	//default diffuse
-	auto newTex = new Texture(255, 255, 255);
-	newTex->initGL();
-	newTex->name = "default";
-	m_defaultResources["default"] = newTex;
-
-	//default normal
-	newTex = new Texture(0, 0, 125);
-	newTex->initGL();
-	newTex->name = "defaultNormal";
-	m_defaultResources["defaultNormal"] = newTex;
-}
+void ResourceFactory<ShaderProgram>::initDefaults();
 
 //Cube Texture
 template<>
-void ResourceFactory<CubeTexture>::initDefaults()
-{
-	auto newTex = new CubeTexture(255, 255, 255);
-	newTex->initGL();
-	newTex->name = "default";
-	m_defaultResources["default"] = newTex;
-}
+void ResourceFactory<CubeTexture>::initDefaults();
+
+//Textures
+template<>
+void ResourceFactory<Texture>::initDefaults();
+
+//Materials
+template<>
+void ResourceFactory<Material>::initDefaults();
 
 //Mesh
 template<>
-void ResourceFactory<Mesh>::initDefaults()
-{
-	Mesh* cube = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_TANGENTS));
-	cube->vertices = { 0.5,0.5,-0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  0.5,-0.5,-0.5,
-		-0.5,0.5,-0.5,  -0.5,0.5,0.5,  -0.5,-0.5,0.5,  -0.5,-0.5,-0.5,
-		-0.5,0.5,0.5,  0.5,0.5,0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5,
-		-0.5,0.5,-0.5,  0.5,0.5,-0.5,  0.5,-0.5,-0.5,  -0.5,-0.5,-0.5,
-		0.5,0.5,0.5, -0.5,0.5,0.5, -0.5,0.5,-0.5, 0.5,0.5,-0.5,
-		-0.5,-0.5,-0.5,  0.5,-0.5,-0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5 };
-
-	cube->normals = { 1,0,0,  1,0,0,  1,0,0,  1,0,0,
-		-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0,
-		0,0,1,  0,0,1,  0,0,1,  0,0,1,
-		0,0,-1,  0,0,-1,  0,0,-1,  0,0,-1,
-		0,1,0,  0,1,0,  0,1,0,  0,1,0,
-		0,-1,0,  0,-1,0,  0,-1,0,  0,-1,0 };
-
-	cube->tangents = { 0,0,1,  0,0,1,  0,0,1,  0,0,1,
-		0,0,1,  0,0,1,  0,0,1,  0,0,1,
-		-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0,
-		1,0,0,  1,0,0,  1,0,0,  1,0,0,
-		1,0,0,  1,0,0,  1,0,0,  1,0,0,
-		-1,0,0,  -1,0,0,  -1,0,0,  -1,0,0 };
-
-	cube->uvs = { 0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
-		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
-		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
-		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
-		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0,
-		0.0,0.0,  0.0,1.0,  1.0,1.0,  1.0,0.0 };
-
-	cube->triangleIndex = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20 };
-
-	cube->initGl();
-	cube->name = "cube";
-	cube->path = FileHandler::CompletePath();
-	cube->computeBoundingBox();
-
-
-	Mesh* cubeWireFrame = new Mesh(GL_LINE_STRIP, (Mesh::USE_INDEX | Mesh::USE_VERTICES));
-	cubeWireFrame->triangleIndex = { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 19, 17, 20, 21, 22, 23, 24, 25, 26, };
-	cubeWireFrame->uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
-	cubeWireFrame->vertices = { -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5 };
-	cubeWireFrame->normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
-	cubeWireFrame->initGl();
-	cubeWireFrame->name = "cubeWireframe";
-	cubeWireFrame->path = FileHandler::CompletePath();
-	cubeWireFrame->computeBoundingBox();
-
-	std::vector<float> tmpVertices;
-	Mesh* capsuleWireFrame = new Mesh(GL_LINES, (Mesh::USE_VERTICES));
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
-		float y = 0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f);
-		y = y > 0 ? y + 1.f : y - 1.f;
-		tmpVertices.push_back(y); //y
-		tmpVertices.push_back(0); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0); //x
-		float y = 0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f);
-		y = y > 0 ? y + 1.f : y - 1.f;
-		tmpVertices.push_back(y); //y
-		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
-		tmpVertices.push_back(1.f); //y
-		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
-		tmpVertices.push_back(-1.f); //y
-		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0); //x
-		tmpVertices.push_back(-1.f + (i / 9.f)*2.f); //y
-		tmpVertices.push_back(-0.5f); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0); //x
-		tmpVertices.push_back(-1.f + (i / 9.f)*2.f); //y
-		tmpVertices.push_back(0.5f); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(-0.5); //x
-		tmpVertices.push_back(-1.f + (i / 9.f)*2.f); //y
-		tmpVertices.push_back(0); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0.5); //x
-		tmpVertices.push_back(-1.f + (i / 9.f)*2.f); //y
-		tmpVertices.push_back(0); //z
-	}
-	//CapsuleWireFrame->triangleIndex = { };
-	//CapsuleWireFrame->uvs = { 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f,  1.f, 0.f,  1.f, 1.f,  0.f, 1.f,  1.f, 1.f,  0.f, 0.f, 0.f, 0.f, 1.f, 1.f,  1.f, 0.f, };
-	capsuleWireFrame->vertices = tmpVertices;
-	//CapsuleWireFrame->normals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, };
-	capsuleWireFrame->initGl();
-	capsuleWireFrame->name = "capsuleWireframe";
-	capsuleWireFrame->path = FileHandler::CompletePath();
-	capsuleWireFrame->computeBoundingBox();
-
-	tmpVertices.clear();
-
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
-		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //y
-		tmpVertices.push_back(0); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //x
-		tmpVertices.push_back(0); //y
-		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
-	}
-	for (int i = 0; i < 10; i++) {
-		tmpVertices.push_back(0); //x
-		tmpVertices.push_back(0.5f*std::cos((2.f*glm::pi<float>()*i) / 10.f)); //y
-		tmpVertices.push_back(0.5f*std::sin((2.f*glm::pi<float>()*i) / 10.f)); //z
-	}
-
-	Mesh* sphereWireFrame = new Mesh(GL_LINES, (Mesh::USE_VERTICES));
-	sphereWireFrame->vertices = tmpVertices;
-	sphereWireFrame->initGl();
-	sphereWireFrame->name = "sphereWireframe";
-	sphereWireFrame->path = FileHandler::CompletePath();
-	sphereWireFrame->computeBoundingBox();
-	tmpVertices.clear();
-
-	Mesh* plane = new Mesh();
-	plane->triangleIndex = { 0, 1, 2, 2, 3, 0 };
-	plane->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
-	plane->vertices = { -0.5, 0.0, -0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.5 };
-	plane->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
-	plane->initGl();
-	plane->name = "plane";
-	plane->path = FileHandler::CompletePath();
-	plane->computeBoundingBox();
-
-	Mesh* quad = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_VERTICES), 2);
-	quad->triangleIndex = { 0, 1, 2, 0, 2, 3 };
-	quad->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
-	quad->vertices = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-	quad->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
-	quad->initGl();
-	quad->name = "quad";
-	quad->path = FileHandler::CompletePath();
-	//quad->computeBoundingBox();
-
-	m_defaultResources["default"] = cube;
-	m_defaultResources["cube"] = cube;
-	m_defaultResources["cubeWireframe"] = cubeWireFrame;
-	m_defaultResources["capsuleWireframe"] = capsuleWireFrame;
-	m_defaultResources["sphereWireframe"] = sphereWireFrame;
-	m_defaultResources["plane"] = plane;
-	m_defaultResources["quad"] = plane;
-}
+void ResourceFactory<Mesh>::initDefaults();
 
 //Animations : nothing by default
 
 
-//Materials
-template<>
-void ResourceFactory<Material>::initDefaults()
-{
-
-	Material* newMat = new MaterialLit(ResourceFactory<ShaderProgram>::instance().getDefault("defaultLit")->id, ResourceFactory<Texture>::instance().getDefault("default"), ResourceFactory<Texture>().getDefault("default"), ResourceFactory<Texture>::instance().getDefault("default"), 50);
-	newMat->name = "default";
-	m_defaultResources["default"] = newMat;
-
-	newMat = new MaterialUnlit(ResourceFactory<ShaderProgram>::instance().getDefault("defaultUnlit")->id);
-	newMat->name = "wireframe";
-	m_defaultResources["wireframe"] = newMat;
-
-	newMat = new MaterialInstancedUnlit(ResourceFactory<ShaderProgram>::instance().getDefault("wireframeInstanced")->id);
-	newMat->name = "wireframeInstanced";
-	m_defaultResources["wireframeInstanced"] = newMat;
-
-	newMat = new MaterialGrassField(ResourceFactory<ShaderProgram>::instance().getDefault("defaultGrassField")->id);
-	newMat->name = "grassfield";
-	m_defaultResources["grassfield"] = newMat;
-
-	newMat = new MaterialBillboard(ResourceFactory<ShaderProgram>::instance().getDefault("defaultBillboard")->id);
-	newMat->name = "billboard";
-	m_defaultResources["billboard"] = newMat;
-
-	newMat = new MaterialParticles(ResourceFactory<ShaderProgram>::instance().getDefault("defaultParticles")->id);
-	newMat->name = "particles";
-	m_defaultResources["particles"] = newMat;
-
-	newMat = new MaterialParticlesCPU(ResourceFactory<ShaderProgram>::instance().getDefault("defaultParticlesCPU")->id);
-	newMat->name = "particlesCPU";
-	m_defaultResources["particlesCPU"] = newMat;
-
-	newMat = new MaterialParticleSimulation(ResourceFactory<ShaderProgram>::instance().getDefault("particleSimulation")->id);
-	newMat->name = "particleSimulation";
-	m_defaultResources["particleSimulation"] = newMat;
-
-	newMat = new MaterialDebugDrawer(ResourceFactory<ShaderProgram>::instance().getDefault("debugDrawer")->id);
-	newMat->name = "debugDrawer";
-	m_defaultResources["debugDrawer"] = newMat;
-}
-
 //access helper
-ResourceFactory<ShaderProgram>& getProgramFactory()
-{
-	return ResourceFactory<ShaderProgram>::instance();
-}
+ResourceFactory<ShaderProgram>& getProgramFactory();
+ResourceFactory<Mesh>& getMeshFactory();
 
-ResourceFactory<Mesh>& getMeshFactory()
-{
-	return ResourceFactory<Mesh>::instance();
-}
+ResourceFactory<Texture>& getTextureFactory();
 
-ResourceFactory<Texture>& getTextureFactory()
-{
-	return ResourceFactory<Texture>::instance();
-}
-
-ResourceFactory<CubeTexture>& getCubeTextureFactory()
-{
-	return ResourceFactory<CubeTexture>::instance();
-}
-
-ResourceFactory<Material>& getMaterialFactory()
-{
-	return ResourceFactory<Material>::instance();
-}
-
-ResourceFactory<MeshAnimations>& getSkeletalAnimationFactory()
-{
-	return ResourceFactory<MeshAnimations>::instance();
-}
+ResourceFactory<CubeTexture>& getCubeTextureFactory();
+ResourceFactory<Material>& getMaterialFactory();
+ResourceFactory<SkeletalAnimation>& getSkeletalAnimationFactory();
 
 template<typename T>
 ResourceFactory<T>& getResourceFactory()
@@ -546,40 +299,22 @@ ResourceFactory<T>& getResourceFactory()
 
 template<typename T>
 ResourceType getResourceType()
-{ 
+{
 	assert(false, "resource not implementaed");
+	return ResourceType::NONE;
 }
 
 template<>
-ResourceType getResourceType<Texture>()
-{
-	return ResourceType::TEXTURE;
-}
+ResourceType getResourceType<Texture>();
+template<>
+ResourceType getResourceType<CubeTexture>();
 
 template<>
-ResourceType getResourceType<CubeTexture>()
-{
-	return ResourceType::CUBE_TEXTURE;
-}
-
+ResourceType getResourceType<SkeletalAnimation>();
 template<>
-ResourceType getResourceType<MeshAnimations>()
-{
-	return ResourceType::SKELETAL_ANIMATION;
-}
-
+ResourceType getResourceType<Material>();
 template<>
-ResourceType getResourceType<Material>()
-{
-	return ResourceType::MATERIAL;
-}
-
-template<>
-ResourceType getResourceType<ShaderProgram>()
-{
-	return ResourceType::PROGRAME;
-}
-
+ResourceType getResourceType<ShaderProgram>();
 
 
 //

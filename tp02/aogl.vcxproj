@@ -354,6 +354,7 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourcePointer.h" />
     <ClInclude Include="ResourceTree.h" />
     <ClInclude Include="Rigidbody.h" />
@@ -384,6 +385,7 @@
     <None Include="billboard.vert" />
     <None Include="blit.frag" />
     <None Include="blit.vert" />
+    <None Include="ClassDiagram.cd" />
     <None Include="debugDrawer.frag" />
     <None Include="debugDrawer.vert" />
     <None Include="drawOnTexture.frag" />
@@ -397,6 +399,7 @@
     <None Include="particleCPU.vert" />
     <None Include="particleSimulation.geom" />
     <None Include="particleSimulation.vert" />
+    <None Include="ResourcePtr.inl" />
     <None Include="shadowPass.frag" />
     <None Include="shadowPass.vert" />
     <None Include="shadowPassOmni.frag" />

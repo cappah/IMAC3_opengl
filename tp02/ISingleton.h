@@ -14,3 +14,10 @@ public:
 		return instance;
 	}
 };
+
+#define SINGLETON_IMPL(T) \
+	T(const T& other) = delete; \
+	const T operator=(const T& other) = delete; \
+
+
+

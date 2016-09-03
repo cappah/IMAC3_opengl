@@ -126,7 +126,7 @@ struct Collider : public Component
 	virtual void eraseFromScene(Scene& scene) override;
 
 	//Cover a mesh, based on the mesh bottomLeft and topRight points and the mesh origin
-	virtual void coverMesh(Mesh& mesh) = 0;
+	virtual void coverMesh(const Mesh& mesh) = 0;
 	//Cover something which have a bottomLeft/min and topRight/max points and an origin
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) = 0;
 
@@ -154,7 +154,7 @@ struct BoxCollider : public Collider
 	virtual void addToScene(Scene& scene) override;
 	virtual void addToEntity(Entity& entity) override;
 	virtual void eraseFromEntity(Entity& entity) override;
-	virtual void coverMesh(Mesh& mesh) override;
+	virtual void coverMesh(const Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
 	virtual btCollisionShape* makeShape() override;
 
@@ -178,7 +178,7 @@ struct CapsuleCollider : public Collider
 	virtual void addToScene(Scene& scene) override;
 	virtual void addToEntity(Entity& entity) override;
 	virtual void eraseFromEntity(Entity& entity) override;
-	virtual void coverMesh(Mesh& mesh) override;
+	virtual void coverMesh(const Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
 	virtual btCollisionShape* makeShape() override;
 

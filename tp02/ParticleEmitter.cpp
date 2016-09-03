@@ -9,11 +9,11 @@ namespace Physic {
 	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), 
 	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), m_emitInShape(false), m_sortParticles(false),
 	m_translation(glm::vec3(0,0,0)), m_scale(1,1,1),
-	m_materialParticules(getMaterialFactory().get<MaterialParticlesCPU>("particlesCPU")),
+	m_materialParticules(getMaterialFactory().getDefault("particlesCPU")),
 	//m_materialParticuleSimulation(getMaterialFactory().get<MaterialParticleSimulation>("particleSimulation")),
 	m_triangleIndex({ 0, 1, 2, 2, 3, 0 }),
 	m_uvs({ 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f }), m_vertices({ -0.5, 0.0, -0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.5 }), 
-	m_normals({ 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }), m_particleTexture(getTextureFactory().get("default"))
+	m_normals({ 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 }), m_particleTexture(getTextureFactory().getDefault("default"))
 	{
 		//add default color step :
 		m_colorSteps_times.push_back(0);
@@ -306,15 +306,17 @@ namespace Physic {
 		glm::vec3 CameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
 		glm::vec3 CameraPos = glm::vec3(view[0][3], view[1][3], view[2][3]);
 
-		m_materialParticules->use();
+		MaterialParticlesCPU* castedMaterial = static_cast<MaterialParticlesCPU*>(m_materialParticules.get());
+
+		castedMaterial->use();
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_particleTexture->glId);
 
-		m_materialParticules->glUniform_VP(VP);
-		m_materialParticules->setUniformCameraRight(CameraRight);
-		m_materialParticules->setUniformCameraUp(CameraUp);
-		m_materialParticules->setUniformTexture(0);
+		castedMaterial->glUniform_VP(VP);
+		castedMaterial->setUniformCameraRight(CameraRight);
+		castedMaterial->setUniformCameraUp(CameraUp);
+		castedMaterial->setUniformTexture(0);
 
 		draw();
 	}

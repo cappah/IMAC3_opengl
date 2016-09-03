@@ -6,7 +6,11 @@
 #include "EditorGUI.h"
 
 
-Animator::Animator(): Component(ComponentType::ANIMATOR), m_skeleton(nullptr), m_currentAnimName(""), m_currentSkeletonName(""), m_isPlaying(false)
+Animator::Animator()
+	: Component(ComponentType::ANIMATOR)
+	, m_skeleton(nullptr)
+	, m_currentAnimIdx(0)
+	, m_isPlaying(false)
 {
 }
 
@@ -15,27 +19,27 @@ Animator::~Animator()
 {
 }
 
-void Animator::setSkeleton(Skeleton * skeleton)
+void Animator::setSkeleton(Skeleton* skeleton)
 {
 	m_skeleton = skeleton;
 }
 
-void Animator::addAnimation(SkeletalAnimation * animation)
+void Animator::addAnimation(ResourcePtr<SkeletalAnimation> animation)
 {
-	m_animations[animation->getName()] = animation;
+	m_skeletonAnimations.push_back(animation);
 }
 
 void Animator::removeAnimation(SkeletalAnimation * animation)
 {
-	auto findIt = std::find_if(m_animations.begin(), m_animations.end(), [&animation](const std::pair<std::string, SkeletalAnimation*>& key) { return key.second == animation; });
-	m_animations.erase(findIt);
+	auto findIt = std::find_if(m_skeletonAnimations.begin(), m_skeletonAnimations.end(), [&animation](const ResourcePtr<SkeletalAnimation>& resource) { return resource.get() == animation; });
+	m_skeletonAnimations.erase(findIt);
 	//m_animations.erase(std::remove(m_animations.begin(), m_animations.end(), animation), m_animations.end());
 }
 
 void Animator::updateAnimations(float timeInSecond)
 {
-	if (m_isPlaying && m_skeleton != nullptr && m_animations.find(m_currentAnimName) != m_animations.end())
-		m_skeleton->playAnimationStep(timeInSecond, *m_animations[m_currentAnimName]);
+	if (m_isPlaying && m_skeleton != nullptr && m_currentAnimIdx >= 0 && m_currentAnimIdx < m_skeletonAnimations.size())
+		m_skeleton->playAnimationStep(timeInSecond, *m_skeletonAnimations[m_currentAnimIdx]);
 }
 
 void Animator::play()
@@ -43,10 +47,23 @@ void Animator::play()
 	m_isPlaying = true;
 }
 
-void Animator::play(const std::string & animationName)
+void Animator::play(const std::string& animationName)
 {
-	m_isPlaying = true;
-	m_currentAnimName = animationName;
+	auto& foundIt = std::find_if(m_skeletonAnimations.begin(), m_skeletonAnimations.end(), [animationName](const ResourcePtr<SkeletalAnimation>& it) { return it->getName() == animationName; });
+	if ( foundIt != m_skeletonAnimations.end() )
+	{
+		m_isPlaying = true;
+		m_currentAnimIdx = foundIt - m_skeletonAnimations.begin();
+	}
+}
+
+void Animator::play(int animationIdx)
+{
+	if (animationIdx >= 0 && animationIdx < m_skeletonAnimations.size())
+	{
+		m_isPlaying = true;
+		m_currentAnimIdx = animationIdx;
+	}
 }
 
 void Animator::drawUI(Scene & scene)
@@ -70,12 +87,12 @@ void Animator::drawUI(Scene & scene)
 	//}
 
 	//Get mesh skeleton from mesh
-	ResourcePtr<Mesh> resourcePtrQuery;
-	EditorGUI::ResourceField<Mesh>(resourcePtrQuery, "skeleton/mesh name", tmpSkeletalPath, 100);
-	if (resourcePtrQuery.isValid())
+	ResourcePtr<Mesh> meshPtrQuery;
+	EditorGUI::ResourceField<Mesh>(meshPtrQuery, "skeleton/mesh name", tmpSkeletalPath, 100);
+	if (meshPtrQuery.isValid())
 	{
-		m_skeleton = resourcePtrQuery->getSkeleton();
-		m_skeletonAnimations = getSkeletalAnimationFactory().get(FileHandler::CompletePath(tmpSkeletalPath));
+		m_skeleton = meshPtrQuery->getSkeleton();
+		m_skeletonPath = FileHandler::CompletePath(tmpSkeletalPath);
 	}
 
 
@@ -83,43 +100,31 @@ void Animator::drawUI(Scene & scene)
 	m_animationName.copy(tmpAnimationName, m_animationName.size());
 	tmpAnimationName[m_animationName.size()] = '\0';
 
-	//%NOCOMMIT%
-	//if (ImGui::InputText("animation name", tmpAnimationName, 60))
-	//	m_animationName = tmpAnimationName;
-	//ImGui::SameLine();
-	//if (ImGui::Button("add")){
-	//	if (getSkeletalAnimationFactory().contains(m_currentSkeletonName, m_animationName)) {
-	//		SkeletalAnimation* tmpAnim = getSkeletalAnimationFactory().get(m_currentSkeletonName, m_animationName);
-	//		if (tmpAnim != nullptr) {
-	//			if (m_animations.find(m_currentAnimName) == m_animations.end())
-	//				m_currentAnimName = m_animationName;
-	//			m_animations[m_animationName] = tmpAnim;
-	//		}
-	//	}
-	//}
+	//Get animation
+	ResourcePtr<SkeletalAnimation> animationPtrQuery;
+	EditorGUI::ResourceField<SkeletalAnimation>(animationPtrQuery, "animation", tmpAnimationName, 60);
 
-	//Get mesh skeleton from mesh
-	ResourcePtr<MeshAnimations> resourcePtrQuery;
-	EditorGUI::ResourceField<MeshAnimations>(resourcePtrQuery, "mesh animations", tmpSkeletalName, 20);
-	if (resourcePtrQuery.isValid())
-	{
-		m_skeleton = resourcePtrQuery->getSkeleton();
+	ImGui::SameLine();
+	if (ImGui::Button("add")){
+		if (animationPtrQuery.isValid())
+		{
+			m_skeletonAnimations.push_back(animationPtrQuery);
+		}
 	}
 
 	int imguiId = 0;
-	for (auto& it = m_animations.begin(); it != m_animations.end();) {
-
+	for (int i = 0; i < m_skeletonAnimations.size(); i++) 
+	{
 		ImGui::PushID(imguiId);
 
-		ImGui::Text(it->first.c_str());
+		ImGui::Text(m_skeletonAnimations[i]->getCompletePath().c_str());
 		ImGui::SameLine();
-		if (ImGui::Button("remove")) {
-			if (m_currentAnimName == it->first)
-				m_currentAnimName = m_animations.size() > 0 ? m_animations.begin()->first : "";
-			it = m_animations.erase(it);
+		if (ImGui::Button("remove")) 
+		{
+			if (m_currentAnimIdx == imguiId)
+				m_currentAnimIdx = 0;
+			m_skeletonAnimations.erase(m_skeletonAnimations.begin() + i);
 		}
-		else
-			it++;
 
 		ImGui::PopID();
 		imguiId++;
@@ -159,41 +164,33 @@ void Animator::save(Json::Value & componentRoot) const
 {
 	Component::save(componentRoot);
 
-	componentRoot["skeletonName"] = m_currentSkeletonName;
+	componentRoot["skeletonPath"] = m_skeletonPath.toString();
 
-	componentRoot["animationCount"] = m_animations.size();
-	int animationId = 0;
-	for (auto it = m_animations.begin(); it != m_animations.end(); it++)
-		componentRoot["animationName"][animationId] = it->first;
+	componentRoot["animationCount"] = m_skeletonAnimations.size();
 
-	componentRoot["currentAnimName"] = m_currentAnimName;
+	for (int i = 0; i < m_skeletonAnimations.size(); i++)
+		m_skeletonAnimations[i].save(componentRoot["animations"][i]);
+
+	componentRoot["currentAnimIdx"] = m_currentAnimIdx;
 }
 
 void Animator::load(Json::Value & componentRoot)
 {
 	Component::load(componentRoot);
 
-	m_currentSkeletonName = componentRoot.get("skeletonName", "").asString();
-	m_skeletonName = m_currentSkeletonName;
-	auto mesh = getMeshFactory().get(m_currentSkeletonName);
-	if (mesh.isValid()) {
+	m_skeletonPath = FileHandler::CompletePath(componentRoot.get("skeletonPath", "").asString());
+	auto mesh = getMeshFactory().get(m_skeletonPath);
+	if (mesh.isValid()) 
+	{
 		m_skeleton = mesh->getSkeleton();
 	}
 
 	int animationCount = componentRoot.get("animationCount", 0).asInt();
 
-	for (int i = 0; i < animationCount; i++) {
-
-		std::string animationName = componentRoot["animationName"][i].asString();
-		if (getSkeletalAnimationFactory().contains(m_currentSkeletonName, animationName)) {
-			SkeletalAnimation* tmpAnim = getSkeletalAnimationFactory().get(m_currentSkeletonName, animationName);
-			if (tmpAnim != nullptr) {
-				if (m_animations.find(m_currentAnimName) == m_animations.end())
-					m_currentAnimName = animationName;
-				m_animations[animationName] = tmpAnim;
-			}
-		}
+	for (int i = 0; i < animationCount; i++) 
+	{
+	    m_skeletonAnimations.push_back(ResourcePtr<SkeletalAnimation>(componentRoot["animations"][i]));
 	}
 
-	m_currentAnimName = componentRoot.get("currentAnimName", "").asString();
+	m_currentAnimIdx = componentRoot.get("currentAnimIdx", 0).asInt();
 }

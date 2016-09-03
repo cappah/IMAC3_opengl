@@ -55,7 +55,7 @@ struct GrassField : public ISerializable
 	
 	MaterialGrassField materialGrassField;
 
-	Texture* grassTexture;
+	ResourcePtr<Texture> grassTexture;
 
 	GLuint vao;
 	
@@ -185,7 +185,7 @@ private:
 	Texture m_drawMatTexture;
 	//Texture m_terrainDepth;
 
-	std::vector<MaterialLit*> m_terrainLayouts;
+	std::vector<ResourcePtr<Material>> m_terrainLayouts;
 	std::vector<glm::vec2> m_textureRepetitions;
 
 	float m_noiseMax;

@@ -3,7 +3,8 @@
 #include "EditorGUI.h"
 
 
-Material::Material(GLuint _glProgram) : glProgram(_glProgram)
+Material::Material(GLuint _glProgram) 
+	: glProgram(_glProgram)
 {
 
 }
@@ -27,7 +28,8 @@ Material::~Material()
 ///////////////////////////////////////////
 
 
-Material3DObject::Material3DObject(GLuint _glProgram) : Material(_glProgram)
+Material3DObject::Material3DObject(GLuint _glProgram) 
+	: Material(_glProgram)
 {
 	uniform_MVP = glGetUniformLocation(glProgram, "MVP");
 	uniform_normalMatrix = glGetUniformLocation(glProgram, "NormalMatrix");
@@ -64,7 +66,13 @@ void Material3DObject::setUniformUseSkeleton(bool useSkeleton)
 
 ///////////////////////////////////////////
 
-MaterialLit::MaterialLit() : Material3DObject(getProgramFactory().getDefault("defaultLit")), textureDiffuse(getTextureFactory().getDefault("default")), specularPower(10), textureSpecular(getTextureFactory().getDefault("default")), textureBump(getTextureFactory().getDefault("default")), textureRepetition(1, 1)
+MaterialLit::MaterialLit() 
+	: Material3DObject(getProgramFactory().getDefault("defaultLit"))
+	, textureDiffuse(getTextureFactory().getDefault("default"))
+	, specularPower(10)
+	, textureSpecular(getTextureFactory().getDefault("default"))
+	, textureBump(getTextureFactory().getDefault("default"))
+	, textureRepetition(1, 1)
 {
 	diffuseTextureName = textureDiffuse->name;
 	specularTextureName = textureSpecular->name;
@@ -81,8 +89,13 @@ MaterialLit::MaterialLit() : Material3DObject(getProgramFactory().getDefault("de
 		exit(1);
 }
 
-MaterialLit::MaterialLit(GLuint _glProgram, ResourcePtr<Texture> _textureDiffuse, ResourcePtr<Texture> _textureSpecular, ResourcePtr<Texture> _textureBump, float _specularPower) :
-	Material3DObject(_glProgram), textureDiffuse(_textureDiffuse), specularPower(_specularPower), textureSpecular(_textureSpecular), textureBump(_textureBump) , textureRepetition(1, 1)
+MaterialLit::MaterialLit(GLuint _glProgram, ResourcePtr<Texture> _textureDiffuse, ResourcePtr<Texture> _textureSpecular, ResourcePtr<Texture> _textureBump, float _specularPower)
+	: Material3DObject(_glProgram)
+	, textureDiffuse(_textureDiffuse)
+	, specularPower(_specularPower)
+	, textureSpecular(_textureSpecular)
+	, textureBump(_textureBump)
+	, textureRepetition(1, 1)
 {
 	diffuseTextureName = textureDiffuse->name;
 	specularTextureName = textureSpecular->name;
@@ -417,7 +430,7 @@ MaterialSkybox::MaterialSkybox() : Material(getProgramFactory().getDefault("defa
 		exit(1);
 }
 
-MaterialSkybox::MaterialSkybox(GLuint _glProgram, CubeTexture * _textureDiffuse) : Material(_glProgram), textureDiffuse(_textureDiffuse)
+MaterialSkybox::MaterialSkybox(GLuint _glProgram, ResourcePtr<CubeTexture> _textureDiffuse) : Material(_glProgram), textureDiffuse(_textureDiffuse)
 {
 	diffuseTextureName = textureDiffuse->name;
 

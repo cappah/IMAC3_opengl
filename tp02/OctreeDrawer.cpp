@@ -3,7 +3,8 @@
 #include "Factories.h"
 #include "Materials.h"
 
-OctreeDrawer::OctreeDrawer() : material(getMaterialFactory().get<MaterialInstancedUnlit>("wireframeInstanced"))
+OctreeDrawer::OctreeDrawer() 
+	: material(getMaterialFactory().getDefault("wireframeInstanced"))
 {
 	//push wireframe cube : 
 	//up face :
@@ -127,9 +128,11 @@ void OctreeDrawer::render(const glm::mat4 & projection, const glm::mat4 & view)
 {
 	glm::mat4 VP = projection * view;
 
-	material->use();
-	material->setUniform_VP(VP);
-	material->setUniform_color(glm::vec3(1, 0, 0));
+	MaterialInstancedUnlit* castedMaterial = static_cast<MaterialInstancedUnlit*>(material.get()); //TODO : changer ça
+
+	castedMaterial->use();
+	castedMaterial->setUniform_VP(VP);
+	castedMaterial->setUniform_color(glm::vec3(1, 0, 0));
 
 	draw();
 }

@@ -74,7 +74,7 @@ size_t Path::size()
 	size_t size = 0;
 	size_t cutPos = m_data.find_first_of("/\\");
 
-	for (int i = 1; i < m_data.size(); i++)
+	while (cutPos != std::string::npos)
 	{
 		cutPos = m_data.find_first_of("/\\", cutPos + 1);
 		size++;
@@ -143,14 +143,20 @@ CompletePath::CompletePath()
 	: m_fileName("")
 	, m_extention("")
 	, m_complete(false)
+	, m_subFileName("")
+	, m_data("")
 {
 	format();
+
+	assert(hasValidExtention() && hasValidFileName());
 }
 
-CompletePath::CompletePath(const std::string & completePath)
+CompletePath::CompletePath(const std::string & completePath, const std::string* subFileName)
 	: m_fileName("")
 	, m_extention("")
 	, m_complete(false)
+	, m_subFileName("")
+	, m_data("")
 {
 	std::string path = "";
 	splitPathFileNameExtention(completePath, path, m_fileName, m_extention);
@@ -159,36 +165,59 @@ CompletePath::CompletePath(const std::string & completePath)
 		m_path = Path(path);
 	}
 
-	format();
-}
+	if (subFileName != nullptr)
+	{
+		m_subFileName = *subFileName;
+	}
 
-CompletePath::CompletePath(Path path, const std::string& fileName, const std::string& extention)
-	: m_path(path)
-	, m_fileName(fileName)
-	, m_extention(extention)
-	, m_complete(true)
-{
-	if (m_extention.size() > 0 && m_extention[0] != '.')
-		m_extention.insert(m_extention.begin(), '.');
+	format();
 
 	assert(hasValidExtention() && hasValidFileName());
 }
 
-CompletePath::CompletePath(Path path, const std::string& fileNameAndExtention)
+CompletePath::CompletePath(Path path, const std::string& fileName, const std::string& extention, const std::string* subFileName)
+	: m_path(path)
+	, m_fileName(fileName)
+	, m_extention(extention)
+	, m_complete(true)
+	, m_subFileName("")
+	, m_data("")
+{
+	if (subFileName != nullptr)
+	{
+		m_subFileName = *subFileName;
+	}
+
+	format();
+
+	assert(hasValidExtention() && hasValidFileName());
+}
+
+CompletePath::CompletePath(Path path, const std::string& fileNameAndExtention, const std::string* subFileName)
 	: m_path(path)
 	, m_fileName("")
 	, m_extention("")
+	, m_subFileName("")
+	, m_data("")
 {
 	if (!getFileNameAndExtentionFromExtendedFilename(fileNameAndExtention, m_fileName, m_extention) != std::string::npos)
 	{
 		m_complete = false;
 	}
+
+	if (subFileName != nullptr)
+	{
+		m_subFileName = *subFileName;
+	}
+
+	format();
+
 	assert(hasValidExtention() && hasValidFileName());
 }
 
 const std::string& CompletePath::toString() const
 {
-	return m_path.toString() + m_fileName + m_extention;
+	return m_data;
 }
 
 const std::string& CompletePath::operator[](size_t idx)
@@ -212,7 +241,7 @@ const Path& CompletePath::getPath() const
 	return m_path;
 }
 
-const Path& CompletePath::getFilename() const
+const std::string& CompletePath::getFilename() const
 {
 	return m_fileName;
 }
@@ -227,9 +256,24 @@ const std::string& CompletePath::getExtention() const
 	return m_extention;
 }
 
+const std::string & CompletePath::getSubFileName() const
+{
+	return m_subFileName;
+}
+
 FileType CompletePath::getFileType() const
 {
 	return getFileTypeFromExtention(getExtention());
+}
+
+bool CompletePath::operator<(const CompletePath & other) const
+{
+	return m_data < other.m_data;
+}
+
+bool CompletePath::operator==(const CompletePath & other) const
+{
+	return m_data == m_data;
 }
 
 bool CompletePath::hasValidFileName() const
@@ -265,6 +309,10 @@ void CompletePath::format()
 			m_extention.insert(m_extention.begin(), '.');
 		}
 	}
+
+	m_data = m_path.toString() + m_fileName + m_extention;
+	if (!m_subFileName.empty())
+		m_data += ("/" + m_subFileName);
 }
 
 bool CompletePath::empty() const

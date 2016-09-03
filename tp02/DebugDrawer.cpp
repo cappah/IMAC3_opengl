@@ -43,7 +43,7 @@ void DebugDrawer::render_internal(const glm::mat4 & projection, const glm::mat4 
 
 	glm::mat4 MVP = projection * view;
 
-	MaterialDebugDrawer* castedMaterial = static_cast<MaterialDebugDrawer*>(m_material); //TODO : changer ça apres la refonte du pipeline de rendu
+	MaterialDebugDrawer* castedMaterial = static_cast<MaterialDebugDrawer*>(m_material.get()); //TODO : changer ça apres la refonte du pipeline de rendu
 
 	castedMaterial->use();
 	castedMaterial->setUniform_MVP(MVP);

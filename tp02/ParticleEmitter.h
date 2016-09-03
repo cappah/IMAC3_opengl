@@ -13,6 +13,7 @@
 
 #include "jsoncpp/json/json.h"
 #include "SerializeUtils.h"
+#include "ResourcePointer.h"
 
 namespace Physic{
 
@@ -39,7 +40,7 @@ namespace Physic{
 		std::vector<glm::vec3> m_forceSteps_values;
 		glm::vec2 m_initialVelocityInterval;
 		glm::vec2 m_lifeTimeInterval;
-		Texture* m_particleTexture;
+		ResourcePtr<Texture> m_particleTexture;
 		std::string m_particleTextureName;
 		float m_particleCountBySecond;
 		float m_spawnFragment;
@@ -64,7 +65,7 @@ namespace Physic{
 		std::vector<float> m_normals;
 
 		//materials : 
-		MaterialParticlesCPU* m_materialParticules;
+		ResourcePtr<Material> m_materialParticules;
 		//MaterialParticleSimulation* m_materialParticuleSimulation;
 
 		//opengl stuff : 

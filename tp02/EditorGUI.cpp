@@ -89,6 +89,8 @@ void ResourceFolderDragAndDropOperation::dropOperation(void* customData, int dro
 			m_parentFolder->removeSubFolder(m_folderDragged->getName());
 		else
 			m_resourceTree->removeSubFolder(m_folderDragged->getName());
+		//%NOCOMMIT% : TODO : transvaser les fichiers et sous dossier dans le dossier cible
+
 		m_parentFolder = nullptr;
 		m_folderDragged = nullptr;
 		m_resourceTree = nullptr;

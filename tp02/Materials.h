@@ -21,7 +21,13 @@
 #include "FileHandler.h"
 #include "Resource.h"
 
+//Statics : 
+
 static const unsigned int MAX_BONE_COUNT = 100;
+
+
+//Materials : 
+
 
 struct Material : public Resource
 {
@@ -32,13 +38,20 @@ struct Material : public Resource
 	Material(GLuint _glProgram = 0);
 	Material(ResourcePtr<ShaderProgram> _glProgram);
 	virtual void init(const FileHandler::CompletePath& path) override;
+	virtual Material* copy() const = 0;
 	virtual ~Material();
 	virtual void use() = 0;
 	virtual void drawUI() = 0;
 	virtual void initGL() = 0;
 
-	void save(const FileHandler::CompletePath& path) const;
-	void load(const FileHandler::CompletePath& path);
+	void save(const FileHandler::CompletePath& path) const
+	{
+		assert(false, "not implemented");
+	}
+	void load(const FileHandler::CompletePath& path)
+	{
+		assert(false, "not implemented");
+	}
 };
 
 struct Material3DObject : public Material
@@ -87,6 +100,10 @@ public:
 	MaterialLit(GLuint _glProgram, ResourcePtr<Texture> _textureDiffuse = ResourcePtr<Texture>(), ResourcePtr<Texture> _textureSpecular = ResourcePtr<Texture>(), ResourcePtr<Texture> _textureBump = ResourcePtr<Texture>(), float _specularPower = 50);
 	MaterialLit(ResourcePtr<ShaderProgram> _glProgram, ResourcePtr<Texture> _textureDiffuse = ResourcePtr<Texture>(), ResourcePtr<Texture> _textureSpecular = ResourcePtr<Texture>(), ResourcePtr<Texture> _textureBump = ResourcePtr<Texture>(), float _specularPower = 50);
 	void init(const FileHandler::CompletePath& path) override;
+	virtual Material* copy() const override
+	{
+		return new MaterialLit(*this);
+	}
 
 	void setDiffuse(ResourcePtr<Texture> _textureDiffuse);
 	void setSpecular(ResourcePtr<Texture> _textureSpecular);
@@ -119,11 +136,16 @@ struct MaterialUnlit : public Material3DObject
 
 	GLuint uniform_color;
 
-	MaterialUnlit(GLuint _glProgram);
+	MaterialUnlit(GLuint _glProgram = 0);
 	MaterialUnlit(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialUnlit(_glProgram->id)
 	{
 
+	}
+
+	virtual Material* copy() const override
+	{
+		return new MaterialUnlit(*this);
 	}
 
 	void setUniform_color(glm::vec3 color);
@@ -144,7 +166,11 @@ struct MaterialInstancedUnlit : public Material
 	GLuint uniform_color;
 	GLuint uniform_VP;
 
-	MaterialInstancedUnlit(GLuint _glProgram);
+	MaterialInstancedUnlit(GLuint _glProgram = 0);
+	virtual Material* copy() const override
+	{
+		return new MaterialInstancedUnlit(*this);
+	}
 
 	void setUniform_color(glm::vec3 color);
 	void setUniform_VP(const glm::mat4& VP);
@@ -160,7 +186,11 @@ struct MaterialDebugDrawer : public Material
 {
 	GLuint uniform_MVP;
 
-	MaterialDebugDrawer(GLuint _glProgram);
+	MaterialDebugDrawer(GLuint _glProgram = 0);
+	virtual Material* copy() const override
+	{
+		return new MaterialDebugDrawer(*this);
+	}
 
 	void setUniform_MVP(const glm::mat4& MVP);
 
@@ -182,10 +212,14 @@ private:
 
 public:
 	MaterialSkybox();
-	MaterialSkybox(GLuint _glProgram, CubeTexture * _textureDiffuse);
-	MaterialSkybox(ResourcePtr<ShaderProgram> _glProgram, CubeTexture * _textureDiffuse)
+	MaterialSkybox(GLuint _glProgram, ResourcePtr<CubeTexture> _textureDiffuse);
+	MaterialSkybox(ResourcePtr<ShaderProgram> _glProgram, ResourcePtr<CubeTexture> _textureDiffuse)
 		: MaterialSkybox(_glProgram->id, _textureDiffuse)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialSkybox(*this);
+	}
 	
 	void setUniform_VP(const glm::mat4& vp);
 
@@ -205,6 +239,10 @@ public:
 	MaterialShadow(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialShadow(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialShadow(*this);
+	}
 
 	virtual void use() override;
 	virtual void drawUI() override;
@@ -228,6 +266,10 @@ public:
 	MaterialBillboard(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialBillboard(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialBillboard(*this);
+	}
 
 	virtual void use() override;
 	virtual void drawUI() override;
@@ -274,6 +316,10 @@ struct MaterialTerrain : public Material3DObject
 	MaterialTerrain(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialTerrain(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialTerrain(*this);
+	}
 
 	virtual void use() override;
 	virtual void drawUI() override;
@@ -320,6 +366,10 @@ public:
 	MaterialTerrainEdition(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialTerrainEdition(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialTerrainEdition(*this);
+	}
 
 	void setUniformFilterTexture(int textureId);
 	void setUniformDiffuseTexture(int textureId);
@@ -342,10 +392,14 @@ private:
 	GLuint uniform_textureToDrawOn;
 
 public : 
-	MaterialDrawOnTexture(GLuint _glProgram);
+	MaterialDrawOnTexture(GLuint _glProgram = 0);
 	MaterialDrawOnTexture(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialDrawOnTexture(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialDrawOnTexture(*this);
+	}
 
 	void setUniformDrawPosition(const glm::vec2& position);
 	void setUniformColorToDraw(const glm::vec4& color);
@@ -370,6 +424,10 @@ public:
 	MaterialGrassField(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialGrassField(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialGrassField(*this);
+	}
 
 	void setUniformTime(float time);
 	void setUniformTexture(int texId);
@@ -394,6 +452,10 @@ public:
 	MaterialParticlesCPU(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialParticlesCPU(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialParticlesCPU(*this);
+	}
 
 	void glUniform_VP(const glm::mat4& VP);
 	void setUniformTexture(int texId);
@@ -420,6 +482,10 @@ public :
 	MaterialParticles(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialParticles(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialParticles(*this);
+	}
 
 	void glUniform_VP(const glm::mat4& VP);
 	void setUniformTexture(int texId);
@@ -442,6 +508,10 @@ public:
 	MaterialParticleSimulation(ResourcePtr<ShaderProgram> _glProgram)
 		: MaterialParticleSimulation(_glProgram->id)
 	{}
+	virtual Material* copy() const override
+	{
+		return new MaterialParticleSimulation(*this);
+	}
 
 	void glUniform_deltaTime(float deltaTime);
 
@@ -450,4 +520,161 @@ public:
 	virtual void initGL() override;
 };
 
+//helpers : 
 
+
+class MaterialFactory : public ISingleton<MaterialFactory>
+{
+private:
+	std::map<std::string, const Material*> m_materials;
+
+public:
+	MaterialFactory()
+	{}
+
+	template<typename T>
+	void add(const std::string& name)
+	{
+		m_materials[name] = new T;
+	}
+
+	const Material* getPtr(const std::string& name)
+	{
+		return m_materials[name];
+	}
+
+	Material* getInstance(const std::string& name)
+	{
+		return m_materials[name]->copy();
+	}
+
+	std::map<std::string, const Material*>::iterator begin()
+	{
+		return m_materials.begin();
+	}
+
+	std::map<std::string, const Material*>::iterator end()
+	{
+		return m_materials.end();
+	}
+
+
+	SINGLETON_IMPL(MaterialFactory)
+};
+
+#define REGISTER_MATERIAL(name, type) static bool isRegister = MaterialFactory::instance().add<type>(name);
+
+namespace ResourceHandling
+{
+	enum BaseMaterialType
+	{
+		Lit,
+		Unlit,
+		InstancedUnlit,
+		DebugDrawer,
+		Skybox,
+		Shadow,
+		Billboard,
+		Terrain,
+		TerrainEdition,
+		DrawOnTexture,
+		GrassField,
+		ParticlesCPU,
+		Particles,
+		ParticleSimulation,
+	};
+}
+
+class BaseMaterialHelper : public ISingleton<BaseMaterialHelper>
+{
+private:
+
+public:
+	BaseMaterialHelper()
+	{}
+
+	SINGLETON_IMPL(BaseMaterialHelper)
+
+		//Used in material loading to retrieve polymorphisme
+	Material* instantiateMaterialFromType(int materialType)
+	{
+		switch (materialType)
+		{
+		case ResourceHandling::BaseMaterialType::Lit:
+			return new MaterialLit();
+			break;
+		case ResourceHandling::BaseMaterialType::Unlit:
+			return new MaterialUnlit();
+			break;
+		case ResourceHandling::BaseMaterialType::InstancedUnlit:
+			return new MaterialInstancedUnlit();
+			break;
+		case ResourceHandling::BaseMaterialType::DebugDrawer:
+			return new MaterialDebugDrawer();
+			break;
+		case ResourceHandling::BaseMaterialType::Skybox:
+			return new MaterialSkybox();
+			break;
+		case ResourceHandling::BaseMaterialType::Shadow:
+			return new MaterialShadow();
+			break;
+		case ResourceHandling::BaseMaterialType::Billboard:
+			return new MaterialBillboard();
+			break;
+		case ResourceHandling::BaseMaterialType::Terrain:
+			return new MaterialTerrain();
+			break;
+		case ResourceHandling::BaseMaterialType::TerrainEdition:
+			return new MaterialTerrainEdition();
+			break;
+		case ResourceHandling::BaseMaterialType::DrawOnTexture:
+			return new MaterialDrawOnTexture();
+			break;
+		case ResourceHandling::BaseMaterialType::GrassField:
+			return new MaterialGrassField();
+			break;
+		case ResourceHandling::BaseMaterialType::ParticlesCPU:
+			return new MaterialParticlesCPU();
+			break;
+		case ResourceHandling::BaseMaterialType::Particles:
+			return new MaterialParticles();
+			break;
+		case ResourceHandling::BaseMaterialType::ParticleSimulation:
+			return new MaterialParticleSimulation();
+			break;
+		default:
+			return nullptr;
+			break;
+
+		}
+	}
+
+	Material* loadMaterialFromPath(const FileHandler::CompletePath& path)
+	{
+		//pseudo code :
+		std::ifstream stream;
+
+		stream.open(path.toString());
+		if (stream.is_open())
+		{
+			Json::Value root;
+			stream >> root;
+
+			int materialType = root.get("type", -1).asInt();
+
+			Material* material = instantiateMaterialFromType(materialType);
+			return material;
+		}
+		else
+		{
+			std::cout << "Can't load Material at path : " << path.toString() << std::endl;
+			return nullptr;
+		}
+	}
+
+	void getMaterialList()
+	{
+
+	}
+
+};

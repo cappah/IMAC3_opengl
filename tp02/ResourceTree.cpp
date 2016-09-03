@@ -153,8 +153,42 @@ void ResourceTreeWindow::displayFoldersRecusivly(ResourceFolder* parentFolder, s
 			ImGui::EndPopup();
 			ImGui::OpenPopupEx("AddFolderModale", true);
 		}
+		else if (ImGui::Button("Add resource."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("AddResourcePopUp", true);
+		}
 		else
 			ImGui::EndPopup();
+	}
+
+	//pop up to add resource :
+	if (ImGui::BeginPopup("AddResourcePopUp"))
+	{
+		if (ImGui::Button("Material."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("ChooseMaterialPopUp", true);
+		}
+		else if (ImGui::Button("CubeTexture."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("AddCubeTexturePopUp", true);
+		}
+		else
+			ImGui::EndPopup();
+	}
+
+	//PopUp to choose a material :
+	if (ImGui::BeginPopup("ChooseMaterialPopUp"))
+	{
+		popUpToChooseMaterial();
+	}
+
+	//PopUp to add new cubeTexture :
+	if (ImGui::BeginPopup("AddCubeTexturePopUp"))
+	{
+		popUpToAddCubeTexture();
 	}
 
 	//Modale to add new folder :
@@ -186,7 +220,7 @@ void ResourceTreeWindow::displayFoldersRecusivly(ResourceFolder* parentFolder, s
 	{
 		ResourceFile& currentFile = filesToDisplay[fileIdx];
 
-		//TODO : coulaur à changer en fonction du type de resource.
+		//TODO : couleur à changer en fonction du type de resource.
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
@@ -214,6 +248,88 @@ void ResourceTreeWindow::displayFoldersRecusivly(ResourceFolder* parentFolder, s
 	}
 
 	ImGui::PopStyleColor(colorStyleModifierCount);
+}
+
+
+void ResourceTreeWindow::popUpToChooseMaterial()
+{
+	for (auto& it = MaterialFactory::instance().begin(); it != MaterialFactory::instance().end(); it++)
+	{
+		const std::string matName = it->first;
+
+		if (ImGui::Button("Validate##ChooseMaterial"))
+		{
+			m_chooseMaterialName = matName;
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("AddMaterialPopUp", true);
+		}
+		else
+			ImGui::EndPopup();
+	}
+}
+
+
+void ResourceTreeWindow::popUpToAddMaterial()
+{
+	assert(!m_chooseMaterialName.empty());
+
+	m_uiString.resize(100);
+	ImGui::InputText("##materialName", &m_uiString[0], 100);
+	assert(m_folderWeRightClicOn != nullptr);
+	if (!m_folderWeRightClicOn->hasFile(m_uiString + ".mat"))
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("Validate##AddMaterial") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
+		{
+			if (m_folderWeRightClicOn != nullptr)
+			{
+				//We create and save the new resource
+				const FileHandler::CompletePath resourceCompletePath(m_folderWeRightClicOn->getPath(), m_uiString, ".mat");
+				Material* newMaterial = MaterialFactory::instance().getInstance(m_chooseMaterialName);
+				newMaterial->save(resourceCompletePath);
+				//we store the resource in its factory
+				getMaterialFactory().add(resourceCompletePath, newMaterial);
+			}
+			m_folderWeRightClicOn = nullptr;
+			ImGui::CloseCurrentPopup();
+		}
+	}
+	else
+	{
+		ImGui::TextColored(ImVec4(255, 0, 0, 255), "A file with the same name already exists.");
+	}
+	ImGui::EndPopup();
+}
+
+
+void ResourceTreeWindow::popUpToAddCubeTexture()
+{
+	m_uiString.resize(100);
+	ImGui::InputText("##fileName", &m_uiString[0], 100);
+	assert(m_folderWeRightClicOn != nullptr);
+	if (!m_folderWeRightClicOn->hasFile(m_uiString + ".ctx"))
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("Validate##AddFile") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
+		{
+			if (m_folderWeRightClicOn != nullptr)
+			{
+				//We create and save the new resource
+				const FileHandler::CompletePath resourceCompletePath(m_folderWeRightClicOn->getPath(), m_uiString, ".ctx");
+				CubeTexture* newCubeTexture = new CubeTexture();
+				newCubeTexture->save(resourceCompletePath);
+				//we store the resource in its factory
+				getCubeTextureFactory().add(resourceCompletePath, newCubeTexture);
+			}
+			m_folderWeRightClicOn = nullptr;
+			ImGui::CloseCurrentPopup();
+		}
+	}
+	else
+	{
+		ImGui::TextColored(ImVec4(255, 0, 0, 255), "A file with the same name already exists.");
+	}
+	ImGui::EndPopup();
 }
 
 void ResourceTreeWindow::drawUI()

@@ -4,9 +4,21 @@
 #include "Ray.h"
 #include "Utils.h"
 #include "Factories.h"
+#include "Skeleton.h"
 
-Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) : primitiveType(_primitiveType), coordCountByVertex(_coordCountByVertex), vbo_usage(_vbo_usage), vbo_index(0), vbo_vertices(0), vbo_uvs(0), vbo_normals(0), vbo_tangents(0), drawUsage(_drawUsage), 
-skeleton(nullptr), isSkeletalMesh(false), importer(nullptr)
+Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) 
+	: primitiveType(_primitiveType)
+	, coordCountByVertex(_coordCountByVertex)
+	, vbo_usage(_vbo_usage)
+	, vbo_index(0)
+	, vbo_vertices(0)
+	, vbo_uvs(0)
+	, vbo_normals(0)
+	, vbo_tangents(0)
+	, drawUsage(_drawUsage)
+	, skeleton(nullptr)
+	, isSkeletalMesh(false)
+	, importer(nullptr)
 {
 	subMeshCount = 1;
 	totalTriangleCount = 0;
@@ -15,7 +27,8 @@ skeleton(nullptr), isSkeletalMesh(false), importer(nullptr)
 }
 
 Mesh::Mesh(const FileHandler::CompletePath& _path, const std::string& meshName) 
-	: primitiveType(GL_TRIANGLES)
+	: Resource(_path)
+	, primitiveType(GL_TRIANGLES)
 	, coordCountByVertex(3)
 	, vbo_usage(USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS | USE_TANGENTS), vbo_index(0), vbo_vertices(0)
 	, vbo_uvs(0)
@@ -24,9 +37,7 @@ Mesh::Mesh(const FileHandler::CompletePath& _path, const std::string& meshName)
 	, drawUsage(GL_STATIC_DRAW)
 	, skeleton(nullptr)
 	, isSkeletalMesh(false)
-	, name(meshName)
 	, importer(nullptr)
-	, path(_path)
 {
 
 	subMeshCount = 1;
@@ -37,13 +48,13 @@ Mesh::Mesh(const FileHandler::CompletePath& _path, const std::string& meshName)
 	bool Ret = false;
 	//Assimp::Importer Importer;
 	importer = new Assimp::Importer();
-	const aiScene* pScene = importer->ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* pScene = importer->ReadFile(_path.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 	if (pScene) {
-		Ret = initFromScene(pScene, path);
+		Ret = initFromScene(pScene, _path);
 	}
 	else {
-		std::cout << "Error parsing " << path.toString() << " : " << importer->GetErrorString() << std::endl;
+		std::cout << "Error parsing " << _path.toString() << " : " << importer->GetErrorString() << std::endl;
 	}
 }
 
@@ -61,6 +72,8 @@ void Mesh::init(const FileHandler::CompletePath & path)
 	vbo_tangents = 0;
 	drawUsage = GL_STATIC_DRAW;
 
+	if (skeleton != nullptr)
+		delete skeleton;
 	skeleton = nullptr;
 	isSkeletalMesh = false;
 
@@ -92,7 +105,15 @@ Mesh::~Mesh()
 void Mesh::clear()
 {
 	delete skeleton;
-	getSkeletalAnimationFactory().erase(path);
+
+	//Carefull ! detroying a mesh will destroy its animations
+	for (int i = 0; i < animNames.size(); i++)
+	{
+		std::string subFileName();
+		FileHandler::CompletePath animPath(getCompletePath().toString(), &animNames[i]);
+		getSkeletalAnimationFactory().erase(animPath);
+	}
+	animNames.clear();
 
 	freeGl();
 
@@ -306,7 +327,7 @@ void Mesh::updateAllVBOs()
 }
 
 // simply draw the vertices, using vao.
-void Mesh::draw()
+void Mesh::draw() const
 {
 	glBindVertexArray(vao);
 	if (USE_INDEX & vbo_usage)
@@ -316,7 +337,7 @@ void Mesh::draw()
 	glBindVertexArray(0);
 }
 
-void Mesh::draw(int idx)
+void Mesh::draw(int idx) const
 {
 	glBindVertexArray(vao);
 	if (USE_INDEX & vbo_usage)
@@ -510,8 +531,17 @@ void Mesh::loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode *
 
 void Mesh::loadAnimations(const FileHandler::CompletePath& scenePath, const aiScene* scene)
 {
+	animNames.clear();
+
 	if (!scene->HasAnimations())
 		return;
 
-	getSkeletalAnimationFactory().add(scenePath);
+	for (int i = 0; i < scene->mNumAnimations; i++)
+	{
+		std::string subFileName(scene->mAnimations[i]->mName.C_Str());
+		FileHandler::CompletePath animPath(scenePath.getPath(), scenePath.getFilename(), scenePath.getExtention(), &subFileName);
+		getSkeletalAnimationFactory().add(animPath, new SkeletalAnimation(scene->mAnimations[i]));
+
+		animNames.push_back(subFileName);
+	}
 }

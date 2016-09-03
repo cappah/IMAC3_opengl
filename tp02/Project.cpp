@@ -921,17 +921,19 @@ void Project::initDefaultAssets()
 	glGenerateMipmap(GL_TEXTURE_2D);
 	*/
 
-	Texture* diffuseTexture = new Texture("textures/spnza_bricks_a_diff.tga");
-	Texture* specularTexture = new Texture("textures/spnza_bricks_a_spec.tga");
-	Texture* bumpTexture = new Texture("textures/spnza_bricks_a_normal.png");
+	Texture* diffuseTexture = new Texture(FileHandler::CompletePath("textures/spnza_bricks_a_diff.tga"));
+	Texture* specularTexture = new Texture(FileHandler::CompletePath("textures/spnza_bricks_a_spec.tga"));
+	Texture* bumpTexture = new Texture(FileHandler::CompletePath("textures/spnza_bricks_a_normal.png"));
 
-	Texture* grassTextureDiffuse = new Texture("textures/grass/grass01.png", true);
+	Texture* grassTextureDiffuse = new Texture(FileHandler::CompletePath("textures/grass/grass01.png"), true);
 	grassTextureDiffuse->textureWrapping_u = GL_CLAMP_TO_EDGE;
 	grassTextureDiffuse->textureWrapping_v = GL_CLAMP_TO_EDGE;
 
-	std::vector<std::string> skyboxTexturePaths = { "textures/skyboxes/right.png", "textures/skyboxes/left.png",
-		"textures/skyboxes/top.png", "textures/skyboxes/top.png",
-		"textures/skyboxes/front.png","textures/skyboxes/back.png" };
+	std::vector<FileHandler::CompletePath> skyboxTexturePaths = { 
+		FileHandler::CompletePath("textures/skyboxes/right.png"), FileHandler::CompletePath("textures/skyboxes/left.png"),
+		FileHandler::CompletePath("textures/skyboxes/top.png"), FileHandler::CompletePath("textures/skyboxes/top.png"),
+		FileHandler::CompletePath("textures/skyboxes/front.png"),FileHandler::CompletePath("textures/skyboxes/back.png") 
+	};
 
 	CubeTexture* defaultSkybox = new CubeTexture(skyboxTexturePaths);
 

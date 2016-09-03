@@ -73,6 +73,7 @@ struct CubeTexture : public Resource
 
 	int m_textureUseCounts;
 
+	CubeTexture();
 	CubeTexture(char r, char g, char b);
 	CubeTexture(const std::vector<FileHandler::CompletePath>& _paths);
 	~CubeTexture();

@@ -21,7 +21,7 @@ private:
 	ResourcePtr<Mesh> mesh;
 	std::vector<ResourcePtr<Material>> material;
 
-	//for UI : 
+	//Only for UI : TODO : essayer de trouver un autre endroit pour ranger ça
 	std::string meshName;
 	std::string materialName;
 

@@ -3,7 +3,9 @@
 #include "Factories.h"
 
 
-Skybox::Skybox() : material(getProgramFactory().getDefault("defaultSkybox"), getCubeTextureFactory().getDefault("default")) , mesh(GL_TRIANGLES, (Mesh::Vbo_usage::USE_INDEX | Mesh::Vbo_usage::USE_UVS | Mesh::Vbo_usage::USE_VERTICES) )
+Skybox::Skybox() 
+	: material(getProgramFactory().getDefault("defaultSkybox"), getCubeTextureFactory().getDefault("default")) 
+	, mesh(GL_TRIANGLES, (Mesh::Vbo_usage::USE_INDEX | Mesh::Vbo_usage::USE_UVS | Mesh::Vbo_usage::USE_VERTICES) )
 {
 	mesh.vertices = { 1,1,-1,  1,1,1,  1,-1,1,  1,-1,-1,
 					-1,1,-1,  -1,1,1,  -1,-1,1,  -1,-1,-1,

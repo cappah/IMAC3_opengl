@@ -5,11 +5,23 @@
 class Resource
 {
 private:
-	FileHandler::CompletePath m_path;
+	FileHandler::CompletePath m_completePath;
 
 public:
-	virtual void init(const FileHandler::CompletePath& path)
+	Resource()
+	{}
+
+	Resource(const FileHandler::CompletePath& completePath)
+		:m_completePath(completePath)
+	{}
+
+	virtual void init(const FileHandler::CompletePath& completePath)
 	{
-		m_path = path;
+		m_completePath = completePath;
+	}
+
+	const FileHandler::CompletePath& getCompletePath() const
+	{
+		return m_completePath;
 	}
 };

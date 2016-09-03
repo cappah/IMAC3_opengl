@@ -62,16 +62,18 @@ std::ofstream& operator<<(std::ofstream& os, const Path& path);
 class CompletePath
 {
 private:
+	std::string m_data;
 	Path m_path;
 	std::string m_fileName;
 	std::string m_extention;
 	bool m_complete;
+	std::string m_subFileName; //Allow a complete path to represent a "sub-resource"
 
 public:
 	CompletePath();
-	CompletePath(const std::string& completePath);
-	CompletePath(Path path, const std::string& fileName, const std::string& extention);
-	CompletePath(Path path, const std::string& fileNameAndExtention);
+	CompletePath(const std::string& completePath, const std::string* subFileName = nullptr);
+	CompletePath(Path path, const std::string& fileName, const std::string& extention, const std::string* subFileName = nullptr);
+	CompletePath(Path path, const std::string& fileNameAndExtention, const std::string* subFileName = nullptr);
 
 	const std::string& toString() const;
 	const char* c_str() const { return toString().c_str(); }
@@ -80,7 +82,7 @@ public:
 	const std::string& operator[](size_t idx);
 
 	const Path& getPath() const;
-	const Path& getFilename() const;
+	const std::string& getFilename() const;
 	const std::string& getFilenameWithExtention() const;
 	const std::string& getExtention() const;
 	bool hasValidFileName() const;
@@ -88,8 +90,19 @@ public:
 	void format();
 	bool empty() const;
 
+	const std::string& getSubFileName() const;
+
 	FileType getFileType() const;
+
+	bool operator<(const CompletePath& other) const;
+	bool operator==(const CompletePath& other) const;
 };
+
+//bool operator<(const CompletePath& a, const CompletePath& b)
+//{
+//	return a.m_data < b.m_data;
+//}
+
 
 std::ofstream& operator<<(std::ofstream& os, const CompletePath& path);
 

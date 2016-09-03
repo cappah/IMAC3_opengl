@@ -1,5 +1,6 @@
 #pragma once
 
+#include <istream>
 #include <glew/glew.h>
 #include "FileHandler.h"
 #include "Resource.h"
@@ -9,7 +10,42 @@ struct ShaderProgram : public Resource
 {
 	GLuint id;
 
-	ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
+	ShaderProgram()
+		:id(0)
+	{
+	}
+
+	ShaderProgram(const FileHandler::CompletePath& path)
+		: Resource(path)
+		, id(0)
+	{
+	}
+
+	void init(const FileHandler::CompletePath& path) override
+	{
+		load(path);
+	}
+
+	void load(const FileHandler::CompletePath& path)
+	{
+		std::ifstream stream;
+		stream.open(path.toString());
+		if (!stream.is_open())
+		{
+			std::cout << "error, can't load shader program at path : " << path.toString() << std::endl;
+			return;
+		}
+		Json::Value root;
+		stream >> root;
+
+		const FileHandler::CompletePath vertexPath = root.get("vertex", "").asString();
+		const FileHandler::CompletePath fragmentPath = root.get("fragment", "").asString();
+		const FileHandler::CompletePath geometryPath = root.get("geometry", "").asString();
+
+		load(vertexPath, fragmentPath, geometryPath);
+	}
+
+	void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
 	{
 		bool hasVertShader = !vertexShaderPath.empty();
 		bool hasFragShader = !fragmentShaderPath.empty();
@@ -17,15 +53,15 @@ struct ShaderProgram : public Resource
 		GLuint vertShaderId = 0;
 		GLuint fragShaderId = 0;
 
-		if(hasVertShader)
+		if (hasVertShader)
 			vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, vertexShaderPath.c_str());
-		if(hasFragShader)
+		if (hasFragShader)
 			fragShaderId = compile_shader_from_file(GL_FRAGMENT_SHADER, fragmentShaderPath.c_str());
 
 		GLuint programObject = glCreateProgram();
-		if(hasVertShader)
+		if (hasVertShader)
 			glAttachShader(programObject, vertShaderId);
-		if(hasFragShader)
+		if (hasFragShader)
 			glAttachShader(programObject, fragShaderId);
 
 		glLinkProgram(programObject);
@@ -38,7 +74,7 @@ struct ShaderProgram : public Resource
 	}
 
 
-	ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath)
+	void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath)
 	{
 		bool hasVertShader = !vertexShaderPath.empty();
 		bool hasFragShader = !fragmentShaderPath.empty();
@@ -70,6 +106,20 @@ struct ShaderProgram : public Resource
 		//check uniform errors : 
 		if (!checkError("Uniforms"))
 			exit(1);
+	}
+
+
+	ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
+		: id(0)
+	{
+		load(vertexShaderPath, fragmentShaderPath);
+	}
+
+
+	ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath)
+		: id(0)
+	{
+		load(vertexShaderPath, fragmentShaderPath, geometryShaderPath);
 	}
 
 	//Not copyable

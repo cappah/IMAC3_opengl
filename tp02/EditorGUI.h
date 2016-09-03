@@ -92,10 +92,10 @@ namespace EditorGUI {
 		//drop resource : 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0))
 		{
-			std::string droppedResourceName;
-			DragAndDropManager::dropDraggedItem(&droppedResourceName, (EditorDropContext::DropIntoResourceField));
-			assert(droppedResourceName.size() < bufSize);
-			strcpy(buf, droppedResourceName.c_str());
+			FileHandler::CompletePath droppedResourcePath;
+			DragAndDropManager::dropDraggedItem(&droppedResourcePath, (EditorDropContext::DropIntoResourceField));
+			assert(droppedResourcePath.toString().size() < bufSize);
+			strcpy(buf, droppedResourcePath.c_str());
 			isTextEdited = true;
 		}
 
@@ -103,10 +103,10 @@ namespace EditorGUI {
 
 		if (isTextEdited)
 		{
-			std::string resourceName(buf);
-			if (getResourceFactory<T>.contains(resourceName))
+			FileHandler::CompletePath resourcePath(buf);
+			if (getResourceFactory<T>().contains(resourcePath))
 			{
-				resourcePtr = getResourceFactory<T>.get(resourceName);
+				resourcePtr = getResourceFactory<T>().get(resourcePath);
 			}
 		}
 

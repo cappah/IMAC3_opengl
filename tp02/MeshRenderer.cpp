@@ -7,8 +7,6 @@
 
 MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), mesh(getMeshFactory().getDefault("default")), meshName("default"), materialName("default")
 {
-	if(mesh.isValid())
-		meshName = mesh->name;
 	materialName = '\0';
 
 	material.push_back(getMaterialFactory().getDefault("default"));
@@ -16,8 +14,6 @@ MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), mesh(getMeshFactory().g
 
 MeshRenderer::MeshRenderer(ResourcePtr<Mesh> _mesh, ResourcePtr<Material> _material) : Component(MESH_RENDERER), mesh(_mesh), meshName("default"), materialName("default")
 {
-	if (mesh.isValid())
-		meshName = mesh->name;
 	materialName = '\0';
 
 	material.push_back(_material);
@@ -139,9 +135,6 @@ void MeshRenderer::eraseFromEntity(Entity& entity)
 
 void MeshRenderer::setMesh(ResourcePtr<Mesh> _mesh)
 {
-	if(_mesh.isValid())
-		meshName = _mesh->name;
-
 	mesh = _mesh;
 
 	if (m_entity != nullptr)
@@ -193,12 +186,12 @@ std::string MeshRenderer::getMaterialName(int idx) const
 {
 	assert(idx >= 0 && idx < material.size());
 
-	return material[idx]->name;
+	return material[idx]->getCompletePath().getFilename();
 }
 
 std::string MeshRenderer::getMeshName() const
 {
-	return meshName;
+	return mesh->getCompletePath().getFilename();
 }
 
 glm::vec3 MeshRenderer::getOrigin() const
@@ -262,19 +255,16 @@ void MeshRenderer::load(Json::Value & rootComponent)
 {
 	Component::load(rootComponent);
 
-	//meshName = rootComponent.get("meshName", "").asString();
-
 	mesh.load(rootComponent["mesh"]);
 
 	int materialCount = rootComponent.get("materialCount", 0).asInt();
 	material.clear();
 	for (int i = 0; i < materialCount; i++)
 	{
-		ResourcePtr<Material> materialName(rootComponent["material"][i]);
-		material.push_back(materialName);
+		ResourcePtr<Material> newMaterial(rootComponent["material"][i]);
+		material.push_back(newMaterial);
 		material.back()->initGL();
 	}
 	materialName = '\0'; //rootComponent.get("materialName", "").asString();
-
 
 }

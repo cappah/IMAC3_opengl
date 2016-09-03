@@ -230,6 +230,7 @@ class ResourceTreeWindow : public EditorWindow, public ResourceFolder
 private:
 	std::string m_uiString;
 	ResourceFolder* m_folderWeRightClicOn;
+	std::string m_chooseMaterialName;
 
 public:
 	ResourceTreeWindow();
@@ -241,6 +242,9 @@ public:
 	void addFileToFolder(ResourceFile file, const std::string& folderName);
 	void addFileToFolder(ResourceFile file, size_t folderIdx);*/
 	void displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay);
+	void popUpToAddCubeTexture();
+	void popUpToChooseMaterial();
+	void popUpToAddMaterial();
 
 	//save / load functions :
 	//void save() const;

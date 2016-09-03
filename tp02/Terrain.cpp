@@ -3,13 +3,14 @@
 #include "Application.h"
 #include "Factories.h" 
 #include "Ray.h"
+#include "EditorGUI.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
 
 GrassField::GrassField() : mass(0.005f), rigidity(0.05f), viscosity(0.003f), lockYPlane(true)
 {
-	grassTexture = getTextureFactory().get("default");
+	grassTexture = getTextureFactory().getDefault("default");
 
 	float pi_3 = glm::pi<float>() / 3.f;
 
@@ -189,7 +190,7 @@ void GrassField::clear()
 {
 	freeGl();
 
-	grassTexture = getTextureFactory().get("default");
+	grassTexture = getTextureFactory().getDefault("default");
 
 	triangleIndex.clear();
 	vertices.clear();
@@ -462,12 +463,13 @@ void GrassField::updateVBOAnimPos()
 
 ////////////////// TERRAIN ///////////////////
 
-Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) : m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), //terrain properties
+Terrain::Terrain(float width, float height, float depth, int subdivision, glm::vec3 offset) 
+		   : m_width(width), m_height(height), m_depth(depth), m_subdivision(subdivision), m_offset(offset), //terrain properties
 			m_noiseMin(0.f), m_noiseMax(1.f), m_seed(0), m_terrainNoise(512, 64, 3, 0.5f, 0), //perlin properties
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
 			m_maxGrassDensity(1.f), m_grassDensity(0), m_grassLayoutDelta(0.3f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
-			m_material(getProgramFactory().get("defaultTerrain")), m_terrainMaterial(getProgramFactory().get("defaultTerrainEdition")), m_drawOnTextureMaterial(getProgramFactory().get("defaultDrawOnTexture")), //matertials
+			m_material(getProgramFactory().getDefault("defaultTerrain")), m_terrainMaterial(getProgramFactory().getDefault("defaultTerrainEdition")), m_drawOnTextureMaterial(getProgramFactory().getDefault("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
 			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024), //textures
 			m_terrainBump(1024, 1024), m_terrainSpecular(1024, 1024), m_drawMatTexture(1024, 1024),
@@ -676,17 +678,17 @@ void Terrain::generateTerrainTexture()
 
 	for (int i = 0; i < m_terrainLayouts.size(); i++)
 	{
-
+		MaterialLit* castedterrainLayout = static_cast<MaterialLit*>(m_terrainLayouts[i].get()); //TODO : changer ça
 
 		//diffuse
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getDiffuse()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getDiffuse()->glId);
 		//bump
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getBump()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getBump()->glId);
 		//specular
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getSpecular()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getSpecular()->glId);
 
 		//filter texture : 
 		m_terrainMaterial.setUniformFilterTexture(0);
@@ -1261,7 +1263,10 @@ void Terrain::save(Json::Value & rootComponent) const
 	rootComponent["materialLayoutCount"] = m_terrainLayouts.size();
 	for (int i = 0; i < m_terrainLayouts.size(); i++) {
 		rootComponent["materialLayouts"][i]["textureRepetition"] = toJsonValue(m_textureRepetitions[i]);
-		rootComponent["materialLayouts"][i]["materialName"] = m_terrainLayouts[i]->name;
+
+		rootComponent["materialLayouts"][i]["materialName"] = m_terrainLayouts[i]->name; //TODO : remove ?
+
+		m_terrainLayouts[i].save(rootComponent["materialLayouts"][i]["material"]);
 	}
 	/*
 	std::stringstream ss;
@@ -1283,7 +1288,7 @@ void Terrain::save(Json::Value & rootComponent) const
 	glBindTexture(GL_TEXTURE_2D, m_filterTexture->glId);
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	stbi_write_bmp("test_terrain.bmp", m_filterTexture->w, m_filterTexture->h, 3, pixels);
+	stbi_write_bmp("test_terrain.bmp", m_filterTexture->w, m_filterTexture->h, 3, pixels); //TODO : améliorer ça
 }
 
 void Terrain::load(Json::Value & rootComponent)
@@ -1304,10 +1309,10 @@ void Terrain::load(Json::Value & rootComponent)
 	for (int i = 0; i < materialLayoutCount; i++) {
 		glm::vec2 textureRepetition = fromJsonValue<glm::vec2>(rootComponent["materialLayouts"][i]["textureRepetition"], glm::vec2(1, 1));
 		m_textureRepetitions.push_back(textureRepetition);
-		std::string materialLayoutName = rootComponent["materialLayouts"][i]["materialName"].asString();
-		if (getMaterialFactory().contains<MaterialLit>(materialLayoutName)) {
-			m_terrainLayouts.push_back(getMaterialFactory().get<MaterialLit>(materialLayoutName));
-		}
+
+		std::string materialLayoutName = rootComponent["materialLayouts"][i]["materialName"].asString(); //TODO : supprimer ?
+
+		m_terrainLayouts.push_back(ResourcePtr<Material>(rootComponent["materialLayouts"][i]["material"]));
 	}
 	//recreate m_filterTexture : 
 	m_filterTexture->freeGL();
@@ -1325,7 +1330,7 @@ void Terrain::load(Json::Value & rootComponent)
 	}
 	m_filterTexture = new Texture(pixels, texWidth, texHeight, 3);
 	*/
-	m_filterTexture = new Texture("test_terrain.bmp");
+	m_filterTexture = new Texture(FileHandler::CompletePath("test_terrain.bmp")); //TODO : améliorer ça, verifier si ça marche bien
 
 	generateTerrain();
 	updateTerrain();
@@ -1356,15 +1361,17 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 
 	for (int i = 0; i < m_terrainLayouts.size(); i++)
 	{
+		MaterialLit* castedterrainLayout = static_cast<MaterialLit*>(m_terrainLayouts[i].get()); //TODO : changer ça
+
 		//diffuse
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getDiffuse()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getDiffuse()->glId);
 		//bump
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getBump()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getBump()->glId);
 		//specular
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, m_terrainLayouts[i]->getSpecular()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getSpecular()->glId);
 
 		//filter texture : 
 		m_material.setUniformFilterTexture(0);
@@ -1375,7 +1382,7 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 		//specular texture : 
 		m_material.setUniformSpecularTexture(3);
 
-		m_material.setUniformSpecularPower(m_terrainLayouts[i]->getSpecularPower());
+		m_material.setUniformSpecularPower(castedterrainLayout->getSpecularPower());
 
 		float offsetMin = (i / (float)m_terrainLayouts.size());
 		float offsetMax = ((i + 1) / (float)m_terrainLayouts.size());
@@ -1495,13 +1502,15 @@ void Terrain::drawUI()
 
 		ImGui::SliderFloat("draw radius", &m_drawRadius, 0.f, 1.f);
 
-		ImGui::InputText("new texture layout", m_newLayoutName, 30);
+		ResourcePtr<Material> materialPtrQuery;
+		EditorGUI::ResourceField<Material>(materialPtrQuery, "new texture layout", m_newLayoutName, 30);
+
 		ImGui::SameLine();
 		if (ImGui::SmallButton("add"))
 		{
-			if (getMaterialFactory().contains<MaterialLit>(m_newLayoutName))
+			if (materialPtrQuery.isValid())
 			{
-				m_terrainLayouts.push_back(getMaterialFactory().get<MaterialLit>(m_newLayoutName));
+				m_terrainLayouts.push_back(materialPtrQuery);
 				//m_terrainLayouts.back()->initGL();
 				m_textureRepetitions.push_back(glm::vec2(1.f, 1.f));
 
@@ -1587,13 +1596,12 @@ void Terrain::drawUI()
 		ImGui::SliderFloat("draw radius", &m_drawRadius, 0.f, 1.f);
 		ImGui::SliderFloat("grass density", &m_grassDensity, 0, m_maxGrassDensity);
 
-		if (ImGui::InputText("grass texture name", m_newGrassTextureName, 30))
+
+		ResourcePtr<Texture> texturePtrQuery;
+		if (EditorGUI::ResourceField<Texture>(texturePtrQuery, "grass texture name", m_newGrassTextureName, 30))
 		{
-			if (getTextureFactory().contains(m_newGrassTextureName))
-			{
-				//set the texture used by the grass field : 
-				m_grassField.grassTexture = getTextureFactory().get(m_newGrassTextureName);
-			}
+			if (texturePtrQuery.isValid())
+				m_grassField.grassTexture = texturePtrQuery;
 		}
 
 		m_grassField.drawUI();

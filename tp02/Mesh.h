@@ -12,7 +12,6 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-#include "Skeleton.h"
 #include "Resource.h"
 
 //forwards : 
@@ -36,17 +35,16 @@ class CollisionInfo;
 //
 //};
 
+class Skeleton;
+
 struct Mesh : public Resource
 {
 	Assimp::Importer* importer; //TODO : a quoi ça sert de laisser ça là ??? En fait ça doit servir pour gerer la durée de vie des animations, mais c'est pas cool...
-
-	std::string name;
+	std::vector<std::string> animNames; //pour retrouver le nom des sous-anim et les detruire quand on détruit le mesh.
 
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
 	glm::vec3 origin;
-
-	FileHandler::CompletePath path;
 
 	enum Vbo_usage { USE_INDEX = 1 << 0, USE_VERTICES = 1 << 1, USE_UVS = 1 << 2, USE_NORMALS = 1 << 3, USE_TANGENTS = 1 << 4 , USE_BONES = 1 << 5/* , USE_INSTANTIATION = 1 << 5 */};
 	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, BONE_IDS, BONE_WEIGHTS /* INSTANCE_TRANSFORM */, INDEX };
@@ -99,9 +97,9 @@ struct Mesh : public Resource
 	void updateAllVBOs();
 
 	// simply draw the vertices, using vao.
-	void draw();
+	void draw() const;
 	//draw a specific sub mesh.
-	void draw(int idx);
+	void draw(int idx) const;
 
 	void computeBoundingBox();
 

@@ -3,6 +3,7 @@
 #include "Utils.h"
 
 #include "jsoncpp/json/json.h"
+#include "ISingleton.h"
 
 enum ResourceType
 {
@@ -18,12 +19,30 @@ ENUM_MASK_IMPLEMENTATION(ResourceType);
 
 static unsigned int s_resourceCount = 0;
 
+class ResourceManager : public ISingleton<ResourceManager>
+{ 
+	template<typename T>
+	void addResource()
+	{
+
+	}
+
+	template<typename T>
+	bool removeResource()
+	{
+
+	}
+
+public:
+	SINGLETON_IMPL(ResourceManager);
+};
+
 template<typename T>
 class ResourcePtr : public ISerializable
 {
 private:
 	T* m_rawPtr;
-	unsigned int  m_resourceHashKey;
+	unsigned int m_resourceHashKey;
 	bool m_isDefaultResource;
 public:
 	ResourcePtr(Json::Value & entityRoot)
@@ -82,3 +101,5 @@ public:
 	virtual void load(Json::Value & entityRoot) override;
 
 };
+
+#include "ResourcePtr.inl"
