@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "SkeletalAnimation.h"
 //forwards :
 #include "Application.h"

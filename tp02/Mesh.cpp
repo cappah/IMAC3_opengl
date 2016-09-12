@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Mesh.h"
 //forwards :
 #include "Collider.h"
@@ -104,7 +106,9 @@ Mesh::~Mesh()
 
 void Mesh::clear()
 {
-	delete skeleton;
+	if(skeleton != nullptr)
+		delete skeleton;
+	skeleton = nullptr;
 
 	//Carefull ! detroying a mesh will destroy its animations
 	for (int i = 0; i < animNames.size(); i++)
@@ -119,6 +123,7 @@ void Mesh::clear()
 
 	if(importer != nullptr)
 		delete importer;
+	importer = nullptr;
 }
 
 //initialize vbos and vao, based on the informations of the mesh.

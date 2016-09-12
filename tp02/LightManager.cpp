@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "LightManager.h"
 
 ShadowMap::ShadowMap(int _textureWidth, int _textureHeight) : textureWidth(_textureWidth), textureHeight(_textureHeight)

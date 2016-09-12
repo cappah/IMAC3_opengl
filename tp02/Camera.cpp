@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Camera.h"
 #include "Scene.h"
 #include "Entity.h"
@@ -151,14 +153,14 @@ void Camera::setFOV(float fov)
 	m_fovy = fov;
 }
 
-void Camera::setNear(float near)
+void Camera::setNear(float camNear)
 {
-	m_zNear = near;
+	m_zNear = camNear;
 }
 
-void Camera::setFar(float far)
+void Camera::setFar(float camFar)
 {
-	m_zFar = far;
+	m_zFar = camFar;
 }
 
 void Camera::setAspect(float aspect)
@@ -431,15 +433,15 @@ void CameraEditor::setFOV(float fov)
 	updateProjection();
 }
 
-void CameraEditor::setNear(float near)
+void CameraEditor::setNear(float camNear)
 {
-	m_zNear = near;
+	m_zNear = camNear;
 	updateProjection();
 }
 
-void CameraEditor::setFar(float far)
+void CameraEditor::setFar(float camFar)
 {
-	m_zFar = far;
+	m_zFar = camFar;
 	updateProjection();
 }
 

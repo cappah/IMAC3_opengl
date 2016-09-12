@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Lights.h"
 #include "Scene.h"
 

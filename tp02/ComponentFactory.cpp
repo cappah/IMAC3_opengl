@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "ComponentFactory.h"
 //forwards : 
 #include "Factories.h"

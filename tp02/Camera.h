@@ -30,7 +30,7 @@ struct BaseCamera
 	//virtual void updateTransform() = 0;
 
 	virtual void updateScreenSize(float screenWidth, float screenHeight) = 0;
-	virtual void setPerspectiveInfos(float fovy, float aspect, float near = 0.1f, float far = 100.f) = 0;
+	virtual void setPerspectiveInfos(float fovy, float aspect, float camNear = 0.1f, float camFar = 100.f) = 0;
 	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) = 0;
 	virtual void setCameraMode(CameraMode cameraMode) = 0;
 
@@ -40,8 +40,8 @@ struct BaseCamera
 	virtual glm::vec3 getCameraForward() const = 0;
 
 	virtual void setFOV(float fov) = 0;
-	virtual void setNear(float near) = 0;
-	virtual void setFar(float far) = 0;
+	virtual void setNear(float camNear) = 0;
+	virtual void setFar(float camFar) = 0;
 	virtual void setAspect(float aspect) = 0;
 
 	virtual float getFOV() const = 0;
@@ -97,8 +97,8 @@ public:
 	virtual glm::vec3 getCameraForward() const override;
 
 	virtual void setFOV(float fov) override;
-	virtual void setNear(float near) override;
-	virtual void setFar(float far) override;
+	virtual void setNear(float camNear) override;
+	virtual void setFar(float camFar) override;
 	virtual void setAspect(float aspect) override;
 	virtual float getFOV() const override;
 	virtual float getNear() const override;

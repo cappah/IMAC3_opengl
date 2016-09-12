@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SplineAnimation.h"
 //forwards : 
 #include "Application.h"

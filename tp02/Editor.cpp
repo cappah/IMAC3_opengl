@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Editor.h"
 //forwards :
 #include "Scene.h"
@@ -284,8 +286,11 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	m_sceneManagerVisible = false;
 	m_skeletalAnimationFactoryVisible = false;
 
+	//models : 
+	m_resourceTree = std::make_shared<ResourceTree>();
+
 	//Open default windows : 
-	m_editorWindows.push_back(std::make_shared<ResourceTreeWindow>()); //ResourceWindow
+	m_editorWindows.push_back(std::make_shared<ResourceTreeView>(m_resourceTree.get())); //ResourceWindow
 }
 
 void Editor::changeCurrentSelected(Entity* entity)

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Factories.h"
 //forwards : 
 #include "Utils.h"
@@ -22,43 +24,43 @@ template<>
 void ResourceFactory<ShaderProgram>::initDefaults()
 {
 	//////////////////// CPU PARTICLE shaders ////////////////////////
-	m_defaultResources["defaultParticlesCPU"] = new ShaderProgram(FileHandler::CompletePath("particleCPU.vert"), FileHandler::CompletePath("particleCPU.frag"));
+	addDefault("defaultParticlesCPU", new ShaderProgram(FileHandler::CompletePath("particleCPU.vert"), FileHandler::CompletePath("particleCPU.frag")));
 
 	//////////////////// PARTICLE shaders ////////////////////////
-	m_defaultResources["defaultParticles"] = new ShaderProgram(FileHandler::CompletePath("particle.vert"), FileHandler::CompletePath("particle.frag"), FileHandler::CompletePath("particle.geom"));
+	addDefault("defaultParticles", new ShaderProgram(FileHandler::CompletePath("particle.vert"), FileHandler::CompletePath("particle.frag"), FileHandler::CompletePath("particle.geom")));
 
 	//////////////////// PARTICLE SIMULATION shaders ////////////////////////
-	m_defaultResources["particleSimulation"] = new ShaderProgram(FileHandler::CompletePath("particleSimulation.vert"), FileHandler::CompletePath(), FileHandler::CompletePath("particleSimulation.geom"));
+	addDefault("particleSimulation", new ShaderProgram(FileHandler::CompletePath("particleSimulation.vert"), FileHandler::CompletePath(), FileHandler::CompletePath("particleSimulation.geom")));
 
 	//////////////////// BILLBOARD shaders ////////////////////////
-	m_defaultResources["defaultBillboard"] = new ShaderProgram(FileHandler::CompletePath("billboard.vert"), FileHandler::CompletePath("billboard.frag"));
+	addDefault("defaultBillboard", new ShaderProgram(FileHandler::CompletePath("billboard.vert"), FileHandler::CompletePath("billboard.frag")));
 
 	//////////////////// SKYBOX shaders ////////////////////////
-	m_defaultResources["defaultSkybox"] = new ShaderProgram(FileHandler::CompletePath("skybox.vert"), FileHandler::CompletePath("skybox.frag"));
+	addDefault("defaultSkybox", new ShaderProgram(FileHandler::CompletePath("skybox.vert"), FileHandler::CompletePath("skybox.frag")));
 
 	//////////////////// 3D Gpass shaders ////////////////////////
-	m_defaultResources["defaultLit"] = new ShaderProgram(FileHandler::CompletePath("aogl.vert"), FileHandler::CompletePath("aogl_gPass.frag"));
+	addDefault("defaultLit", new ShaderProgram(FileHandler::CompletePath("aogl.vert"), FileHandler::CompletePath("aogl_gPass.frag")));
 
 	//////////////////// WIREFRAME shaders ////////////////////////
-	m_defaultResources["defaultUnlit"] = new ShaderProgram(FileHandler::CompletePath("wireframe.vert"), FileHandler::CompletePath("wireframe.frag"));
+	addDefault("defaultUnlit", new ShaderProgram(FileHandler::CompletePath("wireframe.vert"), FileHandler::CompletePath("wireframe.frag")));
 
 	//////////////////// TERRAIN shaders ////////////////////////
-	m_defaultResources["defaultTerrain"] = new ShaderProgram(FileHandler::CompletePath("terrain.vert"), FileHandler::CompletePath("terrain.frag"));
+	addDefault("defaultTerrain", new ShaderProgram(FileHandler::CompletePath("terrain.vert"), FileHandler::CompletePath("terrain.frag")));
 
 	//////////////////// TERRAIN EDITION shaders ////////////////////////
-	m_defaultResources["defaultTerrainEdition"] = new ShaderProgram(FileHandler::CompletePath("terrainEdition.vert"), FileHandler::CompletePath("terrainEdition.frag"));
+	addDefault("defaultTerrainEdition", new ShaderProgram(FileHandler::CompletePath("terrainEdition.vert"), FileHandler::CompletePath("terrainEdition.frag")));
 
 	//////////////////// DRAW ON TEXTURE shaders ////////////////////////
-	m_defaultResources["defaultDrawOnTexture"] = new ShaderProgram(FileHandler::CompletePath("drawOnTexture.vert"), FileHandler::CompletePath("drawOnTexture.frag"));
+	addDefault("defaultDrawOnTexture", new ShaderProgram(FileHandler::CompletePath("drawOnTexture.vert"), FileHandler::CompletePath("drawOnTexture.frag")));
 
 	//////////////////// GRASS FIELD shaders ////////////////////////
-	m_defaultResources["defaultGrassField"] = new ShaderProgram(FileHandler::CompletePath("grassField.vert"), FileHandler::CompletePath("grassField.frag"));
+	addDefault("defaultGrassField", new ShaderProgram(FileHandler::CompletePath("grassField.vert"), FileHandler::CompletePath("grassField.frag")));
 
 	//////////////////// GRASS FIELD shaders ////////////////////////
-	m_defaultResources["wireframeInstanced"] = new ShaderProgram(FileHandler::CompletePath("wireframeInstanced.vert"), FileHandler::CompletePath("wireframeInstanced.frag"));
+	addDefault("wireframeInstanced", new ShaderProgram(FileHandler::CompletePath("wireframeInstanced.vert"), FileHandler::CompletePath("wireframeInstanced.frag")));
 
 	//////////////////// DEBUG DRAWER shaders ////////////////////////
-	m_defaultResources["debugDrawer"] = new ShaderProgram(FileHandler::CompletePath("debugDrawer.vert"), FileHandler::CompletePath("debugDrawer.frag"));
+	addDefault("debugDrawer", new ShaderProgram(FileHandler::CompletePath("debugDrawer.vert"), FileHandler::CompletePath("debugDrawer.frag")));
 }
 
 
@@ -69,7 +71,7 @@ void ResourceFactory<CubeTexture>::initDefaults()
 	auto newTex = new CubeTexture(255, 255, 255);
 	newTex->initGL();
 	newTex->name = "default";
-	m_defaultResources["default"] = newTex;
+	addDefault(newTex->name, newTex);
 }
 
 //Textures
@@ -80,13 +82,13 @@ void ResourceFactory<Texture>::initDefaults()
 	auto newTex = new Texture(255, 255, 255);
 	newTex->initGL();
 	newTex->name = "default";
-	m_defaultResources["default"] = newTex;
+	addDefault(newTex->name, newTex);
 
 	//default normal
 	newTex = new Texture(0, 0, 125);
 	newTex->initGL();
 	newTex->name = "defaultNormal";
-	m_defaultResources["defaultNormal"] = newTex;
+	addDefault(newTex->name, newTex);
 }
 
 
@@ -94,42 +96,44 @@ void ResourceFactory<Texture>::initDefaults()
 template<>
 void ResourceFactory<Material>::initDefaults()
 {
+	auto tmpTestResourcePtr = ResourceFactory<ShaderProgram>::instance().getDefault("defaultLit");
+	GLuint programId = tmpTestResourcePtr->id;
 
-	Material* newMat = new MaterialLit(ResourceFactory<ShaderProgram>::instance().getDefault("defaultLit")->id, ResourceFactory<Texture>::instance().getDefault("default"), ResourceFactory<Texture>().getDefault("default"), ResourceFactory<Texture>::instance().getDefault("default"), 50);
+	Material* newMat = new MaterialLit(ResourceFactory<ShaderProgram>::instance().getDefault("defaultLit")->id, ResourceFactory<Texture>::instance().getDefault("default"), ResourceFactory<Texture>::instance().getDefault("default"), ResourceFactory<Texture>::instance().getDefault("default"), 50);
 	newMat->name = "default";
-	m_defaultResources["default"] = newMat;
+	addDefault(newMat->name, newMat);
 
 	newMat = new MaterialUnlit(ResourceFactory<ShaderProgram>::instance().getDefault("defaultUnlit")->id);
 	newMat->name = "wireframe";
-	m_defaultResources["wireframe"] = newMat;
+	addDefault(newMat->name, newMat);
 
 	newMat = new MaterialInstancedUnlit(ResourceFactory<ShaderProgram>::instance().getDefault("wireframeInstanced")->id);
 	newMat->name = "wireframeInstanced";
-	m_defaultResources["wireframeInstanced"] = newMat;
+	addDefault(newMat->name, newMat);
 
 	newMat = new MaterialGrassField(ResourceFactory<ShaderProgram>::instance().getDefault("defaultGrassField")->id);
 	newMat->name = "grassfield";
-	m_defaultResources["grassfield"] = newMat;
+	addDefault(newMat->name, newMat);
 
 	newMat = new MaterialBillboard(ResourceFactory<ShaderProgram>::instance().getDefault("defaultBillboard")->id);
 	newMat->name = "billboard";
-	m_defaultResources["billboard"] = newMat;
+	addDefault(newMat->name, newMat);
 
 	newMat = new MaterialParticles(ResourceFactory<ShaderProgram>::instance().getDefault("defaultParticles")->id);
 	newMat->name = "particles";
-	m_defaultResources["particles"] = newMat;
+	addDefault(newMat->name, newMat);
 
 	newMat = new MaterialParticlesCPU(ResourceFactory<ShaderProgram>::instance().getDefault("defaultParticlesCPU")->id);
 	newMat->name = "particlesCPU";
-	m_defaultResources["particlesCPU"] = newMat;
+	addDefault(newMat->name, newMat);
 
 	newMat = new MaterialParticleSimulation(ResourceFactory<ShaderProgram>::instance().getDefault("particleSimulation")->id);
 	newMat->name = "particleSimulation";
-	m_defaultResources["particleSimulation"] = newMat;
+	addDefault(newMat->name, newMat);
 
 	newMat = new MaterialDebugDrawer(ResourceFactory<ShaderProgram>::instance().getDefault("debugDrawer")->id);
 	newMat->name = "debugDrawer";
-	m_defaultResources["debugDrawer"] = newMat;
+	addDefault(newMat->name, newMat);
 }
 
 //Mesh
@@ -272,16 +276,45 @@ void ResourceFactory<Mesh>::initDefaults()
 	quad->initGl();
 	//quad->computeBoundingBox();
 
-	m_defaultResources["default"] = cube;
-	m_defaultResources["cube"] = cube;
-	m_defaultResources["cubeWireframe"] = cubeWireFrame;
-	m_defaultResources["capsuleWireframe"] = capsuleWireFrame;
-	m_defaultResources["sphereWireframe"] = sphereWireFrame;
-	m_defaultResources["plane"] = plane;
-	m_defaultResources["quad"] = plane;
+	//addDefault("default", cube);
+	addDefault("cube", cube);
+	addDefault("cubeWireframe", cubeWireFrame);
+	addDefault("capsuleWireframe", capsuleWireFrame);
+	addDefault("sphereWireframe", sphereWireFrame);
+	addDefault("plane", plane);
+	addDefault("quad", quad);
 }
 
 
+
+void initAllResourceFactories()
+{
+	//Shader Programes
+	getResourceFactory<ShaderProgram>().initDefaults();
+
+	//Cube Texture
+	getResourceFactory<CubeTexture>().initDefaults();
+
+	//Textures
+	getResourceFactory<Texture>().initDefaults();
+
+	//Materials
+	getResourceFactory<Material>().initDefaults();
+
+	//Mesh
+	getResourceFactory<Mesh>().initDefaults();
+
+	//Animations : nothing by default
+}
+
+void clearAllResourceFactories()
+{
+	getMeshFactory().clear();
+	getMaterialFactory().clear();
+	getTextureFactory().clear();
+	getCubeTextureFactory().clear();
+	getProgramFactory().clear();
+}
 
 //access helper
 ResourceFactory<ShaderProgram>& getProgramFactory()

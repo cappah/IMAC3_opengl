@@ -71,6 +71,8 @@ struct ShaderProgram : public Resource
 		//check uniform errors : 
 		if (!checkError("Uniforms"))
 			exit(1);
+
+		id = programObject;
 	}
 
 
@@ -106,6 +108,8 @@ struct ShaderProgram : public Resource
 		//check uniform errors : 
 		if (!checkError("Uniforms"))
 			exit(1);
+
+		id = programObject;
 	}
 
 

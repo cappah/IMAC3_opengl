@@ -280,8 +280,11 @@ void ResourceFactory<Mesh>::initDefaults();
 
 //Animations : nothing by default
 
+//Init helper
+void initAllResourceFactories();
+void clearAllResourceFactories();
 
-//access helper
+//Access helper
 ResourceFactory<ShaderProgram>& getProgramFactory();
 ResourceFactory<Mesh>& getMeshFactory();
 

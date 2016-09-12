@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "PathPoint.h"
 //forwards : 
 #include "Scene.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "ResourcePointer.h"
 #include "Factories.h"
 

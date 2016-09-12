@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Animation.h"
 
 #include "Application.h"

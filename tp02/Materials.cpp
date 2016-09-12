@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Materials.h"
 #include "Factories.h"//forward
 #include "EditorGUI.h"
@@ -6,7 +8,7 @@
 Material::Material(GLuint _glProgram) 
 	: glProgram(_glProgram)
 {
-
+	assert(glProgram > 0);
 }
 
 Material::Material(ResourcePtr<ShaderProgram> _glProgram) 

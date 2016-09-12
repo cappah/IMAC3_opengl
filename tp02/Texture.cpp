@@ -1,11 +1,14 @@
+#include "stdafx.h"
+
 #include "Texture.h"
+#include "Utils.h"
+#include "ErrorHandler.h"
 
 #include "jsoncpp/json/json.h"
 
 
 Texture::Texture() 
 	: glId(0)
-	, path("")
 	, internalFormat(GL_RGB)
 	, format(GL_RGB)
 	, type(GL_UNSIGNED_BYTE)
@@ -25,7 +28,6 @@ Texture::Texture()
 
 Texture::Texture(int width, int height) 
 	: glId(0)
-	, path("")
 	, internalFormat(GL_RGB)
 	, format(GL_RGB)
 	, type(GL_UNSIGNED_BYTE)
@@ -48,7 +50,6 @@ Texture::Texture(int width, int height)
 
 Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) 
 	: glId(0)
-	, path("")
 	, internalFormat(GL_RGB)
 	, format(GL_RGB)
 	, type(GL_UNSIGNED_BYTE)
@@ -68,7 +69,6 @@ Texture::Texture(unsigned char * _pixels, int width, int height, int _comp)
 
 Texture::Texture(char r, char g, char b) 
 	: glId(0)
-	, path("")
 	, internalFormat(GL_RGB)
 	, format(GL_RGB)
 	, type(GL_UNSIGNED_BYTE)
@@ -90,8 +90,8 @@ Texture::Texture(char r, char g, char b)
 
 
 Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel) 
-	: glId(0)
-	, path(_path)
+	: Resource(_path)
+	, glId(0)
 	, generateMipMap(true)
 	, m_textureUseCounts(0)
 	, textureWrapping_u(GL_REPEAT)
@@ -104,14 +104,14 @@ Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 		internalFormat = GL_RGB;
 		format = GL_RGB;
 		type = GL_UNSIGNED_BYTE;
-		pixels = stbi_load(path.c_str(), &w, &h, &comp, 3);
+		pixels = stbi_load(_path.c_str(), &w, &h, &comp, 3);
 	}
 	else
 	{
 		internalFormat = GL_RGBA;
 		format = GL_RGBA;
 		type = GL_UNSIGNED_BYTE;
-		pixels = stbi_load(path.c_str(), &w, &h, &comp, 4);
+		pixels = stbi_load(_path.c_str(), &w, &h, &comp, 4);
 	}
 }
 
@@ -119,7 +119,6 @@ Texture::Texture(int width, int height, const glm::vec4 & color)
 	: w(width)
 	, h(height)
 	, glId(0)
-	, path("")
 	, internalFormat(GL_RGBA)
 	, format(GL_RGBA)
 	, type(GL_UNSIGNED_BYTE)
@@ -145,7 +144,6 @@ Texture::Texture(int width, int height, const glm::vec3 & color)
 	: w(width)
 	, h(height)
 	, glId(0)
-	, path("")
 	, internalFormat(GL_RGB)
 	, format(GL_RGB)
 	, type(GL_UNSIGNED_BYTE)
@@ -212,6 +210,9 @@ void Texture::initGL()
 		}
 		else
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 }
 

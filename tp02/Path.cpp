@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Path.h"
 
 Path::Path(int pathId): m_pathId(pathId), m_mesh(GL_LINE_STRIP, Mesh::Vbo_usage::USE_VERTICES, 3, GL_STREAM_DRAW)

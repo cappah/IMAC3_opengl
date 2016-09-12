@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Collider.h"
 //forwards : 
 #include "Ray.h"

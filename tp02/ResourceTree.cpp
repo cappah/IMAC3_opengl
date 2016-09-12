@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include  <fstream>
 
 #include "ResourceTree.h"
@@ -66,8 +68,9 @@
 //	//TODO
 //}
 
-ResourceTreeWindow::ResourceTreeWindow()
-	: m_folderWeRightClicOn(nullptr)
+ResourceTreeView::ResourceTreeView(ResourceTree* model)
+	: m_model(model)
+	, m_folderWeRightClicOn(nullptr)
 {
 	
 	//std::vector<const std::string&> resourcePath;
@@ -82,24 +85,26 @@ ResourceTreeWindow::ResourceTreeWindow()
 	//	}
 	//}
 
-	addSubFolder("toto");
-	getSubFolder("toto").addFile(ResourceFile("FileToto01", ResourceType::MESH));
-	getSubFolder("toto").addFile(ResourceFile("FileToto02", ResourceType::MESH));
-	getSubFolder("toto").addFile(ResourceFile("FileToto03", ResourceType::MESH));
+	assert(model != nullptr);
 
-	addSubFolder("tutu");
-	getSubFolder("tutu").addFile(ResourceFile("FileTutu01", ResourceType::MESH));
-	getSubFolder("tutu").addFile(ResourceFile("FileTutu02", ResourceType::MESH));
+	m_model->addSubFolder("toto");
+	m_model->getSubFolder("toto").addFile(ResourceFile("FileToto01", ResourceType::MESH));
+	m_model->getSubFolder("toto").addFile(ResourceFile("FileToto02", ResourceType::MESH));
+	m_model->getSubFolder("toto").addFile(ResourceFile("FileToto03", ResourceType::MESH));
 
-	addFile(ResourceFile("File01", ResourceType::MESH));
+	m_model->addSubFolder("tutu");
+	m_model->getSubFolder("tutu").addFile(ResourceFile("FileTutu01", ResourceType::MESH));
+	m_model->getSubFolder("tutu").addFile(ResourceFile("FileTutu02", ResourceType::MESH));
+
+	m_model->addFile(ResourceFile("File01", ResourceType::MESH));
 }
 
-ResourceTreeWindow::~ResourceTreeWindow()
+ResourceTreeView::~ResourceTreeView()
 {
 
 }
 
-void ResourceTreeWindow::displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay)
+void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay)
 {
 
 	int colorStyleModifierCount = 0;
@@ -121,7 +126,7 @@ void ResourceTreeWindow::displayFoldersRecusivly(ResourceFolder* parentFolder, s
 			//current folder drag and drop
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDragging(0) && ImGui::IsMouseDown(0))
 			{
-				DragAndDropManager::beginDragAndDrop(std::make_shared<ResourceFolderDragAndDropOperation>(&itFolder, parentFolder, this));
+				DragAndDropManager::beginDragAndDrop(std::make_shared<ResourceFolderDragAndDropOperation>(&itFolder, parentFolder, m_model));
 			}
 
 			displayFoldersRecusivly(&itFolder, itFolder.getSubFolders(), itFolder.getFiles());
@@ -251,7 +256,7 @@ void ResourceTreeWindow::displayFoldersRecusivly(ResourceFolder* parentFolder, s
 }
 
 
-void ResourceTreeWindow::popUpToChooseMaterial()
+void ResourceTreeView::popUpToChooseMaterial()
 {
 	for (auto& it = MaterialFactory::instance().begin(); it != MaterialFactory::instance().end(); it++)
 	{
@@ -269,7 +274,7 @@ void ResourceTreeWindow::popUpToChooseMaterial()
 }
 
 
-void ResourceTreeWindow::popUpToAddMaterial()
+void ResourceTreeView::popUpToAddMaterial()
 {
 	assert(!m_chooseMaterialName.empty());
 
@@ -302,7 +307,7 @@ void ResourceTreeWindow::popUpToAddMaterial()
 }
 
 
-void ResourceTreeWindow::popUpToAddCubeTexture()
+void ResourceTreeView::popUpToAddCubeTexture()
 {
 	m_uiString.resize(100);
 	ImGui::InputText("##fileName", &m_uiString[0], 100);
@@ -332,10 +337,10 @@ void ResourceTreeWindow::popUpToAddCubeTexture()
 	ImGui::EndPopup();
 }
 
-void ResourceTreeWindow::drawUI()
+void ResourceTreeView::drawUI()
 {
 	ImGui::Begin("ResourceTree", nullptr);
-	displayFoldersRecusivly(this, m_subFoldersContainer, m_filesContainer);
+	displayFoldersRecusivly(m_model, m_model->getSubFolders(), m_model->getFiles());
 	ImGui::End();
 }
 //

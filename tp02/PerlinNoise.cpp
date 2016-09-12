@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "PerlinNoise.h"
 
 NoiseGenerator::NoiseGenerator()

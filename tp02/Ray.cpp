@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Ray.h"
 //forwards : 
 #include "Terrain.h"

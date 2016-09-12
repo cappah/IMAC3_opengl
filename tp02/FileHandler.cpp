@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include <sstream>
 
 #include "dirent.h"
@@ -114,9 +116,9 @@ void Path::format()
 	}
 
 	foundPos = m_data.find_last_of('/');
-	if (foundPos == std::string::npos)
+	if (foundPos != m_data.size() - 1)
 	{
-		m_data.push_back('/');
+		m_data.push_back('/'); //%NOCOMMIT%
 	}
 }
 
@@ -147,8 +149,6 @@ CompletePath::CompletePath()
 	, m_data("")
 {
 	format();
-
-	assert(hasValidExtention() && hasValidFileName());
 }
 
 CompletePath::CompletePath(const std::string & completePath, const std::string* subFileName)
@@ -559,7 +559,7 @@ std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& p
 		filename = pathAndFileName;
 	}
 	else {
-		path = pathAndFileName.substr(0, pathLength);
+		path = pathAndFileName.substr(0, pathLength + 1);
 		filename = pathAndFileName.substr(pathLength + 1);
 	}
 	return pathLength;

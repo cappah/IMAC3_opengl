@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Project.h"
 //forwards : 
 #include "DebugDrawer.h"
@@ -86,11 +88,7 @@ void Project::clear()
 		delete m_renderer;
 
 	//clear all resources : 
-	getMeshFactory().clear();
-	getMaterialFactory().clear();
-	getTextureFactory().clear();
-	getCubeTextureFactory().clear();
-	getProgramFactory().clear();
+	clearAllResourceFactories();
 }
 
 void Project::open(const std::string & projectName, const FileHandler::Path & projectPath)
@@ -920,6 +918,11 @@ void Project::initDefaultAssets()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	*/
+
+
+	//Important : We init all default resources
+	initAllResourceFactories();
+
 
 	Texture* diffuseTexture = new Texture(FileHandler::CompletePath("textures/spnza_bricks_a_diff.tga"));
 	Texture* specularTexture = new Texture(FileHandler::CompletePath("textures/spnza_bricks_a_spec.tga"));

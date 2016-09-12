@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Gizmo.h"
 #include "Editor.h"
 

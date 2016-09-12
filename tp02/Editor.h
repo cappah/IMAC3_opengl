@@ -134,7 +134,10 @@ private:
 	bool m_isPlaying;
 	bool m_isOwningPlayer;
 
-	//windows
+	//models
+	std::shared_ptr<ResourceTree> m_resourceTree;
+
+	//windows (views)
 	std::vector<std::shared_ptr<EditorWindow>> m_editorWindows;
 
 public:

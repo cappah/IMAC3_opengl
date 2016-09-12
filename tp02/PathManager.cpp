@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "PathManager.h"
 #include "Application.h"
 #include "Factories.h"

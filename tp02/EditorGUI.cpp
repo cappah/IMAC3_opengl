@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "EditorGUI.h"
 #include "ResourceTree.h"
 
@@ -63,7 +65,7 @@ bool ResourceDragAndDropOperation::canDropInto(void* data)
 
 //////////////////////
 
-ResourceFolderDragAndDropOperation::ResourceFolderDragAndDropOperation(const ResourceFolder* folder, ResourceFolder* parentFolder, ResourceTreeWindow* resourceTree)
+ResourceFolderDragAndDropOperation::ResourceFolderDragAndDropOperation(const ResourceFolder* folder, ResourceFolder* parentFolder, ResourceTree* resourceTree)
 	: DragAndDropOperation(EditorDragAndDropType::ResourceFolderDragAndDrop, EditorDropContext::DropIntoFileOrFolder)
 	, m_resourceTree(resourceTree)
 	, m_parentFolder(parentFolder)

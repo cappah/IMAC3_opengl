@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "WindZone.h"
 #include "Scene.h"
 #include "Entity.h"

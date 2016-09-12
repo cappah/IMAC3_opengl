@@ -13,7 +13,7 @@
 
 class ResourceFolder;
 class ResourceFile;
-class ResourceTreeWindow;
+class ResourceTree;
 
 enum EditorDragAndDropType
 {
@@ -52,11 +52,11 @@ public:
 class ResourceFolderDragAndDropOperation : public DragAndDropOperation
 {
 private:
-	ResourceTreeWindow* m_resourceTree;
+	ResourceTree* m_resourceTree;
 	ResourceFolder* m_parentFolder;
 	const ResourceFolder* m_folderDragged;
 public:
-	ResourceFolderDragAndDropOperation(const ResourceFolder* folder, ResourceFolder* parentFolder, ResourceTreeWindow* resourceTree);
+	ResourceFolderDragAndDropOperation(const ResourceFolder* folder, ResourceFolder* parentFolder, ResourceTree* resourceTree);
 	virtual void dragOperation() override;
 	virtual void dropOperation(void* customData, int dropContext) override;
 	virtual void cancelOperation() override;

@@ -222,19 +222,30 @@ public:
 	}
 };
 
-class ResourceTreeWindow : public EditorWindow, public ResourceFolder
+class ResourceTree : public ResourceFolder
+{
+public :
+	ResourceTree()
+	{}
+	~ResourceTree()
+	{}
+};
+
+class ResourceTreeView : public EditorWindow
 {
 //private:
 //	std::vector<ResourceFolder> m_resourceFolders;
 //	std::vector<ResourceFile> m_resourceFiles;
 private:
+	ResourceTree* m_model;
+
 	std::string m_uiString;
 	ResourceFolder* m_folderWeRightClicOn;
 	std::string m_chooseMaterialName;
 
 public:
-	ResourceTreeWindow();
-	~ResourceTreeWindow();
+	ResourceTreeView(ResourceTree* model);
+	~ResourceTreeView();
 	virtual void drawUI() override;
 	/*void addFolder(const std::string& folderName);
 	void removeFolder(const std::string& folderName);

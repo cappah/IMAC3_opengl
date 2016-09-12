@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Terrain.h"
 //forwards
 #include "Application.h"

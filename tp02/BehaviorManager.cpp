@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "BehaviorManager.h"
 //forwards :
 #include "Entity.h"

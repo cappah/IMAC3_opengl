@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Skybox.h"
 //forwards :
 #include "Factories.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Rigidbody.h"
 //forwards : 
 #include "Scene.h"

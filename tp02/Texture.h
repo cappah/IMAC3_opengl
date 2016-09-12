@@ -14,8 +14,6 @@ struct Texture : public Resource
 {
 	std::string name;
 
-	FileHandler::CompletePath path;
-
 	int w;
 	int h;
 	int comp;

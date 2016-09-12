@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "PhysicManager.h"
 //forwards :
 #include "Application.h"

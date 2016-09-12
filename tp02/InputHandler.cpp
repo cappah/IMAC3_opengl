@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "InputHandler.h"
 
 GLFWwindow* InputHandler::m_window = nullptr;

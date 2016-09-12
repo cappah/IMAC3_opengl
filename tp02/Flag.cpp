@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Flag.h"
 //forwards : 
 #include "Scene.h"

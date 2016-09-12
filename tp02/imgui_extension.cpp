@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "imgui_extension.h"
 //forwards : 
 #include "dirent.h"

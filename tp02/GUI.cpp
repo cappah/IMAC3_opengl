@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "GUI.h"
 
 bool DragAndDropManager::beginDragAndDrop(std::shared_ptr<DragAndDropOperation> operation)

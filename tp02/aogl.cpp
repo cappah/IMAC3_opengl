@@ -1,6 +1,9 @@
 #ifdef _MSC_VER
 #define _USE_MATH_DEFINES
 #endif
+
+#include "stdafx.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,12 +62,12 @@
 #else
 #ifdef _MSC_VER
 #define debug_print(FORMAT, ...) \
-    fprintf(stderr, "%s() in %s, line %i: " FORMAT "\n", \
-        __FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
+	fprintf(stderr, "%s() in %s, line %i: " FORMAT "\n", \
+		__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 #else
 #define debug_print(FORMAT, ...) \
-    fprintf(stderr, "%s() in %s, line %i: " FORMAT "\n", \
-        __func__, __FILE__, __LINE__, __VA_ARGS__)
+	fprintf(stderr, "%s() in %s, line %i: " FORMAT "\n", \
+		__func__, __FILE__, __LINE__, __VA_ARGS__)
 #endif
 #endif
 
@@ -105,76 +108,76 @@ int main(int argc, char** argv)
 int main( int argc, char **argv )
 {
 
-    //int width = 1024, height= 768;
+	//int width = 1024, height= 768;
 	int width = 1024, height = 680;
-    float widthf = (float) width, heightf = (float) height;
-    double t;
-    float fps = 0.f;
+	float widthf = (float) width, heightf = (float) height;
+	double t;
+	float fps = 0.f;
 
-    // Initialise GLFW
-    if( !glfwInit() )
-    {
-        fprintf( stderr, "Failed to initialize GLFW\n" );
-        exit( EXIT_FAILURE );
-    }
-    glfwInit();
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
-    glfwWindowHint(GLFW_DECORATED, GL_TRUE);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	// Initialise GLFW
+	if( !glfwInit() )
+	{
+		fprintf( stderr, "Failed to initialize GLFW\n" );
+		exit( EXIT_FAILURE );
+	}
+	glfwInit();
+	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+	glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
+	glfwWindowHint(GLFW_DECORATED, GL_TRUE);
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
 #if defined(__APPLE__)
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    int const DPI = 2; // For retina screens only
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	int const DPI = 2; // For retina screens only
 #else
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-    int const DPI = 1;
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	int const DPI = 1;
 # endif
 
-    // Open a window and create its OpenGL context
-    GLFWwindow * window = glfwCreateWindow(width/DPI, height/DPI, "aogl", 0, 0);
-    if( ! window )
-    {
-        fprintf( stderr, "Failed to open GLFW window\n" );
-        glfwTerminate();
-        exit( EXIT_FAILURE );
-    }
-    glfwMakeContextCurrent(window);
+	// Open a window and create its OpenGL context
+	GLFWwindow * window = glfwCreateWindow(width/DPI, height/DPI, "aogl", 0, 0);
+	if( ! window )
+	{
+		fprintf( stderr, "Failed to open GLFW window\n" );
+		glfwTerminate();
+		exit( EXIT_FAILURE );
+	}
+	glfwMakeContextCurrent(window);
 
-    // Init glew
-    glewExperimental = GL_TRUE;
-    GLenum err = glewInit();
-    if (GLEW_OK != err)
-    {
-          //Problem: glewInit failed, something is seriously wrong.
-          fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-          exit( EXIT_FAILURE );
-    }
+	// Init glew
+	glewExperimental = GL_TRUE;
+	GLenum err = glewInit();
+	if (GLEW_OK != err)
+	{
+		  //Problem: glewInit failed, something is seriously wrong.
+		  fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+		  exit( EXIT_FAILURE );
+	}
 
-    // Ensure we can capture the escape key being pressed below
-    glfwSetInputMode( window, GLFW_STICKY_KEYS, GL_TRUE );
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode( window, GLFW_STICKY_KEYS, GL_TRUE );
 
-    // Enable vertical sync (on cards that support it)
-    glfwSwapInterval( 1 );
-    GLenum glerr = GL_NO_ERROR;
-    glerr = glGetError();
+	// Enable vertical sync (on cards that support it)
+	glfwSwapInterval( 1 );
+	GLenum glerr = GL_NO_ERROR;
+	glerr = glGetError();
 
-    ImGui_ImplGlfwGL3_Init(window, true);
+	ImGui_ImplGlfwGL3_Init(window, true);
 
 	//set the resize window callback 
 	glfwSetWindowSizeCallback(window, window_size_callback);
 
 
-    // Init viewer structures
-    //Camera camera;
-    //camera_defaults(camera);
-    //GUIStates guiStates;
-    //init_gui_states(guiStates);
+	// Init viewer structures
+	//Camera camera;
+	//camera_defaults(camera);
+	//GUIStates guiStates;
+	//init_gui_states(guiStates);
 
 
 	///////////////////// SET APPLICATION GLOBAL PARAMETERS /////////////////////
@@ -599,10 +602,10 @@ int main( int argc, char **argv )
 	float fixedDeltaTime = 1.f / 60.f;
 
 	//main loop
-    do
-    {
-        t = glfwGetTime();
-        ImGui_ImplGlfwGL3_NewFrame();
+	do
+	{
+		t = glfwGetTime();
+		ImGui_ImplGlfwGL3_NewFrame();
 
 		//Physics : 
 		scene.updatePhysic(fixedDeltaTime);
@@ -643,40 +646,40 @@ int main( int argc, char **argv )
 
 #if 1
 		
-        //ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
-        //ImGui::Begin("aogl");
-        //ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
-        //lightManager.drawUI();
-        //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        //ImGui::End();
+		//ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+		//ImGui::Begin("aogl");
+		//ImGui::SliderFloat("Material Specular Power", &(brickMaterial.specularPower), 0.0f, 100.f);
+		//lightManager.drawUI();
+		//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		//ImGui::End();
 		
 		
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI(scene);
 
-        ImGui::Render();
+		ImGui::Render();
 
-        glDisable(GL_BLEND);
+		glDisable(GL_BLEND);
 #endif
 
 
-        // Check for errors
-        checkError("End loop");
+		// Check for errors
+		checkError("End loop");
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 
-        double newTime = glfwGetTime();
+		double newTime = glfwGetTime();
 		deltaTime = newTime - t;
-        fps = 1.f/ (newTime - t);
-    } // Check if the ESC key was pressed
-    while( glfwGetKey( window, GLFW_KEY_ESCAPE ) != GLFW_PRESS );
+		fps = 1.f/ (newTime - t);
+	} // Check if the ESC key was pressed
+	while( glfwGetKey( window, GLFW_KEY_ESCAPE ) != GLFW_PRESS );
 
-    // Close OpenGL window and terminate GLFW
-    ImGui_ImplGlfwGL3_Shutdown();
-    glfwTerminate();
+	// Close OpenGL window and terminate GLFW
+	ImGui_ImplGlfwGL3_Shutdown();
+	glfwTerminate();
 
-    exit( EXIT_SUCCESS );
+	exit( EXIT_SUCCESS );
 }
 
 */

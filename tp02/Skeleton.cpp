@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Skeleton.h"
 //forwards : 
 #include "Utils.h"

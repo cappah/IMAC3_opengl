@@ -29,6 +29,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -93,18 +94,18 @@
     <ClCompile>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\include;lib\glfw\include;src;common;lib;lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\jsoncpp\json;$(ProjectDir)lib\include;lib\glfw\include;src;common;lib;lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ProgramDataBaseFileName>$(OutDir)aogl_d.pdb</ProgramDataBaseFileName>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>GLEW_STATIC;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -113,10 +114,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimpd.lib;glu32.lib;opengl32.lib;gdi32.lib;winmm.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimpd.lib;glu32.lib;opengl32.lib;gdi32.lib;winmm.lib;user32.lib;jsoncpp.lib;fileHandling.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)aogl_d.exe</OutputFile>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)bin\debug;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -234,6 +235,7 @@
     <ClCompile Include="Coroutine.cpp" />
     <ClCompile Include="CSpline.cpp" />
     <ClCompile Include="DebugDrawer.cpp" />
+    <ClCompile Include="DirectoryCheck.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="EditorGUI.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -244,7 +246,6 @@
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="imgui_extension.cpp" />
     <ClCompile Include="InputHandler.cpp" />
-    <ClCompile Include="lib\jsoncpp\jsoncpp.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Lights.cpp" />
     <ClCompile Include="Link.cpp" />
@@ -273,6 +274,7 @@
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SplineAnimation.cpp" />
+    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TestBehavior.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -320,10 +322,12 @@
     <ClInclude Include="Coroutine.h" />
     <ClInclude Include="CSpline.h" />
     <ClInclude Include="DebugDrawer.h" />
+    <ClInclude Include="DirectoryCheck.h" />
     <ClInclude Include="dirent.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorGUI.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="Factories.h" />
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="Flag.h" />
@@ -333,8 +337,6 @@
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="ISerializable.h" />
     <ClInclude Include="ISingleton.h" />
-    <ClInclude Include="lib\jsoncpp\json\json-forwards.h" />
-    <ClInclude Include="lib\jsoncpp\json\json.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Link.h" />
@@ -365,6 +367,7 @@
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SplineAnimation.h" />
+    <ClInclude Include="stdafx.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TestBehavior.h" />
     <ClInclude Include="Texture.h" />

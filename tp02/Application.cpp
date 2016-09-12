@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Application.h"
 
 void Application::setActiveWindow(GLFWwindow* activeWindow)

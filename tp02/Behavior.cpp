@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Behavior.h"
 //forwards : 
 #include "BehaviorFactory.h"

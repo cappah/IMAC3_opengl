@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Billboard.h"
 //forwards : 
 #include "Factories.h"

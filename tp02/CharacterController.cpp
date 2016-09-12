@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "CharacterController.h"
 //forwards :
 #include "Scene.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Scene.h"
 //forwards :
 #include "OctreeDrawer.h"
