@@ -19,6 +19,13 @@ Path::Path(const std::string& path)
 	format();
 }
 
+Path::Path(const Path & path, const std::string & appendFolder)
+{
+	m_data = path.toString() + "/" + appendFolder;
+
+	format();
+}
+
 Path::Path(const CompletePath& completePath)
 	:Path(completePath.getPath())
 {
@@ -55,9 +62,17 @@ void Path::pop_back()
 {
 	size_t cutIdx = m_data.find_last_of('/', m_data.size() - 1);
 	m_data = m_data.substr(0, cutIdx + 1);
+	format();
 }
 
-const std::string& Path::operator[](size_t idx)
+void Path::pop_front()
+{
+	size_t cutIdx = m_data.find_first_of('/', m_data.size() - 1);
+	m_data = m_data.substr(cutIdx + 1);
+	format();
+}
+
+const std::string& Path::operator[](size_t idx) const
 {
 	size_t cutPos01 = m_data.find_first_of("/\\");
 	size_t cutPos02 = m_data.find_first_of("/\\", cutPos01 + 1);
@@ -71,7 +86,7 @@ const std::string& Path::operator[](size_t idx)
 	return m_data.substr(cutPos01 + 1, (cutPos02 - cutPos01) - 1);
 }
 
-size_t Path::size()
+size_t Path::size() const
 {
 	size_t size = 0;
 	size_t cutPos = m_data.find_first_of("/\\");
@@ -384,9 +399,9 @@ FileType getFileTypeFromExtention(const std::string& extention)
 	}
 }
 
-std::vector<std::string> getAllDirNames(const Path& path)
+void getAllDirNames(const Path& path, std::vector<std::string>& outDirNames)
 {
-	std::vector<std::string> dirNames;
+	assert(outDirNames.size() == 0);
 
 	DIR *dir;
 	struct dirent *ent;
@@ -396,7 +411,7 @@ std::vector<std::string> getAllDirNames(const Path& path)
 		while ((ent = readdir(dir)) != NULL)
 		{
 			if (ent->d_type == DT_DIR)
-				dirNames.push_back(ent->d_name);
+				outDirNames.push_back(ent->d_name);
 		}
 		closedir(dir);
 	}
@@ -404,8 +419,28 @@ std::vector<std::string> getAllDirNames(const Path& path)
 		//could not open directory
 		std::cout << "error, can't open directory at path : " << path.toString() << std::endl;
 	}
+}
 
-	return dirNames;
+void getAllFileNames(const Path & path, std::vector<std::string>& outFileNames)
+{
+	assert(outFileNames.size() == 0);
+
+	DIR *dir;
+	struct dirent *ent;
+
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if (ent->d_type != DT_DIR)
+				outFileNames.push_back(ent->d_name);
+		}
+		closedir(dir);
+	}
+	else {
+		//could not open directory
+		std::cout << "error, can't open directory at path : " << path.toString() << std::endl;
+	}
 }
 
 std::vector<std::string> getAllFileAndDirNames(const Path& path)

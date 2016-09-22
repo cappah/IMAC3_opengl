@@ -85,12 +85,10 @@ void ResourceFolderDragAndDropOperation::dropOperation(void* customData, int dro
 
 	if (!resourceFolder->hasSubFolder(m_folderDragged->getName()) && resourceFolder->getName() != m_folderDragged->getName())
 	{
-		const std::string newFolderPath(resourceFolder->getPath() + resourceFolder->getName() + "/");
-		resourceFolder->addSubFolder(ResourceFolder(*m_folderDragged, newFolderPath));
 		if (m_parentFolder != nullptr)
-			m_parentFolder->removeSubFolder(m_folderDragged->getName());
+			m_parentFolder->moveSubFolderToNewLocation(m_folderDragged->getName(), *resourceFolder);
 		else
-			m_resourceTree->removeSubFolder(m_folderDragged->getName());
+			m_resourceTree->moveSubFolderToNewLocation(m_folderDragged->getName(), *resourceFolder);
 		//%NOCOMMIT% : TODO : transvaser les fichiers et sous dossier dans le dossier cible
 
 		m_parentFolder = nullptr;

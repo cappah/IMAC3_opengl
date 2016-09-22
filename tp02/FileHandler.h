@@ -38,19 +38,21 @@ private:
 public:
 	Path();
 	Path(const std::string& path);
+	Path(const Path& path, const std::string& appendFolder);
 	Path(const CompletePath& completePath);
 
 	const std::string& toString() const;
 	const char* c_str() const { return toString().c_str(); }
 	//operator std::string() const { return toString(); }
 
-	const std::string& operator[](size_t idx);
-	size_t size();
+	const std::string& operator[](size_t idx) const;
+	size_t size() const;
 	size_t getPathFolderNames(std::vector<std::string>& folderNames) const;
 
 	void push_back(const std::string& folderName);
 	void push_back(const Path& subPath);
 	void pop_back();
+	void pop_front();
 	void format();
 	bool empty() const;
 };
@@ -115,7 +117,9 @@ size_t getFileNameAndExtentionFromExtendedFilename(const std::string& extendedFi
 FileType getFileTypeFromExtention(const std::string& extention);
 
 //fill a vector with all directories's names in the directory at given path.
-std::vector<std::string> getAllDirNames(const Path& path);
+void getAllDirNames(const Path& path, std::vector<std::string>& outDirNames);
+//fill a vector with all file's names in the directory at given path.
+void getAllFileNames(const Path& path, std::vector<std::string>& outFileNames);
 //fill a vector with all files' and directories' names in the directory at given path.
 std::vector<std::string> getAllFileAndDirNames(const Path& path);
 

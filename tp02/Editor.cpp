@@ -287,7 +287,7 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	m_skeletalAnimationFactoryVisible = false;
 
 	//models : 
-	m_resourceTree = std::make_shared<ResourceTree>();
+	m_resourceTree = std::make_shared<ResourceTree>(Project::getAssetsFolderPath());
 
 	//Open default windows : 
 	m_editorWindows.push_back(std::make_shared<ResourceTreeView>(m_resourceTree.get())); //ResourceWindow
@@ -775,7 +775,8 @@ void Editor::displayModals(Project& project)
 			std::string loadPath = ("save/" + std::string(m_loadPath));
 
 			//Verify the validity of path :
-			std::vector<std::string> dirNames = FileHandler::getAllDirNames(FileHandler::Path("save/"));
+			std::vector<std::string> dirNames;
+			FileHandler::getAllDirNames(FileHandler::Path("save/"), dirNames);
 			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_loadPath)) != dirNames.end());
 
 			if (m_loadPath != "" && dirAlreadyExists)
@@ -805,7 +806,8 @@ void Editor::displayModals(Project& project)
 			std::string savePath = ("save/" + std::string(m_savePath));
 
 			//Verify the validity of path :
-			std::vector<std::string> dirNames = FileHandler::getAllDirNames(FileHandler::Path("save/"));
+			std::vector<std::string> dirNames;
+			FileHandler::getAllDirNames(FileHandler::Path("save/"), dirNames);
 			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_savePath)) != dirNames.end());
 
 			if (m_savePath != "" && !dirAlreadyExists)

@@ -7,6 +7,67 @@
 #include "Factories.h"
 
 
+/////////// RESSOURCE FOLDER /////////////////
+
+void ResourceFolder::fillDatasFromExplorerFolder(const FileHandler::Path& folderPath)
+{
+	std::vector<std::string> dirNames;
+	FileHandler::getAllDirNames(folderPath, dirNames);
+
+	for (auto& dirName : dirNames)
+	{
+		int subFolderIdx = 0;
+		if (addSubFolder(dirName, &subFolderIdx))
+		{
+			m_subFoldersContainer[subFolderIdx].fillDatasFromExplorerFolder(FileHandler::Path(folderPath, dirName));
+		}
+	}
+
+	std::vector<std::string> fileNames;
+	FileHandler::getAllFileNames(folderPath, fileNames);
+
+	for (auto& fileNameAndExtention : fileNames)
+	{
+		addFile( fileNameAndExtention );
+	}
+}
+
+bool ResourceFolder::moveSubFolderToNewLocation(const std::string& subFolderName, ResourceFolder& newLocation)
+{
+	ResourceFolder& subFolder = getSubFolder(subFolderName);
+
+	subFolder.moveTo(newLocation);
+
+	removeSubFolder(subFolderName);
+
+	return true;
+}
+
+bool ResourceFolder::moveTo(ResourceFolder& newLocation)
+{
+	int newLocationIdx = 0;
+	newLocation.addSubFolder(m_name, &newLocationIdx);
+
+	for (auto& subFolder : getSubFolders())
+	{
+		subFolder.moveTo(newLocation.getSubFolder(newLocationIdx));
+	}
+
+	removeAllFiles();
+	removeAllSubFolders(false);
+
+	return true;
+}
+
+/////////// RESSOURCE TREE /////////////////
+
+ResourceTree::ResourceTree(const FileHandler::Path& assetResourcePath)
+{
+	fillDatasFromExplorerFolder(assetResourcePath);
+}
+
+/////////// RESOURCE TREE VIEW /////////////
+
 //
 //void ResourceTreeWindow::save() const
 //{
@@ -62,12 +123,6 @@
 //	loadRecursivly(root);
 //}
 
-//TODO
-//void ResourceTreeWindow::GetDatasFromExplorer()
-//{
-//	//TODO
-//}
-
 ResourceTreeView::ResourceTreeView(ResourceTree* model)
 	: m_model(model)
 	, m_folderWeRightClicOn(nullptr)
@@ -87,7 +142,7 @@ ResourceTreeView::ResourceTreeView(ResourceTree* model)
 
 	assert(model != nullptr);
 
-	m_model->addSubFolder("toto");
+	/*m_model->addSubFolder("toto");
 	m_model->getSubFolder("toto").addFile(ResourceFile("FileToto01", ResourceType::MESH));
 	m_model->getSubFolder("toto").addFile(ResourceFile("FileToto02", ResourceType::MESH));
 	m_model->getSubFolder("toto").addFile(ResourceFile("FileToto03", ResourceType::MESH));
@@ -96,7 +151,7 @@ ResourceTreeView::ResourceTreeView(ResourceTree* model)
 	m_model->getSubFolder("tutu").addFile(ResourceFile("FileTutu01", ResourceType::MESH));
 	m_model->getSubFolder("tutu").addFile(ResourceFile("FileTutu02", ResourceType::MESH));
 
-	m_model->addFile(ResourceFile("File01", ResourceType::MESH));
+	m_model->addFile(ResourceFile("File01", ResourceType::MESH));*/
 }
 
 ResourceTreeView::~ResourceTreeView()

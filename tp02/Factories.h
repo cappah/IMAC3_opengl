@@ -319,6 +319,23 @@ ResourceType getResourceType<Material>();
 template<>
 ResourceType getResourceType<ShaderProgram>();
 
+ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
+{
+	switch (fileType)
+	{
+	case FileHandler::NONE:
+		return ResourceType::NONE;
+	case FileHandler::IMAGE:
+		return ResourceType::TEXTURE;
+	case FileHandler::MESH:
+		return ResourceType::MESH;
+	case FileHandler::SOUND:
+		return ResourceType::NONE; //TODO sound
+	default:
+		break;
+	}
+}
+
 
 //
 //
