@@ -96,8 +96,9 @@ void Project::open(const std::string & projectName, const FileHandler::Path & pr
 	clear(); //clear the current project (scenes + resources + systems)
 	initProject(); //init systems and resources
 
-	m_projectPath = FileHandler::Path(projectPath.toString() + projectName);
-	m_assetFolderPath = FileHandler::Path(projectPath.toString() + "assets/");
+	m_projectPath = FileHandler::Path(projectPath.toString() + "/" + projectName);
+	m_assetFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/assets/");
+	assert(FileHandler::directoryExists(m_assetFolderPath));
 
 	//load the project.
 	if(FileHandler::directoryExists(m_projectPath))

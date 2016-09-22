@@ -130,6 +130,18 @@ void Path::format()
 		foundPos = m_data.find_first_of('\\', foundPos + 1);
 	}
 
+	foundPos = m_data.find("//");
+	while (foundPos != std::string::npos)
+	{
+		m_data[foundPos] = '/';
+		for (int i = foundPos + 1; i < m_data.size() - 1; i++)
+		{
+			m_data[i] = m_data[i + 1];
+		}
+		m_data.pop_back();
+		foundPos = m_data.find("//", foundPos + 1);
+	}
+
 	foundPos = m_data.find_last_of('/');
 	if (foundPos != m_data.size() - 1)
 	{
@@ -261,7 +273,7 @@ const std::string& CompletePath::getFilename() const
 	return m_fileName;
 }
 
-const std::string& CompletePath::getFilenameWithExtention() const
+std::string CompletePath::getFilenameWithExtention() const
 {
 	return m_fileName + m_extention;
 }
@@ -410,7 +422,7 @@ void getAllDirNames(const Path& path, std::vector<std::string>& outDirNames)
 	{
 		while ((ent = readdir(dir)) != NULL)
 		{
-			if (ent->d_type == DT_DIR)
+			if (ent->d_type == DT_DIR && std::strcmp("..", ent->d_name) != 0 && std::strcmp( ".", ent->d_name) != 0)
 				outDirNames.push_back(ent->d_name);
 		}
 		closedir(dir);
@@ -621,10 +633,12 @@ std::size_t splitPathFileNameExtention(const std::string& pathAndFileNameAndExte
 }
 
 
-void copyFilePastToNewFile(const CompletePath& from, const Path& to)
+void copyPastFile(const CompletePath& from, const Path& to)
 {
-	assert(!directoryExists(to));
+	assert(directoryExists(to));
 	assert(fileExists(from));
+	if (!directoryExists(to) || !fileExists(from))
+		return;
 
 	CompletePath toFile(to, from.getFilenameWithExtention());
 

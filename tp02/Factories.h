@@ -319,22 +319,21 @@ ResourceType getResourceType<Material>();
 template<>
 ResourceType getResourceType<ShaderProgram>();
 
-ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
+ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType);
+
+void addResourceToFactory(const FileHandler::CompletePath& completePath);
+
+///////////////// RESOURCE PTR /////////////////
+
+template<typename T>
+void ResourcePtr<T>::load(Json::Value & entityRoot)
 {
-	switch (fileType)
-	{
-	case FileHandler::NONE:
-		return ResourceType::NONE;
-	case FileHandler::IMAGE:
-		return ResourceType::TEXTURE;
-	case FileHandler::MESH:
-		return ResourceType::MESH;
-	case FileHandler::SOUND:
-		return ResourceType::NONE; //TODO sound
-	default:
-		break;
-	}
+	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
+	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();
+	m_rawPtr = m_isDefaultResource ? getResourceFactory<T>().getRawDefault(m_resourceHashKey) : getResourceFactory<T>().getRaw(m_resourceHashKey);
 }
+
+
 
 
 //

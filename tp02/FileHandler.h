@@ -85,7 +85,7 @@ public:
 
 	const Path& getPath() const;
 	const std::string& getFilename() const;
-	const std::string& getFilenameWithExtention() const;
+	std::string getFilenameWithExtention() const;
 	const std::string& getExtention() const;
 	bool hasValidFileName() const;
 	bool hasValidExtention() const;
@@ -136,7 +136,7 @@ std::vector<std::string> splitString(const std::string& s, char delim01, char de
 std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& path, std::string& filename);
 std::size_t splitPathFileNameExtention(const std::string& pathAndFileNameAndExtention, std::string& path, std::string& filename, std::string& extention);
 
-void copyFilePastToNewFile(const CompletePath &from, const Path &to);
+void copyPastFile(const CompletePath &from, const Path &to);
 void deleteFile(const CompletePath& completePath);
 
 }

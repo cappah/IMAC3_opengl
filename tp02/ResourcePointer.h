@@ -102,4 +102,4 @@ public:
 
 };
 
-#include "ResourcePtr.inl"
+//#include "ResourcePtr.inl"

@@ -105,7 +105,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ProgramDataBaseFileName>$(OutDir)aogl_d.pdb</ProgramDataBaseFileName>
-      <ShowIncludes>true</ShowIncludes>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>GLEW_STATIC;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

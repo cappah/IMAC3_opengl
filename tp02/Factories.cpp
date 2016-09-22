@@ -96,8 +96,6 @@ void ResourceFactory<Texture>::initDefaults()
 template<>
 void ResourceFactory<Material>::initDefaults()
 {
-	auto tmpTestResourcePtr = ResourceFactory<ShaderProgram>::instance().getDefault("defaultLit");
-	GLuint programId = tmpTestResourcePtr->id;
 
 	Material* newMat = new MaterialLit(ResourceFactory<ShaderProgram>::instance().getDefault("defaultLit")->id, ResourceFactory<Texture>::instance().getDefault("default"), ResourceFactory<Texture>::instance().getDefault("default"), ResourceFactory<Texture>::instance().getDefault("default"), 50);
 	newMat->name = "default";
@@ -379,20 +377,54 @@ ResourceType getResourceType<ShaderProgram>()
 
 
 
-
-
-///////////////// RESOURCE PTR /////////////////
-
-template<typename T>
-void ResourcePtr<T>::load(Json::Value & entityRoot)
+ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
 {
-	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
-	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();
-	m_rawPtr = m_isDefaultResource ? getResourceFactory<T>().getRawDefault(m_resourceHashKey) : getResourceFactory<T>().getRaw(m_resourceHashKey);
+	switch (fileType)
+	{
+	case FileHandler::NONE:
+		return ResourceType::NONE;
+	case FileHandler::IMAGE:
+		return ResourceType::TEXTURE;
+	case FileHandler::MESH:
+		return ResourceType::MESH;
+	case FileHandler::SOUND:
+		return ResourceType::NONE; //TODO sound
+	default:
+		break;
+	}
 }
 
+void addResourceToFactory(const FileHandler::CompletePath& completePath)
+{
+	ResourceType resourceType = getResourceTypeFromFileType(completePath.getFileType());
 
+	switch (resourceType)
+	{
+	case NONE:
+		break;
+	case PROGRAME:
+		getResourceFactory<ShaderProgram>().add(completePath);
+		break;
+	case TEXTURE:
+		getResourceFactory<Texture>().add(completePath);
+		break;
+	case CUBE_TEXTURE:
+		//getResourceFactory<CubeTexture>().add(completePath); //TODO
+		break;
+	case MESH:
+		getResourceFactory<Mesh>().add(completePath);
+		break;
+	case SKELETAL_ANIMATION:
+		//getResourceFactory<SkeletalAnimation>().add(completePath); //TODO
+		break;
+	case MATERIAL:
+		//getResourceFactory<Material>().add(completePath); //TODO
+		break;
+	default:
+		break;
+	}
 
+}
 
 
 

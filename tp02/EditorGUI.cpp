@@ -20,10 +20,13 @@ void ResourceDragAndDropOperation::dropOperation(void* customData, int dropConte
 
 		if (!resourceFolder->hasFile(m_resourceDragged->getName()))
 		{
-			const std::string newResourcePath(resourceFolder->getPath() + resourceFolder->getName() + "/");
+			//const FileHandler::CompletePath newResourcePath(resourceFolder->getPath(), m_resourceDragged->getPath().getFilenameWithExtention());
 			//On fait expres de copier ca c'est une nouvelle resource (copier collé)
-			resourceFolder->addFile(ResourceFile(*m_resourceDragged, newResourcePath));
-			m_folderResourceBelongsTo->removeFile(m_resourceDragged->getName());
+			ResourceTree::changeResourceFileLocation(*m_resourceDragged, *m_folderResourceBelongsTo, *resourceFolder);
+			//resourceFolder->addFile(ResourceFile(newResourcePath));
+			//m_folderResourceBelongsTo->removeFile(m_resourceDragged->getName());
+
+			//FileHandler::copyPastFile(m_resourceDragged->getPath(), newResourcePath.getPath()); //NOT_SAFE
 
 			m_folderResourceBelongsTo = nullptr;
 			m_resourceDragged = nullptr;

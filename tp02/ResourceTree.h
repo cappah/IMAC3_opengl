@@ -22,7 +22,7 @@ private:
 public:
 
 	ResourceFile(const FileHandler::CompletePath& completePath)
-		: m_name(completePath.getFilename)
+		: m_name(completePath.getFilename())
 		, m_path(completePath)
 		, m_type(ResourceType::NONE)
 		, m_isBeingRenamed(false)
@@ -101,11 +101,14 @@ public:
 	std::vector<ResourceFile>::iterator filesBegin() { return m_filesContainer.begin(); };
 	std::vector<ResourceFile>::iterator filesEnd() { return m_filesContainer.end(); };
 	size_t fileCount() { return m_filesContainer.size(); }
-	const ResourceFile& getFile(int idx) { return m_filesContainer[idx]; }
+	ResourceFile& getFile(int idx) { return m_filesContainer[idx]; }
 
 	void addFile(const std::string& fileNameAndExtention) 
 	{
-		m_filesContainer.push_back(ResourceFile(FileHandler::CompletePath(m_path, fileNameAndExtention)));
+		FileHandler::CompletePath resourcePath(m_path, fileNameAndExtention);
+		m_filesContainer.push_back(ResourceFile(resourcePath));
+
+		addResourceToFactory(resourcePath);
 	}
 
 	void addFile(const ResourceFile& file) 
@@ -332,12 +335,25 @@ private:
 	bool ResourceFolder::moveTo(ResourceFolder& newLocation);
 };
 
+//utility callback to handle asynchronous file or folder removal
+struct DropCallback
+{
+	ResourceFolder* currentFolder;
+	EditorDropContext dropContext;
+
+	DropCallback(ResourceFolder* _currentFolder, EditorDropContext _dropContext) : currentFolder(_currentFolder), dropContext(_dropContext)
+	{}
+};
+
+
 class ResourceTree : public ResourceFolder
 {
 public :
 	ResourceTree(const FileHandler::Path& assetResourcePath);
 	virtual ~ResourceTree()
 	{}
+
+	static void ResourceTree::changeResourceFileLocation(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
 };
 
 class ResourceTreeView : public EditorWindow
@@ -361,7 +377,10 @@ public:
 	ResourceFolder& getFolder(const std::string& folderName);
 	void addFileToFolder(ResourceFile file, const std::string& folderName);
 	void addFileToFolder(ResourceFile file, size_t folderIdx);*/
-	void displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay);
+	
+	void displayFiles(ResourceFolder* parentFolder, ResourceFolder& currentFolder);
+	void displayFoldersRecusivly(ResourceFolder* parentFolder, ResourceFolder& currentFolder, DropCallback* outDropCallback = nullptr);
+	//void displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay);
 	void popUpToAddCubeTexture();
 	void popUpToChooseMaterial();
 	void popUpToAddMaterial();

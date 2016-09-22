@@ -5,6 +5,7 @@
 #include "ResourceTree.h"
 #include "imgui/imgui.h"
 #include "Factories.h"
+#include "project.h"
 
 
 /////////// RESSOURCE FOLDER /////////////////
@@ -62,8 +63,24 @@ bool ResourceFolder::moveTo(ResourceFolder& newLocation)
 /////////// RESSOURCE TREE /////////////////
 
 ResourceTree::ResourceTree(const FileHandler::Path& assetResourcePath)
+	: ResourceFolder("assets", FileHandler::Path("assets"))
 {
 	fillDatasFromExplorerFolder(assetResourcePath);
+}
+
+void ResourceTree::changeResourceFileLocation(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo)
+{
+	const FileHandler::CompletePath newResourcePath(folderTo.getPath(), resourceFileToMove.getPath().getFilenameWithExtention());
+	
+	//change paths to make them begin from root application folder instead of project folder
+	const FileHandler::CompletePath from_(Project::getPath().toString() + "/" + resourceFileToMove.getPath().toString());
+	const FileHandler::Path to_(Project::getPath().toString() + "/" + newResourcePath.getPath().toString());
+
+	folderTo.addFile(ResourceFile(newResourcePath));
+	folderFrom.removeFile(resourceFileToMove.getName());
+
+	FileHandler::copyPastFile(from_, to_); //NOT_SAFE
+	FileHandler::deleteFile(from_);
 }
 
 /////////// RESOURCE TREE VIEW /////////////
@@ -159,6 +176,171 @@ ResourceTreeView::~ResourceTreeView()
 
 }
 
+void ResourceTreeView::displayFiles(ResourceFolder* parentFolder, ResourceFolder& currentFolder)
+{
+
+	for (int fileIdx = 0; fileIdx < currentFolder.fileCount(); fileIdx++)
+	{
+		ResourceFile& currentFile = currentFolder.getFile(fileIdx);
+
+		//TODO : couleur à changer en fonction du type de resource.
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255, 0, 0, 255));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
+		if (!currentFile.isBeingRenamed())
+			ImGui::Button(currentFile.getName().c_str());
+		else
+		{
+			if (currentFile.drawRenamingInputText())
+				currentFile.endRenamingResource();
+		}
+		ImGui::PopStyleColor(4);
+
+		//rename
+		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+		{
+			currentFile.begingRenamingResource();
+		}
+
+		//files drag and drop
+		if (!currentFile.isBeingRenamed() && ImGui::IsItemHovered() && ImGui::IsMouseDragging(0) && ImGui::IsMouseDown(0))
+		{
+			DragAndDropManager::beginDragAndDrop(std::make_shared<ResourceDragAndDropOperation>(&currentFile, &currentFolder));
+		}
+	}
+}
+
+
+
+void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, ResourceFolder& currentFolder, DropCallback* outDropCallback)
+{
+
+	int colorStyleModifierCount = 0;
+	if (DragAndDropManager::isDragAndDropping() && (DragAndDropManager::getOperationType() | (EditorDragAndDropType::ResourceDragAndDrop | EditorDragAndDropType::ResourceFolderDragAndDrop)))
+	{
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
+		colorStyleModifierCount++;
+	}
+
+	bool nodeOpened = ImGui::TreeNode(currentFolder.getName().c_str());
+	auto rectMax = ImGui::GetItemRectMax();
+	auto rectMin = ImGui::GetItemRectMin();
+	if (nodeOpened)
+	{
+
+		//current folder drag and drop
+		if (ImGui::IsItemHovered() && ImGui::IsMouseDragging(0) && ImGui::IsMouseDown(0))
+		{
+			DragAndDropManager::beginDragAndDrop(std::make_shared<ResourceFolderDragAndDropOperation>(&currentFolder, parentFolder, m_model));
+		}
+
+		//recursivity
+		for (int subFolderIdx = 0; subFolderIdx < currentFolder.subFolderCount(); subFolderIdx++)
+		{
+			ResourceFolder& itFolder = currentFolder.getSubFolder(subFolderIdx);
+
+			displayFoldersRecusivly(&currentFolder, itFolder, outDropCallback);
+
+		}
+		displayFiles(parentFolder, currentFolder);
+
+		ImGui::TreePop();
+	}
+	if (ImGui::IsMouseHoveringBox(rectMin, rectMax) && DragAndDropManager::isDragAndDropping())
+	{
+		ImGui::GetWindowDrawList()->AddRect(ImVec2(rectMin.x - 2, rectMin.y - 2), ImVec2(rectMax.x + 2, rectMax.y + 2), ImColor(255, 255, 0, 255), 5.f);
+	}
+	if (ImGui::IsMouseHoveringBox(rectMin, rectMax) && ImGui::IsMouseReleased(0))
+	{
+		if (outDropCallback != nullptr)
+		{
+			outDropCallback->currentFolder = &currentFolder;
+			outDropCallback->dropContext = EditorDropContext::DropIntoFileOrFolder;
+		}
+		//DragAndDropManager::dropDraggedItem(&currentFolder, EditorDropContext::DropIntoFileOrFolder);
+	}
+	//right clic menu open ? 
+	bool shouldOpenPopup = false;
+	if (ImGui::IsMouseHoveringBox(rectMin, rectMax) && ImGui::IsMouseClicked(1))
+	{
+		ImGui::OpenPopupEx("resourceFolderContextMenu", false);
+		m_folderWeRightClicOn = &currentFolder;
+	}
+
+	//right clic menu display :
+	if (ImGui::BeginPopup("resourceFolderContextMenu"))
+	{
+		if (ImGui::Button("Add folder."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("AddFolderModale", true);
+		}
+		else if (ImGui::Button("Add resource."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("AddResourcePopUp", true);
+		}
+		else
+			ImGui::EndPopup();
+	}
+
+	//pop up to add resource :
+	if (ImGui::BeginPopup("AddResourcePopUp"))
+	{
+		if (ImGui::Button("Material."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("ChooseMaterialPopUp", true);
+		}
+		else if (ImGui::Button("CubeTexture."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("AddCubeTexturePopUp", true);
+		}
+		else
+			ImGui::EndPopup();
+	}
+
+	//PopUp to choose a material :
+	if (ImGui::BeginPopup("ChooseMaterialPopUp"))
+	{
+		popUpToChooseMaterial();
+	}
+
+	//PopUp to add new cubeTexture :
+	if (ImGui::BeginPopup("AddCubeTexturePopUp"))
+	{
+		popUpToAddCubeTexture();
+	}
+
+	//Modale to add new folder :
+	if (ImGui::BeginPopup("AddFolderModale"))
+	{
+		m_uiString.resize(100);
+		ImGui::InputText("##folderName", &m_uiString[0], 100);
+		assert(m_folderWeRightClicOn != nullptr);
+		if (!m_folderWeRightClicOn->hasSubFolder(m_uiString))
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("Validate##AddFolder") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
+			{
+				if (m_folderWeRightClicOn != nullptr)
+					m_folderWeRightClicOn->addSubFolder(m_uiString);
+				m_folderWeRightClicOn = nullptr;
+				ImGui::CloseCurrentPopup();
+			}
+		}
+		else
+		{
+			ImGui::TextColored(ImVec4(255, 0, 0, 255), "A folder with the same name already exists.");
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::PopStyleColor(colorStyleModifierCount);
+}
+/*
 void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay)
 {
 
@@ -309,6 +491,7 @@ void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, std
 
 	ImGui::PopStyleColor(colorStyleModifierCount);
 }
+*/
 
 
 void ResourceTreeView::popUpToChooseMaterial()
@@ -395,7 +578,15 @@ void ResourceTreeView::popUpToAddCubeTexture()
 void ResourceTreeView::drawUI()
 {
 	ImGui::Begin("ResourceTree", nullptr);
-	displayFoldersRecusivly(m_model, m_model->getSubFolders(), m_model->getFiles());
+	DropCallback dropCallback(nullptr, EditorDropContext::DropIntoFileOrFolder);
+	displayFoldersRecusivly(nullptr, *m_model, &dropCallback);
+
+	//asynchronous drop
+	if (dropCallback.currentFolder != nullptr)
+	{
+		DragAndDropManager::dropDraggedItem(dropCallback.currentFolder, EditorDropContext::DropIntoFileOrFolder);
+	}
+	//displayFoldersRecusivly(m_model, m_model->getSubFolders(), m_model->getFiles());
 	ImGui::End();
 }
 //
