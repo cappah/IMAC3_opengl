@@ -29,6 +29,7 @@ enum FileType
 };
 
 class CompletePath;
+class ResourceFile;
 
 class Path
 {

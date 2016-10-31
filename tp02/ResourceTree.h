@@ -69,6 +69,7 @@ class ResourceFolder
 {
 protected:
 
+	ResourceFolder* m_parentFolder;
 	std::vector<ResourceFile> m_filesContainer;
 	std::vector<ResourceFolder> m_subFoldersContainer;
 	std::string m_name;
@@ -78,11 +79,13 @@ public:
 	ResourceFolder()
 		: m_name("")
 		, m_path("")
+		, m_parentFolder(nullptr)
 	{ }
 
-	ResourceFolder(const std::string& name, const FileHandler::Path& path) 
+	ResourceFolder(const std::string& name, const FileHandler::Path& path, ResourceFolder* parentFolder) 
 		: m_name(name)
 		, m_path(path)
+		, m_parentFolder(parentFolder)
 	{ }
 
 	virtual ~ResourceFolder()
@@ -96,6 +99,7 @@ public:
 
 	const std::string& getName() const { return m_name; }
 	const FileHandler::Path& getPath() const { return m_path; }
+	ResourceFolder* getParentFolder() const { return m_parentFolder; }
 
 	//deals with files 
 	std::vector<ResourceFile>::iterator filesBegin() { return m_filesContainer.begin(); };
@@ -154,12 +158,20 @@ public:
 	std::vector<ResourceFolder>::iterator subFoldersBegin() { return m_subFoldersContainer.begin(); };
 	std::vector<ResourceFolder>::iterator subFoldersEnd() { return m_subFoldersContainer.end(); };
 	size_t subFolderCount() { return m_subFoldersContainer.size(); }
-	ResourceFolder& getSubFolder(int idx) { return m_subFoldersContainer[idx]; }
-	ResourceFolder& getSubFolder(const std::string& folderName)
+	ResourceFolder* getSubFolder(int idx) 
+	{ 
+		if (idx < 0 || idx >= m_subFoldersContainer.size())
+			return nullptr;
+
+		return &m_subFoldersContainer[idx];
+	}
+	ResourceFolder* getSubFolder(const std::string& folderName)
 	{ 
 		for (auto& itFolder = m_subFoldersContainer.begin(); itFolder != m_subFoldersContainer.end(); itFolder++)
 			if (itFolder->getName() == folderName)
-				return *itFolder;
+				return &(*itFolder);
+
+		return nullptr;
 	}
 
 	bool addSubFolder(const std::string& folderName, int* outFolderIdx = nullptr)
@@ -167,7 +179,7 @@ public:
 		if (hasSubFolder(folderName, outFolderIdx))
 			return false;
 
-		m_subFoldersContainer.push_back(ResourceFolder(folderName, FileHandler::Path(m_path, folderName)));
+		m_subFoldersContainer.push_back(ResourceFolder(folderName, FileHandler::Path(m_path, folderName), this));
 		if (outFolderIdx != nullptr)
 		{
 			*outFolderIdx = (m_subFoldersContainer.size() - 1);
@@ -175,11 +187,12 @@ public:
 		return true;
 	}
 
-	bool addSubFolder(const ResourceFolder& folder, int* outFolderIdx = nullptr)
+	bool addSubFolder(ResourceFolder& folder, int* outFolderIdx = nullptr)
 	{
 		if (hasSubFolder(folder, outFolderIdx))
 			return false;
 
+		folder.m_parentFolder = this;
 		m_subFoldersContainer.push_back(folder);
 		if (outFolderIdx != nullptr)
 		{
@@ -330,9 +343,12 @@ public:
 
 	//move a subFolder to a new location
 	bool moveSubFolderToNewLocation(const std::string& subFolderName, ResourceFolder& newLocation);
+	bool copySubFolderToNewLocation(const std::string& subFolderName, ResourceFolder& newLocation);
+
 private:
 	//move the folder to a new location, used by moveSubFolderToNewLocation.
-	bool ResourceFolder::moveTo(ResourceFolder& newLocation);
+	bool moveTo(ResourceFolder& newLocation);
+	bool copyTo(ResourceFolder& newLocation);
 };
 
 //utility callback to handle asynchronous file or folder removal
@@ -345,6 +361,24 @@ struct DropCallback
 	{}
 };
 
+//utility callback to open modale asynchronously
+struct OpenModaleCallback
+{
+	std::string modaleName;
+	bool shouldOpen;
+
+	OpenModaleCallback() : shouldOpen(false)
+	{}
+
+	void openCallbackIfNeeded()
+	{
+		if (shouldOpen)
+		{
+			ImGui::OpenPopupEx("resourceFolderContextMenu", true);
+		}
+	}
+};
+
 
 class ResourceTree : public ResourceFolder
 {
@@ -353,8 +387,13 @@ public :
 	virtual ~ResourceTree()
 	{}
 
-	static void ResourceTree::changeResourceFileLocation(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
+	static void moveResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
+	static void copyResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
+
+	static void addNewMaterialTo(const std::string& materialName, const std::string& ShaderProgramName, ResourceFolder& folderTo);
+	static void addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo);
 };
+
 
 class ResourceTreeView : public EditorWindow
 {
@@ -379,7 +418,8 @@ public:
 	void addFileToFolder(ResourceFile file, size_t folderIdx);*/
 	
 	void displayFiles(ResourceFolder* parentFolder, ResourceFolder& currentFolder);
-	void displayFoldersRecusivly(ResourceFolder* parentFolder, ResourceFolder& currentFolder, DropCallback* outDropCallback = nullptr);
+	void displayFoldersRecusivly(ResourceFolder* parentFolder, ResourceFolder& currentFolder, OpenModaleCallback* outOpenModaleCallback, DropCallback* outDropCallback = nullptr);
+	void displayModales();
 	//void displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay);
 	void popUpToAddCubeTexture();
 	void popUpToChooseMaterial();

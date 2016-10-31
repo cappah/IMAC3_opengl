@@ -632,9 +632,10 @@ std::size_t splitPathFileNameExtention(const std::string& pathAndFileNameAndExte
 	return fileNameLength;
 }
 
-
 void copyPastFile(const CompletePath& from, const Path& to)
 {
+	// WARNING : not safe TODO
+
 	assert(directoryExists(to));
 	assert(fileExists(from));
 	if (!directoryExists(to) || !fileExists(from))
@@ -650,6 +651,8 @@ void copyPastFile(const CompletePath& from, const Path& to)
 
 void deleteFile(const CompletePath& completePath)
 {
+	// WARNING : not safe TODO
+
 	assert(fileExists(completePath));
 
 	if(fileExists(completePath))

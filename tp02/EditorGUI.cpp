@@ -22,7 +22,7 @@ void ResourceDragAndDropOperation::dropOperation(void* customData, int dropConte
 		{
 			//const FileHandler::CompletePath newResourcePath(resourceFolder->getPath(), m_resourceDragged->getPath().getFilenameWithExtention());
 			//On fait expres de copier ca c'est une nouvelle resource (copier collé)
-			ResourceTree::changeResourceFileLocation(*m_resourceDragged, *m_folderResourceBelongsTo, *resourceFolder);
+			ResourceTree::moveResourceTo(*m_resourceDragged, *m_folderResourceBelongsTo, *resourceFolder);
 			//resourceFolder->addFile(ResourceFile(newResourcePath));
 			//m_folderResourceBelongsTo->removeFile(m_resourceDragged->getName());
 

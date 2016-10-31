@@ -7,7 +7,7 @@
 
 
 //addings : 
-//template<>
+template<>
 void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
 {
 	Material* newResource = BaseMaterialHelper::instance().loadMaterialFromPath(path);
@@ -17,6 +17,14 @@ void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsig
 	m_resourceMapping[path] = hashKey;
 	m_resourcesFromHashKey[hashKey] = newResource;
 }
+
+// Creation : 
+template<>
+void ResourceFactory<Material>::createNewResource(const FileHandler::CompletePath& path)
+{
+	//TODO : Material
+}
+
 
 
 //Shader Programes
@@ -426,6 +434,11 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 
 }
 
+template<>
+const std::string& getResourceExtention<Material>()
+{
+	return ".mat";
+}
 
 
 //

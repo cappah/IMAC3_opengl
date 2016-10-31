@@ -32,6 +32,9 @@ private:
 public:
 	ResourceFactory();
 
+	//create the nex resource at given path. tell the resource tree to effectivly add a new file
+	void createNewResource(const FileHandler::CompletePath& path);
+	//add a resource which have already been created/loaded by the resource tree
 	void add(const FileHandler::CompletePath& path);
 	template<typename U>
 	void add(const FileHandler::CompletePath& path);
@@ -57,10 +60,18 @@ public:
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(Json::Value & entityRoot) override;
 
+	typename std::map<FileHandler::CompletePath, T*>::iterator resourceBegin();
+	typename std::map<std::string, T*>::iterator defaultResourceBegin();
+	typename std::map<FileHandler::CompletePath, T*>::iterator resourceEnd();
+	typename std::map<std::string, T*>::iterator defaultResourceEnd();
+
+	SINGLETON_IMPL(ResourceFactory<T>);
+
 private:
 	void add(const FileHandler::CompletePath& path, unsigned int hashKey);
 
 };
+
 
 
 template<typename T>
@@ -70,6 +81,13 @@ ResourceFactory<T>::ResourceFactory()
 }
 
 //NOT DEFAULTS
+
+template<typename T>
+void ResourceFactory<T>::createNewResource(const FileHandler::CompletePath& path)
+{
+	assert(0 && "error : createNewResource() function hasn't been specialized for the given resource. The resource can't be created");
+}
+
 template<typename T>
 void ResourceFactory<T>::add(const FileHandler::CompletePath& path, T* value)
 {
@@ -251,10 +269,39 @@ void ResourceFactory<T>::load(Json::Value & entityRoot)
 	}
 }
 
+template<typename T>
+typename std::map<FileHandler::CompletePath, T*>::iterator ResourceFactory<T>::resourceBegin()
+{
+	return m_resources.begin();
+}
+
+template<typename T>
+typename std::map<std::string, T*>::iterator ResourceFactory<T>::defaultResourceBegin()
+{
+	return m_defaultResources.begin();
+}
+
+template<typename T>
+typename std::map<FileHandler::CompletePath, T*>::iterator ResourceFactory<T>::resourceEnd()
+{
+	return m_resources.end();
+}
+
+template<typename T>
+typename std::map<std::string, T*>::iterator ResourceFactory<T>::defaultResourceEnd()
+{
+	return m_defaultResources.end();
+}
+
 //Specialisations : 
 
 template<>
 void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
+
+// Creation : 
+
+template<>
+void ResourceFactory<Material>::createNewResource(const FileHandler::CompletePath& path);
 
 //Initialisations : 
 
@@ -322,6 +369,15 @@ ResourceType getResourceType<ShaderProgram>();
 ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType);
 
 void addResourceToFactory(const FileHandler::CompletePath& completePath);
+
+template<typename T>
+const std::string& getResourceExtention()
+{
+	assert(getResourceExtention not "implemented with the given resource type");
+}
+
+template<>
+const std::string& getResourceExtention<Material>();
 
 ///////////////// RESOURCE PTR /////////////////
 
