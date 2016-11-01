@@ -22,7 +22,7 @@ void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsig
 template<>
 void ResourceFactory<Material>::createNewResource(const FileHandler::CompletePath& path)
 {
-	//TODO : Material
+	//TODO 01 : Material
 }
 
 

@@ -152,7 +152,7 @@ void ResourceTree::addSubFolderTo(const std::string& folderName, ResourceFolder&
 
 	folderTo.addSubFolder(folderName);
 
-	const FileHandler::Path folderParentPath(Project::getPath().toString() + "/" + folderTo.getPath().toString() + "/" + folderName);
+	const FileHandler::Path folderParentPath(Project::getPath().toString() + "/" + folderTo.getPath().toString() + "/");
 	FileHandler::addDirectory(folderName, folderParentPath);
 }
 
@@ -415,7 +415,7 @@ void ResourceTreeView::displayModales()
 			if (ImGui::Button("Validate##AddFolder") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
 			{
 				if (m_folderWeRightClicOn != nullptr)
-					m_folderWeRightClicOn->addSubFolder(m_uiString);
+					ResourceTree::addSubFolderTo(m_uiString, *m_folderWeRightClicOn);
 				m_folderWeRightClicOn = nullptr;
 				ImGui::CloseCurrentPopup();
 			}
@@ -483,12 +483,13 @@ void ResourceTreeView::popUpToAddMaterial()
 		{
 			if (m_folderWeRightClicOn != nullptr)
 			{
-				//We create and save the new resource
-				const FileHandler::CompletePath resourceCompletePath(m_folderWeRightClicOn->getPath(), m_uiString, ".mat");
-				Material* newMaterial = MaterialFactory::instance().getInstance(m_chooseMaterialName);
-				newMaterial->save(resourceCompletePath);
-				//we store the resource in its factory
-				getMaterialFactory().add(resourceCompletePath, newMaterial);
+				ResourceTree::addNewMaterialTo(m_uiString, m_chooseMaterialName, *m_folderWeRightClicOn);
+				////We create and save the new resource
+				//const FileHandler::CompletePath resourceCompletePath(m_folderWeRightClicOn->getPath(), m_uiString, ".mat");
+				//Material* newMaterial = MaterialFactory::instance().getInstance(m_chooseMaterialName);
+				//newMaterial->save(resourceCompletePath);
+				////we store the resource in its factory
+				//getMaterialFactory().add(resourceCompletePath, newMaterial);
 			}
 			m_folderWeRightClicOn = nullptr;
 			ImGui::CloseCurrentPopup();
