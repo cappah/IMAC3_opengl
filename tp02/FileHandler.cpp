@@ -72,18 +72,20 @@ void Path::pop_front()
 	format();
 }
 
-const std::string& Path::operator[](size_t idx) const
+std::string Path::operator[](size_t idx) const
 {
-	size_t cutPos01 = m_data.find_first_of("/\\");
-	size_t cutPos02 = m_data.find_first_of("/\\", cutPos01 + 1);
+	size_t cutPos01 = 0; // m_data.find_first_of("/\\");
+	size_t cutPos02 = m_data.find_first_of("/\\" /*, cutPos01 + 1*/);
 
-	for (int i = 1; i < idx; i++)
+	for (int i = 0; i < idx; i++)
 	{
-		cutPos01 = m_data.find_first_of("/\\", cutPos02 + 1);
+		cutPos01 = cutPos02 + 1;
 		cutPos02 = m_data.find_first_of("/\\", cutPos01 + 1);
 	}
 
-	return m_data.substr(cutPos01 + 1, (cutPos02 - cutPos01) - 1);
+	size_t firstPos = cutPos01;
+	size_t endPos = (cutPos02 - cutPos01);
+	return m_data.substr(firstPos, endPos);
 }
 
 size_t Path::size() const
@@ -152,6 +154,29 @@ void Path::format()
 bool Path::empty() const
 {
 	return m_data.empty();
+}
+
+Path Path::getSubPath(int begin, int count) const
+{
+	size_t cutPos01 = 0; // m_data.find_first_of("/\\");
+	size_t cutPos02 = m_data.find_first_of("/\\" /*, cutPos01 + 1*/);
+	size_t cutPos03 = 0;
+
+	for (int i = 0; i < begin; i++)
+	{
+		cutPos01 = cutPos02 + 1;
+		cutPos02 = m_data.find_first_of("/\\", cutPos01 + 1);
+	}
+
+	for (int i = 0; i < count - 1; i++)
+	{
+		cutPos03 = cutPos02 + 1;
+		cutPos02 = m_data.find_first_of("/\\", cutPos03 + 1);
+	}
+
+	size_t firstPos = cutPos01;
+	size_t endPos = (cutPos02 - cutPos01) + 1;
+	return Path(m_data.substr(firstPos, endPos));
 }
 
 const std::string& Path::toString() const
@@ -247,20 +272,27 @@ const std::string& CompletePath::toString() const
 	return m_data;
 }
 
-const std::string& CompletePath::operator[](size_t idx)
+std::string CompletePath::operator[](size_t idx) const
 {
 	const std::string& folderPath = m_path.toString();
 
-	size_t cutPos01 = folderPath.find_first_of("/\\");
-	size_t cutPos02 = folderPath.find_first_of("/\\", cutPos01 + 1);
+	size_t cutPos01 = 0; // folderPath.find_first_of("/\\");
+	size_t cutPos02 = folderPath.find_first_of("/\\" /*, cutPos01 + 1*/);
 
-	for (int i = 1; i < idx; i++)
+	for (int i = 0; i < idx; i++)
 	{
-		cutPos01 = folderPath.find_first_of("/\\", cutPos02 + 1);
+		cutPos01 = cutPos02 + 1;
 		cutPos02 = folderPath.find_first_of("/\\", cutPos01 + 1);
 	}
 
-	return folderPath.substr(cutPos01 + 1, (cutPos02 - cutPos01) - 1);
+	size_t firstPos = cutPos01;
+	size_t endPos = (cutPos02 - cutPos01);
+	return m_data.substr(firstPos, endPos);
+}
+
+size_t CompletePath::size() const
+{
+	return m_path.size() + 1;
 }
 
 const Path& CompletePath::getPath() const
@@ -392,7 +424,7 @@ FileType getFileTypeFromExtention(const std::string& extention)
 {
 	assert(extention.find_first_of("/\\_,;") == std::string::npos);
 
-	if (extention == ".jpg" || extention == ".jpeg" || extention == ".png" || extention == ".bmp")
+	if (extention == ".jpg" || extention == ".jpeg" || extention == ".png" || extention == ".bmp" || extention == ".tga")
 	{
 		return FileType::IMAGE;
 	}
@@ -554,6 +586,20 @@ void addDirectory(const std::string& name, const Path& path)
 {
 #ifdef _WIN32
 		CreateDirectory((path.toString() + name).c_str(), NULL);
+#endif // _WIN32
+
+#ifdef linux
+	std::cerr << "error : the addDirectory function isn't support on linux platform yet." << std::endl;
+#endif // linux
+
+
+	//TODO add linux support.
+}
+
+void removeDirectory(const Path& path)
+{
+#ifdef _WIN32
+	RemoveDirectory((path.toString()).c_str());
 #endif // _WIN32
 
 #ifdef linux

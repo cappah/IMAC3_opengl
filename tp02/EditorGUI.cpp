@@ -18,7 +18,7 @@ void ResourceDragAndDropOperation::dropOperation(void* customData, int dropConte
 	{
 		ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
 
-		if (!resourceFolder->hasFile(m_resourceDragged->getName()))
+		if (!resourceFolder->hasFile(m_resourceDragged->getKey()))
 		{
 			//const FileHandler::CompletePath newResourcePath(resourceFolder->getPath(), m_resourceDragged->getPath().getFilenameWithExtention());
 			//On fait expres de copier ca c'est une nouvelle resource (copier collé)

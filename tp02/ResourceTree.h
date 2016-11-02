@@ -10,25 +10,58 @@
 #include "FileHandler.h"
 #include "Factories.h"
 
+//handle simple key which are unique for each file, taking the file name and the file type into account
+struct ResourceFileKey
+{
+	ResourceType type;
+	std::string name;
+
+	ResourceFileKey(ResourceType _type, std::string _name) : name(_name), type(_type)
+	{}
+
+	bool operator==(const ResourceFileKey& other) const {
+		return type == other.type && name == other.name;
+	}
+
+	bool operator<(const ResourceFileKey& other) const {
+		if (name == other.name)
+		{
+			return type < other.type;
+		}
+		else
+		{
+			return name < other.name;
+		}
+	}
+};
+
 class ResourceFile
 {
 private:
 	//TODO
 	//ResourceFactory* m_factory;
-	ResourceType m_type;
-	std::string m_name;
+	ResourceFileKey m_key;
 	FileHandler::CompletePath m_path;
 	bool m_isBeingRenamed;
+	ResourceFolder* m_parentFolder;
+
 public:
 
 	ResourceFile(const FileHandler::CompletePath& completePath)
-		: m_name(completePath.getFilename())
+		: m_key(ResourceType::NONE, completePath.getFilename())
 		, m_path(completePath)
-		, m_type(ResourceType::NONE)
 		, m_isBeingRenamed(false)
 	{
-		m_type = getResourceTypeFromFileType(completePath.getFileType());
-		//TODO
+		m_key.type = getResourceTypeFromFileType(completePath.getFileType());
+		assert(m_key.type != ResourceType::NONE);
+	}
+
+	ResourceFile(const ResourceFile& other)
+		: m_key(other.m_key)
+		, m_path(other.m_path)
+		, m_isBeingRenamed(false)
+	{
+		assert(m_key.type != ResourceType::NONE);
 	}
 
 	//ResourceFile(const ResourceFile& other, const std::string& path)
@@ -55,21 +88,25 @@ public:
 	bool drawRenamingInputText()
 	{
 		bool enterPressed = false;
-		m_name.reserve(100);
-		enterPressed = ImGui::InputText("##currentRenamedText", &m_name[0], 100, ImGuiInputTextFlags_EnterReturnsTrue);
+		m_key.name.reserve(100);
+		enterPressed = ImGui::InputText("##currentRenamedText", &m_key.name[0], 100, ImGuiInputTextFlags_EnterReturnsTrue);
 		return (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
 	}
 
-	const std::string& getName() const { return m_name; }
+	const std::string& getName() const { return m_key.name; }
 	const FileHandler::CompletePath& getPath() const { return m_path; }
-	ResourceType getType() const { return m_type; }
+	ResourceType getType() const { return m_key.type; }
+	const ResourceFileKey& getKey() const { return m_key; }
+	FileHandler::Path getParentFolderPath() const { 
+		return m_path.getPath().getSubPath(0, m_path.getPath().size() - 1);
+	}
+
+	bool operator<(const ResourceFile& other) { return m_key < other.m_key; }
 };
 
 class ResourceFolder
 {
 protected:
-
-	ResourceFolder* m_parentFolder;
 	std::vector<ResourceFile> m_filesContainer;
 	std::vector<ResourceFolder> m_subFoldersContainer;
 	std::string m_name;
@@ -79,13 +116,11 @@ public:
 	ResourceFolder()
 		: m_name("")
 		, m_path("")
-		, m_parentFolder(nullptr)
 	{ }
 
-	ResourceFolder(const std::string& name, const FileHandler::Path& path, ResourceFolder* parentFolder) 
+	ResourceFolder(const std::string& name, const FileHandler::Path& path) 
 		: m_name(name)
 		, m_path(path)
-		, m_parentFolder(parentFolder)
 	{ }
 
 	virtual ~ResourceFolder()
@@ -99,7 +134,9 @@ public:
 
 	const std::string& getName() const { return m_name; }
 	const FileHandler::Path& getPath() const { return m_path; }
-	ResourceFolder* getParentFolder() const { return m_parentFolder; }
+	FileHandler::Path getParentFolderPath() const {
+		return m_path.getSubPath(0, m_path.size() - 1);
+	}
 
 	//deals with files 
 	std::vector<ResourceFile>::iterator filesBegin() { return m_filesContainer.begin(); };
@@ -117,13 +154,13 @@ public:
 
 	void addFile(const ResourceFile& file) 
 	{ 
-		m_filesContainer.push_back(file);
+		m_filesContainer.push_back(ResourceFile(file));
 	}
 
-	void removeFile(const std::string& filePath)
+	void removeFile(const ResourceFileKey& fileKey)
 	{
 		for (auto& itFile = m_filesContainer.begin(); itFile != m_filesContainer.end(); itFile++)
-			if (itFile->getName() == filePath)
+			if (itFile->getKey() == fileKey)
 			{
 				m_filesContainer.erase(itFile);
 				return;
@@ -135,23 +172,34 @@ public:
 		m_filesContainer.clear();
 	}
 
-	bool hasFile(const std::string& fileName) const
+	bool hasFile(const ResourceFileKey& fileKey) const
 	{
 		for (auto& itFile = m_filesContainer.begin(); itFile != m_filesContainer.end(); itFile++)
-			if (itFile->getName() == fileName)
+			if (itFile->getKey() == fileKey)
 				return true;
 		return false;
 	}
 
-	bool getFile(const std::string& fileName, ResourceFile& outFile) const
+	ResourceFile* getFile(const ResourceFileKey& fileKey)
 	{
 		for (auto& itFile = m_filesContainer.begin(); itFile != m_filesContainer.end(); itFile++)
-			if (itFile->getName() == fileName)
+			if (itFile->getKey() == fileKey)
 			{
-				outFile = *itFile;
-				return true;
+					return &(*itFile);
 			}
-		return false;
+		return nullptr;
+	}
+
+	ResourceFile* getFile(const FileHandler::CompletePath& filePath, int depth = 0)
+	{
+		ResourceFolder* foundFolder = getSubFolder(filePath.getPath());
+
+		if (foundFolder != nullptr)
+		{
+			return foundFolder->getFile(ResourceFileKey(getResourceTypeFromFileType(FileHandler::getFileTypeFromExtention(filePath.getExtention())), filePath.getFilename()));
+		}
+		else
+			return nullptr;
 	}
 
 	//deals with sub folders :
@@ -173,13 +221,37 @@ public:
 
 		return nullptr;
 	}
+	ResourceFolder* getSubFolder(const FileHandler::Path& folderPath, int depth = 0)
+	{
+		if (depth > folderPath.size() - 1)
+			return nullptr;
+
+		std::string currentFolderName = folderPath[depth];
+
+		if (depth == folderPath.size() - 1)
+			if (getName() == currentFolderName)
+				return this;
+
+		std::string nextFolderName = folderPath[depth+1];
+
+		for (auto& itFolder = m_subFoldersContainer.begin(); itFolder != m_subFoldersContainer.end(); itFolder++)
+		{
+			if (itFolder->getName() == nextFolderName)
+			{
+				return itFolder->getSubFolder(folderPath, ++depth);
+			}
+		}
+
+		return nullptr;
+	}
 
 	bool addSubFolder(const std::string& folderName, int* outFolderIdx = nullptr)
 	{
 		if (hasSubFolder(folderName, outFolderIdx))
 			return false;
 
-		m_subFoldersContainer.push_back(ResourceFolder(folderName, FileHandler::Path(m_path, folderName), this));
+		m_subFoldersContainer.push_back(ResourceFolder(folderName, FileHandler::Path(m_path, folderName)));
+
 		if (outFolderIdx != nullptr)
 		{
 			*outFolderIdx = (m_subFoldersContainer.size() - 1);
@@ -192,7 +264,6 @@ public:
 		if (hasSubFolder(folder, outFolderIdx))
 			return false;
 
-		folder.m_parentFolder = this;
 		m_subFoldersContainer.push_back(folder);
 		if (outFolderIdx != nullptr)
 		{
@@ -269,26 +340,32 @@ public:
 		return m_filesContainer;
 	}
 
-	bool ResourceFolder::searchFileRecursivly(const std::string& fileName, ResourceFile& outFile, std::vector<std::string>* outPathToFile)
+	bool ResourceFolder::searchFileRecursivly(const ResourceFileKey& fileKey, ResourceFile* outFile, std::vector<std::string>* outPathToFile)
 	{
-		if (getFile(fileName, outFile))
+		outFile = getFile(fileKey);
+		if (outFile != nullptr)
 			return true;
 		else
 		{
+			bool fileFound = false;
 			for (auto& itFolder = m_subFoldersContainer.begin(); itFolder != m_subFoldersContainer.end(); itFolder++)
 			{
 				if (outPathToFile != nullptr)
 					outPathToFile->push_back(getName());
-				//searchFileRecursivly(fileName, outFile, outPathToFile);
+				fileFound = searchFileRecursivly(fileKey, outFile, outPathToFile);
+				if (fileFound)
+					return true;
+
 				if (outPathToFile != nullptr)
 					outPathToFile->pop_back();
 			}
+			return false;
 		}
 	}
 
-	bool containsFileRecursivly(const std::string& fileName, std::vector<std::string>* outPathToFile)
+	bool containsFileRecursivly(const ResourceFileKey& fileKey, std::vector<std::string>* outPathToFile)
 	{
-		if (hasFile(fileName))
+		if (hasFile(fileKey))
 			return true;
 		else
 		{
@@ -296,7 +373,7 @@ public:
 			{
 				if (outPathToFile != nullptr)
 					outPathToFile->push_back(getName());
-				containsFileRecursivly(fileName, outPathToFile);
+				containsFileRecursivly(fileKey, outPathToFile);
 				if (outPathToFile != nullptr)
 					outPathToFile->pop_back();
 			}
@@ -341,6 +418,8 @@ public:
 		return true;
 	}
 
+	bool operator<(const ResourceFolder& other) { return m_name < other.m_name; }
+
 	//move a subFolder to a new location
 	bool moveSubFolderToNewLocation(const std::string& subFolderName, ResourceFolder& newLocation);
 	bool copySubFolderToNewLocation(const std::string& subFolderName, ResourceFolder& newLocation);
@@ -374,7 +453,7 @@ struct OpenModaleCallback
 	{
 		if (shouldOpen)
 		{
-			ImGui::OpenPopupEx("resourceFolderContextMenu", true);
+			ImGui::OpenPopupEx(modaleName.data(), true);
 		}
 	}
 };
@@ -387,11 +466,17 @@ public :
 	virtual ~ResourceTree()
 	{}
 
+	static void deleteSubFolderFrom(const std::string& folderName, ResourceFolder& folderFrom);
+	static void deleteResourceFrom(const ResourceFile& resourceFileToDelete, ResourceFolder& folderFrom);
+
 	static void moveResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
 	static void copyResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
 
 	static void addNewMaterialTo(const std::string& materialName, const std::string& ShaderProgramName, ResourceFolder& folderTo);
 	static void addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo);
+
+	static void moveSubFolderTo(const std::string& folderName, ResourceFolder& folderFrom, ResourceFolder& folderTo);
+	static void copySubFolderTo(const std::string& folderName, ResourceFolder& folderFrom, ResourceFolder& folderTo);
 };
 
 
@@ -405,7 +490,13 @@ private:
 
 	std::string m_uiString;
 	ResourceFolder* m_folderWeRightClicOn;
+	ResourceFile* m_fileWeRightClicOn;
 	std::string m_chooseMaterialName;
+
+	bool m_isMovingItemFolder;
+	bool m_shouldMoveFileOrFolder;
+	FileHandler::CompletePath m_fileWaitingPastPath;
+	FileHandler::Path m_folderWaitingPastPath;
 
 public:
 	ResourceTreeView(ResourceTree* model);
@@ -417,7 +508,7 @@ public:
 	void addFileToFolder(ResourceFile file, const std::string& folderName);
 	void addFileToFolder(ResourceFile file, size_t folderIdx);*/
 	
-	void displayFiles(ResourceFolder* parentFolder, ResourceFolder& currentFolder);
+	void displayFiles(ResourceFolder* parentFolder, ResourceFolder& currentFolder, OpenModaleCallback* outOpenModaleCallback);
 	void displayFoldersRecusivly(ResourceFolder* parentFolder, ResourceFolder& currentFolder, OpenModaleCallback* outOpenModaleCallback, DropCallback* outDropCallback = nullptr);
 	void displayModales();
 	//void displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay);

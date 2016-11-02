@@ -26,10 +26,16 @@ void ResourceFolder::fillDatasFromExplorerFolder(const FileHandler::Path& folder
 
 	std::vector<std::string> fileNames;
 	FileHandler::getAllFileNames(folderPath, fileNames);
+	std::string outExtention;
 
 	for (auto& fileNameAndExtention : fileNames)
 	{
-		addFile( fileNameAndExtention );
+		//We only add files that engine understand
+		FileHandler::getExtentionFromExtendedFilename(fileNameAndExtention, outExtention);
+		if (FileHandler::getFileTypeFromExtention(outExtention))
+		{
+			addFile( fileNameAndExtention );
+		}
 	}
 }
 
@@ -94,28 +100,75 @@ bool ResourceFolder::copyTo(ResourceFolder& newLocation)
 /////////// RESSOURCE TREE /////////////////
 
 ResourceTree::ResourceTree(const FileHandler::Path& assetResourcePath)
-	: ResourceFolder("assets", FileHandler::Path("assets"), nullptr)
+	: ResourceFolder("assets", FileHandler::Path("assets"))
 {
 	fillDatasFromExplorerFolder(assetResourcePath);
 }
 
+void ResourceTree::deleteSubFolderFrom(const std::string& folderName, ResourceFolder& folderFrom)
+{
+	assert(folderFrom.getSubFolder(folderName) != nullptr);
+	if (folderFrom.getSubFolder(folderName) == nullptr)
+		return;
+
+	ResourceFolder* folderToDelete = folderFrom.getSubFolder(folderName);
+	FileHandler::Path folderToDeletePath(Project::getPath().toString() + "/" + folderToDelete->getPath().toString());
+
+	//delete files
+	std::vector<ResourceFile>& files = folderToDelete->getFiles();
+	const int filesSize = files.size();
+	for (int i = 0; i < filesSize; i++)
+	{
+		deleteResourceFrom(files[i], *folderToDelete);
+	}
+
+	//delete sub folders
+	std::vector<ResourceFolder>& subFolders = folderToDelete->getSubFolders();
+	const int subFolderSize = subFolders.size();
+	for (int i = 0; i < subFolderSize; i++)
+	{
+		deleteSubFolderFrom(subFolders[i].getName(), *folderToDelete);
+	}
+
+	//delete current directory
+	folderFrom.removeSubFolder(folderName);
+	FileHandler::removeDirectory(folderToDeletePath);
+}
+
+void ResourceTree::deleteResourceFrom(const ResourceFile& resourceFileToDelete, ResourceFolder& folderFrom)
+{
+	assert(folderFrom.hasFile(resourceFileToDelete.getKey()));
+	if (!folderFrom.hasFile(resourceFileToDelete.getKey()))
+		return;
+
+	FileHandler::CompletePath fileToDeletePath(Project::getPath().toString() + "/" + resourceFileToDelete.getPath().toString());
+
+	folderFrom.removeFile(resourceFileToDelete.getKey());
+	FileHandler::deleteFile(fileToDeletePath);
+}
+
 void ResourceTree::moveResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo)
 {
-	const FileHandler::CompletePath newResourcePath(folderTo.getPath(), resourceFileToMove.getPath().getFilenameWithExtention());
-	
-	//change paths to make them begin from root application folder instead of project folder
-	const FileHandler::CompletePath from_(Project::getPath().toString() + "/" + resourceFileToMove.getPath().toString());
-	const FileHandler::Path to_(Project::getPath().toString() + "/" + newResourcePath.getPath().toString());
+	assert(folderFrom.hasFile(resourceFileToMove.getKey()));
+	if (!folderFrom.hasFile(resourceFileToMove.getKey()))
+		return;
+	assert(!folderTo.hasFile(resourceFileToMove.getKey()));
+	if (folderTo.hasFile(resourceFileToMove.getKey()))
+		return;
 
-	folderTo.addFile(ResourceFile(newResourcePath));
-	folderFrom.removeFile(resourceFileToMove.getName());
-
-	FileHandler::copyPastFile(from_, to_); //NOT_SAFE
-	FileHandler::deleteFile(from_);
+	copyResourceTo(resourceFileToMove, folderFrom, folderTo);
+	deleteResourceFrom(resourceFileToMove, folderFrom);
 }
 
 void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo)
 {
+	assert(folderFrom.hasFile(resourceFileToMove.getKey()));
+	if (!folderFrom.hasFile(resourceFileToMove.getKey()))
+		return;
+	assert(!folderTo.hasFile(resourceFileToMove.getKey()));
+	if (folderTo.hasFile(resourceFileToMove.getKey()))
+		return;
+
 	const FileHandler::CompletePath newResourcePath(folderTo.getPath(), resourceFileToMove.getPath().getFilenameWithExtention());
 
 	//change paths to make them begin from root application folder instead of project folder
@@ -123,7 +176,6 @@ void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, Resour
 	const FileHandler::Path to_(Project::getPath().toString() + "/" + newResourcePath.getPath().toString());
 
 	folderTo.addFile(ResourceFile(newResourcePath));
-	folderFrom.removeFile(resourceFileToMove.getName());
 
 	FileHandler::copyPastFile(from_, to_); //NOT_SAFE
 }
@@ -131,8 +183,10 @@ void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, Resour
 void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::string& materialModelName, ResourceFolder& folderTo)
 {
 	assert(MaterialModelsFactory::instance().getPtr(materialModelName) != nullptr); //we can't add a second resource with the same name
+	if (MaterialModelsFactory::instance().getPtr(materialModelName) == nullptr)
+		return;
 
-																  //We create and save the new resource
+	//We create and save the new resource
 	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath().toString(), materialName, ".mat");
 	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), materialName, ".mat");
 
@@ -150,11 +204,63 @@ void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::
 void ResourceTree::addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo)
 {
 	assert(folderTo.getSubFolder(folderName) == nullptr);
+	if (folderTo.getSubFolder(folderName) != nullptr)
+		return;
 
 	folderTo.addSubFolder(folderName);
 
 	const FileHandler::Path folderParentPath(Project::getPath().toString() + "/" + folderTo.getPath().toString() + "/");
 	FileHandler::addDirectory(folderName, folderParentPath);
+}
+
+void ResourceTree::moveSubFolderTo(const std::string& folderName, ResourceFolder& folderFrom, ResourceFolder& folderTo)
+{
+	assert(folderTo.getSubFolder(folderName) == nullptr);
+	if (folderTo.getSubFolder(folderName) != nullptr)
+		return;
+	assert(folderFrom.getSubFolder(folderName) != nullptr);
+	if (folderFrom.getSubFolder(folderName) == nullptr)
+		return;
+
+	copySubFolderTo(folderName, folderFrom, folderTo);
+
+	//delete the folder to move
+	deleteSubFolderFrom(folderName, folderFrom);
+}
+
+void ResourceTree::copySubFolderTo(const std::string& folderName, ResourceFolder& folderFrom, ResourceFolder& folderTo)
+{
+	assert(folderTo.getSubFolder(folderName) == nullptr);
+	if (folderTo.getSubFolder(folderName) != nullptr)
+		return;
+	assert(folderFrom.getSubFolder(folderName) != nullptr);
+	if (folderFrom.getSubFolder(folderName) == nullptr)
+		return;
+
+	ResourceFolder* folderToMove = folderFrom.getSubFolder(folderName);
+
+	//create new folder in destination folder
+	addSubFolderTo(folderName, folderTo);
+	ResourceFolder* targetedFolder = folderTo.getSubFolder(folderName);
+	assert(targetedFolder != nullptr);
+	if (targetedFolder == nullptr)
+		return;
+
+	//move files
+	std::vector<ResourceFile>& files = folderToMove->getFiles();
+	const int filesSize = files.size();
+	for (int i = 0; i < filesSize; i++)
+	{
+		copyResourceTo(files[i], *folderToMove, *targetedFolder);
+	}
+
+	//move sub folders
+	std::vector<ResourceFolder>& subFolders = folderToMove->getSubFolders();
+	const int subFolderSize = subFolders.size();
+	for (int i = 0; i < subFolderSize; i++)
+	{
+		copySubFolderTo(subFolders[i].getName(), *folderToMove, *targetedFolder);
+	}
 }
 
 /////////// RESOURCE TREE VIEW /////////////
@@ -250,7 +356,7 @@ ResourceTreeView::~ResourceTreeView()
 
 }
 
-void ResourceTreeView::displayFiles(ResourceFolder* parentFolder, ResourceFolder& currentFolder)
+void ResourceTreeView::displayFiles(ResourceFolder* parentFolder, ResourceFolder& currentFolder, OpenModaleCallback* outOpenModaleCallback)
 {
 
 	for (int fileIdx = 0; fileIdx < currentFolder.fileCount(); fileIdx++)
@@ -263,7 +369,20 @@ void ResourceTreeView::displayFiles(ResourceFolder* parentFolder, ResourceFolder
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
 		if (!currentFile.isBeingRenamed())
+		{
 			ImGui::Button(currentFile.getName().c_str());
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1))
+			{
+				if (outOpenModaleCallback != nullptr)
+				{
+					outOpenModaleCallback->shouldOpen = true;
+					outOpenModaleCallback->modaleName = "resourceFileContextMenu";
+				}
+				m_fileWeRightClicOn = &currentFile;
+				m_folderWeRightClicOn = &currentFolder;
+			}
+		}
 		else
 		{
 			if (currentFile.drawRenamingInputText())
@@ -317,7 +436,7 @@ void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, Res
 			displayFoldersRecusivly(&currentFolder, *itFolder, outOpenModaleCallback, outDropCallback);
 
 		}
-		displayFiles(parentFolder, currentFolder);
+		displayFiles(parentFolder, currentFolder, outOpenModaleCallback);
 
 		ImGui::TreePop();
 	}
@@ -336,7 +455,6 @@ void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, Res
 	}
 
 	//right clic menu open ? 
-	bool shouldOpenPopup = false;
 	if (ImGui::IsMouseHoveringBox(rectMin, rectMax) && ImGui::IsMouseClicked(1))
 	{
 		if (outOpenModaleCallback != nullptr)
@@ -353,13 +471,107 @@ void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, Res
 
 void ResourceTreeView::displayModales()
 {
-	//right clic menu display :
+	//right clic on file menu display :
+	if (ImGui::BeginPopup("resourceFileContextMenu"))
+	{
+		if (ImGui::Button("Copy file."))
+		{
+			ImGui::EndPopup();
+			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
+			{
+				m_fileWaitingPastPath = m_fileWeRightClicOn->getPath();
+				m_shouldMoveFileOrFolder = false;
+				m_isMovingItemFolder = false;
+			}
+		}
+		else if (ImGui::Button("Move file."))
+		{
+			ImGui::EndPopup();
+			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
+			{
+				m_fileWaitingPastPath = m_fileWeRightClicOn->getPath();
+				m_shouldMoveFileOrFolder = true;
+				m_isMovingItemFolder = false;
+			}
+		}
+		else if (ImGui::Button("Delete file."))
+		{
+			ImGui::EndPopup();
+			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
+				ResourceTree::deleteResourceFrom(*m_fileWeRightClicOn, *m_folderWeRightClicOn);
+		}
+		else
+			ImGui::EndPopup();
+	}
+
+	//right clic on folder menu display :
 	if (ImGui::BeginPopup("resourceFolderContextMenu"))
 	{
 		if (ImGui::Button("Add folder."))
 		{
 			ImGui::EndPopup();
 			ImGui::OpenPopupEx("AddFolderModale", true);
+		}
+		else if (ImGui::Button("Copy folder."))
+		{
+			ImGui::EndPopup();
+			if (m_folderWeRightClicOn != nullptr)
+			{
+				m_folderWaitingPastPath = m_folderWeRightClicOn->getPath();
+				m_shouldMoveFileOrFolder = false;
+				m_isMovingItemFolder = true;
+			}
+		}
+		else if (ImGui::Button("Move folder."))
+		{
+			ImGui::EndPopup();
+			if (m_folderWeRightClicOn != nullptr)
+			{
+				m_folderWaitingPastPath = m_folderWeRightClicOn->getPath();
+				m_shouldMoveFileOrFolder = true;
+				m_isMovingItemFolder = true;
+			}
+		}
+		else if (m_isMovingItemFolder == true && m_folderWeRightClicOn != nullptr && ImGui::Button("Past folder."))
+		{
+			ImGui::EndPopup();
+			if (m_folderWeRightClicOn != nullptr)
+			{
+				ResourceFolder* folderToMoveOrCopy = m_model->getSubFolder(m_folderWaitingPastPath);
+				ResourceFolder* parentFolder = m_model->getSubFolder(folderToMoveOrCopy->getParentFolderPath());
+				assert(parentFolder != nullptr);
+
+				if (m_shouldMoveFileOrFolder)
+					ResourceTree::moveSubFolderTo(folderToMoveOrCopy->getName(), *parentFolder, *m_folderWeRightClicOn);
+				else
+					ResourceTree::copySubFolderTo(folderToMoveOrCopy->getName(), *parentFolder, *m_folderWeRightClicOn);
+			}
+		}
+		else if (m_isMovingItemFolder == false && m_fileWeRightClicOn != nullptr && ImGui::Button("Past file."))
+		{
+			ImGui::EndPopup();
+			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
+			{
+				ResourceFile* fileToMoveOrCopy = m_model->getFile(m_fileWaitingPastPath);
+				ResourceFolder* parentFolder = m_model->getSubFolder(fileToMoveOrCopy->getParentFolderPath());
+				assert(parentFolder != nullptr);
+
+				if (m_shouldMoveFileOrFolder)
+					ResourceTree::moveResourceTo(*fileToMoveOrCopy, *parentFolder, *m_folderWeRightClicOn);
+				else
+					ResourceTree::copyResourceTo(*fileToMoveOrCopy, *parentFolder, *m_folderWeRightClicOn);
+			}
+		}
+		else if (ImGui::Button("Delete folder."))
+		{
+			ImGui::EndPopup();
+			if (m_folderWeRightClicOn != nullptr)
+			{
+				ResourceFolder* parentFolder = m_model->getSubFolder(m_folderWeRightClicOn->getParentFolderPath());
+				assert(parentFolder != nullptr);
+
+				ResourceTree::deleteSubFolderFrom(m_folderWeRightClicOn->getName(), *parentFolder);
+			}
 		}
 		else if (ImGui::Button("Add resource."))
 		{
@@ -495,7 +707,7 @@ void ResourceTreeView::popUpToAddMaterial()
 	m_uiString.resize(100);
 	ImGui::InputText("##materialName", &m_uiString[0], 100);
 	assert(m_folderWeRightClicOn != nullptr);
-	if (!m_folderWeRightClicOn->hasFile(m_uiString + ".mat"))
+	if (!m_folderWeRightClicOn->hasFile(ResourceFileKey(ResourceType::MATERIAL, m_uiString)))
 	{
 		ImGui::SameLine();
 		if (ImGui::Button("Validate##AddMaterial") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
@@ -527,7 +739,7 @@ void ResourceTreeView::popUpToAddCubeTexture()
 	m_uiString.resize(100);
 	ImGui::InputText("##fileName", &m_uiString[0], 100);
 	assert(m_folderWeRightClicOn != nullptr);
-	if (!m_folderWeRightClicOn->hasFile(m_uiString + ".ctx"))
+	if (!m_folderWeRightClicOn->hasFile(ResourceFileKey(ResourceType::CUBE_TEXTURE, m_uiString)))
 	{
 		ImGui::SameLine();
 		if (ImGui::Button("Validate##AddFile") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))

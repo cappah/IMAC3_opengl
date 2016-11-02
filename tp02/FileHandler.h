@@ -46,7 +46,7 @@ public:
 	const char* c_str() const { return toString().c_str(); }
 	//operator std::string() const { return toString(); }
 
-	const std::string& operator[](size_t idx) const;
+	std::string operator[](size_t idx) const;
 	size_t size() const;
 	size_t getPathFolderNames(std::vector<std::string>& folderNames) const;
 
@@ -56,6 +56,8 @@ public:
 	void pop_front();
 	void format();
 	bool empty() const;
+
+	Path getSubPath(int begin, int count) const;
 };
 
 std::ofstream& operator<<(std::ofstream& os, const Path& path);
@@ -82,7 +84,8 @@ public:
 	const char* c_str() const { return toString().c_str(); }
 	//operator std::string() const { return toString(); }
 
-	const std::string& operator[](size_t idx);
+	std::string operator[](size_t idx) const;
+	size_t size() const;
 
 	const Path& getPath() const;
 	const std::string& getFilename() const;
@@ -130,6 +133,7 @@ bool fileExists(const CompletePath& completePath);
 
 void addDirectories(const Path& path);
 void addDirectory(const std::string& name, const Path& path);
+void removeDirectory(const Path& path);
 
 //string helper
 std::vector<std::string> splitString(const std::string& s, char delim);

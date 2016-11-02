@@ -101,6 +101,7 @@ template<typename T>
 void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
 {
 	T* newResource = new T(path);
+	newResource->init(path);
 
 	m_resources[path] = newResource;
 	m_resourceMapping[path] = ++s_resourceCount;

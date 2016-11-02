@@ -533,9 +533,10 @@ public:
 	{}
 
 	template<typename T>
-	void add(const std::string& name)
+	bool add(const std::string& name)
 	{
 		m_materials[name] = new T;
+		return true;
 	}
 
 	const Material* getPtr(const std::string& name)
