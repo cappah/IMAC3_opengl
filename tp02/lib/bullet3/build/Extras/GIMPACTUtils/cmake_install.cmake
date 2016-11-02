@@ -1,8 +1,8 @@
-# Install script for directory: D:/programmation/libraries/bullet3-2.83.7/Extras/GIMPACTUtils
+# Install script for directory: E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/Extras/GIMPACTUtils
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "D:/programmation/libraries/BULLET_PHYSIC")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/BULLET_PHYSICS")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

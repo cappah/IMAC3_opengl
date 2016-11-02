@@ -114,7 +114,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimpd.lib;glu32.lib;opengl32.lib;gdi32.lib;winmm.lib;user32.lib;jsoncpp.lib;fileHandling.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimpd.lib;glu32.lib;opengl32.lib;gdi32.lib;winmm.lib;user32.lib;jsoncpp.lib;fileHandling.lib;LinearMath.lib;BulletCollision.lib;BulletDynamics.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)aogl_d.exe</OutputFile>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <AdditionalLibraryDirectories>$(ProjectDir)bin\debug;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -176,7 +176,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>assimp.lib;glu32.lib;opengl32.lib;gdi32.lib;winmm.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp.lib;glu32.lib;opengl32.lib;gdi32.lib;winmm.lib;user32.lib;LinearMath.lib;BulletCollision.lib;BulletDynamics.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)aogl.exe</OutputFile>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -283,6 +283,9 @@
     <ClCompile Include="WindZone.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="FileHandling\FileHandling.vcxproj">
+      <Project>{ef2f6e9c-db43-452c-9ddf-b4feef91dfc6}</Project>
+    </ProjectReference>
     <ProjectReference Include="imgui.vcxproj">
       <Project>{0098A80F-6CAC-D0C0-352E-7420A101CDF1}</Project>
     </ProjectReference>
@@ -292,14 +295,8 @@
     <ProjectReference Include="glew.vcxproj">
       <Project>{7463977C-609A-980D-0987-7E10F59C140F}</Project>
     </ProjectReference>
-    <ProjectReference Include="lib\bullet3\build\src\BulletCollision\BulletCollision.vcxproj">
-      <Project>{99009089-69ec-3693-a73b-4edb900e2fd9}</Project>
-    </ProjectReference>
-    <ProjectReference Include="lib\bullet3\build\src\BulletDynamics\BulletDynamics.vcxproj">
-      <Project>{1c0b9962-7cf8-3208-9708-13843127be24}</Project>
-    </ProjectReference>
-    <ProjectReference Include="lib\bullet3\build\src\LinearMath\LinearMath.vcxproj">
-      <Project>{4d3e2878-bc40-3640-9221-cb5b2e8d8d28}</Project>
+    <ProjectReference Include="JsonCpp.vcxproj">
+      <Project>{6311edd4-a67e-4057-a858-a417fb6f7bd1}</Project>
     </ProjectReference>
     <ProjectReference Include="stb.vcxproj">
       <Project>{6EAB880B-DAB4-887C-6330-9F7CCF38947C}</Project>

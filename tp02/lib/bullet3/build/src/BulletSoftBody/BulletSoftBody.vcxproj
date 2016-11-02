@@ -19,8 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGUID>{303C12A0-AD84-317D-9C80-A957FA3F72C2}</ProjectGUID>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <ProjectGUID>{EED92EDD-ECF9-4158-B582-27DBD4DBE222}</ProjectGUID>
     <Keyword>Win32Proj</Keyword>
     <Platform>Win32</Platform>
     <ProjectName>BulletSoftBody</ProjectName>
@@ -59,26 +58,26 @@
   <PropertyGroup Label="UserMacros" />
     <PropertyGroup>
       <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\programmation\libraries\bullet3-2.83.7\build\lib\Debug\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\lib\Debug\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BulletSoftBody.dir\Debug\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BulletSoftBody_Debug</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\programmation\libraries\bullet3-2.83.7\build\lib\Release\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\lib\Release\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BulletSoftBody.dir\Release\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">BulletSoftBody</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\programmation\libraries\bullet3-2.83.7\build\lib\MinSizeRel\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\lib\MinSizeRel\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">BulletSoftBody.dir\MinSizeRel\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">BulletSoftBody_MinsizeRel</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\programmation\libraries\bullet3-2.83.7\build\lib\RelWithDebInfo\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\lib\RelWithDebInfo\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">BulletSoftBody.dir\RelWithDebInfo\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">BulletSoftBody_RelWithDebugInfo</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
     </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -89,7 +88,7 @@
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_DEBUG;_DEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -97,23 +96,20 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_DEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
-    <Lib>
-      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -122,7 +118,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -131,23 +127,20 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
-    <Lib>
-      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -156,7 +149,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <Optimization>MinSpace</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -165,23 +158,20 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
-    <Lib>
-      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -191,7 +181,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -199,25 +189,22 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\programmation\libraries\bullet3-2.83.7\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
-    <Lib>
-      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule D:/programmation/libraries/bullet3-2.83.7/src/BulletSoftBody/CMakeLists.txt</Message>
+    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletSoftBody/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
-"C:\Program Files (x86)\CMake\bin\cmake.exe" -HD:/programmation/libraries/bullet3-2.83.7 -BD:/programmation/libraries/bullet3-2.83.7/build --check-stamp-file D:\programmation\libraries\bullet3-2.83.7\build\src\BulletSoftBody\CMakeFiles\generate.stamp
+"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\src\BulletSoftBody\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -225,12 +212,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:/programmation/libraries/bullet3-2.83.7/src/BulletSoftBody/CMakeLists.txt;D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt;D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\programmation\libraries\bullet3-2.83.7\build\src\BulletSoftBody\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletSoftBody/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\src\BulletSoftBody\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/programmation/libraries/bullet3-2.83.7/src/BulletSoftBody/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletSoftBody/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
-"C:\Program Files (x86)\CMake\bin\cmake.exe" -HD:/programmation/libraries/bullet3-2.83.7 -BD:/programmation/libraries/bullet3-2.83.7/build --check-stamp-file D:\programmation\libraries\bullet3-2.83.7\build\src\BulletSoftBody\CMakeFiles\generate.stamp
+"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\src\BulletSoftBody\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -238,12 +225,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:/programmation/libraries/bullet3-2.83.7/src/BulletSoftBody/CMakeLists.txt;D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt;D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\programmation\libraries\bullet3-2.83.7\build\src\BulletSoftBody\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletSoftBody/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\src\BulletSoftBody\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule D:/programmation/libraries/bullet3-2.83.7/src/BulletSoftBody/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletSoftBody/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
-"C:\Program Files (x86)\CMake\bin\cmake.exe" -HD:/programmation/libraries/bullet3-2.83.7 -BD:/programmation/libraries/bullet3-2.83.7/build --check-stamp-file D:\programmation\libraries\bullet3-2.83.7\build\src\BulletSoftBody\CMakeFiles\generate.stamp
+"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\src\BulletSoftBody\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -251,12 +238,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:/programmation/libraries/bullet3-2.83.7/src/BulletSoftBody/CMakeLists.txt;D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt;D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\programmation\libraries\bullet3-2.83.7\build\src\BulletSoftBody\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletSoftBody/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\src\BulletSoftBody\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule D:/programmation/libraries/bullet3-2.83.7/src/BulletSoftBody/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletSoftBody/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
-"C:\Program Files (x86)\CMake\bin\cmake.exe" -HD:/programmation/libraries/bullet3-2.83.7 -BD:/programmation/libraries/bullet3-2.83.7/build --check-stamp-file D:\programmation\libraries\bullet3-2.83.7\build\src\BulletSoftBody\CMakeFiles\generate.stamp
+"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\src\BulletSoftBody\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -264,36 +251,36 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:/programmation/libraries/bullet3-2.83.7/src/BulletSoftBody/CMakeLists.txt;D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt;D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\programmation\libraries\bullet3-2.83.7\build\src\BulletSoftBody\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletSoftBody/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\src\BulletSoftBody\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBody.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodyData.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodyHelpers.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftRigidCollisionAlgorithm.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftRigidDynamicsWorld.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftSoftCollisionAlgorithm.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSparseSDF.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodySolvers.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btDefaultSoftBodySolver.h" />
-    <ClInclude Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodySolverVertexBuffer.h" />
-    <ClCompile Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBody.cpp"  />
-    <ClCompile Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.cpp"  />
-    <ClCompile Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodyHelpers.cpp"  />
-    <ClCompile Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.cpp"  />
-    <ClCompile Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftRigidCollisionAlgorithm.cpp"  />
-    <ClCompile Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftRigidDynamicsWorld.cpp"  />
-    <ClCompile Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btSoftSoftCollisionAlgorithm.cpp"  />
-    <ClCompile Include="D:\programmation\libraries\bullet3-2.83.7\src\BulletSoftBody\btDefaultSoftBodySolver.cpp"  />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBody.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodyData.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodyHelpers.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftRigidCollisionAlgorithm.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftRigidDynamicsWorld.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftSoftCollisionAlgorithm.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSparseSDF.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodySolvers.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btDefaultSoftBodySolver.h" />
+    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodySolverVertexBuffer.h" />
+    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBody.cpp"  />
+    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodyConcaveCollisionAlgorithm.cpp"  />
+    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodyHelpers.cpp"  />
+    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftBodyRigidBodyCollisionConfiguration.cpp"  />
+    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftRigidCollisionAlgorithm.cpp"  />
+    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftRigidDynamicsWorld.cpp"  />
+    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btSoftSoftCollisionAlgorithm.cpp"  />
+    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletSoftBody\btDefaultSoftBodySolver.cpp"  />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="D:/programmation/libraries/bullet3-2.83.7/build/ZERO_CHECK.vcxproj">
-      <Project>BA3DA88F-10F2-3433-93A8-8EF8F482093B</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/ZERO_CHECK.vcxproj">
+      <Project>BB9549D9-5ADD-4CEA-A3CD-95F088BBF4FB</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
