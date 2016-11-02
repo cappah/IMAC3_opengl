@@ -1,4 +1,4 @@
-# Install script for directory: E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/Extras
+# Install script for directory: D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/Extras
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -29,11 +29,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/Extras/Serialize/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/Extras/ConvexDecomposition/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/Extras/HACD/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/Extras/GIMPACTUtils/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/Extras/InverseDynamics/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/Serialize/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/ConvexDecomposition/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/HACD/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/GIMPACTUtils/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/InverseDynamics/cmake_install.cmake")
 
 endif()
 

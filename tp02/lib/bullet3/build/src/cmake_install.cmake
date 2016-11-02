@@ -1,4 +1,4 @@
-# Install script for directory: E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src
+# Install script for directory: D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -29,17 +29,17 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3OpenCL/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Serialize/Bullet2FileLoader/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Dynamics/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Collision/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Geometry/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Common/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletInverseDynamics/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletSoftBody/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletCollision/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletDynamics/cmake_install.cmake")
-  include("E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/LinearMath/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3OpenCL/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Serialize/Bullet2FileLoader/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Dynamics/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Collision/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Geometry/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Common/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletInverseDynamics/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletSoftBody/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletCollision/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletDynamics/cmake_install.cmake")
+  include("D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/LinearMath/cmake_install.cmake")
 
 endif()
 

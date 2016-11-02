@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGUID>{90E2490D-5C08-4660-A42D-3F4242B42148}</ProjectGUID>
+    <ProjectGUID>{7FDD9AB5-8E92-3741-A7CE-1D4D5D7741AB}</ProjectGUID>
     <Keyword>Win32Proj</Keyword>
     <Platform>Win32</Platform>
     <ProjectName>Test_BulletDynamics</ProjectName>
@@ -58,25 +58,25 @@
   <PropertyGroup Label="UserMacros" />
     <PropertyGroup>
       <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\Debug\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\Debug\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Test_BulletDynamics.dir\Debug\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Test_BulletDynamics</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.exe</TargetExt>
       <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
       <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\Release\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\Release\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Test_BulletDynamics.dir\Release\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Test_BulletDynamics</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.exe</TargetExt>
       <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
       <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\MinSizeRel\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\MinSizeRel\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Test_BulletDynamics.dir\MinSizeRel\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Test_BulletDynamics</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.exe</TargetExt>
       <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkIncremental>
       <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">true</GenerateManifest>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\RelWithDebInfo\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\RelWithDebInfo\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Test_BulletDynamics.dir\RelWithDebInfo\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Test_BulletDynamics</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.exe</TargetExt>
@@ -85,7 +85,7 @@
     </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -104,10 +104,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_DEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;USE_GTEST;_VARIADIC_MAX=10;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -115,13 +115,13 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalOptions> /machine:X86 /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\..\..\lib\Debug\BulletDynamics_Debug.lib;..\..\..\lib\Debug\BulletCollision_Debug.lib;..\..\..\lib\Debug\LinearMath_Debug.lib;..\..\..\lib\Debug\gtest_Debug.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Debug/Test_BulletDynamics.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Debug/Test_BulletDynamics.pdb</ProgramDataBaseFile>
+      <ImportLibrary>D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Debug/Test_BulletDynamics.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Debug/Test_BulletDynamics.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version></Version>
     </Link>
@@ -131,7 +131,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -149,10 +149,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;USE_GTEST;_VARIADIC_MAX=10;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -163,10 +163,10 @@
       <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\..\..\lib\Release\BulletDynamics.lib;..\..\..\lib\Release\BulletCollision.lib;..\..\..\lib\Release\LinearMath.lib;..\..\..\lib\Release\gtest.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>No</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Release/Test_BulletDynamics.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Release/Test_BulletDynamics.pdb</ProgramDataBaseFile>
+      <ImportLibrary>D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Release/Test_BulletDynamics.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Release/Test_BulletDynamics.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version></Version>
     </Link>
@@ -176,7 +176,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -194,10 +194,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;USE_GTEST;_VARIADIC_MAX=10;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -208,10 +208,10 @@
       <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\..\..\lib\MinSizeRel\BulletDynamics_MinsizeRel.lib;..\..\..\lib\MinSizeRel\BulletCollision_MinsizeRel.lib;..\..\..\lib\MinSizeRel\LinearMath_MinsizeRel.lib;..\..\..\lib\MinSizeRel\gtest_MinsizeRel.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>No</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/MinSizeRel/Test_BulletDynamics.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/MinSizeRel/Test_BulletDynamics.pdb</ProgramDataBaseFile>
+      <ImportLibrary>D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/MinSizeRel/Test_BulletDynamics.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/MinSizeRel/Test_BulletDynamics.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version></Version>
     </Link>
@@ -221,7 +221,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -239,10 +239,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;USE_GTEST;_VARIADIC_MAX=10;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\..\src;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\..\..\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -250,13 +250,13 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalOptions> /machine:X86 /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\..\..\lib\RelWithDebInfo\BulletDynamics_RelWithDebugInfo.lib;..\..\..\lib\RelWithDebInfo\BulletCollision_RelWithDebugInfo.lib;..\..\..\lib\RelWithDebInfo\LinearMath_RelWithDebugInfo.lib;..\..\..\lib\RelWithDebInfo\gtest_RelWithDebugInfo.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/RelWithDebInfo/Test_BulletDynamics.lib</ImportLibrary>
-      <ProgramDataBaseFile>E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/RelWithDebInfo/Test_BulletDynamics.pdb</ProgramDataBaseFile>
+      <ImportLibrary>D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/RelWithDebInfo/Test_BulletDynamics.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/RelWithDebInfo/Test_BulletDynamics.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
       <Version></Version>
     </Link>
@@ -265,10 +265,10 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt</Message>
+    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
-"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -276,12 +276,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
-"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -289,12 +289,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
-"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -302,12 +302,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
-"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -315,29 +315,29 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/BulletDynamics/pendulum/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\BulletDynamics\pendulum\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\BulletDynamics\pendulum\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\examples\MultiBody\Pendulum.cpp"  />
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\examples\MultiBody\Pendulum.cpp"  />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletCollision/BulletCollision.vcxproj">
-      <Project>F6BADE45-AEE9-460B-87FC-2DED3A2C75C4</Project>
+    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/ZERO_CHECK.vcxproj">
+      <Project>AD11B5B7-E64D-3DF6-81A1-81D23850EFF4</Project>
     </ProjectReference>
-    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletDynamics/BulletDynamics.vcxproj">
-      <Project>BE5D0181-C643-4651-8940-F3EEE82281BE</Project>
+    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletCollision/BulletCollision.vcxproj">
+      <Project>7F216112-F925-371E-A722-D57EF39402AB</Project>
     </ProjectReference>
-    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/LinearMath/LinearMath.vcxproj">
-      <Project>7F0F6549-046B-4FD2-BE66-75D7A46F0406</Project>
+    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletDynamics/BulletDynamics.vcxproj">
+      <Project>95BF03AA-291F-3DAB-9FEE-F26C951467E1</Project>
     </ProjectReference>
-    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/ZERO_CHECK.vcxproj">
-      <Project>BB9549D9-5ADD-4CEA-A3CD-95F088BBF4FB</Project>
+    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/LinearMath/LinearMath.vcxproj">
+      <Project>336405B5-7DAF-3D9D-B04A-3C91349C0710</Project>
     </ProjectReference>
-    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/test/gtest-1.7.0/gtest.vcxproj">
-      <Project>85F8727F-E700-4C55-ACD8-2FB515A99DF1</Project>
+    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/gtest-1.7.0/gtest.vcxproj">
+      <Project>2950A34E-9700-39D0-9266-155462578E92</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

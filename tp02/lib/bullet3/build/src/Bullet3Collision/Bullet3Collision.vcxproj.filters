@@ -1,117 +1,117 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvh.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvhBroadphase.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvhBroadphase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPairCache.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPairCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3ConvexUtility.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3ConvexUtility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3CpuNarrowPhase.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3CpuNarrowPhase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3BroadphaseCallback.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3BroadphaseCallback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvh.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvhBroadphase.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvhBroadphase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPair.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPair.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPairCache.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPairCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\shared\b3Aabb.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\BroadPhaseCollision\shared\b3Aabb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3BvhSubtreeInfoData.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3BvhSubtreeInfoData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3BvhTraversal.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3BvhTraversal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ClipFaces.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ClipFaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3Collidable.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3Collidable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3Contact4Data.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3Contact4Data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ContactConvexConvexSAT.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ContactConvexConvexSAT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ContactSphereSphere.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ContactSphereSphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ConvexPolyhedronData.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ConvexPolyhedronData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3FindConcaveSatAxis.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3FindConcaveSatAxis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3FindSeparatingAxis.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3FindSeparatingAxis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3MprPenetration.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3MprPenetration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3NewContactReduction.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3NewContactReduction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3QuantizedBvhNodeData.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3QuantizedBvhNodeData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ReduceContacts.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ReduceContacts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3RigidBodyData.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3RigidBodyData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3UpdateAabbs.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3UpdateAabbs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3Config.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3Config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3Contact4.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3Contact4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3ConvexUtility.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3ConvexUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3CpuNarrowPhase.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3CpuNarrowPhase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3RaycastInfo.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3RaycastInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3RigidBodyCL.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3RigidBodyCL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\CMakeLists.txt" />
+    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Collision\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{34D1954A-5257-44B4-B98D-92E53AFE16D3}</UniqueIdentifier>
+      <UniqueIdentifier>{1FDEFE28-62DD-321F-BE7D-6E692CAB57E5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{80FCBD63-927D-410C-8983-0694F366BCA3}</UniqueIdentifier>
+      <UniqueIdentifier>{E4D2CE41-BBC3-3D21-8F77-2232EC0759E9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

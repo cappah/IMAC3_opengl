@@ -1,78 +1,78 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3ContactSolverInfo.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3ContactSolverInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3JacobianEntry.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3JacobianEntry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3SolverBody.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3SolverBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3SolverConstraint.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3SolverConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\shared\b3ContactConstraint4.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\shared\b3ContactConstraint4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\shared\b3ConvertConstraint4.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\shared\b3ConvertConstraint4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\shared\b3Inertia.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\shared\b3Inertia.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\shared\b3IntegrateTransforms.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\shared\b3IntegrateTransforms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\CMakeLists.txt" />
+    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\Bullet3Dynamics\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{34D1954A-5257-44B4-B98D-92E53AFE16D3}</UniqueIdentifier>
+      <UniqueIdentifier>{1FDEFE28-62DD-321F-BE7D-6E692CAB57E5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{80FCBD63-927D-410C-8983-0694F366BCA3}</UniqueIdentifier>
+      <UniqueIdentifier>{E4D2CE41-BBC3-3D21-8F77-2232EC0759E9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

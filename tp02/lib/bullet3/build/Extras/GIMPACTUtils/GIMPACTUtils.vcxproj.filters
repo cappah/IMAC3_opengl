@@ -1,24 +1,24 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\GIMPACTUtils\btGImpactConvexDecompositionShape.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\GIMPACTUtils\btGImpactConvexDecompositionShape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\GIMPACTUtils\btGImpactConvexDecompositionShape.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\GIMPACTUtils\btGImpactConvexDecompositionShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\GIMPACTUtils\CMakeLists.txt" />
+    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\GIMPACTUtils\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{34D1954A-5257-44B4-B98D-92E53AFE16D3}</UniqueIdentifier>
+      <UniqueIdentifier>{1FDEFE28-62DD-321F-BE7D-6E692CAB57E5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{80FCBD63-927D-410C-8983-0694F366BCA3}</UniqueIdentifier>
+      <UniqueIdentifier>{E4D2CE41-BBC3-3D21-8F77-2232EC0759E9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

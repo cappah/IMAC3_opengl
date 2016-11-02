@@ -1,4 +1,4 @@
-# Install script for directory: E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0
+# Install script for directory: D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

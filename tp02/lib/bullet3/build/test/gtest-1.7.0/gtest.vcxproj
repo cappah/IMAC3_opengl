@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGUID>{85F8727F-E700-4C55-ACD8-2FB515A99DF1}</ProjectGUID>
+    <ProjectGUID>{2950A34E-9700-39D0-9266-155462578E92}</ProjectGUID>
     <Keyword>Win32Proj</Keyword>
     <Platform>Win32</Platform>
     <ProjectName>gtest</ProjectName>
@@ -58,26 +58,26 @@
   <PropertyGroup Label="UserMacros" />
     <PropertyGroup>
       <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\lib\Debug\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\lib\Debug\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">gtest.dir\Debug\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">gtest_Debug</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\lib\Release\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\lib\Release\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">gtest.dir\Release\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">gtest</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\lib\MinSizeRel\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\lib\MinSizeRel\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">gtest.dir\MinSizeRel\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">gtest_MinsizeRel</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\lib\RelWithDebInfo\</OutDir>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\lib\RelWithDebInfo\</OutDir>
       <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">gtest.dir\RelWithDebInfo\</IntDir>
       <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">gtest_RelWithDebugInfo</TargetName>
       <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
     </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -96,20 +96,23 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_DEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;_VARIADIC_MAX=10;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
+    <Lib>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -127,20 +130,23 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;_VARIADIC_MAX=10;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
+    <Lib>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -158,20 +164,23 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;_VARIADIC_MAX=10;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
+    <Lib>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -189,22 +198,25 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;NO_OPENGL3;_VARIADIC_MAX=10;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\.;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
+    <Lib>
+      <AdditionalOptions> /machine:X86 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt</Message>
+    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
-"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -212,12 +224,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
-"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -225,12 +237,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
-"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -238,12 +250,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
-"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -251,38 +263,38 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/test/gtest-1.7.0/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\test\gtest-1.7.0\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-death-test.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-message.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-param-test.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-printers.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-spi.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-test-part.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-typed-test.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest_pred_impl.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest_prod.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-death-test-internal.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-filepath.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-internal.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-linked_ptr.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-param-util-generated.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-param-util.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-port.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-string.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-tuple.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-type-util.h" />
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\src\gtest-internal-inl.h" />
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\src\gtest-all.cc"  />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-death-test.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-message.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-param-test.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-printers.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-spi.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-test-part.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest-typed-test.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest_pred_impl.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\gtest_prod.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-death-test-internal.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-filepath.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-internal.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-linked_ptr.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-param-util-generated.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-param-util.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-port.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-string.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-tuple.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\include\gtest\internal\gtest-type-util.h" />
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\src\gtest-internal-inl.h" />
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\test\gtest-1.7.0\src\gtest-all.cc"  />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/ZERO_CHECK.vcxproj">
-      <Project>BB9549D9-5ADD-4CEA-A3CD-95F088BBF4FB</Project>
+    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/ZERO_CHECK.vcxproj">
+      <Project>AD11B5B7-E64D-3DF6-81A1-81D23850EFF4</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

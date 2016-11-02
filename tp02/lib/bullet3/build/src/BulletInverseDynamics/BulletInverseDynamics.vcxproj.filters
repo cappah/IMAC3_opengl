@@ -1,63 +1,63 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDMath.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\MultiBodyTree.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\MultiBodyTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeInitCache.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeInitCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeImpl.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeImpl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDConfig.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDConfig.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDConfigEigen.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDConfigEigen.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDMath.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDMath.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDConfigBuiltin.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDConfigBuiltin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDErrorMessages.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\IDErrorMessages.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\MultiBodyTree.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\MultiBodyTree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\IDEigenInterface.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\IDEigenInterface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\IDMatVec.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\IDMatVec.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\IDLinearMathInterface.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\IDLinearMathInterface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeImpl.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeImpl.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeInitCache.hpp">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeInitCache.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\CMakeLists.txt" />
+    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\src\BulletInverseDynamics\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{34D1954A-5257-44B4-B98D-92E53AFE16D3}</UniqueIdentifier>
+      <UniqueIdentifier>{1FDEFE28-62DD-321F-BE7D-6E692CAB57E5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{80FCBD63-927D-410C-8983-0694F366BCA3}</UniqueIdentifier>
+      <UniqueIdentifier>{E4D2CE41-BBC3-3D21-8F77-2232EC0759E9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

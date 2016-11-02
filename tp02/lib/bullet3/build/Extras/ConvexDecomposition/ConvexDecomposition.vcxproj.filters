@@ -1,96 +1,96 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\bestfitobb.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\bestfitobb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\ConvexBuilder.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\ConvexBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_wavefront.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_wavefront.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\fitsphere.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\fitsphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\meshvolume.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\meshvolume.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\raytri.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\raytri.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\vlookup.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\vlookup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\bestfit.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\bestfit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_hull.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_hull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\ConvexDecomposition.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\ConvexDecomposition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\concavity.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\concavity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\float_math.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\float_math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\planetri.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\planetri.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\splitplane.cpp">
+    <ClCompile Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\splitplane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\ConvexDecomposition.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\ConvexDecomposition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_vector.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\concavity.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\concavity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\bestfitobb.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\bestfitobb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\ConvexBuilder.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\ConvexBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_wavefront.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_wavefront.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\fitsphere.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\fitsphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\meshvolume.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\meshvolume.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\raytri.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\raytri.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\vlookup.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\vlookup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\bestfit.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\bestfit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_hull.h">
+    <ClInclude Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\cd_hull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\CMakeLists.txt" />
+    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\Extras\ConvexDecomposition\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{34D1954A-5257-44B4-B98D-92E53AFE16D3}</UniqueIdentifier>
+      <UniqueIdentifier>{1FDEFE28-62DD-321F-BE7D-6E692CAB57E5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{80FCBD63-927D-410C-8983-0694F366BCA3}</UniqueIdentifier>
+      <UniqueIdentifier>{E4D2CE41-BBC3-3D21-8F77-2232EC0759E9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
