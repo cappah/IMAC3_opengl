@@ -128,20 +128,21 @@ void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, Resour
 	FileHandler::copyPastFile(from_, to_); //NOT_SAFE
 }
 
-void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::string& ShaderProgramName, ResourceFolder& folderTo)
+void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::string& materialModelName, ResourceFolder& folderTo)
 {
-	assert(!getProgramFactory().contains(ShaderProgramName)); //we can't add a second resource with the same name
+	assert(MaterialModelsFactory::instance().getPtr(materialModelName) != nullptr); //we can't add a second resource with the same name
 
 																  //We create and save the new resource
-	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath(), materialName, ".mat");
+	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath().toString(), materialName, ".mat");
+	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), materialName, ".mat");
 
 	//TODO 01
 	//create new instance
-	//Material* newMaterial = getMaterialFactory().createNewResource(getProgramFactory().get(materialName));
-	//newMaterial->save(resourceCompletePath);
+	Material* newMaterial = MaterialModelsFactory::instance().getInstance(materialModelName);
+	newMaterial->save(resourceCompletePath);
 
-	////we store the resource in its factory
-	//getMaterialFactory().add(resourceCompletePath, newMaterial);
+	//we store the resource in its factory
+	getMaterialFactory().add(resourceCompletePath, newMaterial);
 
 	//TODO : Add resources
 }
@@ -432,6 +433,7 @@ void ResourceTreeView::popUpToChooseMaterial()
 {
 	bool shouldEndPopup = true;
 	int tmpProgramIdx = 0;
+	/*
 	for (auto& it = getProgramFactory().resourceBegin(); it != getProgramFactory().resourceEnd(); it++)
 	{
 		const std::string matName = it->first.getFilename();
@@ -449,6 +451,23 @@ void ResourceTreeView::popUpToChooseMaterial()
 	}
 
 	for (auto& it = getProgramFactory().defaultResourceBegin(); it != getProgramFactory().defaultResourceEnd(); it++)
+	{
+		const std::string matName = it->first;
+		const std::string btnLabel = matName + "##" + std::to_string(tmpProgramIdx++);
+
+		if (ImGui::Button(btnLabel.data()))
+		{
+			m_chooseMaterialName = matName;
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("AddMaterialPopUp", true);
+			shouldEndPopup = false;
+		}
+		//else
+		//	ImGui::EndPopup();
+	}*/
+
+
+	for (auto& it = MaterialModelsFactory::instance().begin(); it != MaterialModelsFactory::instance().begin(); it++)
 	{
 		const std::string matName = it->first;
 		const std::string btnLabel = matName + "##" + std::to_string(tmpProgramIdx++);

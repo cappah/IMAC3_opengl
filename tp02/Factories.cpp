@@ -19,11 +19,17 @@ void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsig
 }
 
 // Creation : 
-template<>
-void ResourceFactory<Material>::createNewResource(const FileHandler::CompletePath& path)
-{
-	//TODO 01 : Material
-}
+//template<>
+//Material* ResourceFactory<Material>::createNewResource(const FileHandler::CompletePath& path, void* data)
+//{
+//	//TODO 01
+//
+//	std::string* materialModelName = static_cast<std::string>(data);
+//
+//	Material* newMaterial = MaterialModelsFactory::instance().getInstance(materialModelName);
+//	
+//	return newMaterial;
+//}
 
 
 

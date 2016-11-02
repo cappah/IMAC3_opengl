@@ -33,7 +33,7 @@ public:
 	ResourceFactory();
 
 	//create the nex resource at given path. tell the resource tree to effectivly add a new file
-	void createNewResource(const FileHandler::CompletePath& path);
+	//void createNewResource(const FileHandler::CompletePath& path);
 	//add a resource which have already been created/loaded by the resource tree
 	void add(const FileHandler::CompletePath& path);
 	template<typename U>
@@ -81,12 +81,12 @@ ResourceFactory<T>::ResourceFactory()
 }
 
 //NOT DEFAULTS
-
-template<typename T>
-void ResourceFactory<T>::createNewResource(const FileHandler::CompletePath& path)
-{
-	assert(0 && "error : createNewResource() function hasn't been specialized for the given resource. The resource can't be created");
-}
+//
+//template<typename T>
+//void ResourceFactory<T>::createNewResource(const FileHandler::CompletePath& path)
+//{
+//	assert(0 && "error : createNewResource() function hasn't been specialized for the given resource. The resource can't be created");
+//}
 
 template<typename T>
 void ResourceFactory<T>::add(const FileHandler::CompletePath& path, T* value)
@@ -300,8 +300,8 @@ void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsig
 
 // Creation : 
 
-template<>
-void ResourceFactory<Material>::createNewResource(const FileHandler::CompletePath& path);
+//template<>
+//void ResourceFactory<Material>::createNewResource(const FileHandler::CompletePath& path);
 
 //Initialisations : 
 

@@ -523,13 +523,13 @@ public:
 //helpers : 
 
 
-class MaterialFactory : public ISingleton<MaterialFactory>
+class MaterialModelsFactory : public ISingleton<MaterialModelsFactory>
 {
 private:
 	std::map<std::string, const Material*> m_materials;
 
 public:
-	MaterialFactory()
+	MaterialModelsFactory()
 	{}
 
 	template<typename T>
@@ -559,10 +559,10 @@ public:
 	}
 
 
-	SINGLETON_IMPL(MaterialFactory)
+	SINGLETON_IMPL(MaterialModelsFactory)
 };
 
-#define REGISTER_MATERIAL(name, type) static bool isRegister = MaterialFactory::instance().add<type>(name);
+#define REGISTER_MATERIAL(name, type) static bool isRegister = MaterialModelsFactory::instance().add<type>(name);
 
 namespace ResourceHandling
 {
