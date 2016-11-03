@@ -266,8 +266,11 @@ void ResourceFactory<T>::load(Json::Value & entityRoot)
 			add(FileHandler::CompletePath(resourcePath), resourceHashKey);
 
 		if (resourceCount < resourceHashKey )
-			s_resourceCount = resourceHashKey;
+			resourceCount = resourceHashKey;
 	}
+
+	if (s_resourceCount < resourceCount)
+		s_resourceCount = resourceCount;
 }
 
 template<typename T>

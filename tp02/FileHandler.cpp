@@ -42,15 +42,7 @@ void Path::push_back(const std::string& folderName)
 
 	m_data.append(folderName, offset, folderName.size() - offset);
 
-	char data_last = *m_data.end();
-	if (data_last != '/')
-	{
-		if (data_last == '\\')
-		{
-			m_data.pop_back();
-		}
-		m_data.push_back('/');
-	}
+	format();
 }
 
 void Path::push_back(const Path& subPath)
@@ -60,7 +52,9 @@ void Path::push_back(const Path& subPath)
 
 void Path::pop_back()
 {
-	size_t cutIdx = m_data.find_last_of('/', m_data.size() - 1);
+	assert(m_data.back() == '/');
+
+	size_t cutIdx = m_data.find_last_of('/', m_data.size() - 2);
 	m_data = m_data.substr(0, cutIdx + 1);
 	format();
 }
@@ -90,14 +84,15 @@ std::string Path::operator[](size_t idx) const
 
 size_t Path::size() const
 {
-	size_t size = 0;
-	size_t cutPos = m_data.find_first_of("/\\");
+	size_t size = -1;
+	size_t cutPos = 0; // m_data.find_first_of("/\\");
 
 	while (cutPos != std::string::npos)
 	{
 		cutPos = m_data.find_first_of("/\\", cutPos + 1);
 		size++;
 	}
+
 	return size;
 }
 
@@ -124,6 +119,8 @@ void Path::format()
 {
 	if (m_data.empty())
 		return;
+
+	m_data.shrink_to_fit();
 
 	size_t foundPos = m_data.find_first_of('\\');
 	while (foundPos != std::string::npos)
@@ -154,6 +151,25 @@ void Path::format()
 bool Path::empty() const
 {
 	return m_data.empty();
+}
+
+std::string Path::back() const
+{
+	assert(m_data.back() == '/');
+
+	size_t cutPos = m_data.find_last_of('/', m_data.size() - 2);
+	size_t length = 0;
+	if (cutPos == std::string::npos)
+	{
+		cutPos = 0;
+		length = m_data.size() - 2;
+	}
+	else
+	{
+		cutPos++;
+		length = (m_data.size() - cutPos) - 1;
+	}
+	return m_data.substr(cutPos, length);
 }
 
 Path Path::getSubPath(int begin, int count) const
@@ -346,6 +362,9 @@ void CompletePath::format()
 {
 	//format path
 	m_path.format();
+
+	m_fileName.shrink_to_fit();
+	m_extention.shrink_to_fit();
 
 	if (!m_fileName.empty())
 	{
@@ -703,6 +722,56 @@ void deleteFile(const CompletePath& completePath)
 
 	if(fileExists(completePath))
 		std::remove(completePath.c_str());
+}
+
+void renameFile(const CompletePath &filePath, const std::string& newFileName)
+{
+	assert(fileExists(filePath));
+
+	CompletePath newFilePath(filePath.getPath(), newFileName, filePath.getExtention());
+
+	assert(!fileExists(newFilePath));
+	if (fileExists(newFilePath))
+		return;
+
+	std::rename(filePath.toString().data(), newFilePath.toString().data());
+}
+
+void renameDirectory(const Path &directoryPath, const std::string& newDirectoryName)
+{
+	assert(directoryExists(directoryPath));
+
+	Path newDirectoryPath = directoryPath;
+	newDirectoryPath.pop_back();
+	newDirectoryPath.push_back(newDirectoryName);
+
+	assert(!directoryExists(newDirectoryPath));
+	if (directoryExists(newDirectoryPath))
+		return;
+
+	std::rename(directoryPath.toString().data(), newDirectoryPath.toString().data());
+}
+
+bool isValidFileOrDirectoryName(const std::string& name)
+{
+	for (int i = 0; i < name.size(); i++)
+	{
+		const char& currentChar = name.at(i);
+		if (currentChar < 48
+			//Allow numbers
+			|| (currentChar > 57 && currentChar < 65)
+			//Allow A->Z
+			|| (currentChar > 90 && currentChar < 95)
+			//Allow '_'
+			|| (currentChar > 95 && currentChar < 97)
+			//Allow a->z
+			|| currentChar > 122)
+		{
+			return false;
+		}
+		else
+			return true;
+	}
 }
 
 }

@@ -43,7 +43,6 @@ private:
 	ResourceFileKey m_key;
 	FileHandler::CompletePath m_path;
 	bool m_isBeingRenamed;
-	ResourceFolder* m_parentFolder;
 
 public:
 
@@ -98,7 +97,21 @@ public:
 	ResourceType getType() const { return m_key.type; }
 	const ResourceFileKey& getKey() const { return m_key; }
 	FileHandler::Path getParentFolderPath() const { 
-		return m_path.getPath().getSubPath(0, m_path.getPath().size() - 1);
+		return m_path.getPath();
+	}
+
+	void rename(const std::string& newName)
+	{
+		FileHandler::Path newPathToFile = m_path.getPath();
+		newPathToFile.pop_back();
+
+		m_path = FileHandler::CompletePath(newPathToFile, newName, m_path.getExtention() );
+		m_key.name = newName;
+	}
+
+	void onParentRenamed(const FileHandler::Path& newPathToParent)
+	{
+		m_path = FileHandler::CompletePath(newPathToParent, m_path.getFilenameWithExtention());
 	}
 
 	bool operator<(const ResourceFile& other) { return m_key < other.m_key; }
@@ -118,8 +131,8 @@ public:
 		, m_path("")
 	{ }
 
-	ResourceFolder(const std::string& name, const FileHandler::Path& path) 
-		: m_name(name)
+	ResourceFolder(const FileHandler::Path& path) 
+		: m_name(path.back())
 		, m_path(path)
 	{ }
 
@@ -202,6 +215,39 @@ public:
 			return nullptr;
 	}
 
+	void rename(const std::string& newName)
+	{
+		m_path.pop_back();
+		m_path.push_back(newName);
+		m_name = newName;
+
+		for (auto& file : m_filesContainer)
+		{
+			file.onParentRenamed(m_path);
+		}
+
+		for (auto& folder : m_subFoldersContainer)
+		{
+			folder.onParentRenamed(m_path);
+		}
+	}
+
+	void onParentRenamed(const FileHandler::Path& newPathToParent)
+	{
+		m_path = newPathToParent;
+		m_path.push_back(m_name);
+
+		for (auto& file : m_filesContainer)
+		{
+			file.onParentRenamed(m_path);
+		}
+
+		for (auto& folder : m_subFoldersContainer)
+		{
+			folder.onParentRenamed(m_path);
+		}
+	}
+
 	//deals with sub folders :
 	std::vector<ResourceFolder>::iterator subFoldersBegin() { return m_subFoldersContainer.begin(); };
 	std::vector<ResourceFolder>::iterator subFoldersEnd() { return m_subFoldersContainer.end(); };
@@ -250,7 +296,7 @@ public:
 		if (hasSubFolder(folderName, outFolderIdx))
 			return false;
 
-		m_subFoldersContainer.push_back(ResourceFolder(folderName, FileHandler::Path(m_path, folderName)));
+		m_subFoldersContainer.push_back(ResourceFolder(FileHandler::Path(m_path, folderName)));
 
 		if (outFolderIdx != nullptr)
 		{
@@ -477,6 +523,9 @@ public :
 
 	static void moveSubFolderTo(const std::string& folderName, ResourceFolder& folderFrom, ResourceFolder& folderTo);
 	static void copySubFolderTo(const std::string& folderName, ResourceFolder& folderFrom, ResourceFolder& folderTo);
+
+	static void renameSubFolderIn(const std::string& folderName, const std::string& newFolderName, ResourceFolder& parentFolder);
+	static void renameResourceIn(ResourceFile& fileToRename, const std::string& newFileName, ResourceFolder& parentFolder);
 };
 
 
@@ -512,6 +561,9 @@ public:
 	void displayFoldersRecusivly(ResourceFolder* parentFolder, ResourceFolder& currentFolder, OpenModaleCallback* outOpenModaleCallback, DropCallback* outDropCallback = nullptr);
 	void displayModales();
 	//void displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay);
+	void popUpToRenameFile();
+	void popUpToRenameFolder();
+	void popUpToAddFolder();
 	void popUpToAddCubeTexture();
 	void popUpToChooseMaterial();
 	void popUpToAddMaterial();

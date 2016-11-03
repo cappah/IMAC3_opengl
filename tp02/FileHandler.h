@@ -56,6 +56,7 @@ public:
 	void pop_front();
 	void format();
 	bool empty() const;
+	std::string back() const;
 
 	Path getSubPath(int begin, int count) const;
 };
@@ -143,5 +144,10 @@ std::size_t splitPathFileNameExtention(const std::string& pathAndFileNameAndExte
 
 void copyPastFile(const CompletePath &from, const Path &to);
 void deleteFile(const CompletePath& completePath);
+
+void renameFile(const CompletePath &filePath, const std::string& newFileName);
+void renameDirectory(const Path &directoryPath, const std::string& newDirectoryName);
+
+bool isValidFileOrDirectoryName(const std::string& name);
 
 }

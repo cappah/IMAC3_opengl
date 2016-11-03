@@ -100,7 +100,7 @@ bool ResourceFolder::copyTo(ResourceFolder& newLocation)
 /////////// RESSOURCE TREE /////////////////
 
 ResourceTree::ResourceTree(const FileHandler::Path& assetResourcePath)
-	: ResourceFolder("assets", FileHandler::Path("assets"))
+	: ResourceFolder(FileHandler::Path("assets"))
 {
 	fillDatasFromExplorerFolder(assetResourcePath);
 }
@@ -261,6 +261,49 @@ void ResourceTree::copySubFolderTo(const std::string& folderName, ResourceFolder
 	{
 		copySubFolderTo(subFolders[i].getName(), *folderToMove, *targetedFolder);
 	}
+}
+
+void ResourceTree::renameSubFolderIn(const std::string& folderName, const std::string& newFolderName, ResourceFolder& parentFolder)
+{
+	assert(FileHandler::isValidFileOrDirectoryName(newFolderName));
+		if (!FileHandler::isValidFileOrDirectoryName(newFolderName))
+			return;
+
+	if (folderName == newFolderName)
+		return;
+
+	assert(parentFolder.getSubFolder(folderName) != nullptr);
+	if (parentFolder.getSubFolder(folderName) == nullptr)
+		return;
+
+	ResourceFolder* folderToRename = parentFolder.getSubFolder(folderName);
+	assert(folderToRename != nullptr);
+		if (folderToRename == nullptr)
+			return;
+
+	FileHandler::Path folderPath(Project::getPath().toString() + "/" + folderToRename->getPath().toString());
+
+	folderToRename->rename(newFolderName);
+	FileHandler::renameDirectory(folderPath, newFolderName);
+}
+
+void ResourceTree::renameResourceIn(ResourceFile& fileToRename, const std::string& newFileName, ResourceFolder& parentFolder)
+{
+	assert(FileHandler::isValidFileOrDirectoryName(newFileName));
+	if (!FileHandler::isValidFileOrDirectoryName(newFileName))
+		return;
+
+	if (fileToRename.getName() == newFileName)
+		return;
+
+	assert(parentFolder.getFile(fileToRename.getKey()) != nullptr);
+	if (parentFolder.getFile(fileToRename.getKey()) == nullptr)
+		return;
+
+	FileHandler::CompletePath filePath(Project::getPath().toString() + "/" + fileToRename.getPath().toString());
+
+	fileToRename.rename(newFileName);
+	FileHandler::renameFile(filePath, newFileName);
 }
 
 /////////// RESOURCE TREE VIEW /////////////
@@ -474,7 +517,12 @@ void ResourceTreeView::displayModales()
 	//right clic on file menu display :
 	if (ImGui::BeginPopup("resourceFileContextMenu"))
 	{
-		if (ImGui::Button("Copy file."))
+		if (ImGui::Button("Rename file."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("RenameFileModale", true);
+		}
+		else if (ImGui::Button("Copy file."))
 		{
 			ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
@@ -507,7 +555,12 @@ void ResourceTreeView::displayModales()
 	//right clic on folder menu display :
 	if (ImGui::BeginPopup("resourceFolderContextMenu"))
 	{
-		if (ImGui::Button("Add folder."))
+		if (ImGui::Button("Rename folder."))
+		{
+			ImGui::EndPopup();
+			ImGui::OpenPopupEx("RenameFolderModale", true);
+		}
+		else if (ImGui::Button("Add folder."))
 		{
 			ImGui::EndPopup();
 			ImGui::OpenPopupEx("AddFolderModale", true);
@@ -582,6 +635,18 @@ void ResourceTreeView::displayModales()
 			ImGui::EndPopup();
 	}
 
+	//pop up to rename file :
+	if (ImGui::BeginPopup("RenameFileModale"))
+	{
+		popUpToRenameFile();
+	}
+
+	//pop up to rename folder :
+	if (ImGui::BeginPopup("RenameFolderModale"))
+	{
+		popUpToRenameFolder();
+	}
+
 	//pop up to add resource :
 	if (ImGui::BeginPopup("AddResourcePopUp"))
 	{
@@ -619,26 +684,96 @@ void ResourceTreeView::displayModales()
 	//Modale to add new folder :
 	if (ImGui::BeginPopup("AddFolderModale"))
 	{
-		m_uiString.resize(100);
-		ImGui::InputText("##folderName", &m_uiString[0], 100);
-		assert(m_folderWeRightClicOn != nullptr);
-		if (!m_folderWeRightClicOn->hasSubFolder(m_uiString))
+		popUpToAddFolder();
+	}
+}
+
+void ResourceTreeView::popUpToRenameFile()
+{
+	m_uiString.resize(100);
+	ImGui::InputText("##newName", &m_uiString[0], 100);
+	m_uiString = m_uiString.substr(0, m_uiString.find_first_of('\0'));
+	assert(m_fileWeRightClicOn != nullptr);
+
+	ResourceFolder* parentFolder = m_model->getSubFolder(m_fileWeRightClicOn->getParentFolderPath());
+	assert(parentFolder != nullptr);
+
+	if (!parentFolder->hasFile(ResourceFileKey(m_fileWeRightClicOn->getType(), m_uiString)))
+	{
+		if (FileHandler::isValidFileOrDirectoryName(m_uiString))
 		{
 			ImGui::SameLine();
-			if (ImGui::Button("Validate##AddFolder") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
+			if (ImGui::Button("Validate##validateName") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
 			{
-				if (m_folderWeRightClicOn != nullptr)
-					ResourceTree::addSubFolderTo(m_uiString, *m_folderWeRightClicOn);
+				ResourceTree::renameResourceIn(*m_fileWeRightClicOn, m_uiString, *parentFolder);
+
+				m_fileWeRightClicOn = nullptr;
+				ImGui::CloseCurrentPopup();
+			}
+		}
+		else
+			ImGui::TextColored(ImVec4(255, 0, 0, 255), "Invalid file name.");
+	}
+	else
+	{
+		ImGui::TextColored(ImVec4(255, 0, 0, 255), "A file with the same name already exists in this folder.");
+	}
+	ImGui::EndPopup();
+}
+
+void ResourceTreeView::popUpToRenameFolder()
+{
+	m_uiString.resize(100);
+	ImGui::InputText("##newName", &m_uiString[0], 100);
+	assert(m_folderWeRightClicOn != nullptr);
+
+	ResourceFolder* parentFolder = m_model->getSubFolder(m_folderWeRightClicOn->getParentFolderPath());
+	assert(parentFolder != nullptr);
+
+	if (!parentFolder->hasSubFolder(m_uiString))
+	{
+		if (FileHandler::isValidFileOrDirectoryName(m_uiString))
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("Validate##validateName") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
+			{
+				ResourceTree::renameSubFolderIn(m_folderWeRightClicOn->getName(), m_uiString, *parentFolder);
+
 				m_folderWeRightClicOn = nullptr;
 				ImGui::CloseCurrentPopup();
 			}
 		}
 		else
-		{
-			ImGui::TextColored(ImVec4(255, 0, 0, 255), "A folder with the same name already exists.");
-		}
-		ImGui::EndPopup();
+			ImGui::TextColored(ImVec4(255, 0, 0, 255), "Invalid folder name.");
 	}
+	else
+	{
+		ImGui::TextColored(ImVec4(255, 0, 0, 255), "A folder with the same name already exists in this folder.");
+	}
+	ImGui::EndPopup();
+}
+
+void ResourceTreeView::popUpToAddFolder()
+{
+	m_uiString.resize(100);
+	ImGui::InputText("##folderName", &m_uiString[0], 100);
+	assert(m_folderWeRightClicOn != nullptr);
+	if (!m_folderWeRightClicOn->hasSubFolder(m_uiString))
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("Validate##AddFolder") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
+		{
+			if (m_folderWeRightClicOn != nullptr)
+				ResourceTree::addSubFolderTo(m_uiString, *m_folderWeRightClicOn);
+			m_folderWeRightClicOn = nullptr;
+			ImGui::CloseCurrentPopup();
+		}
+	}
+	else
+	{
+		ImGui::TextColored(ImVec4(255, 0, 0, 255), "A folder with the same name already exists.");
+	}
+	ImGui::EndPopup();
 }
 
 void ResourceTreeView::popUpToChooseMaterial()
