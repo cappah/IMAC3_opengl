@@ -348,7 +348,7 @@ bool CompletePath::operator<(const CompletePath & other) const
 
 bool CompletePath::operator==(const CompletePath & other) const
 {
-	return m_data == m_data;
+	return m_data == other.m_data;
 }
 
 bool CompletePath::hasValidFileName() const
@@ -772,6 +772,11 @@ bool isValidFileOrDirectoryName(const std::string& name)
 		else
 			return true;
 	}
+}
+
+std::string getFileExtention(const std::string& filePath)
+{
+	return filePath.substr(filePath.find_last_of('.'));
 }
 
 }

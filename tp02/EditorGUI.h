@@ -19,6 +19,7 @@ enum EditorDragAndDropType
 {
 	ResourceDragAndDrop = 1<<0,
 	ResourceFolderDragAndDrop = 1<<1,
+	DroppedFileDragAndDrop = 1<<2
 };
 ENUM_MASK_IMPLEMENTATION(EditorDragAndDropType);
 
@@ -31,8 +32,52 @@ ENUM_MASK_IMPLEMENTATION(EditorDropContext);
 
 class EditorWindow
 {
+protected:
+	std::string m_windowName;
+	bool m_shouldCloseModale;
+
 public:
-	virtual void drawUI() = 0;
+	EditorWindow(const std::string& windowName) : m_windowName(windowName), m_shouldCloseModale(false)
+	{}
+
+	virtual void drawContent() = 0;
+	virtual void drawAsWindow()
+	{
+		ImGui::Begin(m_windowName.data(), nullptr);
+		drawContent();
+		ImGui::End();
+
+	}
+	virtual void drawAsModal(bool* opened = nullptr)
+	{
+		ImGui::OpenPopup(m_windowName.data());
+
+		if (ImGui::BeginPopupModal(m_windowName.data(), opened))
+		{
+			drawContent();
+
+			ImGui::EndPopup();
+		}
+	}
+
+	virtual bool shouldCloseModale() const
+	{
+		return m_shouldCloseModale;
+	}
+};
+
+class DroppedFileDragAndDropOperation : public DragAndDropOperation
+{
+private:
+	ResourceFile* m_resourceFile;
+
+public:
+	DroppedFileDragAndDropOperation(const FileHandler::CompletePath& resourcePath);
+	virtual void dragOperation() override;
+	virtual void dropOperation(void* customData, int dropContext) override;
+	virtual void cancelOperation() override;
+	virtual void updateOperation() override;
+	virtual bool canDropInto(void* customData, int dropContext) override;
 };
 
 class ResourceDragAndDropOperation : public DragAndDropOperation
@@ -46,7 +91,7 @@ public:
 	virtual void dropOperation(void* customData, int dropContext) override;
 	virtual void cancelOperation() override;
 	virtual void updateOperation() override;
-	virtual bool canDropInto(void* data) override;
+	virtual bool canDropInto(void* customData, int dropContext) override;
 };
 
 class ResourceFolderDragAndDropOperation : public DragAndDropOperation
@@ -61,6 +106,7 @@ public:
 	virtual void dropOperation(void* customData, int dropContext) override;
 	virtual void cancelOperation() override;
 	virtual void updateOperation() override;
+	virtual bool canDropInto(void* customData, int dropContext) override;
 };
 
 
@@ -70,7 +116,7 @@ namespace EditorGUI {
 	bool ResourceField(ResourcePtr<T> resourcePtr, const std::string& label, char* buf, int bufSize)
 	{
 		ResourceType resourceType = getResourceType<T>();
-		bool canDropIntoField = DragAndDropManager::canDropInto(&resourceType);
+		bool canDropIntoField = DragAndDropManager::canDropInto(&resourceType, EditorDropContext::DropIntoResourceField);
 		bool isTextEdited = false;
 
 		int colStyleCount = 0;

@@ -306,6 +306,18 @@ void ResourceTree::renameResourceIn(ResourceFile& fileToRename, const std::strin
 	FileHandler::renameFile(filePath, newFileName);
 }
 
+void ResourceTree::addExternalResourceTo(ResourceFile& resourceFile, ResourceFolder& folderTo)
+{
+	assert(!folderTo.hasFile(resourceFile.getKey()));
+	if (folderTo.hasFile(resourceFile.getKey()))
+		return;
+
+	FileHandler::CompletePath newfilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), resourceFile.getPath().getFilenameWithExtention());
+	
+	folderTo.addFile(resourceFile.getPath().getFilenameWithExtention());
+	FileHandler::copyPastFile(resourceFile.getPath(), newfilePath);
+}
+
 /////////// RESOURCE TREE VIEW /////////////
 
 //
@@ -364,7 +376,8 @@ void ResourceTree::renameResourceIn(ResourceFile& fileToRename, const std::strin
 //}
 
 ResourceTreeView::ResourceTreeView(ResourceTree* model)
-	: m_model(model)
+	: EditorWindow("ResourceTree")
+	, m_model(model)
 	, m_folderWeRightClicOn(nullptr)
 {
 	
@@ -379,8 +392,6 @@ ResourceTreeView::ResourceTreeView(ResourceTree* model)
 
 	//	}
 	//}
-
-	assert(model != nullptr);
 
 	/*m_model->addSubFolder("toto");
 	m_model->getSubFolder("toto").addFile(ResourceFile("FileToto01", ResourceType::MESH));
@@ -899,9 +910,8 @@ void ResourceTreeView::popUpToAddCubeTexture()
 	ImGui::EndPopup();
 }
 
-void ResourceTreeView::drawUI()
+void ResourceTreeView::drawContent()
 {
-	ImGui::Begin("ResourceTree", nullptr);
 	DropCallback dropCallback(nullptr, EditorDropContext::DropIntoFileOrFolder);
 	OpenModaleCallback openModaleCallback;
 	displayFoldersRecusivly(nullptr, *m_model, &openModaleCallback, &dropCallback);
@@ -915,7 +925,11 @@ void ResourceTreeView::drawUI()
 		DragAndDropManager::dropDraggedItem(dropCallback.currentFolder, EditorDropContext::DropIntoFileOrFolder);
 	}
 	//displayFoldersRecusivly(m_model, m_model->getSubFolders(), m_model->getFiles());
-	ImGui::End();
+}
+
+void ResourceTreeView::setModel(ResourceTree* model)
+{
+	m_model = model;
 }
 
 

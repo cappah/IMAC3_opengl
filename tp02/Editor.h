@@ -5,6 +5,7 @@
 #include "Entity.h"
 #include "Gizmo.h"
 #include "ResourceTree.h"
+#include "ISingleton.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -73,8 +74,10 @@ void init_gui_states(GUIStates & guiStates);
 
 /////////////////////////////////////////
 
-class Editor
+class Editor : public ISingleton<Editor>
 {
+public:
+	SINGLETON_IMPL(Editor);
 
 private:
 	//current entity selected
@@ -134,11 +137,16 @@ private:
 	bool m_isPlaying;
 	bool m_isOwningPlayer;
 
+	std::vector<FileHandler::CompletePath> m_droppedFiles;
+
 	//models
 	std::shared_ptr<ResourceTree> m_resourceTree;
 
 	//windows (views)
 	std::vector<std::shared_ptr<EditorWindow>> m_editorWindows;
+
+	//Modals (views)
+	std::vector<std::shared_ptr<EditorWindow>> m_editorModals;
 
 public:
 	Editor();
@@ -159,7 +167,6 @@ public:
 	void displayBottomLeftWindow(Project& project);
 	void launchGameInEditMode(Project& project);
 	void stopGameInEditMode(Project& project);
-	void displayModals(Project& project);
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();
 	void renderUI(Project& project);
@@ -194,8 +201,24 @@ public:
 	void possessPawn();
 	void ejectPlayerFromPawn();
 
+	ResourceTree* getResourceTree() const;
+
+	// Modals handling
+	void displayModals(Project& project);
+	void addModal(std::shared_ptr<EditorWindow> modal);
+	void removeModal(EditorWindow* modal);
+
+	// DroppedFiles handling
+	void onFilesDropped(int count, const char** paths);//fire when we drop some files into the editor window
+	size_t getDroppedFilesCount() const;
+	const FileHandler::CompletePath& getDroppedFilesPath(int idx) const;
+	void clearDroppedFiles();
+	void removeDroppedFile(int idx);
+	void removeDroppedFile(const FileHandler::CompletePath& filePath);
+
 	//for multiple editing : 
 	void clearSelectedComponents();
 	void refreshSelectedComponents(bool clearComponentLists = true);
+
 };
 

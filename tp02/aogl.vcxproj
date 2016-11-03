@@ -94,7 +94,7 @@
     <ClCompile>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\jsoncpp\json;$(ProjectDir)lib\include;lib\glfw\include;src;common;lib;lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\jsoncpp\json;$(ProjectDir)lib\include;$(ProjectDir)lib\glfw\include;src;common;lib;lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -238,6 +238,7 @@
     <ClCompile Include="DirectoryCheck.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="EditorGUI.cpp" />
+    <ClCompile Include="EditorWindows.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Factories.cpp" />
     <ClCompile Include="FileHandler.cpp" />
@@ -320,6 +321,7 @@
     <ClInclude Include="dirent.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorGUI.h" />
+    <ClInclude Include="EditorWindows.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="Factories.h" />

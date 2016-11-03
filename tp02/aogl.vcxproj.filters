@@ -166,6 +166,9 @@
     <ClCompile Include="DirectoryCheck.cpp">
       <Filter>Utils\FileHandling</Filter>
     </ClCompile>
+    <ClCompile Include="EditorWindows.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -350,6 +353,9 @@
       <Filter>Utils\FileHandling</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="EditorWindows.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

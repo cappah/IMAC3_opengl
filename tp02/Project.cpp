@@ -11,6 +11,11 @@ void onWindowResize(GLFWwindow* window, int width, int height)
 	Application::get().setWindowHeight(height);
 }
 
+void onFilesDrop(GLFWwindow* window, int count, const char** paths)
+{
+	Editor::instance().onFilesDropped(count, paths);
+}
+
 //statics : 
 FileHandler::Path Project::m_projectPath = FileHandler::Path();
 FileHandler::Path Project::m_assetFolderPath = FileHandler::Path();
@@ -242,10 +247,12 @@ void Project::play()
 void Project::edit()
 {
 	//Create the editor : 
-	Editor editor;
+	Editor& editor = Editor::instance();
 
 	GLFWwindow* window = Application::get().getActiveWindow();
 	Scene* scene = getActiveScene();
+
+	glfwSetDropCallback(window, onFilesDrop);
 
 	float t = 0;
 

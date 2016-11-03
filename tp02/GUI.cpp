@@ -87,12 +87,12 @@ int DragAndDropManager::getValidDropContext()
 	return This.m_currentDragAndDropOperation ? This.m_currentDragAndDropOperation->getValidDropContext() : 0;
 }
 
-bool DragAndDropManager::canDropInto(void* data)
+bool DragAndDropManager::canDropInto(void* customData, int dropContext)
 {
 	auto& This = DragAndDropManager::instance();
 
 	return (
 		DragAndDropManager::isDragAndDropping()
-		&& (This.m_currentDragAndDropOperation->canDropInto(data))
+		&& (This.m_currentDragAndDropOperation->canDropInto(customData, dropContext))
 		);
 }

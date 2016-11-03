@@ -11,6 +11,7 @@
 #include "Scene.h"
 #include "Editor.h"
 #include "FileHandler.h"
+#include <GLFW/glfw3.h>
 
 class Project
 {

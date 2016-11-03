@@ -1,7 +1,77 @@
 #include "stdafx.h"
 
+#include "Editor.h"
 #include "EditorGUI.h"
 #include "ResourceTree.h"
+
+///////////////////////////////////////////////////////////
+//// BEGIN : DroppedFileDragAndDropOperation
+
+DroppedFileDragAndDropOperation::DroppedFileDragAndDropOperation(const FileHandler::CompletePath& resourcePath)
+	: DragAndDropOperation(EditorDragAndDropType::DroppedFileDragAndDrop, (EditorDropContext::DropIntoFileOrFolder))
+	, m_resourceFile(nullptr)
+{ 
+	m_resourceFile = new ResourceFile(resourcePath);
+}
+
+void DroppedFileDragAndDropOperation::dragOperation()
+{ }
+
+void DroppedFileDragAndDropOperation::dropOperation(void* customData, int dropContext)
+{
+	if (!canDropInto(customData, dropContext))
+		cancelOperation();
+
+	if (dropContext == EditorDropContext::DropIntoFileOrFolder)
+	{
+		ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
+
+		if (!resourceFolder->hasFile(m_resourceFile->getKey()))
+		{
+			ResourceTree::addExternalResourceTo(*m_resourceFile, *resourceFolder);
+			Editor::instance().removeDroppedFile(m_resourceFile->getPath());
+
+			delete m_resourceFile;
+			m_resourceFile = nullptr;
+		}
+		else
+			cancelOperation();
+	}
+	else
+		cancelOperation();
+}
+
+void DroppedFileDragAndDropOperation::cancelOperation()
+{
+	delete m_resourceFile;
+	m_resourceFile = nullptr;
+}
+
+void DroppedFileDragAndDropOperation::updateOperation()
+{
+	ImVec2 mousePos = ImGui::GetMousePos();
+	ImGui::SetNextWindowPos(mousePos);
+	ImGui::Begin("DragAndDropWidget", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
+		ImGui::Text(m_resourceFile->getName().c_str());
+	ImGui::End();
+}
+
+bool DroppedFileDragAndDropOperation::canDropInto(void* customData, int dropContext)
+{
+	if (dropContext == EditorDropContext::DropIntoFileOrFolder)
+	{
+		ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
+		return !resourceFolder->hasFile(m_resourceFile->getKey());
+	}
+	else
+		return false;
+}
+
+//// END : DroppedFileDragAndDropOperation
+///////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////
+//// BEGIN : ResourceDragAndDropOperation
 
 ResourceDragAndDropOperation::ResourceDragAndDropOperation(const ResourceFile* resource, ResourceFolder* resourceFolder)
 	: DragAndDropOperation(EditorDragAndDropType::ResourceDragAndDrop, (EditorDropContext::DropIntoFileOrFolder | EditorDropContext::DropIntoResourceField))
@@ -14,6 +84,9 @@ void ResourceDragAndDropOperation::dragOperation()
 
 void ResourceDragAndDropOperation::dropOperation(void* customData, int dropContext)
 {
+	if (!canDropInto(customData, dropContext))
+		cancelOperation();
+
 	if (dropContext == EditorDropContext::DropIntoFileOrFolder)
 	{
 		ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
@@ -61,12 +134,24 @@ void ResourceDragAndDropOperation::updateOperation()
 	ImGui::End();
 }
 
-bool ResourceDragAndDropOperation::canDropInto(void* data)
+bool ResourceDragAndDropOperation::canDropInto(void* customData, int dropContext)
 {
-	return (m_resourceDragged->getType() & *static_cast<ResourceType*>(data)) != 0;
+	if (dropContext == EditorDropContext::DropIntoFileOrFolder)
+	{
+		ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
+		return !resourceFolder->hasFile(m_resourceDragged->getKey());
+	}
+	else if(dropContext == EditorDropContext::DropIntoResourceField)
+		return (m_resourceDragged->getType() & *static_cast<ResourceType*>(customData)) != 0;
 }
 
-//////////////////////
+//// END : ResourceDragAndDropOperation
+///////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////
+//// BEGIN : ResourceFolderDragAndDropOperation
 
 ResourceFolderDragAndDropOperation::ResourceFolderDragAndDropOperation(const ResourceFolder* folder, ResourceFolder* parentFolder, ResourceTree* resourceTree)
 	: DragAndDropOperation(EditorDragAndDropType::ResourceFolderDragAndDrop, EditorDropContext::DropIntoFileOrFolder)
@@ -84,9 +169,13 @@ void ResourceFolderDragAndDropOperation::dragOperation()
 
 void ResourceFolderDragAndDropOperation::dropOperation(void* customData, int dropContext)
 {
+	if (!canDropInto(customData, dropContext))
+		cancelOperation();
+
 	ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
 
-	if (!resourceFolder->hasSubFolder(m_folderDragged->getName()) && resourceFolder->getName() != m_folderDragged->getName())
+	if (dropContext == EditorDropContext::DropIntoFileOrFolder
+		&& !resourceFolder->hasSubFolder(m_folderDragged->getName()) && resourceFolder->getName() != m_folderDragged->getName())
 	{
 		if (m_parentFolder != nullptr)
 			m_parentFolder->moveSubFolderToNewLocation(m_folderDragged->getName(), *resourceFolder);
@@ -117,3 +206,16 @@ void ResourceFolderDragAndDropOperation::updateOperation()
 	ImGui::Text(m_folderDragged->getName().c_str());
 	ImGui::End();
 }
+
+bool ResourceFolderDragAndDropOperation::canDropInto(void* customData, int dropContext)
+{
+	if (dropContext == EditorDropContext::DropIntoFileOrFolder)
+	{
+		ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
+		return !resourceFolder->hasSubFolder(m_folderDragged->getName()) && (resourceFolder->getName() != m_folderDragged->getName());
+	}
+}
+
+
+//// END : ResourceFolderDragAndDropOperation
+///////////////////////////////////////////////////////////

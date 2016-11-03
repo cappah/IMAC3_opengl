@@ -526,6 +526,9 @@ public :
 
 	static void renameSubFolderIn(const std::string& folderName, const std::string& newFolderName, ResourceFolder& parentFolder);
 	static void renameResourceIn(ResourceFile& fileToRename, const std::string& newFileName, ResourceFolder& parentFolder);
+
+	static void addExternalResourceTo(ResourceFile& m_resourceFile, ResourceFolder& resourceFolder);
+
 };
 
 
@@ -548,9 +551,10 @@ private:
 	FileHandler::Path m_folderWaitingPastPath;
 
 public:
-	ResourceTreeView(ResourceTree* model);
+	ResourceTreeView(ResourceTree* model = nullptr);
 	~ResourceTreeView();
-	virtual void drawUI() override;
+	virtual void drawContent() override;
+	void setModel(ResourceTree* model);
 	/*void addFolder(const std::string& folderName);
 	void removeFolder(const std::string& folderName);
 	ResourceFolder& getFolder(const std::string& folderName);

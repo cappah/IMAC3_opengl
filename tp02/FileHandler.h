@@ -150,4 +150,6 @@ void renameDirectory(const Path &directoryPath, const std::string& newDirectoryN
 
 bool isValidFileOrDirectoryName(const std::string& name);
 
+std::string getFileExtention(const std::string& filePath);
+
 }

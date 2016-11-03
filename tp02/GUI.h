@@ -30,7 +30,7 @@ public:
 	virtual bool dragNeedsToHoldMouse() { return true; };
 	int getType() const { return m_type; }
 	int getValidDropContext() const { return m_validDropContext; }
-	virtual bool canDropInto(void* data = nullptr) { return true; }
+	virtual bool canDropInto(void* customData, int dropContext) { return true; }
 };
 
 
@@ -48,5 +48,5 @@ public:
 	static bool isDragAndDropping();
 	static int getOperationType();
 	static int getValidDropContext();
-	static bool canDropInto(void* data = nullptr);
+	static bool canDropInto(void* customData, int dropContext);
 };

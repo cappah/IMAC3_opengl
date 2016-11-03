@@ -8,6 +8,7 @@
 #include "InputHandler.h"
 #include "Project.h"
 #include "EditorGUI.h"
+#include "EditorWindows.h"
 
 
 
@@ -756,6 +757,13 @@ void  Editor::stopGameInEditMode(Project& project)
 	ejectPlayerFromPawn();
 }
 
+ResourceTree* Editor::getResourceTree() const
+{
+	return m_resourceTree.get();
+}
+
+//////////////////////////////////////////////////////////
+////////////// BEGIN : MODALS HANDLING 
 
 void Editor::displayModals(Project& project)
 {
@@ -764,6 +772,20 @@ void Editor::displayModals(Project& project)
 		ImGui::OpenPopup("save window");
 	if (m_loadWindowOpen)
 		ImGui::OpenPopup("load window");
+
+	auto& modalIter = m_editorModals.begin();
+	while (modalIter != m_editorModals.end())
+	{
+		(*modalIter)->drawAsModal();
+
+		//close modal ?
+		if ((*modalIter)->shouldCloseModale())
+		{
+			modalIter = m_editorModals.erase(modalIter);
+		}
+		else
+			modalIter++;
+	}
 
 	//load : 
 	bool loadModalWindowOpen = true;
@@ -829,6 +851,18 @@ void Editor::displayModals(Project& project)
 	}
 }
 
+void Editor::addModal(std::shared_ptr<EditorWindow> modal)
+{
+	m_editorModals.push_back(modal);
+}
+
+void Editor::removeModal(EditorWindow* modal)
+{
+	auto found = std::find_if(m_editorModals.begin(), m_editorModals.end(), [modal](const std::shared_ptr<EditorWindow>& item) { return item.get() == modal; });
+	if(found != m_editorModals.end())
+		m_editorModals.erase(found);
+}
+
 void Editor::displayTopLeftWindow(Project& project)
 {
 	Scene& scene = *project.getActiveScene();
@@ -873,8 +907,58 @@ void Editor::displayTopLeftWindow(Project& project)
 	}
 }
 
+////////////// END : MODALS HANDLING 
+//////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////
+////////////// BEGIN : DROPPEDFILES HANDLING 
 
+void Editor::onFilesDropped(int count, const char** paths)
+{
+	for (int i = 0; i < count; i++)
+	{
+		if(FileHandler::getFileTypeFromExtention(FileHandler::getFileExtention(paths[i])) != FileHandler::FileType::NONE)
+			m_droppedFiles.push_back(FileHandler::CompletePath(paths[i]));
+	}
+
+	DroppedFileEditorWindow::openPopUp(*this);
+}
+
+size_t Editor::getDroppedFilesCount() const
+{
+	return m_droppedFiles.size();
+}
+
+const FileHandler::CompletePath& Editor::getDroppedFilesPath(int idx) const
+{
+	return m_droppedFiles[idx];
+}
+
+void Editor::clearDroppedFiles()
+{
+	m_droppedFiles.clear();
+}
+
+void Editor::removeDroppedFile(int idx)
+{
+	if (idx >= 0 && idx < m_droppedFiles.size())
+		m_droppedFiles.erase(m_droppedFiles.begin() + idx);
+}
+
+void Editor::removeDroppedFile(const FileHandler::CompletePath& filePath)
+{
+	for (int i = 0; i < m_droppedFiles.size(); i++)
+	{
+		if (m_droppedFiles[i] == filePath)
+		{
+			m_droppedFiles.erase(m_droppedFiles.begin() + i);
+			return;
+		}
+	}
+}
+
+////////////// END : DROPPEDFILES HANDLING 
+//////////////////////////////////////////////////////////
 
 void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected)
 {
@@ -1149,7 +1233,7 @@ void Editor::displayFloatingWindows(Project& project)
 {
 	for (int i = 0; i < m_editorWindows.size(); i++)
 	{
-		m_editorWindows[i]->drawUI();
+		m_editorWindows[i]->drawAsWindow();
 	}
 }
 
@@ -1582,7 +1666,6 @@ void Editor::ejectPlayerFromPawn()
 	m_isOwningPlayer = false;
 	InputHandler::setFocusState((InputHandler::getFocusState() | InputHandler::FOCUSING_EDITOR) & ~InputHandler::FOCUSING_GAME);
 }
-
 
 void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 {
