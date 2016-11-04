@@ -5,30 +5,56 @@
 #include "EditorGUI.h"
 
 
-Material::Material(GLuint _glProgram) 
-	: glProgram(_glProgram)
+Material::Material(GLuint glProgramId, std::vector<InternalShaderParameterBase>& internalParameters, std::vector<ExternalShaderParameterBase>& externalParameters)
+	: m_glProgramId(glProgramId)
+	, m_internalParameters(internalParameters)
 {
-	assert(glProgram > 0);
+	for (int i = 0; i < externalParameters.size(); i++)
+	{
+		m_externalParameters[externalParameters[i].getName()] = externalParameters[i];
+	}
 }
 
-Material::Material(ResourcePtr<ShaderProgram> _glProgram) 
-	: Material(_glProgram->id)
+void Material::init(const FileHandler::CompletePath& path)
 {
-
+	//TODO
 }
 
-void Material::init(const FileHandler::CompletePath & path)
+void Material::drawUI()
 {
-	Resource::init(path);
+	//TODO
 }
 
-Material::~Material()
+void Material::pushInternalsToGPU()
 {
+	//TODO
 }
+
+//Material::Material(GLuint _glProgram) 
+//	: glProgram(_glProgram)
+//{
+//	assert(glProgram > 0);
+//}
+//
+//Material::Material(ResourcePtr<ShaderProgram> _glProgram) 
+//	: Material(_glProgram->id)
+//{
+//
+//}
+//
+//void Material::init(const FileHandler::CompletePath & path)
+//{
+//	Resource::init(path);
+//}
+//
+//Material::~Material()
+//{
+//}
 
 
 ///////////////////////////////////////////
 
+/*
 
 Material3DObject::Material3DObject(GLuint _glProgram) 
 	: Material(_glProgram)
@@ -584,22 +610,22 @@ void MaterialTerrain::use()
 	//bind shaders
 	glUseProgram(glProgram);
 
-	/*
-	//bind textures into texture units
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureDiffuse->glId);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textureSpecular->glId);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, textureBump->glId);
+	
+	////bind textures into texture units
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, textureDiffuse->glId);
+	//glActiveTexture(GL_TEXTURE1);
+	//glBindTexture(GL_TEXTURE_2D, textureSpecular->glId);
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_2D, textureBump->glId);
 
-	//send uniforms
-	glUniform1f(uniform_specularPower, specularPower);
-	glUniform1i(uniform_textureDiffuse, 0);
-	glUniform1i(uniform_textureSpecular, 1);
-	glUniform1i(uniform_textureBump, 2);
-	glUniform2fv(uniform_textureRepetition, 1, glm::value_ptr(textureRepetition));
-	*/
+	////send uniforms
+	//glUniform1f(uniform_specularPower, specularPower);
+	//glUniform1i(uniform_textureDiffuse, 0);
+	//glUniform1i(uniform_textureSpecular, 1);
+	//glUniform1i(uniform_textureBump, 2);
+	//glUniform2fv(uniform_textureRepetition, 1, glm::value_ptr(textureRepetition));
+	
 }
 
 void MaterialTerrain::drawUI()
@@ -742,54 +768,52 @@ void MaterialTerrainEdition::drawUI()
 
 	ImGui::InputFloat2("texture repetition", &textureRepetition[0]);
 
-	/*
+	//char tmpTxt01[30];
+	//diffuseTextureName.copy(tmpTxt01, glm::min(30, (int)diffuseTextureName.size()), 0);
+	//tmpTxt01[diffuseTextureName.size()] = '\0';
+	//if (ImGui::InputText("diffuse texture name", tmpTxt01, 20))
+	//{
+	//	diffuseTextureName = tmpTxt01;
 
-	char tmpTxt01[30];
-	diffuseTextureName.copy(tmpTxt01, glm::min(30, (int)diffuseTextureName.size()), 0);
-	tmpTxt01[diffuseTextureName.size()] = '\0';
-	if (ImGui::InputText("diffuse texture name", tmpTxt01, 20))
-	{
-		diffuseTextureName = tmpTxt01;
+	//	if (getTextureFactory().contains(tmpTxt01))
+	//	{
+	//		textureDiffuse->freeGL();
+	//		textureDiffuse = getTextureFactory().get(diffuseTextureName);
+	//		textureDiffuse->initGL();
+	//	}
+	//}
 
-		if (getTextureFactory().contains(tmpTxt01))
-		{
-			textureDiffuse->freeGL();
-			textureDiffuse = getTextureFactory().get(diffuseTextureName);
-			textureDiffuse->initGL();
-		}
-	}
+	//
+	//char tmpTxt02[30];
+	//specularTextureName.copy(tmpTxt02, glm::min(30, (int)specularTextureName.size()), 0);
+	//tmpTxt02[specularTextureName.size()] = '\0';
+	//if (ImGui::InputText("specular texture name", tmpTxt02, 20))
+	//{
+	//	specularTextureName = tmpTxt02;
 
-	
-	char tmpTxt02[30];
-	specularTextureName.copy(tmpTxt02, glm::min(30, (int)specularTextureName.size()), 0);
-	tmpTxt02[specularTextureName.size()] = '\0';
-	if (ImGui::InputText("specular texture name", tmpTxt02, 20))
-	{
-		specularTextureName = tmpTxt02;
+	//	if (getTextureFactory().contains(specularTextureName))
+	//	{
+	//		textureSpecular->freeGL();
+	//		textureSpecular = getTextureFactory().get(specularTextureName);
+	//		textureSpecular->initGL();
+	//	}
+	//}
 
-		if (getTextureFactory().contains(specularTextureName))
-		{
-			textureSpecular->freeGL();
-			textureSpecular = getTextureFactory().get(specularTextureName);
-			textureSpecular->initGL();
-		}
-	}
+	//char tmpTxt03[30];
+	//bumpTextureName.copy(tmpTxt03, glm::min(30, (int)bumpTextureName.size()), 0);
+	//tmpTxt03[bumpTextureName.size()] = '\0';
+	//if (ImGui::InputText("bump texture name", tmpTxt03, 20))
+	//{
+	//	bumpTextureName = tmpTxt03;
 
-	char tmpTxt03[30];
-	bumpTextureName.copy(tmpTxt03, glm::min(30, (int)bumpTextureName.size()), 0);
-	tmpTxt03[bumpTextureName.size()] = '\0';
-	if (ImGui::InputText("bump texture name", tmpTxt03, 20))
-	{
-		bumpTextureName = tmpTxt03;
-
-		if (getTextureFactory().contains(bumpTextureName))
-		{
-			textureBump->freeGL();
-			textureBump = getTextureFactory().get(bumpTextureName);
-			textureBump->initGL();
-		}
-	}
-	*/
+	//	if (getTextureFactory().contains(bumpTextureName))
+	//	{
+	//		textureBump->freeGL();
+	//		textureBump = getTextureFactory().get(bumpTextureName);
+	//		textureBump->initGL();
+	//	}
+	//}
+	//
 }
 
 void MaterialTerrainEdition::initGL()

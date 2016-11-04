@@ -1,0 +1,32 @@
+{
+"fragment": "
+
+
+
+
+
+
+
+
+
+",
+
+"vertex": "
+
+
+
+
+
+
+
+
+",
+
+"shaderParameters" : {
+
+vec3
+
+
+}
+
+}

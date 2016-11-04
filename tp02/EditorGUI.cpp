@@ -115,8 +115,8 @@ void ResourceDragAndDropOperation::dropOperation(void* customData, int dropConte
 	}
 	else if (dropContext == EditorDropContext::DropIntoResourceField)
 	{
-		std::string* resourceName = static_cast<std::string*>(customData);
-		*resourceName = m_resourceDragged->getName();
+		FileHandler::CompletePath* resourcePath = static_cast<FileHandler::CompletePath*>(customData);
+		*resourcePath = m_resourceDragged->getPath();
 
 		m_folderResourceBelongsTo = nullptr;
 		m_resourceDragged = nullptr;

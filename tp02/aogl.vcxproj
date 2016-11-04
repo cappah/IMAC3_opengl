@@ -271,6 +271,7 @@
     <ClCompile Include="Rigidbody.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SerializeUtils.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="SkeletalAnimation.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -358,6 +359,7 @@
     <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SerializeUtils.h" />
+    <ClInclude Include="ShaderParameters.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="SkeletalAnimation.h" />
     <ClInclude Include="Skeleton.h" />

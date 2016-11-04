@@ -113,11 +113,16 @@ public:
 namespace EditorGUI {
 
 	template<typename T>
-	bool ResourceField(ResourcePtr<T> resourcePtr, const std::string& label, char* buf, int bufSize)
+	bool ResourceField(const std::string& label, ResourcePtr<T> resourcePtr)
 	{
+		const int bufSize = 100;
+		const std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getPath() : "INVALID")
+		currentResourceName.reserve(bufSize);
+
 		ResourceType resourceType = getResourceType<T>();
 		bool canDropIntoField = DragAndDropManager::canDropInto(&resourceType, EditorDropContext::DropIntoResourceField);
 		bool isTextEdited = false;
+		bool needClearPtr = false;
 
 		int colStyleCount = 0;
 		if (canDropIntoField)
@@ -126,8 +131,11 @@ namespace EditorGUI {
 			colStyleCount++;
 		}
 
-		bool enterPressed = ImGui::InputText(label.c_str(), buf, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
+		bool enterPressed = ImGui::InputText(label.c_str(), currentResourceName.data(), bufSize, ImGuiInputTextFlags_EnterReturnsTrue|ImGuiInputTextFlags_ReadOnly);
 		isTextEdited = (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
+		ImGui::SameLine();
+		needClearPtr = ImGui::SmallButton(std::string("<##" + label));
+
 
 		//borders if can drop here : 
 		if (ImGui::IsItemHovered() && canDropIntoField)
@@ -136,26 +144,119 @@ namespace EditorGUI {
 		}
 
 		//drop resource : 
+		FileHandler::CompletePath droppedResourcePath;
 		if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0))
 		{
-			FileHandler::CompletePath droppedResourcePath;
 			DragAndDropManager::dropDraggedItem(&droppedResourcePath, (EditorDropContext::DropIntoResourceField));
-			assert(droppedResourcePath.toString().size() < bufSize);
-			strcpy(buf, droppedResourcePath.c_str());
 			isTextEdited = true;
 		}
 
 		ImGui::PopStyleColor(colStyleCount);
 
-		if (isTextEdited)
+		if (needClearPtr)
+			resourcePtr.reset();
+		else if (isTextEdited)
 		{
-			FileHandler::CompletePath resourcePath(buf);
-			if (getResourceFactory<T>().contains(resourcePath))
-			{
-				resourcePtr = getResourceFactory<T>().get(resourcePath);
-			}
+			if (getResourceFactory<T>().contains(droppedResourcePath))
+				resourcePtr = getResourceFactory<T>().get(droppedResourcePath);
+			else
+				resourcePtr.reset();
 		}
 
 		return isTextEdited;
 	}
+	
+	//Value fields : 
+	template<typename T>
+	bool ValueField(const std::string& label, T& value)
+	{
+		assert(0 && "invalid value type form this field.");
+		return false;
+	};
+
+	template<typename T, typename U>
+	bool ValueField(const std::string& label, T& value)
+	{
+		assert(0 && "invalid value type form this field.");
+		return false;
+	};
+
+	template<typename T>
+	bool ValueField(const std::string& label, T& value, const T& minValue, const T& maxValue)
+	{
+		assert(0 && "invalid value type form this field.");
+		return false;
+	};
+
+	//resource field 
+	template<typename U>
+	bool ValueField(const std::string& label, ResourcePtr<U> resourcePtr)
+	{
+		return ResourceField(label, resourcePtr);
+	}
+
+	//string field
+	bool ValueField(const std::string& label, std::string& outString, char* buf, int bufSize)
+	{
+		bool textEdited = ImGui::InputText(label.c_str(), buf, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
+		if (textEdited)
+		{
+			outString.clear();
+			outString = buf;
+		}
+		return textEdited;
+	}
+
+
+	//drag field
+
+	//float
+	template<>
+	bool ValueField<float>(const std::string& label, float& value, const float& minValue, const float& maxValue)
+	{
+		ImGui::DragFloat(label.data(), &value, (maxValue - minValue)*0.1f, minValue, maxValue);
+	};
+
+	//input field
+
+	//float 
+	template<>
+	bool ValueField<float>(const std::string& label, float& value)
+	{
+		ImGui::InputFloat(label.data(), &value);
+	};
+
+	template<>
+	bool ValueField<glm::vec2>(const std::string& label, glm::vec2& value)
+	{
+		ImGui::InputFloat2(label.data(), &value[0]);
+	};
+
+	template<>
+	bool ValueField<glm::vec3>(const std::string& label, glm::vec3& value)
+	{
+		ImGui::InputFloat3(label.data(), &value[0]);
+	};
+
+
+	//int 
+	template<>
+	bool ValueField<int>(const std::string& label, int& value)
+	{
+		ImGui::InputInt(label.data(), &value);
+	};
+
+	template<>
+	bool ValueField<glm::ivec2>(const std::string& label, glm::ivec2& value)
+	{
+		ImGui::InputInt(label.data(), &value[0]);
+	};
+
+	template<>
+	bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value)
+	{
+		ImGui::InputInt(label.data(), &value[0]);
+	};
+
+
 }

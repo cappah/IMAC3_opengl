@@ -18,6 +18,7 @@
 #include "ISerializable.h"
 #include "ResourcePointer.h"
 #include "ShaderProgram.h"
+#include "ShaderParameters.h"
 #include "FileHandler.h"
 #include "Resource.h"
 
@@ -28,32 +29,48 @@ static const unsigned int MAX_BONE_COUNT = 100;
 
 //Materials : 
 
-
-struct Material : public Resource
+class Material : public Resource
 {
-	std::string name;
+private:
+	GLuint m_glProgramId;
+	std::vector<InternalShaderParameterBase> m_internalParameters;
+	std::map<std::string, ExternalShaderParameterBase> m_externalParameters;
 
-	GLuint glProgram;
-
-	Material(GLuint _glProgram = 0);
-	Material(ResourcePtr<ShaderProgram> _glProgram);
-	virtual void init(const FileHandler::CompletePath& path) override;
-	virtual Material* copy() const = 0;
-	virtual ~Material();
-	virtual void use() = 0;
-	virtual void drawUI() = 0;
-	virtual void initGL() = 0;
-
-	void save(const FileHandler::CompletePath& path) const
-	{
-		assert(false, "not implemented");
-	}
-	void load(const FileHandler::CompletePath& path)
-	{
-		assert(false, "not implemented");
-	}
+public:
+	Material(GLuint glProgramId, std::vector<InternalShaderParameterBase>& internalParameters, std::vector<ExternalShaderParameterBase>& externalParameters);
+	virtual void init(const FileHandler::CompletePath& path) override; //TODO
+	void drawUI();
+	void pushInternalsToGPU();
+	template<typename T>
+	ExternalShaderParameter<T>& getExternalParameter(const std::string& parameterName) const;
 };
 
+//struct Material : public Resource
+//{
+//	std::string name;
+//
+//	GLuint glProgram;
+//
+//	Material(GLuint _glProgram = 0);
+//	Material(ResourcePtr<ShaderProgram> _glProgram);
+//	virtual void init(const FileHandler::CompletePath& path) override;
+//	virtual Material* copy() const = 0;
+//	virtual ~Material();
+//	virtual void use() = 0;
+//	virtual void drawUI() = 0;
+//	virtual void initGL() = 0;
+//
+//	void save(const FileHandler::CompletePath& path) const
+//	{
+//		assert(false, "not implemented");
+//	}
+//	void load(const FileHandler::CompletePath& path)
+//	{
+//		assert(false, "not implemented");
+//	}
+//};
+
+/*
 struct Material3DObject : public Material
 {
 	GLuint uniform_MVP;
@@ -679,3 +696,4 @@ public:
 	}
 
 };
+*/

@@ -169,6 +169,9 @@
     <ClCompile Include="EditorWindows.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderProgram.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -355,6 +358,9 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="EditorWindows.h">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderParameters.h">
+      <Filter>Resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
