@@ -102,11 +102,15 @@ public:
 
 	void rename(const std::string& newName)
 	{
+		FileHandler::CompletePath oldFilePath = getPath();
 		FileHandler::Path newPathToFile = m_path.getPath();
 		newPathToFile.pop_back();
+		FileHandler::CompletePath newFilePath(newPathToFile, newName, m_path.getExtention());
 
-		m_path = FileHandler::CompletePath(newPathToFile, newName, m_path.getExtention() );
+		m_path = FileHandler::CompletePath(newFilePath);
 		m_key.name = newName;
+
+		renameResourceInFactory(oldFilePath, newFilePath);
 	}
 
 	void onParentRenamed(const FileHandler::Path& newPathToParent)
@@ -160,28 +164,45 @@ public:
 	void addFile(const std::string& fileNameAndExtention) 
 	{
 		FileHandler::CompletePath resourcePath(m_path, fileNameAndExtention);
-		m_filesContainer.push_back(ResourceFile(resourcePath));
 
+		m_filesContainer.push_back(ResourceFile(resourcePath));
 		addResourceToFactory(resourcePath);
 	}
 
 	void addFile(const ResourceFile& file) 
 	{ 
 		m_filesContainer.push_back(ResourceFile(file));
+		addResourceToFactory(file.getPath());
 	}
 
-	void removeFile(const ResourceFileKey& fileKey)
+	void moveFileFrom(const FileHandler::CompletePath& oldPath, const FileHandler::CompletePath& newPath, ResourceFolder& folderFrom)
+	{
+		m_filesContainer.push_back(ResourceFile(newPath));
+		folderFrom.removeFile(ResourceFileKey(getResourceTypeFromFileType(FileHandler::getFileTypeFromExtention(oldPath.getExtention())), oldPath.getFilename()), false);
+
+		renameResourceInFactory(oldPath, newPath);
+	}
+
+	void removeFile(const ResourceFileKey& fileKey, bool synchronizeWithFactory = true)
 	{
 		for (auto& itFile = m_filesContainer.begin(); itFile != m_filesContainer.end(); itFile++)
 			if (itFile->getKey() == fileKey)
 			{
+				if(synchronizeWithFactory)
+					removeResourceFromFactory(itFile->getPath());
 				m_filesContainer.erase(itFile);
+
 				return;
 			}
 	}
 
 	void removeAllFiles()
 	{
+		for (auto& itFile = m_filesContainer.begin(); itFile != m_filesContainer.end(); itFile++)
+		{
+			removeResourceFromFactory(itFile->getPath());
+		}
+
 		m_filesContainer.clear();
 	}
 
@@ -323,19 +344,19 @@ public:
 		for (auto& itFolder = m_subFoldersContainer.begin(); itFolder != m_subFoldersContainer.end(); itFolder++)
 			if (itFolder->getName() == folderName)
 			{
+				//recursivly clear sub folders and files, then remove the folder from folder container
+				itFolder->removeAllFiles();
+				itFolder->removeAllSubFolders();
 				m_subFoldersContainer.erase(itFolder);
 				return;
 			}
 	}
 
-	void removeAllSubFolders(bool recursive = false)
+	void removeAllSubFolders()
 	{
-		if (recursive)
+		for (auto& itFolder = m_subFoldersContainer.begin(); itFolder != m_subFoldersContainer.end(); itFolder++)
 		{
-			for (auto& itFolder = m_subFoldersContainer.begin(); itFolder != m_subFoldersContainer.end(); itFolder++)
-			{
-				itFolder->removeAllSubFolders(recursive);
-			}
+			itFolder->removeAllSubFolders();
 		}
 		m_subFoldersContainer.clear();
 	}

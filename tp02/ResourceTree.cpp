@@ -70,7 +70,7 @@ bool ResourceFolder::moveTo(ResourceFolder& newLocation)
 
 	// ... but we delete all files and folder from the old folder (we delete it because it's a "move to")
 	removeAllFiles();
-	removeAllSubFolders(false);
+	removeAllSubFolders();
 
 	return true;
 }
@@ -119,7 +119,7 @@ void ResourceTree::deleteSubFolderFrom(const std::string& folderName, ResourceFo
 	const int filesSize = files.size();
 	for (int i = 0; i < filesSize; i++)
 	{
-		deleteResourceFrom(files[i], *folderToDelete);
+		deleteResourceFrom(files[0], *folderToDelete);
 	}
 
 	//delete sub folders
@@ -127,7 +127,7 @@ void ResourceTree::deleteSubFolderFrom(const std::string& folderName, ResourceFo
 	const int subFolderSize = subFolders.size();
 	for (int i = 0; i < subFolderSize; i++)
 	{
-		deleteSubFolderFrom(subFolders[i].getName(), *folderToDelete);
+		deleteSubFolderFrom(subFolders[0].getName(), *folderToDelete);
 	}
 
 	//delete current directory
@@ -156,8 +156,16 @@ void ResourceTree::moveResourceTo(const ResourceFile& resourceFileToMove, Resour
 	if (folderTo.hasFile(resourceFileToMove.getKey()))
 		return;
 
-	copyResourceTo(resourceFileToMove, folderFrom, folderTo);
-	deleteResourceFrom(resourceFileToMove, folderFrom);
+	const FileHandler::CompletePath newResourcePath(folderTo.getPath(), resourceFileToMove.getPath().getFilenameWithExtention());
+
+	//change paths to make them begin from root application folder instead of project folder
+	const FileHandler::CompletePath from_(Project::getPath().toString() + "/" + resourceFileToMove.getPath().toString());
+	const FileHandler::Path to_(Project::getPath().toString() + "/" + newResourcePath.getPath().toString());
+
+	folderTo.moveFileFrom(resourceFileToMove.getPath(), newResourcePath, folderFrom);
+
+	FileHandler::copyPastFile(from_, to_); //NOT_SAFE
+	FileHandler::deleteFile(from_);
 }
 
 void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo)
@@ -222,7 +230,30 @@ void ResourceTree::moveSubFolderTo(const std::string& folderName, ResourceFolder
 	if (folderFrom.getSubFolder(folderName) == nullptr)
 		return;
 
-	copySubFolderTo(folderName, folderFrom, folderTo);
+	ResourceFolder* folderToMove = folderFrom.getSubFolder(folderName);
+
+	//create new folder in destination folder
+	addSubFolderTo(folderName, folderTo);
+	ResourceFolder* targetedFolder = folderTo.getSubFolder(folderName);
+	assert(targetedFolder != nullptr);
+	if (targetedFolder == nullptr)
+		return;
+
+	//move files
+	std::vector<ResourceFile>& files = folderToMove->getFiles();
+	const int filesSize = files.size();
+	for (int i = 0; i < filesSize; i++)
+	{
+		moveResourceTo(files[i], *folderToMove, *targetedFolder);
+	}
+
+	//move sub folders
+	std::vector<ResourceFolder>& subFolders = folderToMove->getSubFolders();
+	const int subFolderSize = subFolders.size();
+	for (int i = 0; i < subFolderSize; i++)
+	{
+		moveSubFolderTo(subFolders[i].getName(), *folderToMove, *targetedFolder);
+	}
 
 	//delete the folder to move
 	deleteSubFolderFrom(folderName, folderFrom);
@@ -246,7 +277,7 @@ void ResourceTree::copySubFolderTo(const std::string& folderName, ResourceFolder
 	if (targetedFolder == nullptr)
 		return;
 
-	//move files
+	//copy files
 	std::vector<ResourceFile>& files = folderToMove->getFiles();
 	const int filesSize = files.size();
 	for (int i = 0; i < filesSize; i++)
@@ -254,7 +285,7 @@ void ResourceTree::copySubFolderTo(const std::string& folderName, ResourceFolder
 		copyResourceTo(files[i], *folderToMove, *targetedFolder);
 	}
 
-	//move sub folders
+	//copy sub folders
 	std::vector<ResourceFolder>& subFolders = folderToMove->getSubFolders();
 	const int subFolderSize = subFolders.size();
 	for (int i = 0; i < subFolderSize; i++)

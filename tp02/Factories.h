@@ -45,6 +45,7 @@ public:
 	T* getRaw(unsigned int hashKey);
 	bool contains(unsigned int hashKey);
 	unsigned int getHashKeyForResource(const FileHandler::CompletePath& path) const;
+	void changeResourceKey(const FileHandler::CompletePath& oldKey, const FileHandler::CompletePath& newKey);
 
 
 	void initDefaults();
@@ -187,6 +188,24 @@ void ResourceFactory<T>::addDefault(const std::string& name, T* resource)
 	m_defaultResources[name] = resource;
 	m_defaultResourceMapping[name] = ++s_resourceCount;
 	m_defaultResourcesFromHashKey[s_resourceCount] = resource;
+}
+
+template<typename T>
+void ResourceFactory<T>::changeResourceKey(const FileHandler::CompletePath& oldKey, const FileHandler::CompletePath& newKey)
+{
+	assert(m_resources.find(oldKey) != m_resources.end());
+	assert(m_resources.find(newKey) == m_resources.end());
+
+	T* movingResource = m_resources[oldKey];
+
+	//remove resource without deleting it
+	unsigned int resourceHashKey = m_resourceMapping[oldKey];
+	m_resources.erase(oldKey);
+	m_resourceMapping.erase(oldKey);
+
+	//reAdd the resource
+	m_resources[newKey] = movingResource;
+	m_resourceMapping[newKey] = resourceHashKey;
 }
 
 
@@ -373,6 +392,9 @@ ResourceType getResourceType<ShaderProgram>();
 ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType);
 
 void addResourceToFactory(const FileHandler::CompletePath& completePath);
+void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, const FileHandler::CompletePath& newResourcePath);
+void removeResourceFromFactory(const FileHandler::CompletePath& resourcePath);
+void removeAllResourcesFromFactories();
 
 template<typename T>
 const std::string& getResourceExtention()

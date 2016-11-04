@@ -20,7 +20,10 @@ void DroppedFileDragAndDropOperation::dragOperation()
 void DroppedFileDragAndDropOperation::dropOperation(void* customData, int dropContext)
 {
 	if (!canDropInto(customData, dropContext))
+	{
 		cancelOperation();
+		return;
+	}
 
 	if (dropContext == EditorDropContext::DropIntoFileOrFolder)
 	{
@@ -85,7 +88,10 @@ void ResourceDragAndDropOperation::dragOperation()
 void ResourceDragAndDropOperation::dropOperation(void* customData, int dropContext)
 {
 	if (!canDropInto(customData, dropContext))
+	{
 		cancelOperation();
+		return;
+	}
 
 	if (dropContext == EditorDropContext::DropIntoFileOrFolder)
 	{
@@ -170,7 +176,10 @@ void ResourceFolderDragAndDropOperation::dragOperation()
 void ResourceFolderDragAndDropOperation::dropOperation(void* customData, int dropContext)
 {
 	if (!canDropInto(customData, dropContext))
+	{
 		cancelOperation();
+		return;
+	}
 
 	ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
 
@@ -178,9 +187,12 @@ void ResourceFolderDragAndDropOperation::dropOperation(void* customData, int dro
 		&& !resourceFolder->hasSubFolder(m_folderDragged->getName()) && resourceFolder->getName() != m_folderDragged->getName())
 	{
 		if (m_parentFolder != nullptr)
-			m_parentFolder->moveSubFolderToNewLocation(m_folderDragged->getName(), *resourceFolder);
-		else
-			m_resourceTree->moveSubFolderToNewLocation(m_folderDragged->getName(), *resourceFolder);
+			ResourceTree::moveSubFolderTo(m_folderDragged->getName(), *m_parentFolder , *resourceFolder);
+
+		//if (m_parentFolder != nullptr)
+		//	m_parentFolder->moveSubFolderToNewLocation(m_folderDragged->getName(), *resourceFolder);
+		//else
+		//	m_resourceTree->moveSubFolderToNewLocation(m_folderDragged->getName(), *resourceFolder);
 		//%NOCOMMIT% : TODO : transvaser les fichiers et sous dossier dans le dossier cible
 
 		m_parentFolder = nullptr;

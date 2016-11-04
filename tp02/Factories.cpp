@@ -440,6 +440,80 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 
 }
 
+void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, const FileHandler::CompletePath& newResourcePath)
+{
+	assert(oldResourcePath.getFileType() != newResourcePath.getFileType());
+
+	ResourceType resourceType = getResourceTypeFromFileType(oldResourcePath.getFileType());
+
+	switch (resourceType)
+	{
+	case NONE:
+		break;
+	case PROGRAME:
+		getResourceFactory<ShaderProgram>().changeResourceKey(oldResourcePath, newResourcePath);
+		break;
+	case TEXTURE:
+		getResourceFactory<Texture>().changeResourceKey(oldResourcePath, newResourcePath);
+		break;
+	case CUBE_TEXTURE:
+		//getResourceFactory<CubeTexture>().changeResourceKey(oldResourcePath, newResourcePath); //TODO
+		break;
+	case MESH:
+		getResourceFactory<Mesh>().changeResourceKey(oldResourcePath, newResourcePath);
+		break;
+	case SKELETAL_ANIMATION:
+		//getResourceFactory<SkeletalAnimation>().changeResourceKey(oldResourcePath, newResourcePath); //TODO
+		break;
+	case MATERIAL:
+		//getResourceFactory<Material>().changeResourceKey(oldResourcePath, newResourcePath); //TODO
+		break;
+	default:
+		break;
+	}
+}
+
+void removeResourceFromFactory(const FileHandler::CompletePath& resourcePath)
+{
+	ResourceType resourceType = getResourceTypeFromFileType(resourcePath.getFileType());
+
+	switch (resourceType)
+	{
+	case NONE:
+		break;
+	case PROGRAME:
+		getResourceFactory<ShaderProgram>().erase(resourcePath);
+		break;
+	case TEXTURE:
+		getResourceFactory<Texture>().erase(resourcePath);
+		break;
+	case CUBE_TEXTURE:
+		//getResourceFactory<CubeTexture>().erase(resourcePath); //TODO
+		break;
+	case MESH:
+		getResourceFactory<Mesh>().erase(resourcePath);
+		break;
+	case SKELETAL_ANIMATION:
+		//getResourceFactory<SkeletalAnimation>().erase(resourcePath); //TODO
+		break;
+	case MATERIAL:
+		//getResourceFactory<Material>().erase(resourcePath); //TODO
+		break;
+	default:
+		break;
+	}
+}
+
+void removeAllResourcesFromFactories()
+{
+	getResourceFactory<ShaderProgram>().clear();
+	getResourceFactory<Texture>().clear();
+	getResourceFactory<CubeTexture>().clear();
+	getResourceFactory<Mesh>().clear();
+	getResourceFactory<SkeletalAnimation>().clear();
+	getResourceFactory<Material>().clear();
+}
+
 template<>
 const std::string& getResourceExtention<Material>()
 {
