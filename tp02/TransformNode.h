@@ -85,6 +85,6 @@ public:
 	void drawUI(bool local = false);
 
 	virtual void save(Json::Value& entityRoot) const override;
-	virtual void load(Json::Value& entityRoot) override;
+	virtual void load(const Json::Value& entityRoot) override;
 };
 

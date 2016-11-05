@@ -26,6 +26,7 @@ enum FileType
 	IMAGE,
 	MESH,
 	SOUND,
+	SHADER_PROGRAM,
 };
 
 class CompletePath;

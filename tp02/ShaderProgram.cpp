@@ -1,4 +1,5 @@
 #include "Project.h"
+#include "Materials.h"
 #include "ShaderParameters.h"
 #include "ShaderProgram.h"
 
@@ -29,8 +30,7 @@ ShaderProgram::ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, 
 
 void ShaderProgram::init(const FileHandler::CompletePath& path)
 {
-	const FileHandler::CompletePath& absolutePath(Project::getPath().toString() + "/" + path.toString());
-	load(absolutePath);
+	load(path);
 }
 
 void ShaderProgram::load(const FileHandler::CompletePath& path)
@@ -156,5 +156,21 @@ void ShaderProgram::load(const FileHandler::CompletePath& vertexShaderPath, cons
 
 Material* ShaderProgram::makeNewMaterialInstance()
 {
-	return new Material(id, m_internalShaderParameters, m_externalShaderParameters);
+	return new Material(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+}
+
+void ShaderProgram::LoadMaterialInstance(Material* material)
+{
+	material->loadFromShaderProgramDatas(id, m_internalShaderParameters, m_externalShaderParameters);
+}
+
+void ShaderProgram::addMaterialRef(Material* ref)
+{
+	if (std::find(m_materialRefs.begin(), m_materialRefs.end(), ref) != m_materialRefs.end())
+		m_materialRefs.push_back(ref);
+}
+
+void ShaderProgram::removeMaterialRef(Material* ref)
+{
+	m_materialRefs.erase(std::remove(m_materialRefs.begin(), m_materialRefs.end(), ref), m_materialRefs.end());
 }

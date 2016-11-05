@@ -4,11 +4,14 @@
 
 class Resource
 {
-private:
+protected:
 	FileHandler::CompletePath m_completePath;
 
 public:
 	Resource()
+	{}
+
+	virtual ~Resource()
 	{}
 
 	Resource(const FileHandler::CompletePath& completePath)

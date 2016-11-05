@@ -1,5 +1,12 @@
 #include "stdafx.h"
 
+#include "Application.h"
+#include "InputHandler.h"
+#include "Factories.h"
+#include "Scene.h"
+#include "Editor.h"
+#include "FileHandler.h"
+#include <GLFW/glfw3.h>
 #include "Project.h"
 //forwards : 
 #include "DebugDrawer.h"

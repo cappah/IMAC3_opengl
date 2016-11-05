@@ -455,6 +455,10 @@ FileType getFileTypeFromExtention(const std::string& extention)
 	{
 		return FileType::SOUND;
 	}
+	else if (extention == ".glProg")
+	{
+		return FileType::SHADER_PROGRAM;
+	}
 	else
 	{
 		std::cerr << "L'extention : " << extention << " n'est pas prix en charge." << std::endl;

@@ -7,16 +7,16 @@
 
 
 //addings : 
-template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
-{
-	Material* newResource = BaseMaterialHelper::instance().loadMaterialFromPath(path);
-	newResource->init(path);
-
-	m_resources[path] = newResource;
-	m_resourceMapping[path] = hashKey;
-	m_resourcesFromHashKey[hashKey] = newResource;
-}
+//template<>
+//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
+//{
+//	Material* newResource = getProgramFactory()(path);
+//	newResource->init(path);
+//
+//	m_resources[path] = newResource;
+//	m_resourceMapping[path] = hashKey;
+//	m_resourcesFromHashKey[hashKey] = newResource;
+//}
 
 // Creation : 
 //template<>
@@ -34,6 +34,7 @@ void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsig
 
 
 //Shader Programes
+/*
 template<>
 void ResourceFactory<ShaderProgram>::initDefaults()
 {
@@ -76,6 +77,7 @@ void ResourceFactory<ShaderProgram>::initDefaults()
 	//////////////////// DEBUG DRAWER shaders ////////////////////////
 	addDefault("debugDrawer", new ShaderProgram(FileHandler::CompletePath("debugDrawer.vert"), FileHandler::CompletePath("debugDrawer.frag")));
 }
+*/
 
 
 //Cube Texture
@@ -110,42 +112,41 @@ void ResourceFactory<Texture>::initDefaults()
 template<>
 void ResourceFactory<Material>::initDefaults()
 {
+	/*
+	//we construct by default one material instance by shader program
+	for (auto& it = getProgramFactory().resourceBegin(); it != getProgramFactory().resourceEnd(); it++)
+	{
+		Material* newMat = it->second->makeNewMaterialInstance();
+		addDefault(newMat->getCompletePath().getFilename(), newMat);
+	}
+	*/
+	
+	Material* newMat = getProgramFactory().get("defaultLit")->makeNewMaterialInstance(); //new MaterialLit(getProgramFactory().get("defaultLit")->id, getTextureFactory().getDefault("default"), getTextureFactory().getDefault("default"), getTextureFactory().getDefault("default"), 50);
+	addDefault("defaultLit", newMat);
 
-	Material* newMat = new MaterialLit(ResourceFactory<ShaderProgram>::instance().getDefault("defaultLit")->id, ResourceFactory<Texture>::instance().getDefault("default"), ResourceFactory<Texture>::instance().getDefault("default"), ResourceFactory<Texture>::instance().getDefault("default"), 50);
-	newMat->name = "default";
-	addDefault(newMat->name, newMat);
+	newMat = getProgramFactory().get("defaultUnlit")->makeNewMaterialInstance();
+	addDefault("wireframe", newMat);
 
-	newMat = new MaterialUnlit(ResourceFactory<ShaderProgram>::instance().getDefault("defaultUnlit")->id);
-	newMat->name = "wireframe";
-	addDefault(newMat->name, newMat);
+	newMat = getProgramFactory().get("wireframeInstanced")->makeNewMaterialInstance();
+	addDefault("wireframeInstanced", newMat);
 
-	newMat = new MaterialInstancedUnlit(ResourceFactory<ShaderProgram>::instance().getDefault("wireframeInstanced")->id);
-	newMat->name = "wireframeInstanced";
-	addDefault(newMat->name, newMat);
+	newMat = getProgramFactory().get("defaultGrassField")->makeNewMaterialInstance();
+	addDefault("grassfield", newMat);
 
-	newMat = new MaterialGrassField(ResourceFactory<ShaderProgram>::instance().getDefault("defaultGrassField")->id);
-	newMat->name = "grassfield";
-	addDefault(newMat->name, newMat);
+	newMat = getProgramFactory().get("defaultBillboard")->makeNewMaterialInstance();
+	addDefault("billboard", newMat);
 
-	newMat = new MaterialBillboard(ResourceFactory<ShaderProgram>::instance().getDefault("defaultBillboard")->id);
-	newMat->name = "billboard";
-	addDefault(newMat->name, newMat);
+	newMat = getProgramFactory().get("defaultParticles")->makeNewMaterialInstance();
+	addDefault("particles", newMat);
 
-	newMat = new MaterialParticles(ResourceFactory<ShaderProgram>::instance().getDefault("defaultParticles")->id);
-	newMat->name = "particles";
-	addDefault(newMat->name, newMat);
+	newMat = getProgramFactory().get("defaultParticlesCPU")->makeNewMaterialInstance();
+	addDefault("particlesCPU", newMat);
 
-	newMat = new MaterialParticlesCPU(ResourceFactory<ShaderProgram>::instance().getDefault("defaultParticlesCPU")->id);
-	newMat->name = "particlesCPU";
-	addDefault(newMat->name, newMat);
+	newMat = getProgramFactory().get("particleSimulation")->makeNewMaterialInstance();
+	addDefault("particleSimulation", newMat);
 
-	newMat = new MaterialParticleSimulation(ResourceFactory<ShaderProgram>::instance().getDefault("particleSimulation")->id);
-	newMat->name = "particleSimulation";
-	addDefault(newMat->name, newMat);
-
-	newMat = new MaterialDebugDrawer(ResourceFactory<ShaderProgram>::instance().getDefault("debugDrawer")->id);
-	newMat->name = "debugDrawer";
-	addDefault(newMat->name, newMat);
+	newMat = getProgramFactory().get("debugDrawer")->makeNewMaterialInstance();
+	addDefault("debugDrawer", newMat);	
 }
 
 //Mesh
@@ -451,7 +452,8 @@ void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, c
 	case NONE:
 		break;
 	case PROGRAME:
-		getResourceFactory<ShaderProgram>().changeResourceKey(oldResourcePath, newResourcePath);
+		//getResourceFactory<ShaderProgram>().changeResourceKey(oldResourcePath, newResourcePath);
+		std::cout << "warning : can't edit shaderProgram factory ! in : renameResourceInFactory()"<<std::endl;
 		break;
 	case TEXTURE:
 		getResourceFactory<Texture>().changeResourceKey(oldResourcePath, newResourcePath);
@@ -482,7 +484,8 @@ void removeResourceFromFactory(const FileHandler::CompletePath& resourcePath)
 	case NONE:
 		break;
 	case PROGRAME:
-		getResourceFactory<ShaderProgram>().erase(resourcePath);
+		//getResourceFactory<ShaderProgram>().erase(resourcePath);
+		std::cout << "warning : can't edit shaderProgram factory ! in : renameResourceInFactory()" << std::endl;
 		break;
 	case TEXTURE:
 		getResourceFactory<Texture>().erase(resourcePath);

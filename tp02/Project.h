@@ -1,17 +1,18 @@
 #pragma once
 
-#include "glew/glew.h"
+#include <map>
+#include <string>
 
+#include "glew/glew.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
-#include "Application.h"
-#include "InputHandler.h"
-#include "Factories.h"
-#include "Scene.h"
-#include "Editor.h"
 #include "FileHandler.h"
-#include <GLFW/glfw3.h>
+
+//forwards : 
+class Renderer;
+class Scene;
+struct GLFWwindow;
 
 class Project
 {

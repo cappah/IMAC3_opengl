@@ -4,30 +4,129 @@
 #include "Factories.h"//forward
 #include "EditorGUI.h"
 
+Material::Material()
+	: m_glProgramId(0)
+{
 
-Material::Material(GLuint glProgramId, std::vector<InternalShaderParameterBase>& internalParameters, std::vector<ExternalShaderParameterBase>& externalParameters)
+}
+
+Material::Material(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters)
 	: m_glProgramId(glProgramId)
 	, m_internalParameters(internalParameters)
+	, m_glProgramName(glProgramName)
 {
-	for (int i = 0; i < externalParameters.size(); i++)
-	{
-		m_externalParameters[externalParameters[i].getName()] = externalParameters[i];
-	}
+	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+}
+
+Material::Material(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	: m_glProgramId(glProgramId)
+	, m_internalParameters(internalParameters)
+	, m_glProgramName(glProgramName)
+{
+	setExternalParameters(externalParameters);
+
+	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+}
+
+Material::~Material()
+{
+	getProgramFactory().get(m_glProgramName)->removeMaterialRef(this);
 }
 
 void Material::init(const FileHandler::CompletePath& path)
 {
-	//TODO
+	Material::init(path);
+
+	std::ifstream stream;
+	stream.open(path.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load material at path : " << path.toString() << std::endl;
+		return;
+	}
+	Json::Value root;
+	stream >> root;
+
+	load(root);
 }
 
 void Material::drawUI()
 {
-	//TODO
+	for (auto& parameter : m_internalParameters)
+	{
+		parameter->drawUI();
+	}
 }
 
-void Material::pushInternalsToGPU()
+void Material::pushInternalsToGPU(int& boundTextureCount)
 {
-	//TODO
+	for (auto& parameter : m_internalParameters)
+	{
+		parameter->pushToGPU(boundTextureCount);
+	}
+}
+
+void Material::setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+{
+	for (int i = 0; i < externalParameters.size(); i++)
+	{
+		m_externalParameters[externalParameters[i]->getName()] = externalParameters[i];
+	}
+}
+
+void Material::loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+{
+	m_internalParameters.clear();
+	m_externalParameters.clear();
+
+	m_glProgramId = glProgramId;
+	m_internalParameters = internalParameters;
+
+	setExternalParameters(externalParameters);
+}
+
+void Material::save(Json::Value & entityRoot) const
+{
+	entityRoot["shaderProgramName"] = m_glProgramName;
+
+	int parameterIdx = 0;
+	for (auto& parameter : m_internalParameters)
+	{
+		parameter->save(entityRoot["internalParameters"][parameterIdx]);
+		parameterIdx++;
+	}
+}
+
+void Material::load(Json::Value & entityRoot)
+{
+	std::string shaderProgramName = entityRoot.get("shaderProgramName", "").asString();
+	assert(shaderProgramName != "");
+
+	getProgramFactory().get(shaderProgramName)->LoadMaterialInstance(this);
+
+	int parameterIdx = 0;
+	for (auto& parameter : m_internalParameters)
+	{
+		parameter->load(entityRoot["internalParameters"][parameterIdx]);
+		parameterIdx++;
+	}
+
+	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+}
+
+void Material::save(const FileHandler::CompletePath& path) const
+{
+	std::ofstream stream;
+	stream.open(path.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't save material at path : " << path.toString() << std::endl;
+		return;
+	}
+	Json::Value root;
+	save(root);
+
+	stream << root;
 }
 
 //Material::Material(GLuint _glProgram) 
@@ -1128,3 +1227,5 @@ void MaterialParticleSimulation::initGL()
 {
 	//nothing
 }
+
+*/

@@ -14,6 +14,7 @@
 #include "ISerializable.h"
 #include "ISingleton.h"
 #include "ResourcePointer.h"
+#include "Project.h"
 
 
 template<typename T>
@@ -66,10 +67,150 @@ public:
 	typename std::map<FileHandler::CompletePath, T*>::iterator resourceEnd();
 	typename std::map<std::string, T*>::iterator defaultResourceEnd();
 
-	SINGLETON_IMPL(ResourceFactory<T>);
+	SINGLETON_IMPL(ResourceFactory);
 
 private:
 	void add(const FileHandler::CompletePath& path, unsigned int hashKey);
+
+};
+
+
+//Specialization for ShaderProgram
+template<>
+class ResourceFactory<ShaderProgram> : public ISingleton<ResourceFactory<ShaderProgram>>, public ISerializable
+{
+private:
+	std::map<std::string, unsigned int> m_resourceMapping;
+	std::map<unsigned int, ShaderProgram*> m_resourcesFromHashKey;
+	std::map<std::string, ShaderProgram*> m_resources;
+
+public:
+
+	ResourceFactory()
+	{}
+
+	//create the nex resource at given path. tell the resource tree to effectivly add a new file
+	//void createNewResource(const FileHandler::CompletePath& path);
+	//add a resource which have already been created/loaded by the resource tree
+	void add(const FileHandler::CompletePath& path)
+	{
+		ShaderProgram* newResource = new ShaderProgram(path);
+		newResource->init(path);
+
+		std::string name = path.getFilename();
+
+		m_resources[name] = newResource;
+		m_resourceMapping[name] = ++s_resourceCount;
+		m_resourcesFromHashKey[s_resourceCount] = newResource;
+		
+	}
+	void add(const std::string& name, ShaderProgram* value)
+	{
+		m_resources[name] = value;
+		m_resourceMapping[name] = ++s_resourceCount;
+		m_resourcesFromHashKey[s_resourceCount] = value;
+	}
+	void erase(const std::string& name)
+	{
+		if (m_resources.find(name) == m_resources.end())
+			return;
+
+		unsigned int resourceHashKey = m_resourceMapping[name];
+		delete m_resources[name];
+
+		m_resources.erase(name);
+		m_resourceMapping.erase(name);
+		m_resourcesFromHashKey.erase(resourceHashKey);
+	}
+	ResourcePtr<ShaderProgram> get(const std::string& name)
+	{
+		return ResourcePtr<ShaderProgram>(m_resources[name], m_resourceMapping[name], false);
+	}
+	bool contains(const std::string& name)
+	{
+		return m_resources.find(name) != m_resources.end();
+	}
+	ShaderProgram* getRaw(unsigned int hashKey)
+	{
+		return m_resourcesFromHashKey[hashKey];
+	}
+	bool contains(unsigned int hashKey)
+	{
+		return m_resourcesFromHashKey.find(hashKey) != m_resourcesFromHashKey.end();
+	}
+	unsigned int getHashKeyForResource(const std::string& name) const
+	{
+		return m_resourceMapping.at(name);
+	}
+
+	//load all programs which are in "[projectPath]/shaders/"
+	void initDefaults()
+	{
+		FileHandler::Path shadersPath = FileHandler::Path(Project::getPath().toString() + "/shaders/");
+		loadAllPrograms(shadersPath);
+	}
+
+	//add all programs recursivly to the ShaderProgram factory 
+	void loadAllPrograms(const FileHandler::Path& path)
+	{
+		std::vector<std::string> dirNames;
+		FileHandler::getAllDirNames(path, dirNames);
+
+		for (auto& dirName : dirNames)
+		{
+			loadAllPrograms(FileHandler::Path(path.toString() + "/" + dirName));
+		}
+
+		std::vector<std::string> fileNames;
+		FileHandler::getAllFileNames(path, fileNames);
+		std::string outExtention;
+
+		for (auto& fileNameAndExtention : fileNames)
+		{
+			//We only add files that engine understand
+			FileHandler::getExtentionFromExtendedFilename(fileNameAndExtention, outExtention);
+			if (FileHandler::getFileTypeFromExtention(outExtention) == FileHandler::FileType::SHADER_PROGRAM)
+			{
+				FileHandler::CompletePath shaderPath(path.toString() + "/" + fileNameAndExtention);
+				add(shaderPath);
+			}
+		}
+	}
+	void clear()
+	{
+		for (auto& it = m_resources.begin(); it != m_resources.end(); it++)
+		{
+			ShaderProgram* resource = it->second;
+			delete resource;
+		}
+
+		m_resources.clear();
+	}
+
+	virtual void save(Json::Value & entityRoot) const override
+	{
+		//no need to save these resources
+	}
+	virtual void load(Json::Value & entityRoot) override
+	{
+		//no need to load these resources
+	}
+
+	typename std::map<FileHandler::CompletePath, ShaderProgram*>::iterator resourceBegin();
+	typename std::map<FileHandler::CompletePath, ShaderProgram*>::iterator resourceEnd();
+
+	SINGLETON_IMPL(ResourceFactory);
+
+private:
+	void add(const std::string& name, unsigned int hashKey)
+	{
+		ShaderProgram* newResource = new ShaderProgram();
+		newResource->init(name);
+
+		m_resources[name] = newResource;
+		m_resourceMapping[name] = hashKey;
+		m_resourcesFromHashKey[hashKey] = newResource;
+	}
 
 };
 
@@ -172,23 +313,9 @@ bool ResourceFactory<T>::contains(const FileHandler::CompletePath& path)
 template<typename T>
 bool ResourceFactory<T>::contains(unsigned int hashKey)
 {
-	return m_resourceFromHashKey.find(hashKey) != m_resources.end();
+	return m_resourcesFromHashKey.find(hashKey) != m_resourcesFromHashKey.end();
 }
 
-//DEFAULTS
-template<typename T>
-void ResourceFactory<T>::initDefaults()
-{
-	//nothing
-}
-
-template<typename T>
-void ResourceFactory<T>::addDefault(const std::string& name, T* resource)
-{
-	m_defaultResources[name] = resource;
-	m_defaultResourceMapping[name] = ++s_resourceCount;
-	m_defaultResourcesFromHashKey[s_resourceCount] = resource;
-}
 
 template<typename T>
 void ResourceFactory<T>::changeResourceKey(const FileHandler::CompletePath& oldKey, const FileHandler::CompletePath& newKey)
@@ -208,6 +335,20 @@ void ResourceFactory<T>::changeResourceKey(const FileHandler::CompletePath& oldK
 	m_resourceMapping[newKey] = resourceHashKey;
 }
 
+//DEFAULTS
+template<typename T>
+void ResourceFactory<T>::initDefaults()
+{
+	//nothing
+}
+
+template<typename T>
+void ResourceFactory<T>::addDefault(const std::string& name, T* resource)
+{
+	m_defaultResources[name] = resource;
+	m_defaultResourceMapping[name] = ++s_resourceCount;
+	m_defaultResourcesFromHashKey[s_resourceCount] = resource;
+}
 
 template<typename T>
 unsigned int ResourceFactory<T>::getHashKeyForDefaultResource(const std::string& name) const
@@ -318,8 +459,8 @@ typename std::map<std::string, T*>::iterator ResourceFactory<T>::defaultResource
 
 //Specialisations : 
 
-template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
+//template<>
+//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
 
 // Creation : 
 
@@ -329,8 +470,8 @@ void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsig
 //Initialisations : 
 
 //Shader Programes
-template<>
-void ResourceFactory<ShaderProgram>::initDefaults();
+//template<>
+//void ResourceFactory<ShaderProgram>::initDefaults();
 
 //Cube Texture
 template<>
@@ -413,6 +554,14 @@ void ResourcePtr<T>::load(Json::Value & entityRoot)
 	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
 	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();
 	m_rawPtr = m_isDefaultResource ? getResourceFactory<T>().getRawDefault(m_resourceHashKey) : getResourceFactory<T>().getRaw(m_resourceHashKey);
+}
+
+template<>
+void ResourcePtr<ShaderProgram>::load(Json::Value & entityRoot)
+{
+	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
+	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();
+	m_rawPtr = getResourceFactory<ShaderProgram>().getRaw(m_resourceHashKey);
 }
 
 

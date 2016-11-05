@@ -3,69 +3,70 @@
 #include <glm/glm.hpp>
 #include <glew/glew.h>
 #include "EditorGUI.h"
+#include "ISerializable.h"
 
 // Helper Functions to push data to gpu
 namespace GlHelper {
 
 template<typename T>
-void pushParameterToGPU(GLuint uniformId, T& value)
+void pushParameterToGPU(GLuint uniformId, const T& value)
 {
 	assert(0 && "invalid parameter type.");
 }
 
 template<>
-void pushParameterToGPU<int>(GLuint uniformId, int& value)
+void pushParameterToGPU<int>(GLuint uniformId, const int& value)
 {
 	glUniform1i(uniformId, value);
 }
 
 template<>
-void pushParameterToGPU<float>(GLuint uniformId, float& value)
+void pushParameterToGPU<float>(GLuint uniformId, const float& value)
 {
 	glUniform1f(uniformId, value);
 }
 
 template<>
-void pushParameterToGPU<glm::vec2>(GLuint uniformId, glm::vec2& value)
+void pushParameterToGPU<glm::vec2>(GLuint uniformId, const glm::vec2& value)
 {
 	glUniform2f(uniformId, value.x, value.y);
 }
 
 template<>
-void pushParameterToGPU<glm::ivec2>(GLuint uniformId, glm::ivec2& value)
+void pushParameterToGPU<glm::ivec2>(GLuint uniformId, const glm::ivec2& value)
 {
 	glUniform2i(uniformId, value.x, value.y);
 }
 
 template<>
-void pushParameterToGPU<glm::vec3>(GLuint uniformId, glm::vec3& value)
+void pushParameterToGPU<glm::vec3>(GLuint uniformId, const glm::vec3& value)
 {
 	glUniform3f(uniformId, value.x, value.y, value.z);
 }
 
 template<>
-void pushParameterToGPU<glm::ivec3>(GLuint uniformId, glm::ivec3& value)
+void pushParameterToGPU<glm::ivec3>(GLuint uniformId, const glm::ivec3& value)
 {
 	glUniform3i(uniformId, value.x, value.y, value.z);
 }
 
 template<>
-void pushParameterToGPU<glm::mat4>(GLuint uniformId, glm::mat4& value)
+void pushParameterToGPU<glm::mat4>(GLuint uniformId, const glm::mat4& value)
 {
 	glUniformMatrix4fv(uniformId, 1, false,  glm::value_ptr(value));
 }
 
-//array version : 
+//array version (experimental) : 
 
 template<typename T>
-void pushParametersToGPU(GLuint uniformId, int count, std::vector<T>& values)
+void pushParametersToGPU(GLuint uniformId, int count, const std::vector<T>& values)
 {
 	assert(0 && "invalid parameter type.");
 }
 
 
 template<>
-void pushParametersToGPU<float>(GLuint uniformId, int count, std::vector<float>& values)
+void pushParametersToGPU<float>(GLuint uniformId, int count, const std::vector<float>& values)
 {
 	glUniform1fv(uniformId, count, &values[0]);
 }
@@ -74,6 +75,8 @@ void pushParametersToGPU<float>(GLuint uniformId, int count, std::vector<float>&
 
 }
 
+
+namespace ShaderParameter {
 
 //valid types for a shader parameter.
 enum ShaderParameterType {
@@ -85,7 +88,7 @@ enum ShaderParameterType {
 	FLOAT3,
 	TEXTURE,
 	CUBE_TEXTURE,
-//arrays :
+	//arrays :
 	ARRAY_INT,
 	ARRAY_INT2,
 	ARRAY_INT3,
@@ -98,7 +101,7 @@ enum ShaderParameterType {
 };
 
 //these types will appear with these names in .glProg files.
-static std::vector<std::string> LiteralShaderParameterType {
+static std::vector<std::string> LiteralShaderParameterType{
 	"int",
 	"int2",
 	"int3",
@@ -107,7 +110,7 @@ static std::vector<std::string> LiteralShaderParameterType {
 	"float2",
 	"texture",
 	"cubeTexture",
-//arrays :
+	//arrays :
 	"int[]",
 	"int2[]",
 	"int3[]",
@@ -118,17 +121,18 @@ static std::vector<std::string> LiteralShaderParameterType {
 	"cubeTexture[]",
 };
 
-namespace ShaderParameter {
-	struct IsArray {};
-	struct IsNotArray {};
+struct IsArray {};
+struct IsNotArray {};
+
 }
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 ////////// BEGIN : internal parameters
 
 //The ShaderParameter interface. 
 //A ShaderParameter is an abstraction of a data which can be send to gpu.
-class InternalShaderParameterBase
+class InternalShaderParameterBase : public ISerializable
 {
 protected:
 	std::string m_name;
@@ -184,6 +188,15 @@ public:
 	{
 		GlHelper::pushParameterToGPU<T>(m_uniformId, m_data);
 	}
+
+	void save(Json::Value & entityRoot) const override
+	{
+		jsonSaveValue<T>(entityRoot, "data", m_data);
+	}
+	void load(Json::Value & entityRoot) override
+	{
+		jsonLoadValue<T>(entityRoot, "data", m_data);
+	}
 };
 
 //array version isn't editable for now
@@ -220,6 +233,20 @@ public:
 			GlHelper::pushParameterToGPU<T>(m_uniformIds[i], m_datas[i]);
 		}
 	}
+
+	void save(Json::Value & entityRoot) const override
+	{
+		entityRoot["count"] = m_datas.size();
+		for(int i = 0; i < m_datas.size(); i ++)
+			jsonSaveValue<T>(entityRoot, "data["+i+"]", m_datas[i]);
+	}
+	void load(Json::Value & entityRoot) override
+	{
+		int count = entityRoot["count"];
+		m_datas.resize(count);
+		for (int i = 0; i < m_datas.size(); i++)
+			jsonLoadValue<T>(entityRoot, "data["+i+"]", m_datas[i]);
+	}
 };
 
 //Array version not allowed for now
@@ -253,6 +280,15 @@ public:
 		glBindTexture(GL_TEXTURE_2D, m_data->glId);
 		glUniform1i(m_uniformId, boundTextureCount);
 		boundTextureCount++;
+	}
+
+	void save(Json::Value & entityRoot) const override
+	{
+		m_data.save(entityRoot);
+	}
+	void load(Json::Value & entityRoot) override
+	{
+		m_data.load(entityRoot);
 	}
 };
 
@@ -288,43 +324,52 @@ public:
 		glUniform1i(m_uniformId, boundTextureCount);
 		boundTextureCount++;
 	}
+
+	void save(Json::Value & entityRoot) const override
+	{
+		m_data.save(entityRoot);
+	}
+	void load(Json::Value & entityRoot) override
+	{
+		m_data.load(entityRoot);
+	}
 };
 
 //utility function to make a shader from its type
 std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(const std::string& literaltype, std::string& name)
 {
-	ShaderParameterType parameterType = ShaderParameterType::TYPE_COUNT;
-	auto& foundTypeIt = std::find(LiteralShaderParameterType.begin(), LiteralShaderParameterType.end(), literaltype);
-	if (foundTypeIt != LiteralShaderParameterType.end())
-		parameterType = (ShaderParameterType)std::distance(LiteralShaderParameterType.begin(), foundTypeIt);
+	ShaderParameter::ShaderParameterType parameterType = ShaderParameter::ShaderParameterType::TYPE_COUNT;
+	auto& foundTypeIt = std::find(ShaderParameter::LiteralShaderParameterType.begin(), ShaderParameter::LiteralShaderParameterType.end(), literaltype);
+	if (foundTypeIt != ShaderParameter::LiteralShaderParameterType.end())
+		parameterType = (ShaderParameter::ShaderParameterType)std::distance(ShaderParameter::LiteralShaderParameterType.begin(), foundTypeIt);
 	else
 		return nullptr;
 
 
 	switch (parameterType)
 	{
-	case INT:
+	case ShaderParameter::ShaderParameterType::INT:
 		return std::make_shared<InternalShaderParameter<int, ShaderParameter::IsNotArray>>(name);
 		break;
-	case INT2:
+	case ShaderParameter::ShaderParameterType::INT2:
 		return std::make_shared<InternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name);
 		break;
-	case INT3:
+	case ShaderParameter::ShaderParameterType::INT3:
 		return std::make_shared<InternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name);
 		break;
-	case FLOAT:
+	case ShaderParameter::ShaderParameterType::FLOAT:
 		return std::make_shared<InternalShaderParameter<float, ShaderParameter::IsNotArray>>(name);
 		break;
-	case FLOAT2:
+	case ShaderParameter::ShaderParameterType::FLOAT2:
 		return std::make_shared<InternalShaderParameter<glm::vec2, ShaderParameter::IsNotArray>>(name);
 		break;
-	case FLOAT3:
+	case ShaderParameter::ShaderParameterType::FLOAT3:
 		return std::make_shared<InternalShaderParameter<glm::vec3, ShaderParameter::IsNotArray>>(name);
 		break;
-	case TEXTURE:
+	case ShaderParameter::ShaderParameterType::TEXTURE:
 		return std::make_shared<InternalShaderParameter<Texture, ShaderParameter::IsNotArray>>(name);
 		break;
-	case CUBE_TEXTURE:
+	case ShaderParameter::ShaderParameterType::CUBE_TEXTURE:
 		return std::make_shared<InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>>(name);
 		break;
 	default:
@@ -357,10 +402,12 @@ public:
 	{
 		return m_name;
 	}
+	virtual GLuint getUniformId() const { return 0; }
+	virtual void getUniformIds(std::vector<GLuint>& outUniforms) const { return; }
 };
 
 
-template<typename T, typename U>
+template<typename T, typename U = ShaderParameter::IsNotArray>
 class ExternalShaderParameter : public ExternalShaderParameterBase
 {
 	//UNDEFINED FOR U != (IsArray | IsNotArray) !!!
@@ -388,6 +435,12 @@ public:
 	{
 		GlHelper::pushParameterToGPU<T>(m_uniformId, externalData);
 	}
+
+	GLuint getUniformId() const override
+	{ 
+		return m_uniformId;
+	}
+
 };
 
 //array version isn't editable for now
@@ -428,6 +481,12 @@ public:
 		assert(uniformIdx < m_uniformIds.size());
 		GlHelper::pushParameterToGPU<T>(m_uniformIds[uniformIdx], externalData[uniformIdx]);
 	}
+
+	void getUniformIds(std::vector<GLuint>& outUniforms) const override
+	{
+		outUniforms = m_uniformIds;
+	}
+
 };
 
 //Array version not allowed for now
@@ -452,6 +511,11 @@ public:
 	void pushToGPU(GLint textureUnit)
 	{
 		glUniform1i(m_uniformId, textureUnit);
+	}
+
+	GLuint getUniformId() const override
+	{
+		return m_uniformId;
 	}
 };
 
@@ -478,62 +542,67 @@ public:
 	{
 		glUniform1i(m_uniformId, textureUnit);
 	}
+
+	GLuint getUniformId() const override
+	{
+		return m_uniformId;
+	}
 };
 
 //utility function to make a shader from its type
 std::shared_ptr<ExternalShaderParameterBase> MakeNewExternalShaderParameter(const std::string& literaltype, std::string& name)
 {
-	ShaderParameterType parameterType = ShaderParameterType::TYPE_COUNT;
-	auto& foundTypeIt = std::find(LiteralShaderParameterType.begin(), LiteralShaderParameterType.end(), literaltype);
-	if (foundTypeIt != LiteralShaderParameterType.end())
-		parameterType = (ShaderParameterType)std::distance(LiteralShaderParameterType.begin(), foundTypeIt);
+	ShaderParameter::ShaderParameterType parameterType = ShaderParameter::ShaderParameterType::TYPE_COUNT;
+	auto& foundTypeIt = std::find(ShaderParameter::LiteralShaderParameterType.begin(), ShaderParameter::LiteralShaderParameterType.end(), literaltype);
+	if (foundTypeIt != ShaderParameter::LiteralShaderParameterType.end())
+		parameterType = (ShaderParameter::ShaderParameterType)std::distance(ShaderParameter::LiteralShaderParameterType.begin(), foundTypeIt);
 	else
 		return nullptr;
 
 
 	switch (parameterType)
 	{
-	case INT:
+	case ShaderParameter::ShaderParameterType::INT:
 		return std::make_shared<ExternalShaderParameter<int, ShaderParameter::IsNotArray>>(name);
 		break;
-	case INT2:
+	case ShaderParameter::ShaderParameterType::INT2:
 		return std::make_shared<ExternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name);
 		break;
-	case INT3:
+	case ShaderParameter::ShaderParameterType::INT3:
 		return std::make_shared<ExternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name);
 		break;
-	case FLOAT:
+	case ShaderParameter::ShaderParameterType::FLOAT:
 		return std::make_shared<ExternalShaderParameter<float, ShaderParameter::IsNotArray>>(name);
 		break;
-	case FLOAT2:
+	case ShaderParameter::ShaderParameterType::FLOAT2:
 		return std::make_shared<ExternalShaderParameter<glm::vec2, ShaderParameter::IsNotArray>>(name);
 		break;
-	case FLOAT3:
+	case ShaderParameter::ShaderParameterType::FLOAT3:
 		return std::make_shared<ExternalShaderParameter<glm::vec3, ShaderParameter::IsNotArray>>(name);
 		break;
-	case TEXTURE:
+	case ShaderParameter::ShaderParameterType::TEXTURE:
 		return std::make_shared<ExternalShaderParameter<Texture, ShaderParameter::IsNotArray>>(name);
 		break;
-	case CUBE_TEXTURE:
+	case ShaderParameter::ShaderParameterType::CUBE_TEXTURE:
 		return std::make_shared<ExternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>>(name);
 		break;
 //array versions :
-	case ARRAY_INT:
+	case ShaderParameter::ShaderParameterType::ARRAY_INT:
 		return std::make_shared<ExternalShaderParameter<int, ShaderParameter::IsNotArray>>(name);
 		break;
-	case ARRAY_INT2:
+	case ShaderParameter::ShaderParameterType::ARRAY_INT2:
 		return std::make_shared<ExternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name);
 		break;
-	case ARRAY_INT3:
+	case ShaderParameter::ShaderParameterType::ARRAY_INT3:
 		return std::make_shared<ExternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name);
 		break;
-	case ARRAY_FLOAT:
+	case ShaderParameter::ShaderParameterType::ARRAY_FLOAT:
 		return std::make_shared<ExternalShaderParameter<float, ShaderParameter::IsNotArray>>(name);
 		break;
-	case ARRAY_FLOAT2:
+	case ShaderParameter::ShaderParameterType::ARRAY_FLOAT2:
 		return std::make_shared<ExternalShaderParameter<glm::vec2, ShaderParameter::IsNotArray>>(name);
 		break;
-	case ARRAY_FLOAT3:
+	case ShaderParameter::ShaderParameterType::ARRAY_FLOAT3:
 		return std::make_shared<ExternalShaderParameter<glm::vec3, ShaderParameter::IsNotArray>>(name);
 		break;
 	default:

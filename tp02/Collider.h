@@ -159,7 +159,7 @@ struct BoxCollider : public Collider
 	virtual btCollisionShape* makeShape() override;
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 };
 
 
@@ -183,5 +183,5 @@ struct CapsuleCollider : public Collider
 	virtual btCollisionShape* makeShape() override;
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 };

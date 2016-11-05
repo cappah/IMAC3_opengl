@@ -21,13 +21,28 @@
 // TO JSON : 
 
 template<typename T>
+void jsonSaveValue(Json::Value& jsonValue, const std::string& key, const T& value)
+{
+	jsonValue[key] = toJsonValue<T>(value);
+}
+
+template<typename T>
+void jsonLoadValue(const Json::Value& jsonValue, const std::string& key, T& value)
+{
+	value = fromJsonValue<T>(jsonValue);
+}
+
+
+// TO JSON : 
+
+
+template<typename T>
 Json::Value toJsonValue(const T& value)
 {
 	Json::Value serializedValue;
-	value.save(serializedValue);
+		value.save(serializedValue);
 	return serializedValue;
 }
-
 
 template<typename T>
 Json::Value toJsonValue(const std::vector<T>& vector)
@@ -55,53 +70,6 @@ Json::Value toJsonValue(const std::map<T, U>& map)
 	}
 	return serializedValue;
 }
-
-template<typename T>
-std::vector<T> fromJsonValues_vector(Json::Value& value)
-{
-	std::vector<T> loadedValues;
-	int size = value.get("size", 0).asInt();
-	for (int i = 0; i < size; i++)
-	{
-		loadedValues[i] = fromJsonValue<T>(value["data"][i], T());
-	}
-	return loadedValues;
-}
-
-template<typename T, typename U>
-std::map<T, U> fromJsonValues_map(Json::Value& value)
-{
-	std::map<T> loadedValues;
-	int size = value.get("size", 0).asInt();
-	for (int i = 0; i < size; i++)
-	{
-		std::pair<T, U> newPair;
-		newPair.first = fromJsonValue<T>(value["keys"][i]);
-		newPair.second = fromJsonValue<T>(value["values"][i]);
-		loadedValues.insert(newPair);
-	}
-	return loadedValues;
-}
-
-
-
-// FROM JSON : 
-
-template<typename T>
-T fromJsonValue(Json::Value& value, const T& default)
-{
-	if (value.empty())
-		return default;
-	else
-	{
-		T loadedValue;
-		loadedValue.load(value);
-		return loadedValue;
-	}
-}
-
-
-// TO JSON : 
 
 template<>
 inline Json::Value toJsonValue<GLuint>(const GLuint& value)
@@ -145,6 +113,15 @@ inline Json::Value toJsonValue<glm::vec2>(const glm::vec2& vec)
 }
 
 template<>
+inline Json::Value toJsonValue<glm::ivec2>(const glm::ivec2& vec)
+{
+	Json::Value serializedValue;
+	serializedValue[0] = vec.x;
+	serializedValue[1] = vec.y;
+	return serializedValue;
+}
+
+template<>
 inline Json::Value toJsonValue<glm::vec3>(const glm::vec3& vec)
 {
 	Json::Value serializedValue(Json::arrayValue);
@@ -155,7 +132,28 @@ inline Json::Value toJsonValue<glm::vec3>(const glm::vec3& vec)
 }
 
 template<>
-inline Json::Value toJsonValue(const glm::vec4& vec)
+inline Json::Value toJsonValue<glm::ivec3>(const glm::ivec3& vec)
+{
+	Json::Value serializedValue(Json::arrayValue);
+	serializedValue[0] = vec.x;
+	serializedValue[1] = vec.y;
+	serializedValue[2] = vec.z;
+	return serializedValue;
+}
+
+template<>
+inline Json::Value toJsonValue<glm::vec4>(const glm::vec4& vec)
+{
+	Json::Value serializedValue;
+	serializedValue[0] = vec.x;
+	serializedValue[1] = vec.y;
+	serializedValue[2] = vec.z;
+	serializedValue[3] = vec.w;
+	return serializedValue;
+}
+
+template<>
+inline Json::Value toJsonValue<glm::ivec4>(const glm::ivec4& vec)
 {
 	Json::Value serializedValue;
 	serializedValue[0] = vec.x;
@@ -206,38 +204,85 @@ inline Json::Value toJsonValue<glm::mat4>(const glm::mat4& mat)
 
 // FROM JSON
 
+
+template<typename T>
+std::vector<T> fromJsonValues_vector(const Json::Value& value)
+{
+	std::vector<T> loadedValues;
+	int size = value.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		loadedValues[i] = fromJsonValue<T>(value["data"][i], T());
+	}
+	return loadedValues;
+}
+
+template<typename T, typename U>
+std::map<T, U> fromJsonValues_map(const Json::Value& value)
+{
+	std::map<T> loadedValues;
+	int size = value.get("size", 0).asInt();
+	for (int i = 0; i < size; i++)
+	{
+		std::pair<T, U> newPair;
+		newPair.first = fromJsonValue<T>(value["keys"][i]);
+		newPair.second = fromJsonValue<T>(value["values"][i]);
+		loadedValues.insert(newPair);
+	}
+	return loadedValues;
+}
+
+template<typename T>
+T fromJsonValue(const Json::Value& value, const T& default)
+{
+	if (value.empty())
+		return default;
+	else
+	{
+		T loadedValue;
+		loadedValue.load(value);
+		return loadedValue;
+	}
+}
+
+template<typename T>
+T fromJsonValue(const Json::Value& value)
+{
+	assert(0 && "invalid value.");
+}
+
 template<>
-inline float fromJsonValue<float>(Json::Value& value, const float& default)
+inline float fromJsonValue<float>(const Json::Value& value, const float& default)
 {
 	return value.asFloat();
 }
 
 template<>
-inline GLuint fromJsonValue<GLuint>(Json::Value& value, const GLuint& default)
+inline GLuint fromJsonValue<GLuint>(const Json::Value& value, const GLuint& default)
 {
 	return (GLuint)value.asInt();
 }
 
 template<>
-inline int fromJsonValue<int>(Json::Value& value, const int& default)
+inline int fromJsonValue<int>(const Json::Value& value, const int& default)
 {
 	return value.asInt();
 }
 
 template<>
-inline bool fromJsonValue<bool>(Json::Value& value, const bool& default)
+inline bool fromJsonValue<bool>(const Json::Value& value, const bool& default)
 {
 	return value.asBool();
 }
 
 template<>
-inline std::string fromJsonValue<std::string>(Json::Value& value, const std::string& default)
+inline std::string fromJsonValue<std::string>(const Json::Value& value, const std::string& default)
 {
 	return value.asString();
 }
 
 template<>
-inline glm::quat fromJsonValue<glm::quat>(Json::Value& value, const glm::quat& default)
+inline glm::quat fromJsonValue<glm::quat>(const Json::Value& value, const glm::quat& default)
 {
 	if (value.empty())
 		return default;
@@ -246,7 +291,7 @@ inline glm::quat fromJsonValue<glm::quat>(Json::Value& value, const glm::quat& d
 }
 
 template<>
-inline glm::vec2 fromJsonValue<glm::vec2>(Json::Value& value, const glm::vec2& default)
+inline glm::vec2 fromJsonValue<glm::vec2>(const Json::Value& value, const glm::vec2& default)
 {
 	if (value.empty())
 		return default;
@@ -255,7 +300,7 @@ inline glm::vec2 fromJsonValue<glm::vec2>(Json::Value& value, const glm::vec2& d
 }
 
 template<>
-inline glm::vec3 fromJsonValue<glm::vec3>(Json::Value& value, const glm::vec3& default)
+inline glm::vec3 fromJsonValue<glm::vec3>(const Json::Value& value, const glm::vec3& default)
 {
 	if (value.empty())
 		return default;
@@ -264,7 +309,7 @@ inline glm::vec3 fromJsonValue<glm::vec3>(Json::Value& value, const glm::vec3& d
 }
 
 template<>
-inline glm::vec4 fromJsonValue<glm::vec4>(Json::Value& value, const glm::vec4& default)
+inline glm::vec4 fromJsonValue<glm::vec4>(const Json::Value& value, const glm::vec4& default)
 {
 	if (value.empty())
 		return default;
@@ -273,7 +318,7 @@ inline glm::vec4 fromJsonValue<glm::vec4>(Json::Value& value, const glm::vec4& d
 }
 
 template<>
-inline glm::mat3 fromJsonValue<glm::mat3>(Json::Value& value, const glm::mat3& default)
+inline glm::mat3 fromJsonValue<glm::mat3>(const Json::Value& value, const glm::mat3& default)
 {
 	if (value.empty())
 		return default;
@@ -292,7 +337,7 @@ inline glm::mat3 fromJsonValue<glm::mat3>(Json::Value& value, const glm::mat3& d
 }
 
 template<>
-inline glm::mat4 fromJsonValue<glm::mat4>(Json::Value& value, const glm::mat4& default)
+inline glm::mat4 fromJsonValue<glm::mat4>(const Json::Value& value, const glm::mat4& default)
 {
 	if (value.empty())
 		return default;

@@ -32,7 +32,7 @@ void ResourceFolder::fillDatasFromExplorerFolder(const FileHandler::Path& folder
 	{
 		//We only add files that engine understand
 		FileHandler::getExtentionFromExtendedFilename(fileNameAndExtention, outExtention);
-		if (FileHandler::getFileTypeFromExtention(outExtention))
+		if (FileHandler::getFileTypeFromExtention(outExtention) != FileHandler::FileType::NONE)
 		{
 			addFile( fileNameAndExtention );
 		}
@@ -190,8 +190,8 @@ void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, Resour
 
 void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::string& materialModelName, ResourceFolder& folderTo)
 {
-	assert(MaterialModelsFactory::instance().getPtr(materialModelName) != nullptr); //we can't add a second resource with the same name
-	if (MaterialModelsFactory::instance().getPtr(materialModelName) == nullptr)
+	assert(getProgramFactory().contains(materialModelName)); //we can't add a second resource with the same name
+	if (!getProgramFactory().contains(materialModelName))
 		return;
 
 	//We create and save the new resource
@@ -200,7 +200,7 @@ void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::
 
 	//TODO 01
 	//create new instance
-	Material* newMaterial = MaterialModelsFactory::instance().getInstance(materialModelName);
+	Material* newMaterial = getProgramFactory().get(materialModelName)->makeNewMaterialInstance();
 	newMaterial->save(resourceCompletePath);
 
 	//we store the resource in its factory
@@ -856,9 +856,9 @@ void ResourceTreeView::popUpToChooseMaterial()
 	}*/
 
 
-	for (auto& it = MaterialModelsFactory::instance().begin(); it != MaterialModelsFactory::instance().begin(); it++)
+	for (auto& it = getMaterialFactory().resourceBegin(); it != getMaterialFactory().resourceEnd(); it++)
 	{
-		const std::string matName = it->first;
+		const std::string matName = it->first.getFilename();
 		const std::string btnLabel = matName + "##" + std::to_string(tmpProgramIdx++);
 
 		if (ImGui::Button(btnLabel.data()))

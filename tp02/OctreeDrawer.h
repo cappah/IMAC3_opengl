@@ -8,7 +8,7 @@
 #include "ResourcePointer.h"
 #include "Materials.h"
 
-class MaterialInstancedUnlit;
+//class MaterialInstancedUnlit;
 
 class OctreeDrawer
 {

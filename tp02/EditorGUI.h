@@ -116,7 +116,7 @@ namespace EditorGUI {
 	bool ResourceField(const std::string& label, ResourcePtr<T> resourcePtr)
 	{
 		const int bufSize = 100;
-		const std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getPath() : "INVALID")
+		std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getCompletePath().getFilename() : "INVALID");
 		currentResourceName.reserve(bufSize);
 
 		ResourceType resourceType = getResourceType<T>();
@@ -131,10 +131,10 @@ namespace EditorGUI {
 			colStyleCount++;
 		}
 
-		bool enterPressed = ImGui::InputText(label.c_str(), currentResourceName.data(), bufSize, ImGuiInputTextFlags_EnterReturnsTrue|ImGuiInputTextFlags_ReadOnly);
+		bool enterPressed = ImGui::InputText(label.c_str(), &currentResourceName[0], bufSize, ImGuiInputTextFlags_EnterReturnsTrue|ImGuiInputTextFlags_ReadOnly);
 		isTextEdited = (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
 		ImGui::SameLine();
-		needClearPtr = ImGui::SmallButton(std::string("<##" + label));
+		needClearPtr = ImGui::SmallButton(std::string("<##" + label).data());
 
 
 		//borders if can drop here : 
