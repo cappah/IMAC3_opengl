@@ -390,7 +390,7 @@ void CharacterController::save(Json::Value & componentRoot) const
 	}
 }
 
-void CharacterController::load(Json::Value & componentRoot)
+void CharacterController::load(const Json::Value & componentRoot)
 {
 	Component::load(componentRoot);
 

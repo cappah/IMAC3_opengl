@@ -131,7 +131,7 @@ struct Collider : public Component
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) = 0;
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 
 };
 

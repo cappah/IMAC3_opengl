@@ -37,7 +37,7 @@ namespace Math {
 		T& operator[](int index);
 
 		virtual void save(Json::Value& objectRoot) const override;
-		virtual void load(Json::Value& objectRoot) override;
+		virtual void load(const Json::Value& objectRoot) override;
 
 	};
 
@@ -176,7 +176,7 @@ namespace Math
 	}
 
 	template<typename T>
-	void CSpline<T>::load(Json::Value& objectRoot)
+	void CSpline<T>::load(const Json::Value& objectRoot)
 	{
 		int size = objectRoot.get("size", 0).asInt();
 		for (int i = 0; i < size; i++)

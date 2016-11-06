@@ -27,4 +27,9 @@ public:
 	{
 		return m_completePath;
 	}
+
+	const std::string& getName() const
+	{
+		return m_completePath.getFilename();
+	}
 };

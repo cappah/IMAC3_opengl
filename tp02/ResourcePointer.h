@@ -45,7 +45,7 @@ private:
 	unsigned int m_resourceHashKey;
 	bool m_isDefaultResource;
 public:
-	ResourcePtr(Json::Value & entityRoot)
+	ResourcePtr(const Json::Value & entityRoot)
 		: m_isDefaultResource(false)
 		, m_rawPtr(nullptr)
 		, m_resourceHashKey(0)
@@ -98,7 +98,7 @@ public:
 		entityRoot["resourceHashKey"] = m_resourceHashKey;
 	}
 
-	virtual void load(Json::Value & entityRoot) override;
+	virtual void load(const Json::Value & entityRoot) override;
 
 };
 

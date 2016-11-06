@@ -8,7 +8,7 @@
 #include "EditorGUI.h"
 
 
-Billboard::Billboard(): Component(ComponentType::BILLBOARD), m_translation(0,0,0), m_scale(1,1), m_textureName("default"), m_color(1,1,1,1)
+Billboard::Billboard(): Component(ComponentType::BILLBOARD), m_translation(0,0,0), m_scale(1,1)/*, m_textureName("default")*/, m_color(1,1,1,1)
 {
 	m_quadMesh = getMeshFactory().getDefault("plane");
 	m_billboardMaterial = getMaterialFactory().getDefault("billboard");
@@ -87,10 +87,10 @@ void Billboard::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 
 void Billboard::drawUI(Scene & scene)
 {
-	char texName[100];
-	int stringLength = std::min((int)m_textureName.size(), 100);
-	m_textureName.copy(texName, stringLength);
-	texName[stringLength] = '\0';
+	//char texName[100];
+	//int stringLength = std::min((int)m_textureName.size(), 100);
+	//m_textureName.copy(texName, stringLength);
+	//texName[stringLength] = '\0';
 	//%NOCOMMIT%
 	//if (ImGui::InputText("textureName", texName, 20))
 	//{
@@ -101,7 +101,8 @@ void Billboard::drawUI(Scene & scene)
 	//		m_texture = getTextureFactory().get(m_textureName);
 	//	}
 	//}
-	EditorGUI::ResourceField(m_texture, "textureName", texName, 100);
+	//EditorGUI::ResourceField(m_texture, "textureName", texName, 100);
+	EditorGUI::ResourceField<Texture>("textureName", m_texture);
 
 	ImGui::ColorEdit4("Color", glm::value_ptr(m_color));
 }
@@ -136,19 +137,20 @@ void Billboard::save(Json::Value& rootComponent) const
 
 	rootComponent["translation"] = toJsonValue(m_translation);
 	rootComponent["scale"] = toJsonValue(m_scale);
-	rootComponent["textureName"] = m_texture->name;
+	//rootComponent["textureName"] = m_texture->name;
 	rootComponent["color"] = toJsonValue(m_color);
+	m_texture.save(rootComponent["texture"]);
 }
 
-void Billboard::load(Json::Value& rootComponent)
+void Billboard::load(const Json::Value& rootComponent)
 {
 	Component::load(rootComponent);
 
 	m_translation = fromJsonValue<glm::vec3>(rootComponent["translation"], glm::vec3(0, 0, 0));
 	m_scale = fromJsonValue<glm::vec2>(rootComponent["scale"], glm::vec2(0, 0));
 
-	m_textureName = rootComponent.get("textureName", "").asString();
-	m_texture = getTextureFactory().get(m_textureName);
+	//m_textureName = rootComponent.get("textureName", "").asString();
+	m_texture.load(rootComponent["texture"]); // = getTextureFactory().get(m_textureName);
 
 	m_color = fromJsonValue<glm::vec4>(rootComponent["color"], glm::vec4(1, 1, 1, 1));
 }

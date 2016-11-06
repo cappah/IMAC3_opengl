@@ -76,7 +76,7 @@ void Behavior::save(Json::Value & entityRoot) const
 	entityRoot["typeIndexName"] = getTypeIndex().name();
 }
 
-void Behavior::load(Json::Value & entityRoot)
+void Behavior::load(const Json::Value & entityRoot)
 {
 	Component::load(entityRoot);
 }

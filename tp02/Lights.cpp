@@ -51,7 +51,7 @@ void Light::save(Json::Value & rootComponent) const
 	rootComponent["color"] = toJsonValue(color);
 }
 
-void Light::load(Json::Value & rootComponent)
+void Light::load(const Json::Value & rootComponent)
 {
 	Component::load(rootComponent);
 
@@ -143,7 +143,7 @@ void PointLight::save(Json::Value & rootComponent) const
 	rootComponent["boundingBox"] = toJsonValue(boundingBox);
 }
 
-void PointLight::load(Json::Value & rootComponent)
+void PointLight::load(const Json::Value & rootComponent)
 {
 	Light::load(rootComponent);
 
@@ -215,7 +215,7 @@ void DirectionalLight::save(Json::Value & rootComponent) const
 	rootComponent["direction"] = toJsonValue(direction);
 }
 
-void DirectionalLight::load(Json::Value & rootComponent)
+void DirectionalLight::load(const Json::Value & rootComponent)
 {
 	Light::load(rootComponent);
 
@@ -316,7 +316,7 @@ void SpotLight::save(Json::Value & rootComponent) const
 	rootComponent["boundingBox"] = toJsonValue(boundingBox);
 }
 
-void SpotLight::load(Json::Value & rootComponent)
+void SpotLight::load(const Json::Value & rootComponent)
 {
 	Light::load(rootComponent);
 

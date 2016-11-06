@@ -217,7 +217,7 @@ void Camera::save(Json::Value & rootComponent) const
 	rootComponent["bottom"] = m_bottom;
 }
 
-void Camera::load(Json::Value& rootComponent)
+void Camera::load(const Json::Value& rootComponent)
 {
 	Component::load(rootComponent);
 

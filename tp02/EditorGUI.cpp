@@ -231,3 +231,77 @@ bool ResourceFolderDragAndDropOperation::canDropInto(void* customData, int dropC
 
 //// END : ResourceFolderDragAndDropOperation
 ///////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////
+//// BEGIN : Specialization for ValueFields
+
+namespace EditorGUI {
+
+//string field
+bool ValueField(const std::string& label, std::string& outString, char* buf, int bufSize)
+{
+	bool textEdited = ImGui::InputText(label.c_str(), buf, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
+	if (textEdited)
+	{
+		outString.clear();
+		outString = buf;
+	}
+	return textEdited;
+}
+
+
+//drag field
+
+//float
+template<>
+bool ValueField<float>(const std::string& label, float& value, const float& minValue, const float& maxValue)
+{
+	return ImGui::DragFloat(label.data(), &value, (maxValue - minValue)*0.1f, minValue, maxValue);
+}
+
+//input field
+
+//float 
+template<>
+bool ValueField<float>(const std::string& label, float& value)
+{
+	return ImGui::InputFloat(label.data(), &value);
+}
+
+template<>
+bool ValueField<glm::vec2>(const std::string& label, glm::vec2& value)
+{
+	return ImGui::InputFloat2(label.data(), &value[0]);
+}
+
+template<>
+bool ValueField<glm::vec3>(const std::string& label, glm::vec3& value)
+{
+	return ImGui::InputFloat3(label.data(), &value[0]);
+}
+
+
+//int 
+template<>
+bool ValueField<int>(const std::string& label, int& value)
+{
+	return ImGui::InputInt(label.data(), &value);
+}
+
+template<>
+bool ValueField<glm::ivec2>(const std::string& label, glm::ivec2& value)
+{
+	return ImGui::InputInt(label.data(), &value[0]);
+}
+
+template<>
+bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value)
+{
+	return ImGui::InputInt(label.data(), &value[0]);
+}
+
+}
+
+
+//// END : Specialization for ValueFields
+///////////////////////////////////////////////////////////

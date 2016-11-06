@@ -97,14 +97,14 @@ void ResourceFactory<Texture>::initDefaults()
 	//default diffuse
 	auto newTex = new Texture(255, 255, 255);
 	newTex->initGL();
-	newTex->name = "default";
-	addDefault(newTex->name, newTex);
+	//newTex->name = "default";
+	addDefault("default", newTex);
 
 	//default normal
 	newTex = new Texture(0, 0, 125);
 	newTex->initGL();
-	newTex->name = "defaultNormal";
-	addDefault(newTex->name, newTex);
+	//newTex->name = "defaultNormal";
+	addDefault("defaultNormal", newTex);
 }
 
 
@@ -123,6 +123,9 @@ void ResourceFactory<Material>::initDefaults()
 	
 	Material* newMat = getProgramFactory().get("defaultLit")->makeNewMaterialInstance(); //new MaterialLit(getProgramFactory().get("defaultLit")->id, getTextureFactory().getDefault("default"), getTextureFactory().getDefault("default"), getTextureFactory().getDefault("default"), 50);
 	addDefault("defaultLit", newMat);
+
+	newMat = getProgramFactory().get("defaultSkybox")->makeNewMaterialInstance();
+	addDefault("defaultSkybox", newMat);
 
 	newMat = getProgramFactory().get("defaultUnlit")->makeNewMaterialInstance();
 	addDefault("wireframe", newMat);
@@ -518,7 +521,7 @@ void removeAllResourcesFromFactories()
 }
 
 template<>
-const std::string& getResourceExtention<Material>()
+inline const std::string& getResourceExtention<Material>()
 {
 	return ".mat";
 }
@@ -827,7 +830,7 @@ const std::string& getResourceExtention<Material>()
 //	//}
 //}
 //
-//void ProgramFactory::load(Json::Value & entityRoot)
+//void ProgramFactory::load(const Json::Value & entityRoot)
 //{
 //	//int size = entityRoot.get("size", 0).asInt();
 //	//for (int i = 0; i < size; i++)
@@ -942,7 +945,7 @@ const std::string& getResourceExtention<Material>()
 //	}
 //}
 //
-//void TextureFactory::load(Json::Value & entityRoot)
+//void TextureFactory::load(const Json::Value & entityRoot)
 //{
 //	int size = entityRoot.get("size", 0).asInt();
 //	for (int i = 0; i < size; i++)
@@ -1066,7 +1069,7 @@ const std::string& getResourceExtention<Material>()
 //	}
 //}
 //
-//void CubeTextureFactory::load(Json::Value & entityRoot)
+//void CubeTextureFactory::load(const Json::Value & entityRoot)
 //{
 //	int size = entityRoot.get("size", 0).asInt();
 //	for (int i = 0; i < size; i++)
@@ -1340,7 +1343,7 @@ const std::string& getResourceExtention<Material>()
 //	}
 //}
 //
-//void MeshFactory::load(Json::Value & entityRoot)
+//void MeshFactory::load(const Json::Value & entityRoot)
 //{
 //	int size = entityRoot.get("size", 0).asInt();
 //	for (int i = 0; i < size; i++)
@@ -1441,7 +1444,7 @@ const std::string& getResourceExtention<Material>()
 //	//}
 //}
 //
-//void SkeletalAnimationFactory::load(Json::Value & entityRoot)
+//void SkeletalAnimationFactory::load(const Json::Value & entityRoot)
 //{
 //	//int size = entityRoot.get("size", 0).asInt();
 //	//for (int i = 0; i < size; i++)
@@ -1586,7 +1589,7 @@ const std::string& getResourceExtention<Material>()
 //	}
 //}
 //
-//void MaterialFactory::load(Json::Value & entityRoot)
+//void MaterialFactory::load(const Json::Value & entityRoot)
 //{
 //	//we only load lit materials : 
 //	int size = entityRoot.get("size", 0).asInt();

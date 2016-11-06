@@ -13,7 +13,7 @@ class Skybox
 	Mesh mesh;
 
 	std::string materialName;
-	MaterialSkybox material;
+	ResourcePtr<Material> material;
 
 public:
 
@@ -25,6 +25,6 @@ public:
 	void render(const glm::mat4& projection, const glm::mat4& view );
 
 	void save(Json::Value& rootComponent) const;
-	void load(Json::Value& rootComponent);
+	void load(const Json::Value& rootComponent);
 };
 

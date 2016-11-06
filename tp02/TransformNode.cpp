@@ -255,7 +255,7 @@ void TransformNode::save(Json::Value & entityRoot) const
 	entityRoot["modelMatrix"] = toJsonValue(m_modelMatrix);
 }
 
-void TransformNode::load(Json::Value & entityRoot)
+void TransformNode::load(const Json::Value & entityRoot)
 {
 	m_translation = fromJsonValue<glm::vec3>(entityRoot["translation"], glm::vec3());
 	m_scale = fromJsonValue<glm::vec3>(entityRoot["scale"], glm::vec3());

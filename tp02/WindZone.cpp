@@ -170,7 +170,7 @@ namespace Physic {
 
 		//no need to save emissionTypeNames
 	}
-	void WindZone::load(Json::Value & componentRoot)
+	void WindZone::load(const Json::Value & componentRoot)
 	{
 		Component::load(componentRoot);
 

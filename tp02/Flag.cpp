@@ -35,7 +35,7 @@ namespace Physic {
 	{
 		modelMatrix = glm::mat4(1);
 
-		m_materialName = m_material->name;
+		m_materialName = m_material->getName();
 
 		//don't forget to change the origin to have the right pivot rotation
 		origin = glm::vec3(-0.5f, -0.5f, 0.f);
@@ -631,7 +631,7 @@ namespace Physic {
 
 	}
 
-	void Flag::load(Json::Value & rootComponent)
+	void Flag::load(const Json::Value & rootComponent)
 	{
 		Component::load(rootComponent);
 
@@ -864,9 +864,9 @@ namespace Physic {
 		ImGui::InputFloat("autoCollisionRigidity", &m_autoCollisionRigidity);
 		ImGui::InputFloat("autoCollisionViscosity", &m_autoCollisionViscosity);
 
-		char tmpMaterialName[100];
-		m_materialName.copy(tmpMaterialName, m_materialName.size());
-		tmpMaterialName[m_materialName.size()] = '\0';
+		//char tmpMaterialName[100];
+		//m_materialName.copy(tmpMaterialName, m_materialName.size());
+		//tmpMaterialName[m_materialName.size()] = '\0';
 		//%NOCOMMIT%
 		//if (ImGui::InputText("materialName", tmpMaterialName, 20))
 		//{
@@ -878,7 +878,8 @@ namespace Physic {
 		//	}
 		//}
 
-		EditorGUI::ResourceField(m_material, "materialName", tmpMaterialName, 100);
+		//EditorGUI::ResourceField(m_material, "materialName", tmpMaterialName, 100);
+		EditorGUI::ResourceField<Material>("materialName", m_material);
 
 		//m_material->drawUI();
 	}

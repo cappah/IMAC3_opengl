@@ -4,6 +4,7 @@
 
 #include "ResourceTree.h"
 #include "imgui/imgui.h"
+#include "EditorGUI.h"
 #include "Factories.h"
 #include "project.h"
 

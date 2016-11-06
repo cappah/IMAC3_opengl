@@ -249,6 +249,7 @@ template<typename T>
 T fromJsonValue(const Json::Value& value)
 {
 	assert(0 && "invalid value.");
+	return T();
 }
 
 template<>

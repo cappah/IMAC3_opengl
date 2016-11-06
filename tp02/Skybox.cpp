@@ -6,7 +6,7 @@
 
 
 Skybox::Skybox() 
-	: material(getProgramFactory().getDefault("defaultSkybox"), getCubeTextureFactory().getDefault("default")) 
+	: material( getMaterialFactory().getDefault("defaultSkybox") /*getProgramFactory().get("defaultSkybox"), getCubeTextureFactory().getDefault("default")*/)
 	, mesh(GL_TRIANGLES, (Mesh::Vbo_usage::USE_INDEX | Mesh::Vbo_usage::USE_UVS | Mesh::Vbo_usage::USE_VERTICES) )
 {
 	mesh.vertices = { 1,1,-1,  1,1,1,  1,-1,1,  1,-1,-1,
@@ -43,7 +43,7 @@ Skybox::~Skybox()
 
 void Skybox::drawUI()
 {
-	material.drawUI();
+	material->drawUI();
 }
 
 void Skybox::render(const glm::mat4& projection, const glm::mat4& view)
@@ -52,8 +52,13 @@ void Skybox::render(const glm::mat4& projection, const glm::mat4& view)
 
 	glm::mat4 vp = projection * glm::mat4(glm::mat3(view));
 
-	material.use();
-	material.setUniform_VP(vp);
+	MaterialSkybox* castedMat = static_cast<MaterialSkybox*>(material.get());
+
+	int texCount = 0;
+	castedMat->use();
+	castedMat->pushInternalsToGPU(texCount);
+
+	castedMat->setUniform_VP(vp);
 
 	mesh.draw();
 
@@ -62,14 +67,16 @@ void Skybox::render(const glm::mat4& projection, const glm::mat4& view)
 
 void Skybox::save(Json::Value & rootComponent) const
 {
-	rootComponent["textureName"] = material.getDiffuseTexture()->name;
+	material.save(rootComponent);
+	//rootComponent["textureName"] = material.getInternalData()//material.getDiffuseTexture()->name;
 }
 
-void Skybox::load(Json::Value & rootComponent)
+void Skybox::load(const Json::Value & rootComponent)
 {
-	std::string textureName = rootComponent.get("textureName", "default").asString();
-	if (getCubeTextureFactory().contains(textureName)) {
-		material.setDiffuseTexture(getCubeTextureFactory().get(textureName));
-		getCubeTextureFactory().get(textureName)->initGL();
-	}
+	material.load(rootComponent);
+	//std::string textureName = rootComponent.get("textureName", "default").asString();
+	//if (getCubeTextureFactory().contains(textureName)) {
+	//	material.setDiffuseTexture(getCubeTextureFactory().get(textureName));
+	//	getCubeTextureFactory().get(textureName)->initGL();
+	//}
 }

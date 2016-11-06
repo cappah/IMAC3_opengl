@@ -53,6 +53,6 @@ public:
 	void render(const glm::mat4& projection, const glm::mat4& view);
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 };
 

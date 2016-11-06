@@ -89,7 +89,7 @@ void PathPoint::save(Json::Value & rootComponent) const
 	rootComponent["pointIdx"] = m_pointIdx;
 }
 
-void PathPoint::load(Json::Value & rootComponent)
+void PathPoint::load(const Json::Value & rootComponent)
 {
 	Component::load(rootComponent);
 

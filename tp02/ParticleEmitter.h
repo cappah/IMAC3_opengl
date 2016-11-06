@@ -109,7 +109,7 @@ namespace Physic{
 		virtual void addToEntity(Entity& entity) override;
 		virtual void eraseFromEntity(Entity& entity) override;
 		virtual void save(Json::Value& rootComponent) const override;
-		virtual void load(Json::Value& rootComponent) override;
+		virtual void load(const Json::Value& rootComponent) override;
 
 	private:
 		void sorting_quickSort(int begin, int end);

@@ -174,3 +174,13 @@ void ShaderProgram::removeMaterialRef(Material* ref)
 {
 	m_materialRefs.erase(std::remove(m_materialRefs.begin(), m_materialRefs.end(), ref), m_materialRefs.end());
 }
+
+const std::vector<std::shared_ptr<InternalShaderParameterBase>>& ShaderProgram::getInternalParameters() const
+{
+	return m_internalShaderParameters;
+}
+
+const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& ShaderProgram::getExternalParameters() const
+{
+	return m_externalShaderParameters;
+}

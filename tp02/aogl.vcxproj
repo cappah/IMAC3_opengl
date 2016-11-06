@@ -105,7 +105,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ProgramDataBaseFileName>$(OutDir)aogl_d.pdb</ProgramDataBaseFileName>
-      <ShowIncludes>false</ShowIncludes>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>GLEW_STATIC;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -271,6 +271,7 @@
     <ClCompile Include="Rigidbody.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SerializeUtils.cpp" />
+    <ClCompile Include="ShaderParameter.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="SkeletalAnimation.cpp" />
     <ClCompile Include="Skeleton.cpp" />

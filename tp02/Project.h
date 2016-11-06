@@ -3,9 +3,10 @@
 #include <map>
 #include <string>
 
-#include "glew/glew.h"
+#include <glew/glew.h>
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
+#include <GLFW/glfw3.h>
 
 #include "FileHandler.h"
 

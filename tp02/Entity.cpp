@@ -854,7 +854,7 @@ void Entity::save(Json::Value& entityRoot) const
 	//}
 }
 
-void Entity::load(Json::Value& entityRoot)
+void Entity::load(const Json::Value& entityRoot)
 {
 	TransformNode::load(entityRoot);
 	applyTransform();

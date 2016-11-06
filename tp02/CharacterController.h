@@ -127,6 +127,6 @@ public:
 	virtual Component * clone(Entity * entity) override;
 
 	virtual void save(Json::Value& componentRoot) const override;
-	virtual void load(Json::Value& componentRoot) override;
+	virtual void load(const Json::Value& componentRoot) override;
 };
 

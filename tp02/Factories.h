@@ -14,7 +14,7 @@
 #include "ISerializable.h"
 #include "ISingleton.h"
 #include "ResourcePointer.h"
-#include "Project.h"
+//#include "Project.h"
 
 
 template<typename T>
@@ -60,7 +60,7 @@ public:
 	void clear();
 
 	virtual void save(Json::Value & entityRoot) const override;
-	virtual void load(Json::Value & entityRoot) override;
+	virtual void load(const Json::Value & entityRoot) override;
 
 	typename std::map<FileHandler::CompletePath, T*>::iterator resourceBegin();
 	typename std::map<std::string, T*>::iterator defaultResourceBegin();
@@ -146,7 +146,7 @@ public:
 	//load all programs which are in "[projectPath]/shaders/"
 	void initDefaults()
 	{
-		FileHandler::Path shadersPath = FileHandler::Path(Project::getPath().toString() + "/shaders/");
+		FileHandler::Path shadersPath; // =  FileHandler::Path(Project::getPath().toString() + "/shaders/"); //%NOCOMMIT%
 		loadAllPrograms(shadersPath);
 	}
 
@@ -191,7 +191,7 @@ public:
 	{
 		//no need to save these resources
 	}
-	virtual void load(Json::Value & entityRoot) override
+	virtual void load(const Json::Value & entityRoot) override
 	{
 		//no need to load these resources
 	}
@@ -413,7 +413,7 @@ void ResourceFactory<T>::save(Json::Value & entityRoot) const
 }
 
 template<typename T>
-void ResourceFactory<T>::load(Json::Value & entityRoot)
+void ResourceFactory<T>::load(const Json::Value & entityRoot)
 {
 	unsigned int resourceCount = s_resourceCount;
 
@@ -549,7 +549,7 @@ const std::string& getResourceExtention<Material>();
 ///////////////// RESOURCE PTR /////////////////
 
 template<typename T>
-void ResourcePtr<T>::load(Json::Value & entityRoot)
+void ResourcePtr<T>::load(const Json::Value & entityRoot)
 {
 	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
 	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();
@@ -557,7 +557,7 @@ void ResourcePtr<T>::load(Json::Value & entityRoot)
 }
 
 template<>
-void ResourcePtr<ShaderProgram>::load(Json::Value & entityRoot)
+inline void ResourcePtr<ShaderProgram>::load(const Json::Value & entityRoot)
 {
 	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
 	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();
@@ -586,7 +586,7 @@ void ResourcePtr<ShaderProgram>::load(Json::Value & entityRoot)
 //	//std::map<std::string, GLuint>::iterator end() { return m_programs.end(); };
 //
 //	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(Json::Value & entityRoot) override;
+//	virtual void load(const Json::Value & entityRoot) override;
 //
 //
 //	// singleton implementation :
@@ -631,7 +631,7 @@ void ResourcePtr<ShaderProgram>::load(Json::Value & entityRoot)
 //	//std::map<std::string, Texture*>::iterator end() { return m_textures.end(); };
 //
 //	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(Json::Value & entityRoot) override;
+//	virtual void load(const Json::Value & entityRoot) override;
 //
 //	// singleton implementation :
 //private:
@@ -674,7 +674,7 @@ void ResourcePtr<ShaderProgram>::load(Json::Value & entityRoot)
 //	//std::map<std::string, CubeTexture*>::iterator end() { return m_textures.end(); };
 //
 //	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(Json::Value & entityRoot) override;
+//	virtual void load(const Json::Value & entityRoot) override;
 //
 //	// singleton implementation :
 //private:
@@ -720,7 +720,7 @@ void ResourcePtr<ShaderProgram>::load(Json::Value & entityRoot)
 //	//std::map<std::string, Mesh*>::iterator end() { return m_meshes.end(); };
 //
 //	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(Json::Value & entityRoot) override;
+//	virtual void load(const Json::Value & entityRoot) override;
 //
 //	// singleton implementation :
 //private:
@@ -764,7 +764,7 @@ void ResourcePtr<ShaderProgram>::load(Json::Value & entityRoot)
 //	//TODO : begin() et end()
 //
 //	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(Json::Value & entityRoot) override;
+//	virtual void load(const Json::Value & entityRoot) override;
 //
 //	// singleton implementation :
 //private:
@@ -807,7 +807,7 @@ void ResourcePtr<ShaderProgram>::load(Json::Value & entityRoot)
 //	//std::map<std::string, Material*>::iterator end() { return m_materials.end(); };
 //
 //	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(Json::Value & entityRoot) override;
+//	virtual void load(const Json::Value & entityRoot) override;
 //
 //	// singleton implementation :
 //private:

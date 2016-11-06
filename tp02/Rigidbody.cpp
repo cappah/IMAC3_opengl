@@ -391,7 +391,7 @@ void Rigidbody::save(Json::Value & componentRoot) const
 		componentRoot["frozenAngles"][i] = m_frozenAngles[i];
 }
 
-void Rigidbody::load(Json::Value & componentRoot)
+void Rigidbody::load(const Json::Value & componentRoot)
 {
 	Component::load(componentRoot);
 

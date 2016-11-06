@@ -4,7 +4,7 @@
 #include "Factories.h"
 
 //template<typename T>
-//void ResourcePtr<T>::load(Json::Value & entityRoot)
+//void ResourcePtr<T>::load(const Json::Value & entityRoot)
 //{
 //	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
 //	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();

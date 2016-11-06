@@ -1,13 +1,12 @@
 #include "stdafx.h"
 
+#include "Project.h"
 #include "Application.h"
 #include "InputHandler.h"
 #include "Factories.h"
 #include "Scene.h"
 #include "Editor.h"
 #include "FileHandler.h"
-#include <GLFW/glfw3.h>
-#include "Project.h"
 //forwards : 
 #include "DebugDrawer.h"
 
@@ -973,7 +972,7 @@ void Project::initDefaultAssets()
 
 	// materials : 
 	//MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, getTextureFactory().get("default"), getTextureFactory().get("default"), getTextureFactory().get("default"), 50);
-	MaterialLit* brickMaterial = new MaterialLit(getProgramFactory().getDefault("defaultLit")->id /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
+	MaterialLit* brickMaterial = new MaterialLit(*getProgramFactory().get("defaultLit"));//new MaterialLit(getProgramFactory().getDefault("defaultLit")->id /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
 	//MaterialUnlit* wireframeMaterial = new MaterialUnlit(programObject_wireframe);
 	//MaterialGrassField* grassFieldMaterial = new MaterialGrassField(programObject_grassField);
 

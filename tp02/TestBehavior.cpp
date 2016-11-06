@@ -74,7 +74,7 @@ void TestBehavior::save(Json::Value & entityRoot) const
 	Behavior::save(entityRoot);
 }
 
-void TestBehavior::load(Json::Value & entityRoot)
+void TestBehavior::load(const Json::Value & entityRoot)
 {
 	Behavior::load(entityRoot);
 }

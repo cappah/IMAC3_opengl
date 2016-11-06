@@ -1,9 +1,66 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glew/glew.h>
+//#include <glew/glew.h>
+
+//#include <glm/glm.hpp>
 #include "EditorGUI.h"
 #include "ISerializable.h"
+
+#include "ResourcePointer.h"
+#include "Texture.h"
+
+
+//The ShaderParameter interface. 
+//A ShaderParameter is an abstraction of a data which can be send to gpu.
+class InternalShaderParameterBase : public ISerializable
+{
+protected:
+	std::string m_name;
+
+public:
+	InternalShaderParameterBase(const std::string& name)
+		: m_name(name)
+	{}
+	virtual ~InternalShaderParameterBase() {}
+	virtual void init(GLuint glProgramId) = 0;
+	virtual void drawUI() = 0;
+	virtual void pushToGPU(int& boundTextureCount) = 0;
+	const std::string& getName() const
+	{
+		return m_name;
+	}
+
+	virtual void setData(const void* data)
+	{
+		assert(0 && "error, invalid setter function.");
+	}
+	virtual void getData(void* outData)
+	{
+		assert(0 && "error, invalid getter function.");
+	}
+
+};
+
+//The ShaderParameter interface. 
+//A ShaderParameter is an abstraction of a data which can be send to gpu.
+class ExternalShaderParameterBase
+{
+protected:
+	std::string m_name;
+public:
+	ExternalShaderParameterBase(const std::string& name)
+		: m_name(name)
+	{}
+	virtual ~ExternalShaderParameterBase() {}
+	virtual void init(GLuint glProgramId) = 0;
+	const std::string& getName() const
+	{
+		return m_name;
+	}
+	virtual GLuint getUniformId() const { return 0; }
+	virtual void getUniformIds(std::vector<GLuint>& outUniforms) const { return; }
+};
+
 
 // Helper Functions to push data to gpu
 namespace GlHelper {
@@ -15,46 +72,25 @@ void pushParameterToGPU(GLuint uniformId, const T& value)
 }
 
 template<>
-void pushParameterToGPU<int>(GLuint uniformId, const int& value)
-{
-	glUniform1i(uniformId, value);
-}
+void pushParameterToGPU<int>(GLuint uniformId, const int& value);
 
 template<>
-void pushParameterToGPU<float>(GLuint uniformId, const float& value)
-{
-	glUniform1f(uniformId, value);
-}
+void pushParameterToGPU<float>(GLuint uniformId, const float& value);
 
 template<>
-void pushParameterToGPU<glm::vec2>(GLuint uniformId, const glm::vec2& value)
-{
-	glUniform2f(uniformId, value.x, value.y);
-}
+void pushParameterToGPU<glm::vec2>(GLuint uniformId, const glm::vec2& value);
 
 template<>
-void pushParameterToGPU<glm::ivec2>(GLuint uniformId, const glm::ivec2& value)
-{
-	glUniform2i(uniformId, value.x, value.y);
-}
+void pushParameterToGPU<glm::ivec2>(GLuint uniformId, const glm::ivec2& value);
 
 template<>
-void pushParameterToGPU<glm::vec3>(GLuint uniformId, const glm::vec3& value)
-{
-	glUniform3f(uniformId, value.x, value.y, value.z);
-}
+void pushParameterToGPU<glm::vec3>(GLuint uniformId, const glm::vec3& value);
 
 template<>
-void pushParameterToGPU<glm::ivec3>(GLuint uniformId, const glm::ivec3& value)
-{
-	glUniform3i(uniformId, value.x, value.y, value.z);
-}
+void pushParameterToGPU<glm::ivec3>(GLuint uniformId, const glm::ivec3& value);
 
 template<>
-void pushParameterToGPU<glm::mat4>(GLuint uniformId, const glm::mat4& value)
-{
-	glUniformMatrix4fv(uniformId, 1, false,  glm::value_ptr(value));
-}
+void pushParameterToGPU<glm::mat4>(GLuint uniformId, const glm::mat4& value);
 
 //array version (experimental) : 
 
@@ -66,10 +102,7 @@ void pushParametersToGPU(GLuint uniformId, int count, const std::vector<T>& valu
 
 
 template<>
-void pushParametersToGPU<float>(GLuint uniformId, int count, const std::vector<float>& values)
-{
-	glUniform1fv(uniformId, count, &values[0]);
-}
+void pushParametersToGPU<float>(GLuint uniformId, int count, const std::vector<float>& values);
 
 //TODO : complete
 
@@ -130,27 +163,6 @@ struct IsNotArray {};
 //////////////////////////////////////////////////////////////////////////////////////////
 ////////// BEGIN : internal parameters
 
-//The ShaderParameter interface. 
-//A ShaderParameter is an abstraction of a data which can be send to gpu.
-class InternalShaderParameterBase : public ISerializable
-{
-protected:
-	std::string m_name;
-
-public:
-	InternalShaderParameterBase(const std::string& name)
-		: m_name(name)
-	{}
-	virtual ~InternalShaderParameterBase(){}
-	virtual void init(GLuint glProgramId) = 0;
-	virtual void drawUI() = 0;
-	virtual void pushToGPU(int& boundTextureCount) = 0;
-	const std::string& getName() const
-	{
-		return m_name;
-	}
-};
-
 
 template<typename T, typename U>
 class InternalShaderParameter : public InternalShaderParameterBase
@@ -181,7 +193,7 @@ public:
 
 	void drawUI() override
 	{
-		EditorGUI::ValueField<T>(m_name, m_data);
+		//EditorGUI::ValueField<T>(m_name, m_data); //TODO 10
 	}
 
 	void pushToGPU(int& boundTextureCount) override
@@ -193,9 +205,18 @@ public:
 	{
 		jsonSaveValue<T>(entityRoot, "data", m_data);
 	}
-	void load(Json::Value & entityRoot) override
+	void load(const Json::Value & entityRoot) override
 	{
 		jsonLoadValue<T>(entityRoot, "data", m_data);
+	}
+
+	void setData(const void* data) override
+	{
+		m_data = *static_cast<const T*>(data);
+	}
+	void getData(void* outData) override
+	{
+		outData = (void*)(&m_data);
 	}
 };
 
@@ -240,12 +261,21 @@ public:
 		for(int i = 0; i < m_datas.size(); i ++)
 			jsonSaveValue<T>(entityRoot, "data["+i+"]", m_datas[i]);
 	}
-	void load(Json::Value & entityRoot) override
+	void load(const Json::Value & entityRoot) override
 	{
 		int count = entityRoot["count"];
 		m_datas.resize(count);
 		for (int i = 0; i < m_datas.size(); i++)
 			jsonLoadValue<T>(entityRoot, "data["+i+"]", m_datas[i]);
+	}
+
+	void setData(const void* data) override
+	{
+		m_data = *static_cast<std::vector<T>*>(data);
+	}
+	void getData(void* outData) override
+	{
+		outData = (void*)(&m_data);
 	}
 };
 
@@ -271,7 +301,7 @@ public:
 
 	void drawUI() override
 	{
-		EditorGUI::ValueField<Texture>(m_name, m_data);
+		//EditorGUI::ResourceField<Texture>(m_name, m_data); //TODO 10
 	}
 
 	void pushToGPU(int& boundTextureCount) override
@@ -286,11 +316,21 @@ public:
 	{
 		m_data.save(entityRoot);
 	}
-	void load(Json::Value & entityRoot) override
+	void load(const Json::Value & entityRoot) override
 	{
 		m_data.load(entityRoot);
 	}
+
+	void setData(const void* data) override
+	{
+		m_data = *(static_cast< const ResourcePtr<Texture> *>(data));
+	}
+	void getData(void* outData) override
+	{
+		outData = (void*)(m_data.get());
+	}
 };
+
 
 //Array version not allowed for now
 template<>
@@ -314,7 +354,7 @@ public:
 
 	void drawUI() override
 	{
-		EditorGUI::ValueField<CubeTexture>(m_name, m_data);
+		//EditorGUI::ResourceField<CubeTexture>(m_name, m_data); //TODO 10
 	}
 
 	void pushToGPU(int& boundTextureCount) override
@@ -329,9 +369,18 @@ public:
 	{
 		m_data.save(entityRoot);
 	}
-	void load(Json::Value & entityRoot) override
+	void load(const Json::Value & entityRoot) override
 	{
 		m_data.load(entityRoot);
+	}
+
+	void setData(const void* data) override
+	{
+		m_data = *(static_cast< const ResourcePtr<CubeTexture> *>(data));
+	}
+	void getData(void* outData) override
+	{
+		outData = (void*)(&m_data);
 	}
 };
 
@@ -386,31 +435,14 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 //////////////////////////////////////////////////////////////////////////////////////////
 ////////// BEGIN : external parameters
 
-//The ShaderParameter interface. 
-//A ShaderParameter is an abstraction of a data which can be send to gpu.
-class ExternalShaderParameterBase
-{
-protected:
-	std::string m_name;
-public:
-	ExternalShaderParameterBase(const std::string& name)
-		: m_name(name)
-	{}
-	virtual ~ExternalShaderParameterBase(){}
-	virtual void init(GLuint glProgramId) = 0;
-	const std::string& getName() const
-	{
-		return m_name;
-	}
-	virtual GLuint getUniformId() const { return 0; }
-	virtual void getUniformIds(std::vector<GLuint>& outUniforms) const { return; }
-};
-
-
 template<typename T, typename U = ShaderParameter::IsNotArray>
 class ExternalShaderParameter : public ExternalShaderParameterBase
 {
 	//UNDEFINED FOR U != (IsArray | IsNotArray) !!!
+public:
+	ExternalShaderParameter(const std::string& name)
+		: ExternalShaderParameterBase(name)
+	{}
 };
 
 template<typename T>

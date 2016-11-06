@@ -45,9 +45,9 @@ void MeshRenderer::drawUI(Scene& scene)
 	//	}
 	//}
 
-	char tmpMaterialName[20];
-	materialName.copy(tmpMaterialName, materialName.size());
-	tmpMaterialName[materialName.size()] = '\0';
+	//char tmpMaterialName[20];
+	//materialName.copy(tmpMaterialName, materialName.size());
+	//tmpMaterialName[materialName.size()] = '\0';
 
 	//%NOCOMMIT%
 	/*if(ImGui::InputText("materialName", tmpMaterialName, 20))
@@ -62,7 +62,9 @@ void MeshRenderer::drawUI(Scene& scene)
 		}
 	}*/
 	ResourcePtr<Material> materialQuery;
-	EditorGUI::ResourceField<Material>(materialQuery, "materialName", tmpMaterialName, 20);
+	//EditorGUI::ResourceField<Material>(materialQuery, "materialName", tmpMaterialName, 20);
+	EditorGUI::ResourceField<Material>("materialName", materialQuery);
+
 	if (materialQuery.isValid())
 	{
 		material.push_back(materialQuery);
@@ -71,7 +73,7 @@ void MeshRenderer::drawUI(Scene& scene)
 	for (int i = 0; i < material.size(); i++)
 	{
 		ImGui::PushID(i);
-		ImGui::Text(material[i]->name.c_str());
+		ImGui::Text(material[i]->getName().c_str());
 		if (material.size() > 1){
 			ImGui::SameLine();
 			if (ImGui::Button("remove")){
@@ -83,9 +85,9 @@ void MeshRenderer::drawUI(Scene& scene)
 
 	//material->drawUI();
 
-	char tmpMeshName[20];
-	meshName.copy(tmpMeshName, meshName.size());
-	tmpMeshName[meshName.size()] = '\0';
+	//char tmpMeshName[20];
+	//meshName.copy(tmpMeshName, meshName.size());
+	//tmpMeshName[meshName.size()] = '\0';
 	
 	// TODO
 	//if (ImGui::InputText("meshName", tmpMeshName, 20))
@@ -99,7 +101,9 @@ void MeshRenderer::drawUI(Scene& scene)
 	//}
 
 	ResourcePtr<Mesh> meshQuery;
-	EditorGUI::ResourceField<Mesh>(meshQuery, "meshName", tmpMeshName, 20);
+	//EditorGUI::ResourceField<Mesh>(meshQuery, "meshName", tmpMeshName, 20);
+	EditorGUI::ResourceField<Mesh>("meshName", meshQuery);
+
 	if (meshQuery.isValid())
 	{
 		setMesh(meshQuery);
@@ -212,7 +216,10 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 	{
 		Material3DObject* castedMaterial = static_cast<Material3DObject*>(material[i].get()); //TODO : a enlever lors de l'upgrade du pipeline graphique.
 
+		int texCount = 0;
 		castedMaterial->use();
+		castedMaterial->pushInternalsToGPU(texCount);
+
 		castedMaterial->setUniform_MVP(mvp);
 		castedMaterial->setUniform_normalMatrix(normalMatrix);
 		if (mesh->getIsSkeletalMesh()) {
@@ -228,7 +235,10 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 	{
 		Material3DObject* castedMaterial = static_cast<Material3DObject*>(material.back().get()); //TODO : a enlever lors de l'upgrade du pipeline graphique.
 
+		int texCount = 0;
 		castedMaterial->use();
+		castedMaterial->pushInternalsToGPU(texCount);
+
 		castedMaterial->setUniform_MVP(mvp);
 		castedMaterial->setUniform_normalMatrix(normalMatrix);
 		if (mesh->getIsSkeletalMesh())
@@ -253,7 +263,7 @@ void MeshRenderer::save(Json::Value & rootComponent) const
 		material[i].save(rootComponent["material"][i]);
 }
 
-void MeshRenderer::load(Json::Value & rootComponent)
+void MeshRenderer::load(const Json::Value & rootComponent)
 {
 	Component::load(rootComponent);
 
@@ -265,7 +275,7 @@ void MeshRenderer::load(Json::Value & rootComponent)
 	{
 		ResourcePtr<Material> newMaterial(rootComponent["material"][i]);
 		material.push_back(newMaterial);
-		material.back()->initGL();
+		//material.back()->initGL(); //TODO 10
 	}
 	materialName = '\0'; //rootComponent.get("materialName", "").asString();
 

@@ -43,7 +43,7 @@ struct Perlin2D : ISerializable
 	void updateNoise();
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 
 private :
 	float getValue2D(int i, int j);

@@ -19,8 +19,8 @@
 
 #include "ISerializable.h"
 #include "ResourcePointer.h"
-#include "ShaderProgram.h"
 #include "ShaderParameters.h"
+#include "ShaderProgram.h"
 #include "FileHandler.h"
 #include "Resource.h"
 
@@ -31,28 +31,8 @@ static const unsigned int MAX_BONE_COUNT = 100;
 //Helpers :
 namespace MaterialHelper {
 
-	GLuint findUniform(const std::string& uniformName, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-	{
-		auto& found = std::find_if(externalParameters.begin(), externalParameters.end(), [uniformName](const std::shared_ptr<ExternalShaderParameterBase>& item) { return item->getName() == uniformName; });
-		assert(found != externalParameters.end());
-		if (found != externalParameters.end())
-			return (*found)->getUniformId();
-		else
-			return 0;
-	}
-
-	std::vector<GLuint> findUniforms(const std::string& uniformName, int count, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-	{
-		std::vector<GLuint> foundUniforms;
-
-
-		auto& found = std::find_if(externalParameters.begin(), externalParameters.end(), [uniformName](const std::shared_ptr<ExternalShaderParameterBase>& item) { return item->getName() == uniformName; });
-		assert(found != externalParameters.end());
-		if (found != externalParameters.end())
-			(*found)->getUniformIds(foundUniforms);
-
-		return foundUniforms;
-	}
+	GLuint findUniform(const std::string& uniformName, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
+	std::vector<GLuint> findUniforms(const std::string& uniformName, int count, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 
 }
 
@@ -70,26 +50,44 @@ public:
 	Material();
 	Material(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters);
 	Material(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
+	Material(const ShaderProgram& shaderProgram);
 	virtual ~Material();
 	virtual void init(const FileHandler::CompletePath& path) override; //TODO
 	void drawUI();
 	void pushInternalsToGPU(int& boundTextureCount);
-	virtual void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
-
-	template<typename T, typename U = ShaderParameter::IsNotArray>
-	ExternalShaderParameter<T, U>& getExternalParameter(const std::string& parameterName) const
+	virtual void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
+	void use();
+	template<typename T>
+	T* getInternalData(const std::string& parameterName) const
 	{
-		auto& foundParameter = m_externalParameters.find(parameterName);
-		if (foundParameter != m_externalParameters.end())
-		{
-			return *static_cast<ExternalShaderParameter<T, U>>(*foundParameter->second().get());
-		}
+		auto& found = std::find_if(m_internalParameters.begin(), m_internalParameters.end(), [parameterName](const std::shared_ptr<InternalShaderParameterBase>& item) { return item->getName() == parameterName; });
+		void* foundData = nullptr;
+		if(found != m_internalParameters.end())
+			(*found)->getData(foundData);
+		return static_cast<T*>(foundData);
 	}
+	template<typename T>
+	void setInternalData(const std::string& parameterName, const T* data)
+	{
+		auto& found = std::find_if(m_internalParameters.begin(), m_internalParameters.end(), [parameterName](const std::shared_ptr<InternalShaderParameterBase>& item) { return item->getName() == parameterName; });
+		(*found)->setData(data);
+	}
+
+	//TODO 10
+	//template<typename T, typename U>//= ShaderParameter::IsNotArray>
+	//ExternalShaderParameter<T, U>& getExternalParameter(const std::string& parameterName) const
+	//{
+	//	auto& foundParameter = m_externalParameters.find(parameterName);
+	//	if (foundParameter != m_externalParameters.end())
+	//	{
+	//		return *static_cast<ExternalShaderParameter<T, U>*>(foundParameter->second().get());
+	//	}
+	//}
 
 	void loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 	// Save and load internal parameters 
 	virtual void save(Json::Value & entityRoot) const override;
-	virtual void load(Json::Value & entityRoot) override;
+	virtual void load(const Json::Value & entityRoot) override;
 
 	void save(const FileHandler::CompletePath& path) const;
 
@@ -109,6 +107,12 @@ public:
 		: Material()
 	{}
 
+	Material3DObject(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	virtual ~Material3DObject()
 	{}
 
@@ -118,7 +122,7 @@ public:
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_MVP = MaterialHelper::findUniform("MVP", externalParameters);
 		uniform_normalMatrix = MaterialHelper::findUniform("normalMatrix", externalParameters);
@@ -160,6 +164,12 @@ public:
 		: Material3DObject()
 	{}
 
+	MaterialLit(const ShaderProgram& shaderProgram)
+		: Material3DObject(shaderProgram)
+	{
+
+	}
+
 	MaterialLit(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material3DObject(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
@@ -176,6 +186,12 @@ public:
 		: Material3DObject()
 	{}
 
+	MaterialUnlit(const ShaderProgram& shaderProgram)
+		: Material3DObject(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialUnlit(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material3DObject(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
@@ -187,30 +203,36 @@ public:
 		GlHelper::pushParameterToGPU<glm::vec3>(uniform_color, color);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_color = MaterialHelper::findUniform("color", externalParameters);
 	}
 };
 
-class MaterialInstancedUnLit : public Material
+class MaterialInstancedUnlit : public Material
 {
 private:
 	GLuint uniform_VP;
 	GLuint uniform_color;
 
 public:
-	MaterialInstancedUnLit()
+	MaterialInstancedUnlit()
 		: Material()
 	{}
 
-	MaterialInstancedUnLit(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	MaterialInstancedUnlit(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
+	MaterialInstancedUnlit(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_VP = MaterialHelper::findUniform("VP", externalParameters);
 		uniform_color = MaterialHelper::findUniform("color", externalParameters);
@@ -237,13 +259,19 @@ public:
 		: Material()
 	{}
 
+	MaterialDebugDrawer(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialDebugDrawer(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_MVP = MaterialHelper::findUniform("MVP", externalParameters);
 	}
@@ -265,13 +293,19 @@ public:
 		: Material()
 	{}
 
+	MaterialSkybox(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialSkybox(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_VP = MaterialHelper::findUniform("VP", externalParameters);
 	}
@@ -305,13 +339,19 @@ public:
 		: Material()
 	{}
 
+	MaterialBillboard(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialBillboard(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_MVP = MaterialHelper::findUniform("MVP", externalParameters);
 		uniform_Scale = MaterialHelper::findUniform("Scale", externalParameters);
@@ -322,7 +362,7 @@ public:
 		uniform_Color = MaterialHelper::findUniform("Color", externalParameters);
 	}
 
-	void setUniform_MVP(const glm::mat4& VP)
+	void setUniformMVP(const glm::mat4& VP)
 	{
 		GlHelper::pushParameterToGPU<glm::mat4>(uniform_MVP, VP);
 	}
@@ -357,9 +397,9 @@ struct MaterialTerrain : public Material3DObject
 {
 private:
 	//internals
-	/*GLuint setUniform_TextureRepetition;
-	GLuint setUniform_SpecularPower;*/
 
+	GLuint uniform_SpecularPower;
+	GLuint uniform_TextureRepetition;
 	GLuint uniform_LayoutOffset;
 	GLuint uniform_FilterTexture;
 
@@ -373,16 +413,24 @@ public:
 		: Material3DObject()
 	{}
 
+	MaterialTerrain(const ShaderProgram& shaderProgram)
+		: Material3DObject(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialTerrain(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material3DObject(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_LayoutOffset = MaterialHelper::findUniform("LayoutOffset", externalParameters);
 		uniform_FilterTexture = MaterialHelper::findUniform("FilterTexture", externalParameters);
+		uniform_TextureRepetition = MaterialHelper::findUniform("TextureRepetition", externalParameters);
+		uniform_SpecularPower = MaterialHelper::findUniform("SpecularPower", externalParameters);
 
 		uniform_DiffuseTexture = MaterialHelper::findUniform("DiffuseTexture", externalParameters);
 		uniform_BumpTexture = MaterialHelper::findUniform("BumpTexture", externalParameters);
@@ -397,6 +445,10 @@ public:
 	{
 		GlHelper::pushParameterToGPU(uniform_FilterTexture, textureId);
 	}
+	void setUniformTextureRepetition(glm::vec2 repetition)
+	{
+		GlHelper::pushParameterToGPU(uniform_TextureRepetition, repetition);
+	}
 	void setUniformDiffuseTexture(int textureId)
 	{
 		GlHelper::pushParameterToGPU(uniform_DiffuseTexture, textureId);
@@ -409,6 +461,10 @@ public:
 	{
 		GlHelper::pushParameterToGPU(uniform_SpecularTexture, textureId);
 	}
+	void setUniformSpecularPower(float specularPower)
+	{
+		GlHelper::pushParameterToGPU(uniform_SpecularPower, specularPower);
+	}
 
 };
 
@@ -416,13 +472,12 @@ public:
 class MaterialTerrainEdition : public Material
 {
 private:
-	//internal
-	//GLuint uniform_textureRepetition;
 
 	GLuint uniform_textureDiffuse;
 	GLuint uniform_textureSpecular;
 	GLuint uniform_textureBump;
 
+	GLuint uniform_textureRepetition;
 	GLuint uniform_textureFilter;
 	GLuint uniform_filterValues;
 
@@ -431,16 +486,23 @@ public:
 		: Material()
 	{}
 
+	MaterialTerrainEdition(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialTerrainEdition(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_filterValues = MaterialHelper::findUniform("FilterValues", externalParameters);
 		uniform_textureFilter = MaterialHelper::findUniform("FilterTexture", externalParameters);
+		uniform_textureRepetition = MaterialHelper::findUniform("TextureRepetition", externalParameters);
 
 		uniform_textureDiffuse = MaterialHelper::findUniform("Diffuse", externalParameters);
 		uniform_textureSpecular = MaterialHelper::findUniform("Specular", externalParameters);
@@ -454,6 +516,10 @@ public:
 	void setUniformFilterTexture(int textureId)
 	{
 		GlHelper::pushParameterToGPU(uniform_textureFilter, textureId);
+	}
+	void setUniformTextureRepetition(glm::vec2 repetition)
+	{
+		GlHelper::pushParameterToGPU(uniform_textureRepetition, repetition);
 	}
 	void setUniformDiffuseTexture(int textureId)
 	{
@@ -483,13 +549,19 @@ public:
 		: Material()
 	{}
 
+	MaterialDrawOnTexture(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialDrawOnTexture(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_drawPosition = MaterialHelper::findUniform("DrawPosition", externalParameters);
 		uniform_colorToDraw = MaterialHelper::findUniform("DrawColor", externalParameters);
@@ -527,13 +599,19 @@ public:
 		: Material()
 	{}
 
+	MaterialGrassField(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialGrassField(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_time = MaterialHelper::findUniform("Time", externalParameters);
 		uniform_Texture = MaterialHelper::findUniform("Texture", externalParameters);
@@ -567,13 +645,19 @@ public:
 		: Material()
 	{}
 
+	MaterialParticlesCPU(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialParticlesCPU(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		m_uniformVP = MaterialHelper::findUniform("VP", externalParameters);
 		m_uniformTexture = MaterialHelper::findUniform("Texture", externalParameters);
@@ -613,13 +697,19 @@ public:
 		: Material()
 	{}
 
+	MaterialParticles(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialParticles(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		m_uniformVP = MaterialHelper::findUniform("VP", externalParameters);
 		m_uniformTexture = MaterialHelper::findUniform("Texture", externalParameters);
@@ -655,13 +745,19 @@ public:
 		: Material()
 	{}
 
+	MaterialParticleSimulation(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
 	MaterialParticleSimulation(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
 	{
 		setExternalParameters(externalParameters);
 	}
 
-	void setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		m_uniformDeltaTime = MaterialHelper::findUniform("DeltaTime", externalParameters);
 	}
@@ -772,7 +868,7 @@ public:
 //
 //	// Hérité via ISerializable
 //	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(Json::Value & entityRoot) override;
+//	virtual void load(const Json::Value & entityRoot) override;
 //};
 //
 //

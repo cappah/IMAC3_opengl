@@ -118,7 +118,10 @@ void PathManager::render(const BaseCamera& camera)
 	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)Application::get().getWindowWidth() / (float)Application::get().getWindowHeight(), 0.1f, 1000.f);
 	glm::mat4 view = camera.getViewMatrix(); // glm::lookAt(camera.eye, camera.o, camera.up);
 
+	int texCount = 0;
 	m_material->use();
+	m_material->pushInternalsToGPU(texCount);
+
 	for (auto& path : m_paths)
 	{
 		glm::mat4 MVP = projection * view;

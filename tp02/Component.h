@@ -92,7 +92,7 @@ public:
 	virtual Component* clone(Entity* entity) = 0;
 
 	virtual void save(Json::Value& componentRoot) const override;
-	virtual void load(Json::Value& componentRoot) override;
+	virtual void load(const Json::Value& componentRoot) override;
 };
 
 template<typename T>

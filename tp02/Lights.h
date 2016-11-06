@@ -37,7 +37,7 @@ struct Light : public Component
 	virtual void updateBoundingBox();
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 
 };
 
@@ -63,7 +63,7 @@ struct PointLight : public Light
 	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 
 };
 
@@ -86,7 +86,7 @@ struct DirectionalLight : public Light
 	virtual void eraseFromEntity(Entity& entity) override;
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 };
 
 struct SpotLight : public Light
@@ -116,6 +116,6 @@ struct SpotLight : public Light
 	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 };
 

@@ -4,6 +4,42 @@
 #include "Factories.h"//forward
 #include "EditorGUI.h"
 
+////////////////////////////////////////////////////
+/////BEGIN : Helpers
+namespace MaterialHelper {
+
+	GLuint findUniform(const std::string& uniformName, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	{
+		auto& found = std::find_if(externalParameters.begin(), externalParameters.end(), [uniformName](const std::shared_ptr<ExternalShaderParameterBase>& item) { return item->getName() == uniformName; });
+		assert(found != externalParameters.end());
+		if (found != externalParameters.end())
+			return (*found)->getUniformId();
+		else
+			return 0;
+	}
+
+	std::vector<GLuint> findUniforms(const std::string& uniformName, int count, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	{
+		std::vector<GLuint> foundUniforms;
+
+
+		auto& found = std::find_if(externalParameters.begin(), externalParameters.end(), [uniformName](const std::shared_ptr<ExternalShaderParameterBase>& item) { return item->getName() == uniformName; });
+		assert(found != externalParameters.end());
+		if (found != externalParameters.end())
+			(*found)->getUniformIds(foundUniforms);
+
+		return foundUniforms;
+	}
+
+}
+
+/////END : Helpers
+////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////
+/////BEGIN : Material
+
 Material::Material()
 	: m_glProgramId(0)
 {
@@ -26,6 +62,14 @@ Material::Material(const std::string& glProgramName, GLuint glProgramId, std::ve
 	setExternalParameters(externalParameters);
 
 	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+}
+
+Material::Material(const ShaderProgram& shaderProgram)
+	: m_glProgramId(shaderProgram.id)
+	, m_internalParameters(shaderProgram.getInternalParameters())
+	, m_glProgramName(shaderProgram.getName())
+{
+	setExternalParameters(shaderProgram.getExternalParameters());
 }
 
 Material::~Material()
@@ -66,12 +110,17 @@ void Material::pushInternalsToGPU(int& boundTextureCount)
 	}
 }
 
-void Material::setExternalParameters(std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+void Material::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 {
 	for (int i = 0; i < externalParameters.size(); i++)
 	{
 		m_externalParameters[externalParameters[i]->getName()] = externalParameters[i];
 	}
+}
+
+void Material::use()
+{
+	glUseProgram(m_glProgramId);
 }
 
 void Material::loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
@@ -97,7 +146,7 @@ void Material::save(Json::Value & entityRoot) const
 	}
 }
 
-void Material::load(Json::Value & entityRoot)
+void Material::load(const Json::Value & entityRoot)
 {
 	std::string shaderProgramName = entityRoot.get("shaderProgramName", "").asString();
 	assert(shaderProgramName != "");
@@ -128,6 +177,11 @@ void Material::save(const FileHandler::CompletePath& path) const
 
 	stream << root;
 }
+
+/////END : Material
+////////////////////////////////////////////////////
+
+
 
 //Material::Material(GLuint _glProgram) 
 //	: glProgram(_glProgram)
@@ -426,7 +480,7 @@ void MaterialLit::save(Json::Value & objectRoot) const
 	objectRoot["textureRepetition"] = toJsonValue(textureRepetition);
 }
 
-void MaterialLit::load(Json::Value & objectRoot)
+void MaterialLit::load(const Json::Value & objectRoot)
 {
 	glProgram = getProgramFactory().getDefault("defaultLit")->id;
 	std::string textureDiffuseName = objectRoot.get("textureDiffuseName", "default").asString();

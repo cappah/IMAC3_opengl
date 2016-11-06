@@ -124,7 +124,7 @@ struct GrassField : public ISerializable
 	void drawUI();
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 };
 
 
@@ -200,12 +200,12 @@ private:
 
 	//for UI : 
 	TerrainTools m_currentTerrainTool;
-	char m_newLayoutName[30];
+	//char m_newLayoutName[30];
 	int m_currentMaterialToDrawIdx;
 	float m_drawRadius;
 	float m_maxGrassDensity;
 	float m_grassDensity;
-	char m_newGrassTextureName[30];
+	//char m_newGrassTextureName[30];
 
 	//for physic : 
 	btBvhTriangleMeshShape* m_terrainCollider;
@@ -270,6 +270,6 @@ public:
 	void updatePhysic(float deltaTime, std::vector<Physic::WindZone*>& windZones);
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 };
 

@@ -13,7 +13,7 @@ private:
 	ResourcePtr<Mesh> m_quadMesh;
 	ResourcePtr<Material> m_billboardMaterial;
 	ResourcePtr<Texture> m_texture;
-	std::string m_textureName;
+	//std::string m_textureName;
 	glm::vec4 m_color;
 
 public:
@@ -38,7 +38,7 @@ public:
 	virtual void eraseFromEntity(Entity & entity) override;
 
 	virtual void save(Json::Value& rootComponent) const override;
-	virtual void load(Json::Value& rootComponent) override;
+	virtual void load(const Json::Value& rootComponent) override;
 
 };
 

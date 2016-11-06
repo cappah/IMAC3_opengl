@@ -172,91 +172,65 @@ namespace EditorGUI {
 	{
 		assert(0 && "invalid value type form this field.");
 		return false;
-	};
-
-	template<typename T, typename U>
-	bool ValueField(const std::string& label, T& value)
-	{
-		assert(0 && "invalid value type form this field.");
-		return false;
-	};
+	}
 
 	template<typename T>
 	bool ValueField(const std::string& label, T& value, const T& minValue, const T& maxValue)
 	{
 		assert(0 && "invalid value type form this field.");
 		return false;
-	};
+	}
 
 	//resource field 
-	template<typename U>
-	bool ValueField(const std::string& label, ResourcePtr<U> resourcePtr)
-	{
-		return ResourceField(label, resourcePtr);
-	}
+	//template<typename U>
+	//bool ValueField(const std::string& label, ResourcePtr<U> resourcePtr)
+	//{
+	//	return ResourceField(label, resourcePtr);
+	//}
+
+	//template<>
+	//bool ValueField<Texture>(const std::string& label, ResourcePtr<Texture> resourcePtr)
+	//{
+	//	return ResourceField(label, resourcePtr);
+	//}
+
+	//template<>
+	//bool ValueField<Texture>(const std::string& label, ResourcePtr<Texture> resourcePtr)
+	//{
+	//	return ResourceField(label, resourcePtr);
+	//}
 
 	//string field
-	bool ValueField(const std::string& label, std::string& outString, char* buf, int bufSize)
-	{
-		bool textEdited = ImGui::InputText(label.c_str(), buf, bufSize, ImGuiInputTextFlags_EnterReturnsTrue);
-		if (textEdited)
-		{
-			outString.clear();
-			outString = buf;
-		}
-		return textEdited;
-	}
+	bool ValueField(const std::string& label, std::string& outString, char* buf, int bufSize);
 
 
 	//drag field
 
 	//float
 	template<>
-	bool ValueField<float>(const std::string& label, float& value, const float& minValue, const float& maxValue)
-	{
-		ImGui::DragFloat(label.data(), &value, (maxValue - minValue)*0.1f, minValue, maxValue);
-	};
+	bool ValueField<float>(const std::string& label, float& value, const float& minValue, const float& maxValue);
 
 	//input field
 
 	//float 
 	template<>
-	bool ValueField<float>(const std::string& label, float& value)
-	{
-		ImGui::InputFloat(label.data(), &value);
-	};
+	bool ValueField<float>(const std::string& label, float& value);
 
 	template<>
-	bool ValueField<glm::vec2>(const std::string& label, glm::vec2& value)
-	{
-		ImGui::InputFloat2(label.data(), &value[0]);
-	};
+	bool ValueField<glm::vec2>(const std::string& label, glm::vec2& value);
 
 	template<>
-	bool ValueField<glm::vec3>(const std::string& label, glm::vec3& value)
-	{
-		ImGui::InputFloat3(label.data(), &value[0]);
-	};
+	bool ValueField<glm::vec3>(const std::string& label, glm::vec3& value);
 
 
 	//int 
 	template<>
-	bool ValueField<int>(const std::string& label, int& value)
-	{
-		ImGui::InputInt(label.data(), &value);
-	};
+	bool ValueField<int>(const std::string& label, int& value);
 
 	template<>
-	bool ValueField<glm::ivec2>(const std::string& label, glm::ivec2& value)
-	{
-		ImGui::InputInt(label.data(), &value[0]);
-	};
+	bool ValueField<glm::ivec2>(const std::string& label, glm::ivec2& value);
 
 	template<>
-	bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value)
-	{
-		ImGui::InputInt(label.data(), &value[0]);
-	};
-
+	bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value);
 
 }

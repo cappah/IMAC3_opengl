@@ -580,7 +580,7 @@ namespace Physic {
 		rootComponent["sortParticles"] = m_sortParticles;
 	}
 
-	void ParticleEmitter::load(Json::Value & rootComponent)
+	void ParticleEmitter::load(const Json::Value & rootComponent)
 	{
 		Component::load(rootComponent);
 

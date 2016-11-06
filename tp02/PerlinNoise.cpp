@@ -146,7 +146,7 @@ void Perlin2D::save(Json::Value & rootComponent) const
 	rootComponent["maxHeight"] = m_maxHeight;
 }
 
-void Perlin2D::load(Json::Value & rootComponent)
+void Perlin2D::load(const Json::Value & rootComponent)
 {
 	m_seed = rootComponent.get("seed", 0).asInt();
 	m_persistence = rootComponent.get("persistence", 0.5f).asFloat();

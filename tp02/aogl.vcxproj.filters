@@ -172,6 +172,9 @@
     <ClCompile Include="ShaderProgram.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderParameter.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">

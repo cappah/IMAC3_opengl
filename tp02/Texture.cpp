@@ -6,30 +6,8 @@
 
 #include "jsoncpp/json/json.h"
 
-
-Texture::Texture() 
+Texture::Texture(int width, int height, bool useAlpha) 
 	: glId(0)
-	, internalFormat(GL_RGB)
-	, format(GL_RGB)
-	, type(GL_UNSIGNED_BYTE)
-	, generateMipMap(true)
-	, m_textureUseCounts(0)
-	, comp(3)
-	, pixels(0)
-	, w(1)
-	, h(1)
-	, textureWrapping_u(GL_REPEAT)
-	, textureWrapping_v(GL_REPEAT)
-	, minFilter(GL_LINEAR)
-	, magFilter(GL_LINEAR)
-{
-
-}
-
-Texture::Texture(int width, int height) 
-	: glId(0)
-	, internalFormat(GL_RGB)
-	, format(GL_RGB)
 	, type(GL_UNSIGNED_BYTE)
 	, generateMipMap(true)
 	, m_textureUseCounts(0)
@@ -42,6 +20,17 @@ Texture::Texture(int width, int height)
 	, minFilter(GL_LINEAR)
 	, magFilter(GL_LINEAR)
 {
+	if (!useAlpha)
+	{
+		internalFormat = GL_RGB;
+		format = GL_RGB;
+	}
+	else
+	{
+		internalFormat = GL_RGBA;
+		format = GL_RGBA;
+	}
+
 	//pixels = new unsigned char[3*width*height];
 	//for (int i = 0; i < 3*width*height; i++) {
 	//	pixels[i] = 255;
@@ -49,47 +38,51 @@ Texture::Texture(int width, int height)
 }
 
 Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) 
-	: glId(0)
-	, internalFormat(GL_RGB)
-	, format(GL_RGB)
-	, type(GL_UNSIGNED_BYTE)
-	, generateMipMap(true)
-	, m_textureUseCounts(0)
-	, textureWrapping_u(GL_REPEAT)
-	, textureWrapping_v(GL_REPEAT)
-	, minFilter(GL_LINEAR)
-	, magFilter(GL_LINEAR)
+	: Texture(width, height)
 {
 	comp = _comp;
-	w = width;
-	h = height;
-
 	pixels = _pixels;
 }
 
 Texture::Texture(char r, char g, char b) 
-	: glId(0)
-	, internalFormat(GL_RGB)
-	, format(GL_RGB)
-	, type(GL_UNSIGNED_BYTE)
-	, generateMipMap(true)
-	, m_textureUseCounts(0)
-	, textureWrapping_u(GL_REPEAT)
-	, textureWrapping_v(GL_REPEAT)
-	, minFilter(GL_LINEAR)
-	, magFilter(GL_LINEAR)
+	: Texture(1, 1)
 {
 	comp = 4;
-	w = 1;
-	h = 1;
 	pixels = new unsigned char[3];
 	pixels[0] = r;
 	pixels[1] = g;
 	pixels[2] = b;
 }
 
+Texture::Texture(int width, int height, const glm::vec4 & color) 
+	: Texture(width, height, true)
+{
+	comp = 4;
+	pixels = new unsigned char[4*width*height];
+	for (int i = 0; i < width * height * 4; i += 4)
+	{
+		pixels[i] = color.r;
+		pixels[i + 1] = color.g;
+		pixels[i + 2] = color.b;
+		pixels[i + 3] = color.a;
+	}
+}
 
-Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel) 
+Texture::Texture(int width, int height, const glm::vec3 & color) 
+	: Texture(width, height, false)
+{
+	comp = 3;
+	pixels = new unsigned char[3 * width*height];
+	for (int i = 0; i < width * height * 3; i += 3)
+	{
+		pixels[i] = color.r;
+		pixels[i + 1] = color.g;
+		pixels[i + 2] = color.b;
+	}
+}
+
+
+Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 	: Resource(_path)
 	, glId(0)
 	, generateMipMap(true)
@@ -112,55 +105,6 @@ Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 		format = GL_RGBA;
 		type = GL_UNSIGNED_BYTE;
 		pixels = stbi_load(_path.c_str(), &w, &h, &comp, 4);
-	}
-}
-
-Texture::Texture(int width, int height, const glm::vec4 & color) 
-	: w(width)
-	, h(height)
-	, glId(0)
-	, internalFormat(GL_RGBA)
-	, format(GL_RGBA)
-	, type(GL_UNSIGNED_BYTE)
-	, generateMipMap(true)
-	, m_textureUseCounts(0)
-	, textureWrapping_u(GL_REPEAT)
-	, textureWrapping_v(GL_REPEAT)
-	, minFilter(GL_LINEAR)
-	, magFilter(GL_LINEAR)
-{
-	comp = 4;
-	pixels = new unsigned char[4*width*height];
-	for (int i = 0; i < width * height * 4; i += 4)
-	{
-		pixels[i] = color.r;
-		pixels[i + 1] = color.g;
-		pixels[i + 2] = color.b;
-		pixels[i + 3] = color.a;
-	}
-}
-
-Texture::Texture(int width, int height, const glm::vec3 & color) 
-	: w(width)
-	, h(height)
-	, glId(0)
-	, internalFormat(GL_RGB)
-	, format(GL_RGB)
-	, type(GL_UNSIGNED_BYTE)
-	, generateMipMap(true)
-	, m_textureUseCounts(0)
-	, textureWrapping_u(GL_REPEAT)
-	, textureWrapping_v(GL_REPEAT)
-	, minFilter(GL_LINEAR)
-	, magFilter(GL_LINEAR)
-{
-	comp = 3;
-	pixels = new unsigned char[3 * width*height];
-	for (int i = 0; i < width * height * 3; i += 3)
-	{
-		pixels[i] = color.r;
-		pixels[i + 1] = color.g;
-		pixels[i + 2] = color.b;
 	}
 }
 

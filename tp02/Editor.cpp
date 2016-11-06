@@ -154,9 +154,9 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 	if (meshRenderers.size() == 0)
 		return;
 
-	std::string tmpName = meshRenderers[0]->getMaterialName(0);
-	tmpName.copy(textValue, tmpName.size(), 0);
-	textValue[tmpName.size()] = '\0';
+	//std::string tmpName = meshRenderers[0]->getMaterialName(0);
+	//tmpName.copy(textValue, tmpName.size(), 0);
+	//textValue[tmpName.size()] = '\0';
 
 	//%NOCOMMIT%
 	//if (ImGui::InputText("materialName", textValue, 20))
@@ -170,7 +170,9 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 	//	}
 	//}
 	ResourcePtr<Material> materialPtrQuery;
-	EditorGUI::ResourceField<Material>(materialPtrQuery, "materialName", textValue, 100);
+	//EditorGUI::ResourceField<Material>(materialPtrQuery, "materialName", textValue, 100);
+	EditorGUI::ResourceField<Material>("materialName", materialPtrQuery);
+
 	if (materialPtrQuery.isValid())
 	{
 		for (auto& meshRenderer : meshRenderers)
@@ -181,9 +183,9 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 
 	//meshRenderers[0]->getMaterial()->drawUI();
 
-	tmpName = meshRenderers[0]->getMeshName();
-	tmpName.copy(textValue, tmpName.size(), 0);
-	textValue[tmpName.size()] = '\0';
+	//tmpName = meshRenderers[0]->getMeshName();
+	//tmpName.copy(textValue, tmpName.size(), 0);
+	//textValue[tmpName.size()] = '\0';
 
 	//if (ImGui::InputText("meshName", textValue, 20))
 	//{
@@ -196,7 +198,9 @@ void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
 	//	}
 	//}
 	ResourcePtr<Mesh> meshPtrQuery;
-	EditorGUI::ResourceField<Mesh>(meshPtrQuery, "meshName", textValue, 100);
+	//EditorGUI::ResourceField<Mesh>(meshPtrQuery, "meshName", textValue, 100);
+	EditorGUI::ResourceField<Mesh>("meshName", meshPtrQuery);
+
 	if (meshPtrQuery.isValid())
 	{
 		for (auto& meshRenderer : meshRenderers)

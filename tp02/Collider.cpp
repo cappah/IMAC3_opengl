@@ -211,7 +211,7 @@ void Collider::save(Json::Value & rootComponent) const
 	rootComponent["modelMatrix"] = toJsonValue(modelMatrix);
 }
 
-void Collider::load(Json::Value & rootComponent)
+void Collider::load(const Json::Value & rootComponent)
 {
 	Component::load(rootComponent);
 
@@ -431,7 +431,7 @@ void BoxCollider::save(Json::Value & rootComponent) const
 	rootComponent["bottomLeft"] = toJsonValue(bottomLeft);
 }
 
-void BoxCollider::load(Json::Value & rootComponent)
+void BoxCollider::load(const Json::Value & rootComponent)
 {
 	Collider::load(rootComponent);
 
@@ -547,7 +547,7 @@ void CapsuleCollider::save(Json::Value & rootComponent) const
 	rootComponent["radius"] = radius;
 }
 
-void CapsuleCollider::load(Json::Value & rootComponent)
+void CapsuleCollider::load(const Json::Value & rootComponent)
 {
 	Collider::load(rootComponent);
 	height = rootComponent.get("height", 1).asFloat();

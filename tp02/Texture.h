@@ -12,8 +12,6 @@
 
 struct Texture : public Resource
 {
-	std::string name;
-
 	int w;
 	int h;
 	int comp;
@@ -33,8 +31,7 @@ struct Texture : public Resource
 
 	int m_textureUseCounts;
 
-	Texture();
-	Texture(int width, int height);
+	Texture(int width = 0, int height = 0, bool useAlpha = false);
 	Texture(unsigned char* _pixels, int width, int height, int _comp);
 	Texture(char r, char g, char b);
 	Texture(const FileHandler::CompletePath& _path, bool alphaChannel = true);

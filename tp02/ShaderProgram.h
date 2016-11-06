@@ -3,8 +3,8 @@
 #include <vector>
 #include <memory>
 #include <istream>
-#include <glm/glm.hpp>
 #include <glew/glew.h>
+#include <glm/glm.hpp>
 #include "FileHandler.h"
 
 //forwards :
@@ -41,6 +41,9 @@ public:
 
 	void addMaterialRef(Material* ref);
 	void removeMaterialRef(Material* ref);
+
+	const std::vector<std::shared_ptr<InternalShaderParameterBase>>& getInternalParameters() const;
+	const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& getExternalParameters() const;
 
 	//Not copyable
 	ShaderProgram(const ShaderProgram& other) = delete;

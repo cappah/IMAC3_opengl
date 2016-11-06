@@ -90,11 +90,12 @@ void Animator::drawUI(Scene & scene)
 
 	//Get mesh skeleton from mesh
 	ResourcePtr<Mesh> meshPtrQuery;
-	EditorGUI::ResourceField<Mesh>(meshPtrQuery, "skeleton/mesh name", tmpSkeletalPath, 100);
+	//EditorGUI::ResourceField<Mesh>(meshPtrQuery, "skeleton/mesh name", tmpSkeletalPath, 100);
+	EditorGUI::ResourceField<Mesh>("skeleton/mesh name", meshPtrQuery);
 	if (meshPtrQuery.isValid())
 	{
 		m_skeleton = meshPtrQuery->getSkeleton();
-		m_skeletonPath = FileHandler::CompletePath(tmpSkeletalPath);
+		m_skeletonPath = meshPtrQuery->getCompletePath();// ::CompletePath(tmpSkeletalPath);
 	}
 
 
@@ -104,7 +105,8 @@ void Animator::drawUI(Scene & scene)
 
 	//Get animation
 	ResourcePtr<SkeletalAnimation> animationPtrQuery;
-	EditorGUI::ResourceField<SkeletalAnimation>(animationPtrQuery, "animation", tmpAnimationName, 60);
+	//EditorGUI::ResourceField<SkeletalAnimation>(animationPtrQuery, "animation", tmpAnimationName, 60);
+	EditorGUI::ResourceField<SkeletalAnimation>("animation", animationPtrQuery);
 
 	ImGui::SameLine();
 	if (ImGui::Button("add")){
@@ -176,7 +178,7 @@ void Animator::save(Json::Value & componentRoot) const
 	componentRoot["currentAnimIdx"] = m_currentAnimIdx;
 }
 
-void Animator::load(Json::Value & componentRoot)
+void Animator::load(const Json::Value & componentRoot)
 {
 	Component::load(componentRoot);
 

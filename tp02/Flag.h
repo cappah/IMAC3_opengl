@@ -108,7 +108,7 @@ namespace Physic {
 		void restartSimulation();
 
 		virtual void save(Json::Value& rootComponent) const override;
-		virtual void load(Json::Value& rootComponent) override;
+		virtual void load(const Json::Value& rootComponent) override;
 
 	private : 
 		//completly free memory allocate for the flag and then reconstruct the flag

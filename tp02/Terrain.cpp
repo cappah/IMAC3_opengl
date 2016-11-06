@@ -437,7 +437,7 @@ void GrassField::save(Json::Value & rootComponent) const
 	//TODO
 }
 
-void GrassField::load(Json::Value & rootComponent)
+void GrassField::load(const Json::Value & rootComponent)
 {
 	//TODO
 }
@@ -471,7 +471,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
 			m_maxGrassDensity(1.f), m_grassDensity(0), m_grassLayoutDelta(0.3f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
-			m_material(getProgramFactory().getDefault("defaultTerrain")), m_terrainMaterial(getProgramFactory().getDefault("defaultTerrainEdition")), m_drawOnTextureMaterial(getProgramFactory().getDefault("defaultDrawOnTexture")), //matertials
+			m_material(*getProgramFactory().get("defaultTerrain")), m_terrainMaterial(*getProgramFactory().get("defaultTerrainEdition")), m_drawOnTextureMaterial(*getProgramFactory().get("defaultDrawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
 			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024), //textures
 			m_terrainBump(1024, 1024), m_terrainSpecular(1024, 1024), m_drawMatTexture(1024, 1024),
@@ -482,8 +482,8 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_filterTexture = new Texture(1024, 1024);
 
 	// initialyze the texture name : 
-	m_newLayoutName[0] = '\0';
-	m_newGrassTextureName[0] = '\0';
+	//m_newLayoutName[0] = '\0';
+	//m_newGrassTextureName[0] = '\0';
 
 	//grass layout initialization : 
 	m_grassLayoutWidth = m_width / (float)m_grassLayoutDelta;
@@ -493,7 +493,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 
 	//push terrain texture to GPU
 	//bump
-	m_terrainBump.name = "terrainTextureBump";
+	//m_terrainBump.name = "terrainTextureBump";
 	m_terrainBump.internalFormat = GL_RGBA16;
 	m_terrainBump.format = GL_RGBA;
 	m_terrainBump.type = GL_FLOAT;
@@ -504,7 +504,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_terrainBump.generateMipMap = false;
 	m_terrainBump.initGL();
 	//specular
-	m_terrainSpecular.name = "terrainTextureSpecular";
+	//m_terrainSpecular.name = "terrainTextureSpecular";
 	m_terrainSpecular.internalFormat = GL_RGBA8;
 	m_terrainSpecular.format = GL_RGBA;
 	m_terrainSpecular.type = GL_UNSIGNED_BYTE;
@@ -515,7 +515,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_terrainSpecular.generateMipMap = false;
 	m_terrainSpecular.initGL();
 	//diffuse
-	m_terrainDiffuse.name = "terrainTextureDiffuse";
+	//m_terrainDiffuse.name = "terrainTextureDiffuse";
 	m_terrainDiffuse.internalFormat = GL_RGBA8;
 	m_terrainDiffuse.format = GL_RGBA;
 	m_terrainDiffuse.type = GL_UNSIGNED_BYTE;
@@ -542,19 +542,20 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	m_filterTexture->generateMipMap = false;
 	m_filterTexture->initGL();
 	//draw texture
-	m_drawMatTexture.name = "texture draw text";
+	//m_drawMatTexture.name = "texture draw text";
 	m_drawMatTexture.initGL();
 
 	//set the terrain texture : 
 	//bump
-	m_material.textureBump = &m_terrainBump;
-	m_material.bumpTextureName = m_terrainBump.name;
+	//m_material.textureBump = &m_terrainBump;
+	m_material.setInternalData<Texture>("BumpTexture", &m_terrainBump);
+	//m_material.bumpTextureName = m_terrainBump.getName();
 	//specular
-	m_material.textureSpecular = &m_terrainSpecular;
-	m_material.specularTextureName = m_terrainSpecular.name;
+	m_material.setInternalData<Texture>("SpecularTexture", &m_terrainSpecular);
+	//m_material.specularTextureName = m_terrainSpecular.name;
 	//diffuse
-	m_material.textureDiffuse = &m_terrainDiffuse;
-	m_material.diffuseTextureName = m_terrainDiffuse.name;
+	m_material.setInternalData<Texture>("DiffuseTexture", &m_terrainDiffuse);
+	//m_material.diffuseTextureName = m_terrainDiffuse.name;
 
 	////////////////////// INIT QUAD MESH ////////////////////////
 	m_quadMesh.triangleIndex = { 0, 1, 2, 2, 1, 3 };
@@ -684,13 +685,13 @@ void Terrain::generateTerrainTexture()
 
 		//diffuse
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getDiffuse()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getInternalData<Texture>("TextureDiffuse")->glId);//->getDiffuse()->glId);
 		//bump
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getBump()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getInternalData<Texture>("TextureBump")->glId);//->getBump()->glId);
 		//specular
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getSpecular()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getInternalData<Texture>("TextureSpecular")->glId);//->getSpecular()->glId);
 
 		//filter texture : 
 		m_terrainMaterial.setUniformFilterTexture(0);
@@ -1101,7 +1102,8 @@ void Terrain::freeGl()
 	glDeleteBuffers(1, &vbo_normals);
 	glDeleteBuffers(1, &vbo_tangents);
 
-	m_material.textureDiffuse = nullptr; // detach texture as the texture is inside the terrain and will be destroyed
+	//TODO 10
+	//m_material.textureDiffuse = nullptr; // detach texture as the texture is inside the terrain and will be destroyed
 
 	glDeleteFramebuffers(1, &m_terrainFbo);
 
@@ -1266,7 +1268,7 @@ void Terrain::save(Json::Value & rootComponent) const
 	for (int i = 0; i < m_terrainLayouts.size(); i++) {
 		rootComponent["materialLayouts"][i]["textureRepetition"] = toJsonValue(m_textureRepetitions[i]);
 
-		rootComponent["materialLayouts"][i]["materialName"] = m_terrainLayouts[i]->name; //TODO : remove ?
+		rootComponent["materialLayouts"][i]["materialName"] = m_terrainLayouts[i]->getName(); //TODO : remove ?
 
 		m_terrainLayouts[i].save(rootComponent["materialLayouts"][i]["material"]);
 	}
@@ -1293,7 +1295,7 @@ void Terrain::save(Json::Value & rootComponent) const
 	stbi_write_bmp("test_terrain.bmp", m_filterTexture->w, m_filterTexture->h, 3, pixels); //TODO : améliorer ça
 }
 
-void Terrain::load(Json::Value & rootComponent)
+void Terrain::load(const Json::Value & rootComponent)
 {
 	//parameters : 
 	m_subdivision = rootComponent.get("subdivision", 10).asInt();
@@ -1356,7 +1358,9 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 	glm::mat4 mvp = projection * view * modelMatrix;
 	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
+	int texCount = 0;
 	m_material.use();
+	m_material.pushInternalsToGPU(texCount);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_filterTexture->glId);
@@ -1367,13 +1371,14 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 
 		//diffuse
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getDiffuse()->glId);
+		//glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getDiffuse()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getInternalData<Texture>("TextureDiffuse")->glId);
 		//bump
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getBump()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getInternalData<Texture>("TextureBump")->glId);//->getBump()->glId);
 		//specular
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getSpecular()->glId);
+		glBindTexture(GL_TEXTURE_2D, castedterrainLayout->getInternalData<Texture>("TextureSpecular")->glId);//->getSpecular()->glId);
 
 		//filter texture : 
 		m_material.setUniformFilterTexture(0);
@@ -1384,7 +1389,7 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 		//specular texture : 
 		m_material.setUniformSpecularTexture(3);
 
-		m_material.setUniformSpecularPower(castedterrainLayout->getSpecularPower());
+		m_material.setUniformSpecularPower(*castedterrainLayout->getInternalData<float>("SpecularPower")/*castedterrainLayout->getSpecularPower()*/);
 
 		float offsetMin = (i / (float)m_terrainLayouts.size());
 		float offsetMax = ((i + 1) / (float)m_terrainLayouts.size());
@@ -1499,13 +1504,14 @@ void Terrain::drawUI()
 	{
 		std::string currentMatName("no selected material");
 		if(m_currentMaterialToDrawIdx >= 0 && m_currentMaterialToDrawIdx < m_terrainLayouts.size())
-			currentMatName = std::string("selected material" + m_terrainLayouts[m_currentMaterialToDrawIdx]->name);
+			currentMatName = std::string("selected material" + m_terrainLayouts[m_currentMaterialToDrawIdx]->getName());
 		ImGui::Text(currentMatName.c_str());
 
 		ImGui::SliderFloat("draw radius", &m_drawRadius, 0.f, 1.f);
 
 		ResourcePtr<Material> materialPtrQuery;
-		EditorGUI::ResourceField<Material>(materialPtrQuery, "new texture layout", m_newLayoutName, 30);
+		//EditorGUI::ResourceField<Material>(materialPtrQuery, "new texture layout", m_newLayoutName, 30);
+		EditorGUI::ResourceField<Material>("new texture layout", materialPtrQuery);
 
 		ImGui::SameLine();
 		if (ImGui::SmallButton("add"))
@@ -1553,7 +1559,7 @@ void Terrain::drawUI()
 			}
 			ImGui::SameLine();
 
-			ImGui::Text(m_terrainLayouts[i]->name.c_str());
+			ImGui::Text(m_terrainLayouts[i]->getName().c_str());
 			ImGui::SameLine();
 
 			glm::vec2 tmpVec2 = m_textureRepetitions[i];
@@ -1600,7 +1606,8 @@ void Terrain::drawUI()
 
 
 		ResourcePtr<Texture> texturePtrQuery;
-		if (EditorGUI::ResourceField<Texture>(texturePtrQuery, "grass texture name", m_newGrassTextureName, 30))
+		//if (EditorGUI::ResourceField<Texture>(texturePtrQuery, "grass texture name", m_newGrassTextureName, 30))
+		if (EditorGUI::ResourceField<Texture>("grass texture name", texturePtrQuery))
 		{
 			if (texturePtrQuery.isValid())
 				m_grassField.grassTexture = texturePtrQuery;
