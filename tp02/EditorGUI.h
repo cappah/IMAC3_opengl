@@ -8,8 +8,8 @@
 #include "ISingleton.h"
 #include "GUI.h"
 #include "Utils.h"
-#include "Factories.h"
 #include "ResourcePointer.h"
+#include "FileHandler.h"
 
 class ResourceFolder;
 class ResourceFile;
@@ -113,58 +113,58 @@ public:
 namespace EditorGUI {
 
 	template<typename T>
-	bool ResourceField(const std::string& label, ResourcePtr<T> resourcePtr)
-	{
-		const int bufSize = 100;
-		std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getCompletePath().getFilename() : "INVALID");
-		currentResourceName.reserve(bufSize);
+	bool ResourceField(const std::string& label, ResourcePtr<T> resourcePtr);
+	//{
+	//	const int bufSize = 100;
+	//	std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getCompletePath().getFilename() : "INVALID");
+	//	currentResourceName.reserve(bufSize);
 
-		ResourceType resourceType = getResourceType<T>();
-		bool canDropIntoField = DragAndDropManager::canDropInto(&resourceType, EditorDropContext::DropIntoResourceField);
-		bool isTextEdited = false;
-		bool needClearPtr = false;
+	//	ResourceType resourceType = getResourceType<T>();
+	//	bool canDropIntoField = DragAndDropManager::canDropInto(&resourceType, EditorDropContext::DropIntoResourceField);
+	//	bool isTextEdited = false;
+	//	bool needClearPtr = false;
 
-		int colStyleCount = 0;
-		if (canDropIntoField)
-		{
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
-			colStyleCount++;
-		}
+	//	int colStyleCount = 0;
+	//	if (canDropIntoField)
+	//	{
+	//		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 255, 0, 255));
+	//		colStyleCount++;
+	//	}
 
-		bool enterPressed = ImGui::InputText(label.c_str(), &currentResourceName[0], bufSize, ImGuiInputTextFlags_EnterReturnsTrue|ImGuiInputTextFlags_ReadOnly);
-		isTextEdited = (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
-		ImGui::SameLine();
-		needClearPtr = ImGui::SmallButton(std::string("<##" + label).data());
+	//	bool enterPressed = ImGui::InputText(label.c_str(), &currentResourceName[0], bufSize, ImGuiInputTextFlags_EnterReturnsTrue|ImGuiInputTextFlags_ReadOnly);
+	//	isTextEdited = (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
+	//	ImGui::SameLine();
+	//	needClearPtr = ImGui::SmallButton(std::string("<##" + label).data());
 
 
-		//borders if can drop here : 
-		if (ImGui::IsItemHovered() && canDropIntoField)
-		{
-			ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 2.f);
-		}
+	//	//borders if can drop here : 
+	//	if (ImGui::IsItemHovered() && canDropIntoField)
+	//	{
+	//		ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 2.f);
+	//	}
 
-		//drop resource : 
-		FileHandler::CompletePath droppedResourcePath;
-		if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0))
-		{
-			DragAndDropManager::dropDraggedItem(&droppedResourcePath, (EditorDropContext::DropIntoResourceField));
-			isTextEdited = true;
-		}
+	//	//drop resource : 
+	//	FileHandler::CompletePath droppedResourcePath;
+	//	if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0))
+	//	{
+	//		DragAndDropManager::dropDraggedItem(&droppedResourcePath, (EditorDropContext::DropIntoResourceField));
+	//		isTextEdited = true;
+	//	}
 
-		ImGui::PopStyleColor(colStyleCount);
+	//	ImGui::PopStyleColor(colStyleCount);
 
-		if (needClearPtr)
-			resourcePtr.reset();
-		else if (isTextEdited)
-		{
-			if (getResourceFactory<T>().contains(droppedResourcePath))
-				resourcePtr = getResourceFactory<T>().get(droppedResourcePath);
-			else
-				resourcePtr.reset();
-		}
+	//	if (needClearPtr)
+	//		resourcePtr.reset();
+	//	else if (isTextEdited)
+	//	{
+	//		if (getResourceFactory<T>().contains(droppedResourcePath))
+	//			resourcePtr = getResourceFactory<T>().get(droppedResourcePath);
+	//		else
+	//			resourcePtr.reset();
+	//	}
 
-		return isTextEdited;
-	}
+	//	return isTextEdited;
+	//}
 	
 	//Value fields : 
 	template<typename T>

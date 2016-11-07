@@ -56,7 +56,7 @@ void Project::init()
 	initGlew();
 	setupWindow(window);
 
-	initProject();
+	//initProject(); //TODO 10
 
 	//add default assets to factories : 
 	//initDefaultAssets();
@@ -105,11 +105,13 @@ void Project::clear()
 void Project::open(const std::string & projectName, const FileHandler::Path & projectPath)
 {
 	clear(); //clear the current project (scenes + resources + systems)
-	initProject(); //init systems and resources
 
 	m_projectPath = FileHandler::Path(projectPath.toString() + "/" + projectName);
 	m_assetFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/assets/");
 	assert(FileHandler::directoryExists(m_assetFolderPath));
+
+	//we have to set projectPath before calling initProject
+	initProject(); //init systems and resources
 
 	//load the project.
 	if(FileHandler::directoryExists(m_projectPath))
@@ -1004,6 +1006,9 @@ void Project::initDefaultAssets()
 
 void Project::initProject()
 {
+	//we need set the projectPath before to call this function.
+	assert(m_projectPath.toString() != "");
+
 	initDefaultAssets();
 
 	// create and initialize our light manager

@@ -31,6 +31,8 @@ static const unsigned int MAX_BONE_COUNT = 100;
 //Helpers :
 namespace MaterialHelper {
 
+	GLuint getUniform(GLuint programId, const std::string& uniformName);
+	std::vector<GLuint> getUniforms(GLuint programId, const std::string& uniformName, int count);
 	GLuint findUniform(const std::string& uniformName, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 	std::vector<GLuint> findUniforms(const std::string& uniformName, int count, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 
@@ -52,7 +54,9 @@ public:
 	Material(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 	Material(const ShaderProgram& shaderProgram);
 	virtual ~Material();
-	virtual void init(const FileHandler::CompletePath& path) override; //TODO
+	//init internal params. Should be called in constructor, or just after construction.
+	void initInternalParameters();
+	virtual void init(const FileHandler::CompletePath& path) override;
 	void drawUI();
 	void pushInternalsToGPU(int& boundTextureCount);
 	virtual void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
@@ -74,15 +78,15 @@ public:
 	}
 
 	//TODO 10
-	//template<typename T, typename U>//= ShaderParameter::IsNotArray>
-	//ExternalShaderParameter<T, U>& getExternalParameter(const std::string& parameterName) const
-	//{
-	//	auto& foundParameter = m_externalParameters.find(parameterName);
-	//	if (foundParameter != m_externalParameters.end())
-	//	{
-	//		return *static_cast<ExternalShaderParameter<T, U>*>(foundParameter->second().get());
-	//	}
-	//}
+	template<typename T, typename U = ShaderParameter::IsNotArray>
+	ExternalShaderParameter<T, U>& getExternalParameter(const std::string& parameterName) const
+	{
+		auto& foundParameter = m_externalParameters.find(parameterName);
+		if (foundParameter != m_externalParameters.end())
+		{
+			return *static_cast<ExternalShaderParameter<T, U>*>(foundParameter->second().get());
+		}
+	}
 
 	void loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 	// Save and load internal parameters 

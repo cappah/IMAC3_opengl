@@ -8,6 +8,24 @@
 /////BEGIN : Helpers
 namespace MaterialHelper {
 
+	GLuint getUniform(GLuint programId, const std::string& uniformName)
+	{
+		return glGetUniformLocation(programId, uniformName.data());
+	}
+
+	std::vector<GLuint> getUniforms(GLuint programId, const std::string& uniformName, int count)
+	{
+		std::vector<GLuint> outUniformIds;
+		std::string name = uniformName + "[0]";;
+
+		for (int i = 0; i < count; i++)
+		{
+			name[name.size() - 2] = std::to_string(i)[0];
+			outUniformIds.push_back(glGetUniformLocation(programId, name.data()));
+		}
+		return outUniformIds;
+	}
+
 	GLuint findUniform(const std::string& uniformName, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 	{
 		auto& found = std::find_if(externalParameters.begin(), externalParameters.end(), [uniformName](const std::shared_ptr<ExternalShaderParameterBase>& item) { return item->getName() == uniformName; });
@@ -51,17 +69,14 @@ Material::Material(const std::string& glProgramName, GLuint glProgramId, std::ve
 	, m_internalParameters(internalParameters)
 	, m_glProgramName(glProgramName)
 {
+	initInternalParameters();
 	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 }
 
 Material::Material(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-	: m_glProgramId(glProgramId)
-	, m_internalParameters(internalParameters)
-	, m_glProgramName(glProgramName)
+	: Material(glProgramName, glProgramId, internalParameters)
 {
-	setExternalParameters(externalParameters);
 
-	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 }
 
 Material::Material(const ShaderProgram& shaderProgram)
@@ -69,12 +84,21 @@ Material::Material(const ShaderProgram& shaderProgram)
 	, m_internalParameters(shaderProgram.getInternalParameters())
 	, m_glProgramName(shaderProgram.getName())
 {
+	initInternalParameters();
 	setExternalParameters(shaderProgram.getExternalParameters());
 }
 
 Material::~Material()
 {
 	getProgramFactory().get(m_glProgramName)->removeMaterialRef(this);
+}
+
+void Material::initInternalParameters()
+{
+	for (auto& internalParam : m_internalParameters)
+	{
+		internalParam->init(m_glProgramId);
+	}
 }
 
 void Material::init(const FileHandler::CompletePath& path)
