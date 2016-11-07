@@ -1,0 +1,6 @@
+{
+    "vertex" : "debugDrawer.vert",
+    "fragment" : "debugDrawer.frag",
+    "geometry" : "",
+    "internalShaderParameters" : []
+}

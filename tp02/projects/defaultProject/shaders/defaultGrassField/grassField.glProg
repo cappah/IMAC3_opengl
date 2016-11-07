@@ -1,0 +1,6 @@
+{
+    "vertex" : "grassField.vert",
+    "fragment" : "grassField.frag",
+    "geometry" : "",
+    "internalShaderParameters" : []
+}

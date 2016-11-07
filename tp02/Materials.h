@@ -128,10 +128,10 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_MVP = MaterialHelper::findUniform("MVP", externalParameters);
-		uniform_normalMatrix = MaterialHelper::findUniform("normalMatrix", externalParameters);
-		uniform_bonesTransform = MaterialHelper::findUniforms("bonesTransform", MAX_BONE_COUNT, externalParameters);
-		uniform_useSkeleton = MaterialHelper::findUniform("useSkeleton", externalParameters);
+		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+		uniform_normalMatrix = MaterialHelper::getUniform(m_glProgramId, "normalMatrix");
+		uniform_bonesTransform = MaterialHelper::getUniforms(m_glProgramId, "bonesTransform", MAX_BONE_COUNT);
+		uniform_useSkeleton = MaterialHelper::getUniform(m_glProgramId, "useSkeleton");
 	}
 
 	void setUniform_MVP(glm::mat4& mvp)
@@ -202,14 +202,14 @@ public:
 		setExternalParameters(externalParameters);
 	}
 
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	{
+		uniform_color = MaterialHelper::getUniform(m_glProgramId, "color");
+	}
+
 	void setUniform_color(glm::vec3 color)
 	{
 		GlHelper::pushParameterToGPU<glm::vec3>(uniform_color, color);
-	}
-
-	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
-	{
-		uniform_color = MaterialHelper::findUniform("color", externalParameters);
 	}
 };
 
@@ -238,8 +238,8 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_VP = MaterialHelper::findUniform("VP", externalParameters);
-		uniform_color = MaterialHelper::findUniform("color", externalParameters);
+		uniform_VP = MaterialHelper::getUniform(m_glProgramId, "VP");
+		uniform_color = MaterialHelper::getUniform(m_glProgramId, "color");
 	}
 
 	void setUniform_color(const glm::vec3& color) const
@@ -277,7 +277,7 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_MVP = MaterialHelper::findUniform("MVP", externalParameters);
+		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
 	}
 
 	void setUniform_MVP(const glm::mat4& MVP)
@@ -311,7 +311,7 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_VP = MaterialHelper::findUniform("VP", externalParameters);
+		uniform_VP = MaterialHelper::getUniform(m_glProgramId, "VP");
 	}
 
 	void setUniform_VP(const glm::mat4& VP)
@@ -357,13 +357,13 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_MVP = MaterialHelper::findUniform("MVP", externalParameters);
-		uniform_Scale = MaterialHelper::findUniform("Scale", externalParameters);
-		uniform_Translation = MaterialHelper::findUniform("Translation", externalParameters);
-		uniform_Texture = MaterialHelper::findUniform("Texture", externalParameters);
-		uniform_CameraRight = MaterialHelper::findUniform("CameraRight", externalParameters);
-		uniform_CameraUp = MaterialHelper::findUniform("CameraUp", externalParameters);
-		uniform_Color = MaterialHelper::findUniform("Color", externalParameters);
+		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+		uniform_Scale = MaterialHelper::getUniform(m_glProgramId, "Scale");
+		uniform_Translation = MaterialHelper::getUniform(m_glProgramId, "Translation");
+		uniform_Texture = MaterialHelper::getUniform(m_glProgramId, "Texture");
+		uniform_CameraRight = MaterialHelper::getUniform(m_glProgramId, "CameraRight");
+		uniform_CameraUp = MaterialHelper::getUniform(m_glProgramId, "CameraUp");
+		uniform_Color = MaterialHelper::getUniform(m_glProgramId, "Color");
 	}
 
 	void setUniformMVP(const glm::mat4& VP)
@@ -431,14 +431,14 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_LayoutOffset = MaterialHelper::findUniform("LayoutOffset", externalParameters);
-		uniform_FilterTexture = MaterialHelper::findUniform("FilterTexture", externalParameters);
-		uniform_TextureRepetition = MaterialHelper::findUniform("TextureRepetition", externalParameters);
-		uniform_SpecularPower = MaterialHelper::findUniform("SpecularPower", externalParameters);
+		uniform_LayoutOffset = MaterialHelper::getUniform(m_glProgramId, "LayoutOffset");
+		uniform_FilterTexture = MaterialHelper::getUniform(m_glProgramId, "FilterTexture");
+		uniform_TextureRepetition = MaterialHelper::getUniform(m_glProgramId, "TextureRepetition");
+		uniform_SpecularPower = MaterialHelper::getUniform(m_glProgramId, "SpecularPower");
 
-		uniform_DiffuseTexture = MaterialHelper::findUniform("DiffuseTexture", externalParameters);
-		uniform_BumpTexture = MaterialHelper::findUniform("BumpTexture", externalParameters);
-		uniform_SpecularTexture = MaterialHelper::findUniform("SpecularTexture", externalParameters);
+		uniform_DiffuseTexture = MaterialHelper::getUniform(m_glProgramId, "DiffuseTexture");
+		uniform_BumpTexture = MaterialHelper::getUniform(m_glProgramId, "BumpTexture");
+		uniform_SpecularTexture = MaterialHelper::getUniform(m_glProgramId, "SpecularTexture");
 	}
 
 	void setUniformLayoutOffset(const glm::vec2& layoutOffset)
@@ -504,13 +504,13 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_filterValues = MaterialHelper::findUniform("FilterValues", externalParameters);
-		uniform_textureFilter = MaterialHelper::findUniform("FilterTexture", externalParameters);
-		uniform_textureRepetition = MaterialHelper::findUniform("TextureRepetition", externalParameters);
+		uniform_filterValues = MaterialHelper::getUniform(m_glProgramId, "FilterValues");
+		uniform_textureFilter = MaterialHelper::getUniform(m_glProgramId, "FilterTexture");
+		uniform_textureRepetition = MaterialHelper::getUniform(m_glProgramId, "TextureRepetition");
 
-		uniform_textureDiffuse = MaterialHelper::findUniform("Diffuse", externalParameters);
-		uniform_textureSpecular = MaterialHelper::findUniform("Specular", externalParameters);
-		uniform_textureBump = MaterialHelper::findUniform("Bump", externalParameters);
+		uniform_textureDiffuse = MaterialHelper::getUniform(m_glProgramId, "Diffuse");
+		uniform_textureSpecular = MaterialHelper::getUniform(m_glProgramId, "Specular");
+		uniform_textureBump = MaterialHelper::getUniform(m_glProgramId, "Bump");
 	}
 
 	void setUniformLayoutOffset(const glm::vec2& layoutOffset)
@@ -567,10 +567,10 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_drawPosition = MaterialHelper::findUniform("DrawPosition", externalParameters);
-		uniform_colorToDraw = MaterialHelper::findUniform("DrawColor", externalParameters);
-		uniform_drawRadius = MaterialHelper::findUniform("DrawRadius", externalParameters);
-		uniform_textureToDrawOn = MaterialHelper::findUniform("Texture", externalParameters);
+		uniform_drawPosition = MaterialHelper::getUniform(m_glProgramId, "DrawPosition");
+		uniform_colorToDraw = MaterialHelper::getUniform(m_glProgramId, "DrawColor");
+		uniform_drawRadius = MaterialHelper::getUniform(m_glProgramId, "DrawRadius");
+		uniform_textureToDrawOn = MaterialHelper::getUniform(m_glProgramId, "Texture");
 	}
 
 	void setUniformDrawPosition(const glm::vec2& position)
@@ -617,9 +617,9 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_time = MaterialHelper::findUniform("Time", externalParameters);
-		uniform_Texture = MaterialHelper::findUniform("Texture", externalParameters);
-		uniform_VP = MaterialHelper::findUniform("VP", externalParameters);
+		uniform_time = MaterialHelper::getUniform(m_glProgramId, "Time");
+		uniform_Texture = MaterialHelper::getUniform(m_glProgramId, "Texture");
+		uniform_VP = MaterialHelper::getUniform(m_glProgramId, "VP");
 	}
 
 	void setUniformTime(float time)
@@ -663,10 +663,10 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		m_uniformVP = MaterialHelper::findUniform("VP", externalParameters);
-		m_uniformTexture = MaterialHelper::findUniform("Texture", externalParameters);
-		m_uniformCameraRight = MaterialHelper::findUniform("CameraRight", externalParameters);
-		m_uniformCameraUp = MaterialHelper::findUniform("CameraUp", externalParameters);
+		m_uniformVP = MaterialHelper::getUniform(m_glProgramId, "VP");
+		m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
+		m_uniformCameraRight = MaterialHelper::getUniform(m_glProgramId, "CameraRight");
+		m_uniformCameraUp = MaterialHelper::getUniform(m_glProgramId, "CameraUp");
 	}
 
 	void glUniform_VP(const glm::mat4& VP)
@@ -715,10 +715,10 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		m_uniformVP = MaterialHelper::findUniform("VP", externalParameters);
-		m_uniformTexture = MaterialHelper::findUniform("Texture", externalParameters);
-		m_uniformCameraRight = MaterialHelper::findUniform("CameraRight", externalParameters);
-		m_uniformCameraUp = MaterialHelper::findUniform("CameraUp", externalParameters);
+		m_uniformVP = MaterialHelper::getUniform(m_glProgramId, "VP");
+		m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
+		m_uniformCameraRight = MaterialHelper::getUniform(m_glProgramId, "CameraRight");
+		m_uniformCameraUp = MaterialHelper::getUniform(m_glProgramId, "CameraUp");
 	}
 
 	void glUniform_VP(const glm::mat4& VP)
@@ -763,7 +763,7 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		m_uniformDeltaTime = MaterialHelper::findUniform("DeltaTime", externalParameters);
+		m_uniformDeltaTime = MaterialHelper::getUniform(m_glProgramId, "DeltaTime");
 	}
 
 	void glUniform_deltaTime(float deltaTime)

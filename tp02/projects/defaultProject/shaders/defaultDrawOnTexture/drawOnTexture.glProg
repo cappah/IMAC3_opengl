@@ -1,0 +1,6 @@
+{
+    "vertex" : "drawOnTexture.vert",
+    "fragment" : "drawOnTexture.frag",
+    "geometry" : "",
+    "internalShaderParameters" : []
+}

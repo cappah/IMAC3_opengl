@@ -1,0 +1,6 @@
+{
+    "vertex" : "particleSimulation.vert",
+    "fragment" : "",
+    "geometry" : "particleSimulation.geom",
+    "internalShaderParameters" : []
+}

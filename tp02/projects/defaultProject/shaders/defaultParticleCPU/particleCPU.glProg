@@ -1,32 +1,6 @@
 {
-"fragment": "
-
-
-
-
-
-
-
-
-
-",
-
-"vertex": "
-
-
-
-
-
-
-
-
-",
-
-"shaderParameters" : {
-
-vec3
-
-
-}
-
+    "vertex" : "particleCPU.vert",
+    "fragment" : "particleCPU.frag",
+    "geometry" : "",
+    "internalShaderParameters" : []
 }

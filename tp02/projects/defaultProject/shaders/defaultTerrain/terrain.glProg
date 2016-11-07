@@ -1,0 +1,6 @@
+{
+    "vertex" : "terrain.vert",
+    "fragment" : "terrain.frag",
+    "geometry" : "",
+    "internalShaderParameters" : []
+}

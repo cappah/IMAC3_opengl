@@ -1,0 +1,6 @@
+{
+    "vertex" : "wireframeInstanced.vert",
+    "fragment" : "wireframeInstanced.frag",
+    "geometry" : "",
+    "internalShaderParameters" : []
+}

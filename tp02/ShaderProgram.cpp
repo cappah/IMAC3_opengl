@@ -50,8 +50,8 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 	const std::string geometryShaderName = root.get("geometry", "").asString();
 
 	const FileHandler::CompletePath& vertexAbsolutePath(path.getPath().toString() + "/" + vertexShaderName);
-	const FileHandler::CompletePath& fragmentAbsolutePath(path.getPath().toString() + "/" + vertexShaderName);
-	const FileHandler::CompletePath& geometryAbsolutePath(path.getPath().toString() + "/" + vertexShaderName);
+	const FileHandler::CompletePath& fragmentAbsolutePath(path.getPath().toString() + "/" + fragmentShaderName);
+	const FileHandler::CompletePath& geometryAbsolutePath(path.getPath().toString() + "/" + geometryShaderName);
 
 
 	load(vertexAbsolutePath, fragmentAbsolutePath, geometryAbsolutePath);

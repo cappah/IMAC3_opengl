@@ -1,0 +1,6 @@
+{
+    "vertex" : "billboard.vert",
+    "fragment" : "billboard.frag",
+    "geometry" : "",
+    "internalShaderParameters" : []
+}
