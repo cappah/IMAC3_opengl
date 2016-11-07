@@ -196,8 +196,8 @@ public:
 		//no need to load these resources
 	}
 
-	typename std::map<FileHandler::CompletePath, ShaderProgram*>::iterator resourceBegin();
-	typename std::map<FileHandler::CompletePath, ShaderProgram*>::iterator resourceEnd();
+	std::map<FileHandler::CompletePath, ShaderProgram*>::iterator resourceBegin();
+	std::map<FileHandler::CompletePath, ShaderProgram*>::iterator resourceEnd();
 
 	SINGLETON_IMPL(ResourceFactory);
 

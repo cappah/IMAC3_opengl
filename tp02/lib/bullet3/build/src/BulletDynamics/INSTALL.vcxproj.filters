@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\813c8f3c255dba49888880b60257a441\INSTALL_force.rule">
+    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\01d69cd51d4c0623414f62e4936de3af\INSTALL_force.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{28DC9DE4-2075-3554-8AA6-CCF3563F7989}</UniqueIdentifier>
+      <UniqueIdentifier>{6A0CA79F-08D8-4717-8892-AB71E8CBE9C3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

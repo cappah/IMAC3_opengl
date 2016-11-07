@@ -1,22 +1,22 @@
 
-if (NOT EXISTS "D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/glfw/build/install_manifest.txt")
-  message(FATAL_ERROR "Cannot find install manifest: \"D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/glfw/build/install_manifest.txt\"")
+if (NOT EXISTS "E:/GitHubProjects/IMAC3_opengl/tp02/lib/glfw/build/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: \"E:/GitHubProjects/IMAC3_opengl/tp02/lib/glfw/build/install_manifest.txt\"")
 endif()
 
-file(READ "D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/glfw/build/install_manifest.txt" files)
+file(READ "E:/GitHubProjects/IMAC3_opengl/tp02/lib/glfw/build/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 
 foreach (file ${files})
   message(STATUS "Uninstalling \"$ENV{DESTDIR}${file}\"")
   if (EXISTS "$ENV{DESTDIR}${file}")
-    exec_program("C:/Program Files/CMake/bin/cmake.exe" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
+    exec_program("E:/Program Files (x86)/CMake/bin/cmake.exe" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
                  OUTPUT_VARIABLE rm_out
                  RETURN_VALUE rm_retval)
     if (NOT "${rm_retval}" STREQUAL 0)
       MESSAGE(FATAL_ERROR "Problem when removing \"$ENV{DESTDIR}${file}\"")
     endif()
   elseif (IS_SYMLINK "$ENV{DESTDIR}${file}")
-    EXEC_PROGRAM("C:/Program Files/CMake/bin/cmake.exe" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
+    EXEC_PROGRAM("E:/Program Files (x86)/CMake/bin/cmake.exe" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
                  OUTPUT_VARIABLE rm_out
                  RETURN_VALUE rm_retval)
     if (NOT "${rm_retval}" STREQUAL 0)

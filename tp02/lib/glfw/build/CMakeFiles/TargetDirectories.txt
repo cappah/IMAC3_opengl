@@ -1,3 +1,3 @@
-D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/glfw/build/CMakeFiles/ALL_BUILD.dir
-D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/glfw/build/CMakeFiles/ZERO_CHECK.dir
-D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/glfw/build/src/CMakeFiles/glfw.dir
+E:/GitHubProjects/IMAC3_opengl/tp02/lib/glfw/build/CMakeFiles/ALL_BUILD.dir
+E:/GitHubProjects/IMAC3_opengl/tp02/lib/glfw/build/CMakeFiles/ZERO_CHECK.dir
+E:/GitHubProjects/IMAC3_opengl/tp02/lib/glfw/build/src/CMakeFiles/glfw.dir

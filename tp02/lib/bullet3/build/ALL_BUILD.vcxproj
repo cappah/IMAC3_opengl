@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGUID>{59F9A905-421A-3F13-97E3-C013D9CA671F}</ProjectGUID>
+    <ProjectGUID>{22B742CB-B461-4AEF-A945-57941BEB77A7}</ProjectGUID>
     <Keyword>Win32Proj</Keyword>
     <Platform>Win32</Platform>
     <ProjectName>ALL_BUILD</ProjectName>
@@ -104,10 +104,10 @@
     </Midl>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt</Message>
+    <CustomBuild Include="E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp
+"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -115,12 +115,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeSystem.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeSystemSpecificInitialize.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeCCompiler.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeParseArguments.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\BulletConfig.cmake.in;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeSystem.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeSystemSpecificInitialize.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeCCompiler.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeCXXCompiler.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeSystemSpecificInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeGenericSystem.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\WindowsPaths.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC-C.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeRCCompiler.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeRCInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCommonLanguageInclude.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCXXInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Compiler\MSVC-CXX.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC-CXX.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCommonLanguageInclude.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindOpenGL.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\BulletConfig.cmake.in;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp
+"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -128,12 +128,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeSystem.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeSystemSpecificInitialize.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeCCompiler.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeParseArguments.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\BulletConfig.cmake.in;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeSystem.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeSystemSpecificInitialize.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeCCompiler.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeCXXCompiler.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeSystemSpecificInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeGenericSystem.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\WindowsPaths.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC-C.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeRCCompiler.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeRCInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCommonLanguageInclude.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCXXInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Compiler\MSVC-CXX.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC-CXX.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCommonLanguageInclude.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindOpenGL.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\BulletConfig.cmake.in;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp
+"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -141,12 +141,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeSystem.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeSystemSpecificInitialize.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeCCompiler.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeParseArguments.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\BulletConfig.cmake.in;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeSystem.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeSystemSpecificInitialize.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeCCompiler.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeCXXCompiler.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeSystemSpecificInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeGenericSystem.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\WindowsPaths.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC-C.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeRCCompiler.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeRCInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCommonLanguageInclude.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCXXInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Compiler\MSVC-CXX.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC-CXX.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCommonLanguageInclude.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindOpenGL.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\BulletConfig.cmake.in;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -HD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3 -BD:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp
+"E:\Program Files (x86)\CMake\bin\cmake.exe" -HE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3 -BE:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build --check-stamp-file E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -154,82 +154,49 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeSystem.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeSystemSpecificInitialize.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeCCompiler.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.6.2\CMakeRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindOpenGL.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.6\Modules\CMakeParseArguments.cmake;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\BulletConfig.cmake.in;D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\programmation\repo_git\IMAC3\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeSystem.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeSystemSpecificInitialize.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeCCompiler.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeCXXCompiler.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeSystemSpecificInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeGenericSystem.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\WindowsPaths.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC-C.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\3.3.1\CMakeRCCompiler.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeRCInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCommonLanguageInclude.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCXXInformation.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Compiler\MSVC-CXX.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC-CXX.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\Platform\Windows-MSVC.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeCommonLanguageInclude.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindOpenGL.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageHandleStandardArgs.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\FindPackageMessage.cmake;E:\Program Files (x86)\CMake\share\cmake-3.3\Modules\CMakeParseArguments.cmake;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\BulletConfig.cmake.in;E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">E:\GitHubProjects\IMAC3_opengl\tp02\lib\bullet3\build\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/ZERO_CHECK.vcxproj">
-      <Project>AD11B5B7-E64D-3DF6-81A1-81D23850EFF4</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Serialize/Bullet2FileLoader/Bullet2FileLoader.vcxproj">
+      <Project>174636BD-1915-42FF-84E9-4F31A9371052</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Serialize/Bullet2FileLoader/Bullet2FileLoader.vcxproj">
-      <Project>BEE67D13-B8B1-3FB5-B953-7D0BF6AB937C</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Collision/Bullet3Collision.vcxproj">
+      <Project>409D0315-2AA0-4B82-BE12-B545DBDB01A6</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Collision/Bullet3Collision.vcxproj">
-      <Project>0FCAEFC2-A6F9-314F-B10E-D632A3A53219</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Common/Bullet3Common.vcxproj">
+      <Project>B50FC7EF-EDBC-4ABA-A755-2861DBF3E376</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Common/Bullet3Common.vcxproj">
-      <Project>14ABCD04-C3D6-30AD-A79C-07C590464476</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Dynamics/Bullet3Dynamics.vcxproj">
+      <Project>D86CE263-04A6-401C-A44E-8ABFE2D1BEF8</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Dynamics/Bullet3Dynamics.vcxproj">
-      <Project>580A193C-5F23-3C66-A975-9B01F4119D0C</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Geometry/Bullet3Geometry.vcxproj">
+      <Project>D4A98337-7603-4BEB-8765-F9E3ACEA9032</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3Geometry/Bullet3Geometry.vcxproj">
-      <Project>7490DDA6-5CE3-3E35-87C5-0CC4518791DF</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3OpenCL/Bullet3OpenCL_clew.vcxproj">
+      <Project>7F7C4657-730B-4B47-98A0-BF352862C68E</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/Bullet3OpenCL/Bullet3OpenCL_clew.vcxproj">
-      <Project>04688090-DCD5-300E-95E2-F17F728EEB0C</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletCollision/BulletCollision.vcxproj">
+      <Project>4C2A9100-1920-4C7A-859A-EEBDF93E9573</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletCollision/BulletCollision.vcxproj">
-      <Project>7F216112-F925-371E-A722-D57EF39402AB</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletDynamics/BulletDynamics.vcxproj">
+      <Project>A51B4961-E90C-43FB-82EF-ECAB020B6FB9</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletDynamics/BulletDynamics.vcxproj">
-      <Project>95BF03AA-291F-3DAB-9FEE-F26C951467E1</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletInverseDynamics/BulletInverseDynamics.vcxproj">
+      <Project>B5D63074-4682-4CD3-8001-E20ECDACF95A</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/Serialize/BulletFileLoader/BulletFileLoader.vcxproj">
-      <Project>611770FF-11C4-3440-941D-FCFA644B42DC</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletSoftBody/BulletSoftBody.vcxproj">
+      <Project>10AF5786-BF27-413B-A85F-9594A06D4969</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletInverseDynamics/BulletInverseDynamics.vcxproj">
-      <Project>E3BB41E7-C656-30AA-91DA-F66AF86F9A34</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/src/LinearMath/LinearMath.vcxproj">
+      <Project>F5EE8855-1058-49AB-82D2-B82C4D86587A</Project>
     </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/InverseDynamics/BulletInverseDynamicsUtils.vcxproj">
-      <Project>C3E9840D-9DDB-3CBB-A634-E4AF72844454</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/BulletSoftBody/BulletSoftBody.vcxproj">
-      <Project>85E660AD-8F09-3A6A-9AC0-BF7E55919BE6</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/Serialize/BulletWorldImporter/BulletWorldImporter.vcxproj">
-      <Project>00755D0C-3E6B-3801-9802-113A44094D3E</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/Serialize/BulletXmlWorldImporter/BulletXmlWorldImporter.vcxproj">
-      <Project>F9D478F3-2598-3376-97DF-5307347BDA77</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/ConvexDecomposition/ConvexDecomposition.vcxproj">
-      <Project>B824FE59-39F4-3BAB-BF2B-505CD090F7AE</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/GIMPACTUtils/GIMPACTUtils.vcxproj">
-      <Project>16B79412-DB51-3F5E-B2E1-91455F4BBDE9</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/Extras/HACD/HACD.vcxproj">
-      <Project>7E244B4A-91A1-3E55-A70F-5D16B8DC6903</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/src/LinearMath/LinearMath.vcxproj">
-      <Project>336405B5-7DAF-3D9D-B04A-3C91349C0710</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/BulletDynamics/pendulum/Test_BulletDynamics.vcxproj">
-      <Project>7FDD9AB5-8E92-3741-A7CE-1D4D5D7741AB</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/InverseDynamics/Test_BulletInverseDynamics.vcxproj">
-      <Project>28DB3C58-A093-3769-9407-DD09C0FFF898</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/collision/Test_Collision.vcxproj">
-      <Project>B4100FA6-D7BB-3E06-9136-D663F8DDB45C</Project>
-    </ProjectReference>
-    <ProjectReference Include="D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/build/test/gtest-1.7.0/gtest.vcxproj">
-      <Project>2950A34E-9700-39D0-9266-155462578E92</Project>
+    <ProjectReference Include="E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/build/ZERO_CHECK.vcxproj">
+      <Project>888E6D7B-8052-4080-9916-3185C4B1DD70</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

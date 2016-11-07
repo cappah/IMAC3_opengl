@@ -1,4 +1,4 @@
-# Install script for directory: D:/programmation/repo_git/IMAC3/IMAC3_opengl/tp02/lib/bullet3/src/BulletCollision
+# Install script for directory: E:/GitHubProjects/IMAC3_opengl/tp02/lib/bullet3/src/BulletCollision
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
