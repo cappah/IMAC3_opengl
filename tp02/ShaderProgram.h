@@ -12,11 +12,26 @@ class InternalShaderParameterBase;
 class ExternalShaderParameterBase;
 class Material;
 
+
+enum ShaderProgramType {
+	CUSTOM = 0,
+	LIT,
+	UNLIT,
+};
+
+static std::vector<std::string> ShaderProgramTypes = { 
+	"Lit",
+	"Unlit",
+};
+
+
 struct ShaderProgram : public Resource
 {
 	GLuint id;
 
 private:
+	ShaderProgramType m_programType;
+
 	std::vector<std::shared_ptr<InternalShaderParameterBase>> m_internalShaderParameters;
 	std::vector<std::shared_ptr<ExternalShaderParameterBase>> m_externalShaderParameters;
 
@@ -25,17 +40,21 @@ private:
 public:
 	ShaderProgram();
 	ShaderProgram(const FileHandler::CompletePath& path);
-	ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);
-	ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath);
+	//ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);
+	//ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath);
 
 	void init(const FileHandler::CompletePath& path) override;
 
 	void load(const FileHandler::CompletePath& path);
-	void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);
-	void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath);
+	//void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);
+	//void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath);
+	void load(const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName);
 
-	//make a new material from this shaderProgram
+
+	//make a new material from this shaderProgram (warning : internaly use "new", you have to deal with deletion)
 	Material* makeNewMaterialInstance();
+	//make a new material from this shaderProgram (use shared ptr for automatic deletion)
+	std::shared_ptr<Material> makeSharedMaterialInstance();
 	//fill material datas from this shaderProgram
 	void LoadMaterialInstance(Material* material);
 
@@ -45,7 +64,12 @@ public:
 	const std::vector<std::shared_ptr<InternalShaderParameterBase>>& getInternalParameters() const;
 	const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& getExternalParameters() const;
 
+	ShaderProgramType getType() const;
+
 	//Not copyable
 	ShaderProgram(const ShaderProgram& other) = delete;
 	const ShaderProgram& operator=(const ShaderProgram& other) = delete;
+
 };
+
+Material* makeNewMaterialInstance(const FileHandler::CompletePath& path);

@@ -1,6 +1,6 @@
 {
-    "vertex" : "drawOnTexture.vert",
-    "fragment" : "drawOnTexture.frag",
+    "vertex" : "shadowPass.vert",
+    "fragment" : "shadowPass.frag",
     "geometry" : "",
     "programType" : "custom",
     "internalShaderParameters" : []

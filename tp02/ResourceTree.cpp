@@ -857,9 +857,9 @@ void ResourceTreeView::popUpToChooseMaterial()
 	}*/
 
 
-	for (auto& it = getMaterialFactory().resourceBegin(); it != getMaterialFactory().resourceEnd(); it++)
+	for (auto& it = getProgramFactory().resourceBegin(); it != getProgramFactory().resourceEnd(); it++)
 	{
-		const std::string matName = it->first.getFilename();
+		const std::string matName = it->first;
 		const std::string btnLabel = matName + "##" + std::to_string(tmpProgramIdx++);
 
 		if (ImGui::Button(btnLabel.data()))

@@ -9,6 +9,7 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
+#include "Materials.h"
 #include "Lights.h"
 
 struct ShadowMap
@@ -54,19 +55,9 @@ public:
 
 private:
 
-	GLuint uniform_pointLight_pos;
-	GLuint uniform_pointLight_col;
-	GLuint uniform_pointLight_int;
-
-	GLuint uniform_directionalLight_dir;
-	GLuint uniform_directionalLight_col;
-	GLuint uniform_directionalLight_int;
-
-	GLuint uniform_spotLight_dir;
-	GLuint uniform_spotLight_col;
-	GLuint uniform_spotLight_int;
-	GLuint uniform_spotLight_pos;
-	GLuint uniform_spotLight_angle;
+	std::shared_ptr<MaterialPointLight> m_pointLightMaterial;
+	std::shared_ptr<MaterialDirectionalLight> m_directionalLightMaterial;
+	std::shared_ptr<MaterialSpotLight> m_spotLightMaterial;
 
 	//shadows : 
 	std::vector<ShadowMap> spot_shadowMaps;
@@ -80,8 +71,6 @@ private:
 
 public:
 	LightManager();
-	
-	void init(GLuint glProgram_pointLight, GLuint glProgram_directionalLight, GLuint glProgram_spotLight);
 
 	void setShadowMapCount(LightType lightType, unsigned int count);
 	int getShadowMapCount(LightType lightType);
@@ -90,7 +79,7 @@ public:
 	void unbindShadowMapFBO(LightType lightType);
 	void bindShadowMapTexture(LightType lightType, int index);
 
-
+	void setLightingMaterials(std::shared_ptr<MaterialPointLight> pointLightMat, std::shared_ptr<MaterialDirectionalLight> directionalLightMat, std::shared_ptr<MaterialSpotLight> spotLightMat);
 	void uniformPointLight(PointLight& light);
 	void uniformDirectionalLight(DirectionalLight& light);
 	void uniformSpotLight(SpotLight& light);

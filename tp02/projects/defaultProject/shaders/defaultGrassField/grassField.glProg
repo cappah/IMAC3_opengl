@@ -2,5 +2,6 @@
     "vertex" : "grassField.vert",
     "fragment" : "grassField.frag",
     "geometry" : "",
+    "programType" : "custom",
     "internalShaderParameters" : []
 }

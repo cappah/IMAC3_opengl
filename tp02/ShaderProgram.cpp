@@ -15,18 +15,18 @@ ShaderProgram::ShaderProgram(const FileHandler::CompletePath& path)
 {
 }
 
-ShaderProgram::ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
-	: id(0)
-{
-	load(vertexShaderPath, fragmentShaderPath);
-}
-
-
-ShaderProgram::ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath)
-	: id(0)
-{
-	load(vertexShaderPath, fragmentShaderPath, geometryShaderPath);
-}
+//ShaderProgram::ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
+//	: id(0)
+//{
+//	load(vertexShaderPath, fragmentShaderPath);
+//}
+//
+//
+//ShaderProgram::ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath)
+//	: id(0)
+//{
+//	load(vertexShaderPath, fragmentShaderPath, geometryShaderPath);
+//}
 
 void ShaderProgram::init(const FileHandler::CompletePath& path)
 {
@@ -49,12 +49,12 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 	const std::string fragmentShaderName = root.get("fragment", "").asString();
 	const std::string geometryShaderName = root.get("geometry", "").asString();
 
-	const FileHandler::CompletePath& vertexAbsolutePath(path.getPath().toString() + "/" + vertexShaderName);
-	const FileHandler::CompletePath& fragmentAbsolutePath(path.getPath().toString() + "/" + fragmentShaderName);
-	const FileHandler::CompletePath& geometryAbsolutePath(path.getPath().toString() + "/" + geometryShaderName);
+	load(path, vertexShaderName, fragmentShaderName, geometryShaderName);
 
-
-	load(vertexAbsolutePath, fragmentAbsolutePath, geometryAbsolutePath);
+	//Program type
+	auto foundItProgramType = std::find(ShaderProgramTypes.begin(), ShaderProgramTypes.end(), root.get("programType", "lit").asString());
+	int foundIdxProgramType = foundItProgramType - ShaderProgramTypes.begin();
+	m_programType = (ShaderProgramType)foundIdxProgramType;
 
 	//Internal parameters
 	Json::Value internalShaderParameters = root["internalShaderParameters"];
@@ -86,54 +86,63 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 		m_externalShaderParameters.push_back(MakeNewExternalShaderParameter(parameterType, parameterName));
 	}
 }
+//
+//void ShaderProgram::load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
+//{
+//	bool hasVertShader = !vertexShaderPath.empty();
+//	bool hasFragShader = !fragmentShaderPath.empty();
+//
+//	GLuint vertShaderId = 0;
+//	GLuint fragShaderId = 0;
+//
+//	if (hasVertShader)
+//		vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, vertexShaderPath.c_str());
+//	if (hasFragShader)
+//		fragShaderId = compile_shader_from_file(GL_FRAGMENT_SHADER, fragmentShaderPath.c_str());
+//
+//	GLuint programObject = glCreateProgram();
+//	if (hasVertShader)
+//		glAttachShader(programObject, vertShaderId);
+//	if (hasFragShader)
+//		glAttachShader(programObject, fragShaderId);
+//
+//	glLinkProgram(programObject);
+//	if (check_link_error(programObject) < 0)
+//		exit(1);
+//
+//	//check uniform errors : 
+//	if (!checkError("Uniforms"))
+//		exit(1);
+//
+//	id = programObject;
+//}
+//
 
-void ShaderProgram::load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
+void ShaderProgram::load(const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName)
 {
-	bool hasVertShader = !vertexShaderPath.empty();
-	bool hasFragShader = !fragmentShaderPath.empty();
-
-	GLuint vertShaderId = 0;
-	GLuint fragShaderId = 0;
-
-	if (hasVertShader)
-		vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, vertexShaderPath.c_str());
-	if (hasFragShader)
-		fragShaderId = compile_shader_from_file(GL_FRAGMENT_SHADER, fragmentShaderPath.c_str());
-
-	GLuint programObject = glCreateProgram();
-	if (hasVertShader)
-		glAttachShader(programObject, vertShaderId);
-	if (hasFragShader)
-		glAttachShader(programObject, fragShaderId);
-
-	glLinkProgram(programObject);
-	if (check_link_error(programObject) < 0)
-		exit(1);
-
-	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
-
-	id = programObject;
-}
-
-
-void ShaderProgram::load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath)
-{
-	bool hasVertShader = !vertexShaderPath.empty();
-	bool hasFragShader = !fragmentShaderPath.empty();
-	bool hasGeomShader = !geometryShaderPath.empty();
+	bool hasVertShader = !vertexShaderName.empty();
+	bool hasFragShader = !fragmentShaderName.empty();
+	bool hasGeomShader = !geometryShaderName.empty();
 
 	GLuint vertShaderId = 0;
 	GLuint fragShaderId = 0;
 	GLuint geomShaderId = 0;
 
 	if (hasVertShader)
-		vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, vertexShaderPath.c_str());
+	{
+		const FileHandler::CompletePath& vertexAbsolutePath(shaderFolderPath.getPath().toString() + "/" + vertexShaderName);
+		vertShaderId = compile_shader_from_file(GL_VERTEX_SHADER, vertexAbsolutePath.c_str());
+	}
 	if (hasFragShader)
-		fragShaderId = compile_shader_from_file(GL_FRAGMENT_SHADER, fragmentShaderPath.c_str());
+	{
+		const FileHandler::CompletePath& fragmentAbsolutePath(shaderFolderPath.getPath().toString() + "/" + fragmentShaderName);
+		fragShaderId = compile_shader_from_file(GL_FRAGMENT_SHADER, fragmentAbsolutePath.c_str());
+	}
 	if (hasGeomShader)
-		geomShaderId = compile_shader_from_file(GL_GEOMETRY_SHADER, geometryShaderPath.c_str());
+	{
+		const FileHandler::CompletePath& geometryAbsolutePath(shaderFolderPath.getPath().toString() + "/" + geometryShaderName);
+		geomShaderId = compile_shader_from_file(GL_GEOMETRY_SHADER, geometryAbsolutePath.c_str());
+	}
 
 	GLuint programObject = glCreateProgram();
 	if (hasVertShader)
@@ -152,11 +161,6 @@ void ShaderProgram::load(const FileHandler::CompletePath& vertexShaderPath, cons
 		exit(1);
 
 	id = programObject;
-}
-
-Material* ShaderProgram::makeNewMaterialInstance()
-{
-	return new Material(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
 }
 
 void ShaderProgram::LoadMaterialInstance(Material* material)
@@ -183,4 +187,64 @@ const std::vector<std::shared_ptr<InternalShaderParameterBase>>& ShaderProgram::
 const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& ShaderProgram::getExternalParameters() const
 {
 	return m_externalShaderParameters;
+}
+
+ShaderProgramType ShaderProgram::getType() const
+{
+	return m_programType;
+}
+
+Material* ShaderProgram::makeNewMaterialInstance()
+{
+	switch (m_programType)
+	{
+	case LIT:
+		return new MaterialLit(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+	case UNLIT:
+		return new MaterialUnlit(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+	default:
+		std::cout << "warning : we are trying to build a custom material from its program !";
+		return nullptr;
+	}
+}
+
+std::shared_ptr<Material> ShaderProgram::makeSharedMaterialInstance()
+{
+	switch (m_programType)
+	{
+	case LIT:
+		return std::make_shared<MaterialLit>(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+	case UNLIT:
+		return std::make_shared<MaterialUnlit>(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+	default:
+		return nullptr;
+	}
+}
+
+Material* makeNewMaterialInstance(const FileHandler::CompletePath& path)
+{
+	std::ifstream stream;
+	stream.open(path.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load material at path : " << path.toString() << std::endl;
+		return nullptr;
+	}
+	Json::Value root;
+	stream >> root;
+
+	auto foundItProgramType = std::find(ShaderProgramTypes.begin(), ShaderProgramTypes.end(), root.get("programType", "custom").asString());
+	int foundIdxProgramType = foundItProgramType - ShaderProgramTypes.begin();
+	ShaderProgramType programType = (ShaderProgramType)foundIdxProgramType;
+
+	switch (programType)
+	{
+	case LIT:
+		return new MaterialLit();
+	case UNLIT:
+		return new MaterialUnlit();
+	default:
+		std::cout << "warning : we are trying to build a custom material from its program !";
+		return nullptr;
+	}
 }

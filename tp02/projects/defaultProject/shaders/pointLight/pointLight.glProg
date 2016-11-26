@@ -1,6 +1,6 @@
 {
-    "vertex" : "drawOnTexture.vert",
-    "fragment" : "drawOnTexture.frag",
+    "vertex" : "lightPass.vert",
+    "fragment" : "lightPass_pointLight.frag",
     "geometry" : "",
     "programType" : "custom",
     "internalShaderParameters" : []

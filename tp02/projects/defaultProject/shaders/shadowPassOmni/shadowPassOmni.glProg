@@ -1,0 +1,7 @@
+{
+    "vertex" : "shadowPassOmni.vert",
+    "fragment" : "shadowPassOmni.frag",
+    "geometry" : "shadowPassOmni.geom",
+    "programType" : "custom",
+    "internalShaderParameters" : []
+}

@@ -2,5 +2,6 @@
     "vertex" : "particle.vert",
     "fragment" : "particle.frag",
     "geometry" : "particle.geom",
+    "programType" : "custom",
     "internalShaderParameters" : []
 }

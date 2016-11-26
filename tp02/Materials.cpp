@@ -85,6 +85,7 @@ Material::Material(const ShaderProgram& shaderProgram)
 	, m_glProgramName(shaderProgram.getName())
 {
 	initInternalParameters();
+	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 	setExternalParameters(shaderProgram.getExternalParameters());
 }
 
@@ -103,8 +104,6 @@ void Material::initInternalParameters()
 
 void Material::init(const FileHandler::CompletePath& path)
 {
-	Material::init(path);
-
 	std::ifstream stream;
 	stream.open(path.toString());
 	if (!stream.is_open())
@@ -161,6 +160,8 @@ void Material::loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::s
 void Material::save(Json::Value & entityRoot) const
 {
 	entityRoot["shaderProgramName"] = m_glProgramName;
+	assert(getProgramFactory().contains(m_glProgramName));
+	entityRoot["programType"] = getProgramFactory().get(m_glProgramName)->getType();
 
 	int parameterIdx = 0;
 	for (auto& parameter : m_internalParameters)

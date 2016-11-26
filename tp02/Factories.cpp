@@ -79,6 +79,28 @@ void ResourceFactory<ShaderProgram>::initDefaults()
 }
 */
 
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path)
+{
+	Material* newResource = makeNewMaterialInstance(path);
+	newResource->init(path);
+
+	m_resources[path] = newResource;
+	m_resourceMapping[path] = ++s_resourceCount;
+	m_resourcesFromHashKey[s_resourceCount] = newResource;
+}
+
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
+{
+	Material* newResource = makeNewMaterialInstance(path);
+	newResource->init(path);
+
+	m_resources[path] = newResource;
+	m_resourceMapping[path] = hashKey;
+	m_resourcesFromHashKey[hashKey] = newResource;
+}
+
 
 //Cube Texture
 template<>
@@ -121,34 +143,34 @@ void ResourceFactory<Material>::initDefaults()
 	}
 	*/
 	
-	Material* newMat = getProgramFactory().get("defaultLit")->makeNewMaterialInstance(); //new MaterialLit(getProgramFactory().get("defaultLit")->id, getTextureFactory().getDefault("default"), getTextureFactory().getDefault("default"), getTextureFactory().getDefault("default"), 50);
+	Material* newMat = new MaterialLit(*getProgramFactory().get("lit"));
 	addDefault("defaultLit", newMat);
 
-	newMat = getProgramFactory().get("defaultSkybox")->makeNewMaterialInstance();
+	newMat = new MaterialSkybox(*getProgramFactory().get("skybox"));
 	addDefault("defaultSkybox", newMat);
 
-	newMat = getProgramFactory().get("defaultUnlit")->makeNewMaterialInstance();
+	newMat = new MaterialUnlit(*getProgramFactory().get("unlit"));
 	addDefault("wireframe", newMat);
 
-	newMat = getProgramFactory().get("wireframeInstanced")->makeNewMaterialInstance();
+	newMat = new MaterialInstancedUnlit(*getProgramFactory().get("wireframeInstanced"));
 	addDefault("wireframeInstanced", newMat);
 
-	newMat = getProgramFactory().get("defaultGrassField")->makeNewMaterialInstance();
+	newMat = new MaterialGrassField(*getProgramFactory().get("grassField"));
 	addDefault("grassfield", newMat);
 
-	newMat = getProgramFactory().get("defaultBillboard")->makeNewMaterialInstance();
+	newMat = new MaterialBillboard(*getProgramFactory().get("billboard"));
 	addDefault("billboard", newMat);
 
-	newMat = getProgramFactory().get("defaultParticles")->makeNewMaterialInstance();
+	newMat = new MaterialParticles(*getProgramFactory().get("particles"));
 	addDefault("particles", newMat);
 
-	newMat = getProgramFactory().get("defaultParticlesCPU")->makeNewMaterialInstance();
+	newMat = new MaterialParticlesCPU(*getProgramFactory().get("particlesCPU"));
 	addDefault("particlesCPU", newMat);
 
-	newMat = getProgramFactory().get("particleSimulation")->makeNewMaterialInstance();
+	newMat = new MaterialParticleSimulation(*getProgramFactory().get("particleSimulation"));
 	addDefault("particleSimulation", newMat);
 
-	newMat = getProgramFactory().get("debugDrawer")->makeNewMaterialInstance();
+	newMat = new MaterialDebugDrawer(*getProgramFactory().get("debugDrawer"));
 	addDefault("debugDrawer", newMat);	
 }
 

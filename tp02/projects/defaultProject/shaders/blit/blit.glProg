@@ -1,6 +1,6 @@
 {
-    "vertex" : "drawOnTexture.vert",
-    "fragment" : "drawOnTexture.frag",
+    "vertex" : "blit.vert",
+    "fragment" : "blit.frag",
     "geometry" : "",
     "programType" : "custom",
     "internalShaderParameters" : []

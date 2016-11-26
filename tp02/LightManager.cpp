@@ -180,23 +180,6 @@ LightManager::LightManager() : directionalShadowMapViewportSize(128), directiona
 
 }
 
-void LightManager::init(GLuint glProgram_pointLight, GLuint glProgram_directionalLight, GLuint glProgram_spotLight)
-{
-	uniform_pointLight_pos = glGetUniformLocation(glProgram_pointLight, "pointLight.position");
-	uniform_pointLight_col = glGetUniformLocation(glProgram_pointLight, "pointLight.color");
-	uniform_pointLight_int = glGetUniformLocation(glProgram_pointLight, "pointLight.intensity");
-
-	uniform_directionalLight_dir = glGetUniformLocation(glProgram_directionalLight, "directionalLight.direction");
-	uniform_directionalLight_col = glGetUniformLocation(glProgram_directionalLight, "directionalLight.color");
-	uniform_directionalLight_int = glGetUniformLocation(glProgram_directionalLight, "directionalLight.intensity");
-
-	uniform_spotLight_dir = glGetUniformLocation(glProgram_spotLight, "spotLight.direction");
-	uniform_spotLight_col = glGetUniformLocation(glProgram_spotLight, "spotLight.color");
-	uniform_spotLight_int = glGetUniformLocation(glProgram_spotLight, "spotLight.intensity");
-	uniform_spotLight_pos = glGetUniformLocation(glProgram_spotLight, "spotLight.position");
-	uniform_spotLight_angle = glGetUniformLocation(glProgram_spotLight, "spotLight.angle");
-}
-
 void LightManager::setShadowMapCount(LightType lightType, unsigned int count)
 {
 	if (lightType == LightType::SPOT)
@@ -281,27 +264,48 @@ void LightManager::bindShadowMapTexture(LightType lightType, int index)
 	}
 }
 
+void LightManager::setLightingMaterials(std::shared_ptr<MaterialPointLight> pointLightMat, std::shared_ptr<MaterialDirectionalLight> directionalLightMat, std::shared_ptr<MaterialSpotLight> spotLightMat)
+{
+	m_pointLightMaterial = pointLightMat;
+	m_directionalLightMaterial = directionalLightMat;
+	m_spotLightMaterial = spotLightMat;
+}
+
 void LightManager::uniformPointLight(PointLight & light)
 {
-	glUniform3fv(uniform_pointLight_pos, 1, glm::value_ptr(light.position));
-	glUniform3fv(uniform_pointLight_col, 1, glm::value_ptr(light.color));
-	glUniform1f(uniform_pointLight_int, light.intensity);
+	//glUniform3fv(uniform_pointLight_pos, 1, glm::value_ptr(light.position));
+	//glUniform3fv(uniform_pointLight_col, 1, glm::value_ptr(light.color));
+	//glUniform1f(uniform_pointLight_int, light.intensity);
+
+	m_pointLightMaterial->setUniformLightPosition(light.position);
+	m_pointLightMaterial->setUniformLightColor(light.color);
+	m_pointLightMaterial->setUniformLightIntensity(light.intensity);
 }
 
 void LightManager::uniformDirectionalLight(DirectionalLight & light)
 {
-	glUniform3fv(uniform_directionalLight_dir, 1, glm::value_ptr(light.direction));
-	glUniform3fv(uniform_directionalLight_col, 1, glm::value_ptr(light.color));
-	glUniform1f(uniform_directionalLight_int, light.intensity);
+	//glUniform3fv(uniform_directionalLight_dir, 1, glm::value_ptr(light.direction));
+	//glUniform3fv(uniform_directionalLight_col, 1, glm::value_ptr(light.color));
+	//glUniform1f(uniform_directionalLight_int, light.intensity);
+
+	m_directionalLightMaterial->setUniformLightDirection(light.direction);
+	m_directionalLightMaterial->setUniformLightColor(light.color);
+	m_directionalLightMaterial->setUniformLightIntensity(light.intensity);
 }
 
 void LightManager::uniformSpotLight(SpotLight & light)
 {
-	glUniform3fv(uniform_spotLight_dir, 1, glm::value_ptr(light.direction));
-	glUniform3fv(uniform_spotLight_col, 1, glm::value_ptr(light.color));
-	glUniform1f(uniform_spotLight_int, light.intensity);
-	glUniform3fv(uniform_spotLight_pos, 1, glm::value_ptr(light.position));
-	glUniform1f(uniform_spotLight_angle, light.angle);
+	//glUniform3fv(uniform_spotLight_dir, 1, glm::value_ptr(light.direction));
+	//glUniform3fv(uniform_spotLight_col, 1, glm::value_ptr(light.color));
+	//glUniform1f(uniform_spotLight_int, light.intensity);
+	//glUniform3fv(uniform_spotLight_pos, 1, glm::value_ptr(light.position));
+	//glUniform1f(uniform_spotLight_angle, light.angle);
+
+	m_spotLightMaterial->setUniformLightPosition(light.position);
+	m_spotLightMaterial->setUniformLightDirection(light.direction);
+	m_spotLightMaterial->setUniformLightAngle(light.angle);
+	m_spotLightMaterial->setUniformLightColor(light.color);
+	m_spotLightMaterial->setUniformLightIntensity(light.intensity);
 }
 
 float LightManager::getDirectionalShadowMapViewportSize() const

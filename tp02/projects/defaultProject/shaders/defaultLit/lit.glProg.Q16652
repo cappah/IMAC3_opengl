@@ -2,7 +2,6 @@
     "vertex" : "aogl.vert",
     "fragment" : "aogl_gPass.frag",
     "geometry" : "",
-    "programType" : "lit",
     "internalShaderParameters" : [
         {"type" : "texture", "name" : "Diffuse"},
         {"type" : "texture", "name" : "Specular"},

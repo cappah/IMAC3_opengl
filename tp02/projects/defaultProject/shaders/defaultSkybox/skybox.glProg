@@ -2,5 +2,6 @@
     "vertex" : "skybox.vert",
     "fragment" : "skybox.frag",
     "geometry" : "",
+    "programType" : "custom",
     "internalShaderParameters" : []
 }

@@ -2,5 +2,10 @@
     "vertex" : "terrain.vert",
     "fragment" : "terrain.frag",
     "geometry" : "",
-    "internalShaderParameters" : []
+    "programType" : "custom",
+    "internalShaderParameters" : [
+        {"type" : "texture", "name" : "BumpTexture"},
+        {"type" : "texture", "name" : "SpecularTexture"},
+        {"type" : "texture", "name" : "DiffuseTexture"}
+    ]
 }

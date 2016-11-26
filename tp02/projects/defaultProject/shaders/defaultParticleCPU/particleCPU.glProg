@@ -1,6 +1,0 @@
-{
-    "vertex" : "particleCPU.vert",
-    "fragment" : "particleCPU.frag",
-    "geometry" : "",
-    "internalShaderParameters" : []
-}

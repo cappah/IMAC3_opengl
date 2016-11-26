@@ -1,6 +1,6 @@
 {
-    "vertex" : "drawOnTexture.vert",
-    "fragment" : "drawOnTexture.frag",
+    "vertex" : "particlesCPU.vert",
+    "fragment" : "particlesCPU.frag",
     "geometry" : "",
     "programType" : "custom",
     "internalShaderParameters" : []

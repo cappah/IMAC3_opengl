@@ -27,12 +27,8 @@ class Renderer
 	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
 
 private:
-	GLuint glProgram_gPass;
-	GLuint glProgram_lightPass_pointLight;
-	GLuint glProgram_lightPass_directionalLight;
-	GLuint glProgram_lightPass_spotLight;
-	GLuint glProgram_shadowPass;
-	GLuint glProgram_shadowPassOmni;
+	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;
+	std::shared_ptr<MaterialShadowPassOmni> shadowPassOmniMaterial;
 
 	//uniform for unidirectional shadow map
 	GLuint uniformShadowMVP;
@@ -43,15 +39,10 @@ private:
 	GLuint uniformShadowOmniFarPlane;
 	GLuint uniformShadowOmniLightPos;
 
-	GLuint uniformTexturePosition[3];
-	GLuint uniformTextureNormal[3];
-	GLuint uniformTextureDepth[3];
-	GLuint unformScreenToWorld[3];
-	GLuint uniformCameraPosition[3];
-	GLuint uniformTextureShadow[3];
-	GLuint uniformWorldToLightScreen_spot;
-	GLuint uniformWorldToLightScreen_directional;
-	GLuint uniformLightFarPlane;
+	//lighting materials : 
+	std::shared_ptr<MaterialPointLight> m_pointLightMaterial;
+	std::shared_ptr<MaterialDirectionalLight> m_directionalLightMaterial;
+	std::shared_ptr<MaterialSpotLight> m_spotLightMaterial;
 
 	Mesh quadMesh;
 
@@ -63,8 +54,7 @@ private:
 	GLuint gbufferTextures[3];
 
 	//for blit pass 
-	GLuint glProgram_blit;
-	GLuint uniformTextureBlit;
+	std::shared_ptr<MaterialBlit> glProgram_blit;
 
 	//light count after culling : 
 	int pointLightCount;

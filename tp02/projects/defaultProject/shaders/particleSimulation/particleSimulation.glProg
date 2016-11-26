@@ -2,5 +2,6 @@
     "vertex" : "particleSimulation.vert",
     "fragment" : "",
     "geometry" : "particleSimulation.geom",
+    "programType" : "custom",
     "internalShaderParameters" : []
 }

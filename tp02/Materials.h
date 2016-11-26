@@ -97,6 +97,397 @@ public:
 
 };
 
+//engine materials : 
+
+//Lightning materials : 
+
+class MaterialLight : public Material
+{
+private:
+	GLuint uniform_ColorTexture;
+	GLuint uniform_NormalTexture;
+	GLuint uniform_DepthTexture;
+	GLuint uniform_ScreenToWorld;
+	GLuint uniform_CameraPosition;
+	GLuint uniform_ShadowTexture;
+
+public:
+	MaterialLight()
+		: Material()
+	{}
+
+	MaterialLight(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
+	virtual ~MaterialLight()
+	{}
+
+	MaterialLight(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+		: Material(glProgramName, glProgramId, internalParameters)
+	{
+		setExternalParameters(externalParameters);
+	}
+
+	virtual void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	{
+		uniform_ColorTexture = MaterialHelper::getUniform(m_glProgramId, "ColorBuffer");
+		uniform_NormalTexture = MaterialHelper::getUniform(m_glProgramId, "NormalBuffer");
+		uniform_DepthTexture = MaterialHelper::getUniform(m_glProgramId, "DepthBuffer");
+		uniform_ScreenToWorld = MaterialHelper::getUniform(m_glProgramId, "ScreenToWorld");
+		uniform_CameraPosition = MaterialHelper::getUniform(m_glProgramId, "CameraPosition");
+		uniform_ShadowTexture = MaterialHelper::getUniform(m_glProgramId, "Shadow");
+	}
+
+	void setUniformColorTexture(int texUnitId)
+	{
+		GlHelper::pushParameterToGPU(uniform_ColorTexture, texUnitId);
+	}
+	void setUniformNormalTexture(int texUnitId)
+	{
+		GlHelper::pushParameterToGPU(uniform_NormalTexture, texUnitId);
+	}
+	void setUniformDepthTexture(int texUnitId)
+	{
+		GlHelper::pushParameterToGPU(uniform_DepthTexture, texUnitId);
+	}
+	void setUniformScreenToWorld(const glm::mat4& screenToWorldMat)
+	{
+		GlHelper::pushParameterToGPU(uniform_ScreenToWorld, screenToWorldMat);
+	}
+	void setUniformCameraPosition(const glm::vec3& cameraPosition)
+	{
+		GlHelper::pushParameterToGPU(uniform_CameraPosition, cameraPosition);
+	}
+	void setUniformShadowTexture(int texUnitId)
+	{
+		GlHelper::pushParameterToGPU(uniform_ShadowTexture, texUnitId);
+	}
+};
+
+class MaterialPointLight final : public MaterialLight
+{
+private:
+	GLuint uniform_FarPlane;
+	GLuint uniform_lightPosition;
+	GLuint uniform_lightColor;
+	GLuint uniform_lightIntensity;
+
+public:
+	MaterialPointLight()
+		: MaterialLight()
+	{}
+
+	MaterialPointLight(const ShaderProgram& shaderProgram)
+		: MaterialLight(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
+	virtual ~MaterialPointLight()
+	{}
+
+	MaterialPointLight(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+		: MaterialLight(glProgramName, glProgramId, internalParameters, externalParameters)
+	{
+		setExternalParameters(externalParameters);
+	}
+
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	{
+		uniform_FarPlane = MaterialHelper::getUniform(m_glProgramId, "FarPlane");
+		uniform_lightPosition = MaterialHelper::getUniform(m_glProgramId, "pointLight.position");
+		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "pointLight.color");
+		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "pointLight.intensity");
+	}
+
+	void setUniformFarPlane(int texUnitId)
+	{
+		GlHelper::pushParameterToGPU(uniform_FarPlane, texUnitId);
+	}
+
+	void setUniformLightPosition(const glm::vec3& lightPos)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightPosition, lightPos);
+	}
+	void setUniformLightColor(const glm::vec3& lightCol)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightColor, lightCol);
+	}
+	void setUniformLightIntensity(float lightIntensity)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightIntensity, lightIntensity);
+	}
+};
+
+class MaterialDirectionalLight final : public MaterialLight
+{
+private:
+
+	GLuint uniform_WorldToLight;
+	GLuint uniform_lightDirection;
+	GLuint uniform_lightColor;
+	GLuint uniform_lightIntensity;
+
+public:
+	MaterialDirectionalLight()
+		: MaterialLight()
+	{}
+
+	MaterialDirectionalLight(const ShaderProgram& shaderProgram)
+		: MaterialLight(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
+	virtual ~MaterialDirectionalLight()
+	{}
+
+	MaterialDirectionalLight(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+		: MaterialLight(glProgramName, glProgramId, internalParameters, externalParameters)
+	{
+		setExternalParameters(externalParameters);
+	}
+
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	{
+		uniform_WorldToLight = MaterialHelper::getUniform(m_glProgramId, "WorldToLightScreen");
+		uniform_lightDirection = MaterialHelper::getUniform(m_glProgramId, "directionalLight.direction");
+		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "directionalLight.color");
+		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "directionalLight.intensity");
+	}
+
+	void setUniformWorldToLight(const glm::mat4& worldToLightMat)
+	{
+		GlHelper::pushParameterToGPU(uniform_WorldToLight, worldToLightMat);
+	}
+
+	void setUniformLightDirection(const glm::vec3& lightDir)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightDirection, lightDir);
+	}
+	void setUniformLightColor(const glm::vec3& lightCol)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightColor, lightCol);
+	}
+	void setUniformLightIntensity(float lightIntensity)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightIntensity, lightIntensity);
+	}
+};
+
+class MaterialSpotLight final : public MaterialLight
+{
+private:
+
+	GLuint uniform_WorldToLight;
+	GLuint uniform_lightDirection;
+	GLuint uniform_lightPosition;
+	GLuint uniform_lightAngle;
+	GLuint uniform_lightColor;
+	GLuint uniform_lightIntensity;
+
+public:
+	MaterialSpotLight()
+		: MaterialLight()
+	{}
+
+	MaterialSpotLight(const ShaderProgram& shaderProgram)
+		: MaterialLight(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
+	virtual ~MaterialSpotLight()
+	{}
+
+	MaterialSpotLight(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+		: MaterialLight(glProgramName, glProgramId, internalParameters, externalParameters)
+	{
+		setExternalParameters(externalParameters);
+	}
+
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	{
+		uniform_WorldToLight = MaterialHelper::getUniform(m_glProgramId, "WorldToLightScreen");
+		uniform_lightDirection = MaterialHelper::getUniform(m_glProgramId, "spotLight.direction");
+		uniform_lightAngle = MaterialHelper::getUniform(m_glProgramId, "spotLight.angle");
+		uniform_lightPosition = MaterialHelper::getUniform(m_glProgramId, "spotLight.position");
+		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "spotLight.color");
+		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "spotLight.intensity");
+	}
+
+	void setUniformWorldToLight(const glm::mat4& worldToLightMat)
+	{
+		GlHelper::pushParameterToGPU(uniform_WorldToLight, worldToLightMat);
+	}
+
+	void setUniformLightPosition(const glm::vec3& lightPos)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightPosition, lightPos);
+	}
+	void setUniformLightDirection(const glm::vec3& lightDir)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightDirection, lightDir);
+	}
+	void setUniformLightAngle(float lightAngle)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightAngle, lightAngle);
+	}
+	void setUniformLightColor(const glm::vec3& lightCol)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightColor, lightCol);
+	}
+	void setUniformLightIntensity(float lightIntensity)
+	{
+		GlHelper::pushParameterToGPU(uniform_lightIntensity, lightIntensity);
+	}
+};
+
+//shadowing : 
+class MaterialShadowPass final : public Material
+{
+private:
+
+	GLuint uniform_MVP;
+
+public:
+	MaterialShadowPass()
+		: Material()
+	{}
+
+	MaterialShadowPass(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
+	virtual ~MaterialShadowPass()
+	{}
+
+	MaterialShadowPass(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
+	{
+		setExternalParameters(externalParameters);
+	}
+
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	{
+		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+	}
+
+	void setUniformMVP(const glm::mat4& mvp)
+	{
+		GlHelper::pushParameterToGPU(uniform_MVP, mvp);
+	}
+};
+
+
+class MaterialShadowPassOmni final : public Material
+{
+private:
+
+	GLuint uniform_ModelMatrix;
+	GLuint uniform_VPLight[6];
+	GLuint uniform_LightPos;
+	GLuint uniform_FarPlane;
+
+public:
+	MaterialShadowPassOmni()
+		: Material()
+	{}
+
+	MaterialShadowPassOmni(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
+	virtual ~MaterialShadowPassOmni()
+	{}
+
+	MaterialShadowPassOmni(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+		: Material(glProgramName, glProgramId, internalParameters, externalParameters)
+	{
+		setExternalParameters(externalParameters);
+	}
+
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	{
+		uniform_ModelMatrix = MaterialHelper::getUniform(m_glProgramId, "ModelMatrix");
+		for(int i = 0; i < 6; i++)
+			uniform_VPLight[i] = MaterialHelper::getUniform(m_glProgramId, "VPLight[" + std::to_string(i) + "]");
+		uniform_LightPos = MaterialHelper::getUniform(m_glProgramId, "LightPos");
+		uniform_FarPlane = MaterialHelper::getUniform(m_glProgramId, "FarPlane");
+	}
+
+	void setUniformModelMatrix(const glm::mat4& modelMatrix)
+	{
+		GlHelper::pushParameterToGPU(uniform_ModelMatrix, modelMatrix);
+	}
+
+	void setUniformVPLight(const glm::mat4& vpLight, int index)
+	{
+		assert(index < 6);
+		GlHelper::pushParameterToGPU(uniform_VPLight[index], vpLight);
+	}
+
+	void setUniformLightPos(const glm::vec3& lightPos)
+	{
+		GlHelper::pushParameterToGPU(uniform_LightPos, lightPos);
+	}
+
+	void setUniformFarPlane(float farPlane)
+	{
+		GlHelper::pushParameterToGPU(uniform_FarPlane, farPlane);
+	}
+};
+
+
+//blit material : 
+
+//Default materials :
+class MaterialBlit final : public Material
+{
+private:
+	GLuint uniform_TextureBlit;
+
+public:
+	MaterialBlit()
+		: Material()
+	{}
+
+	MaterialBlit(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters(shaderProgram.getExternalParameters());
+	}
+
+	virtual ~MaterialBlit()
+	{}
+
+	MaterialBlit(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+		: Material(glProgramName, glProgramId, internalParameters)
+	{
+		setExternalParameters(externalParameters);
+	}
+
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
+	{
+		uniform_TextureBlit = MaterialHelper::getUniform(m_glProgramId, "Texture");
+	}
+
+	void setUniformBlitTexture(int texUnitId)
+	{
+		GlHelper::pushParameterToGPU(uniform_TextureBlit, texUnitId);
+	}
+};
+
+
+
+
 //Default materials :
 class Material3DObject : public Material
 {
@@ -152,7 +543,7 @@ public:
 	}
 };
 
-class MaterialLit : public Material3DObject
+class MaterialLit final : public Material3DObject
 {
 private:
 
@@ -181,7 +572,7 @@ public:
 	}
 };
 
-class MaterialUnlit : public Material3DObject
+class MaterialUnlit final : public Material3DObject
 {
 	GLuint uniform_color;
 
@@ -213,7 +604,7 @@ public:
 	}
 };
 
-class MaterialInstancedUnlit : public Material
+class MaterialInstancedUnlit final : public Material
 {
 private:
 	GLuint uniform_VP;
@@ -253,7 +644,7 @@ public:
 	}
 };
 
-struct MaterialDebugDrawer : public Material
+struct MaterialDebugDrawer final : public Material
 {
 private:
 	GLuint uniform_MVP;
@@ -287,7 +678,7 @@ public:
 };
 
 
-class MaterialSkybox : public Material
+class MaterialSkybox final : public Material
 {
 private:
 	GLuint uniform_VP;
@@ -327,7 +718,7 @@ class MaterialShadow : public Material
 };
 
 
-class MaterialBillboard : public Material
+class MaterialBillboard final : public Material
 {
 private:
 	GLuint uniform_MVP;
@@ -397,7 +788,7 @@ public:
 };
 
 
-struct MaterialTerrain : public Material3DObject
+struct MaterialTerrain final : public Material3DObject
 {
 private:
 	//internals
@@ -407,9 +798,9 @@ private:
 	GLuint uniform_LayoutOffset;
 	GLuint uniform_FilterTexture;
 
-	GLuint uniform_DiffuseTexture;
-	GLuint uniform_BumpTexture;
-	GLuint uniform_SpecularTexture;
+	//GLuint uniform_DiffuseTexture;
+	//GLuint uniform_BumpTexture;
+	//GLuint uniform_SpecularTexture;
 
 
 public:
@@ -436,9 +827,9 @@ public:
 		uniform_TextureRepetition = MaterialHelper::getUniform(m_glProgramId, "TextureRepetition");
 		uniform_SpecularPower = MaterialHelper::getUniform(m_glProgramId, "SpecularPower");
 
-		uniform_DiffuseTexture = MaterialHelper::getUniform(m_glProgramId, "DiffuseTexture");
-		uniform_BumpTexture = MaterialHelper::getUniform(m_glProgramId, "BumpTexture");
-		uniform_SpecularTexture = MaterialHelper::getUniform(m_glProgramId, "SpecularTexture");
+		//uniform_DiffuseTexture = MaterialHelper::getUniform(m_glProgramId, "DiffuseTexture");
+		//uniform_BumpTexture = MaterialHelper::getUniform(m_glProgramId, "BumpTexture");
+		//uniform_SpecularTexture = MaterialHelper::getUniform(m_glProgramId, "SpecularTexture");
 	}
 
 	void setUniformLayoutOffset(const glm::vec2& layoutOffset)
@@ -453,18 +844,18 @@ public:
 	{
 		GlHelper::pushParameterToGPU(uniform_TextureRepetition, repetition);
 	}
-	void setUniformDiffuseTexture(int textureId)
-	{
-		GlHelper::pushParameterToGPU(uniform_DiffuseTexture, textureId);
-	}
-	void setUniformBumpTexture(int textureId)
-	{
-		GlHelper::pushParameterToGPU(uniform_BumpTexture, textureId);
-	}
-	void setUniformSpecularTexture(int textureId)
-	{
-		GlHelper::pushParameterToGPU(uniform_SpecularTexture, textureId);
-	}
+	//void setUniformDiffuseTexture(int textureId)
+	//{
+	//	GlHelper::pushParameterToGPU(uniform_DiffuseTexture, textureId);
+	//}
+	//void setUniformBumpTexture(int textureId)
+	//{
+	//	GlHelper::pushParameterToGPU(uniform_BumpTexture, textureId);
+	//}
+	//void setUniformSpecularTexture(int textureId)
+	//{
+	//	GlHelper::pushParameterToGPU(uniform_SpecularTexture, textureId);
+	//}
 	void setUniformSpecularPower(float specularPower)
 	{
 		GlHelper::pushParameterToGPU(uniform_SpecularPower, specularPower);
@@ -473,7 +864,7 @@ public:
 };
 
 
-class MaterialTerrainEdition : public Material
+class MaterialTerrainEdition final : public Material
 {
 private:
 
@@ -540,7 +931,7 @@ public:
 
 };
 
-class MaterialDrawOnTexture : public Material
+class MaterialDrawOnTexture final : public Material
 {
 private:
 	GLuint uniform_drawPosition;
@@ -591,7 +982,7 @@ public:
 	}
 };
 
-class MaterialGrassField : public Material
+class MaterialGrassField final : public Material
 {
 	GLuint uniform_time;
 	GLuint uniform_Texture;
@@ -636,7 +1027,7 @@ public:
 	}
 };
 
-class MaterialParticlesCPU : public Material
+class MaterialParticlesCPU final : public Material
 {
 private:
 	GLuint m_uniformVP;
@@ -688,7 +1079,7 @@ public:
 };
 
 
-class MaterialParticles : public Material
+class MaterialParticles final : public Material
 {
 private:
 	GLuint m_uniformVP;
@@ -739,7 +1130,7 @@ public:
 	}
 };
 
-class MaterialParticleSimulation : public Material
+class MaterialParticleSimulation final : public Material
 {
 private:
 	GLuint m_uniformDeltaTime;

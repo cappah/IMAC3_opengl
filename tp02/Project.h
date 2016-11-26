@@ -31,6 +31,7 @@ private:
 	//meta : 
 	static FileHandler::Path m_projectPath;
 	static FileHandler::Path m_assetFolderPath;
+	static FileHandler::Path m_shaderFolderPath;
 
 	//For ui : 
 	char m_newSceneName[30];
@@ -76,6 +77,7 @@ public:
 	static void setPath(const FileHandler::Path& path);
 	static const FileHandler::Path& getPath();
 	static const FileHandler::Path& getAssetsFolderPath();
+	static const FileHandler::Path& getShaderFolderPath();
 
 private :
 	GLFWwindow* Project::initGLFW(int width, int height);

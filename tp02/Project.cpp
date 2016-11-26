@@ -25,6 +25,7 @@ void onFilesDrop(GLFWwindow* window, int count, const char** paths)
 //statics : 
 FileHandler::Path Project::m_projectPath = FileHandler::Path();
 FileHandler::Path Project::m_assetFolderPath = FileHandler::Path();
+FileHandler::Path Project::m_shaderFolderPath = FileHandler::Path();
 ////
 
 Project::Project() : m_activeSceneName(""), m_renderer(nullptr), m_activeScene(nullptr)
@@ -109,6 +110,8 @@ void Project::open(const std::string & projectName, const FileHandler::Path & pr
 	m_projectPath = FileHandler::Path(projectPath.toString() + "/" + projectName);
 	m_assetFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/assets/");
 	assert(FileHandler::directoryExists(m_assetFolderPath));
+	m_shaderFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/shaders/");
+	assert(FileHandler::directoryExists(m_shaderFolderPath));
 
 	//we have to set projectPath before calling initProject
 	initProject(); //init systems and resources
@@ -604,6 +607,11 @@ const FileHandler::Path& Project::getAssetsFolderPath()
 	return m_assetFolderPath;
 }
 
+const FileHandler::Path& Project::getShaderFolderPath()
+{
+	return m_shaderFolderPath;
+}
+
 void Project::drawUI()
 {
 	if (m_scenes.find(m_activeSceneName) == m_scenes.end()) {
@@ -974,7 +982,7 @@ void Project::initDefaultAssets()
 
 	// materials : 
 	//MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, getTextureFactory().get("default"), getTextureFactory().get("default"), getTextureFactory().get("default"), 50);
-	MaterialLit* brickMaterial = new MaterialLit(*getProgramFactory().get("defaultLit"));//new MaterialLit(getProgramFactory().getDefault("defaultLit")->id /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
+	MaterialLit* brickMaterial = new MaterialLit(*getProgramFactory().get("lit"));//new MaterialLit(getProgramFactory().getDefault("defaultLit")->id /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
 	//MaterialUnlit* wireframeMaterial = new MaterialUnlit(programObject_wireframe);
 	//MaterialGrassField* grassFieldMaterial = new MaterialGrassField(programObject_grassField);
 

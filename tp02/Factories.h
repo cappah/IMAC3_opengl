@@ -196,8 +196,14 @@ public:
 		//no need to load these resources
 	}
 
-	std::map<FileHandler::CompletePath, ShaderProgram*>::iterator resourceBegin();
-	std::map<FileHandler::CompletePath, ShaderProgram*>::iterator resourceEnd();
+	std::map<std::string, ShaderProgram*>::iterator resourceBegin()
+	{
+		return m_resources.begin();
+	}
+	std::map<std::string, ShaderProgram*>::iterator resourceEnd()
+	{
+		return m_resources.end();
+	}
 
 	SINGLETON_IMPL(ResourceFactory);
 
@@ -251,15 +257,26 @@ void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
 }
 
 template<typename T>
-template<typename U>
-void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
+void ResourceFactory<T>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
 {
-	T* newResource = static_cast<T>(new U(path));
+	T* newResource = new T();
+	newResource->init(path);
 
 	m_resources[path] = newResource;
-	m_resourceMapping[path] = ++s_resourceCount;
-	m_resourcesFromHashKey[s_resourceCount] = newResource;
+	m_resourceMapping[path] = hashKey;
+	m_resourcesFromHashKey[hashKey] = newResource;
 }
+
+//template<typename T>
+//template<typename U>
+//void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
+//{
+//	T* newResource = static_cast<T>(new U(path));
+//
+//	m_resources[path] = newResource;
+//	m_resourceMapping[path] = ++s_resourceCount;
+//	m_resourcesFromHashKey[s_resourceCount] = newResource;
+//}
 
 template<typename T>
 void ResourceFactory<T>::erase(const FileHandler::CompletePath& path)
@@ -273,17 +290,6 @@ void ResourceFactory<T>::erase(const FileHandler::CompletePath& path)
 	m_resources.erase(path);
 	m_resourceMapping.erase(path);
 	m_resourcesFromHashKey.erase(resourceHashKey);
-}
-
-template<typename T>
-void ResourceFactory<T>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
-{
-	T* newResource = new T();
-	newResource->init(path);
-
-	m_resources[path] = newResource;
-	m_resourceMapping[path] = hashKey;
-	m_resourcesFromHashKey[hashKey] = newResource;
 }
 
 template<typename T>
@@ -459,9 +465,11 @@ typename std::map<std::string, T*>::iterator ResourceFactory<T>::defaultResource
 
 //Specialisations : 
 
-//template<>
-//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path);
 
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
 // Creation : 
 
 //template<>
