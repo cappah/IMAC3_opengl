@@ -1,4 +1,8 @@
 
+#Libraries build
+tp02/lib/bullet3/build/*
+tp02/lib/glfw/build/*
+
 # Everything except code and shaders
 */build/*
 *.lua
