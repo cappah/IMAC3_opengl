@@ -7,6 +7,9 @@ tp02/lib/glfw/build/*
 */build/*
 *.lua
 *.md
+*.exe
+*.idb
+*.db
 
 
 # Old tp
