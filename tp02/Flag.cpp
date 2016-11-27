@@ -10,7 +10,7 @@
 
 namespace Physic {
 
-	Flag::Flag() : Flag(getMaterialFactory().getDefault("default"))
+	Flag::Flag() : Flag(getMaterialFactory().getDefault("defaultLit"))
 	{
 
 	}

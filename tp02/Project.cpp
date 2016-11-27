@@ -570,7 +570,7 @@ void Project::loadDefaultScene(Scene* scene)
 	*/
 
 	//flage entity : 
-	Physic::Flag* flag = new Physic::Flag(getMaterialFactory().getDefault("default"));
+	Physic::Flag* flag = new Physic::Flag(getMaterialFactory().getDefault("defaultLit"));
 
 	Entity* entity_flag = new Entity(scene);
 	entity_flag->add(new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe")));

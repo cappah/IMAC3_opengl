@@ -6,6 +6,12 @@
 namespace GlHelper {
 
 template<>
+void pushParameterToGPU<bool>(GLuint uniformId, const bool& value)
+{
+	glUniform1i(uniformId, value);
+}
+
+template<>
 void pushParameterToGPU<int>(GLuint uniformId, const int& value)
 {
 	glUniform1i(uniformId, value);
@@ -64,7 +70,7 @@ void pushParametersToGPU<float>(GLuint uniformId, int count, const std::vector<f
 std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(const std::string& literaltype, std::string& name)
 {
 	ShaderParameter::ShaderParameterType parameterType = ShaderParameter::ShaderParameterType::TYPE_COUNT;
-	auto& foundTypeIt = std::find(ShaderParameter::LiteralShaderParameterType.begin(), ShaderParameter::LiteralShaderParameterType.end(), literaltype);
+	auto foundTypeIt = std::find(ShaderParameter::LiteralShaderParameterType.begin(), ShaderParameter::LiteralShaderParameterType.end(), literaltype);
 	if (foundTypeIt != ShaderParameter::LiteralShaderParameterType.end())
 		parameterType = (ShaderParameter::ShaderParameterType)std::distance(ShaderParameter::LiteralShaderParameterType.begin(), foundTypeIt);
 	else
@@ -108,7 +114,7 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 std::shared_ptr<ExternalShaderParameterBase> MakeNewExternalShaderParameter(const std::string& literaltype, std::string& name)
 {
 	ShaderParameter::ShaderParameterType parameterType = ShaderParameter::ShaderParameterType::TYPE_COUNT;
-	auto& foundTypeIt = std::find(ShaderParameter::LiteralShaderParameterType.begin(), ShaderParameter::LiteralShaderParameterType.end(), literaltype);
+	auto foundTypeIt = std::find(ShaderParameter::LiteralShaderParameterType.begin(), ShaderParameter::LiteralShaderParameterType.end(), literaltype);
 	if (foundTypeIt != ShaderParameter::LiteralShaderParameterType.end())
 		parameterType = (ShaderParameter::ShaderParameterType)std::distance(ShaderParameter::LiteralShaderParameterType.begin(), foundTypeIt);
 	else
@@ -184,6 +190,9 @@ void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::drawUI()
 
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount)
 {
+	if (!m_data.isValid())
+		return;
+
 	glActiveTexture(GL_TEXTURE0 + boundTextureCount);
 	glBindTexture(GL_TEXTURE_2D, m_data->glId);
 	glUniform1i(m_uniformId, boundTextureCount);

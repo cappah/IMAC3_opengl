@@ -3,9 +3,5 @@
     "fragment" : "terrain.frag",
     "geometry" : "",
     "programType" : "custom",
-    "internalShaderParameters" : [
-        {"type" : "texture", "name" : "BumpTexture"},
-        {"type" : "texture", "name" : "SpecularTexture"},
-        {"type" : "texture", "name" : "DiffuseTexture"}
-    ]
+    "internalShaderParameters" : []
 }

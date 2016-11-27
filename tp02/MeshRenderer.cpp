@@ -11,7 +11,7 @@ MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), mesh(getMeshFactory().g
 {
 	materialName = '\0';
 
-	material.push_back(getMaterialFactory().getDefault("default"));
+	material.push_back(getMaterialFactory().getDefault("defaultLit"));
 }
 
 MeshRenderer::MeshRenderer(ResourcePtr<Mesh> _mesh, ResourcePtr<Material> _material) : Component(MESH_RENDERER), mesh(_mesh), meshName("default"), materialName("default")

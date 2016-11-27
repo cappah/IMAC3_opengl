@@ -592,7 +592,7 @@ void Editor::displayMenuBar(Project& project)
 			{
 				auto newEntity = new Entity(&scene);
 				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto flag = new Physic::Flag(getMaterialFactory().getDefault("default"), 10);
+				auto flag = new Physic::Flag(getMaterialFactory().getDefault("defaultLit"), 10);
 				newEntity->add(newCollider).add(flag);
 				newEntity->setName("flag");
 

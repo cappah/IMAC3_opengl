@@ -15,7 +15,7 @@ ComponentFactory::ComponentFactory()
 	add(Component::ComponentType::POINT_LIGHT, new PointLight());
 	add(Component::ComponentType::DIRECTIONAL_LIGHT, new DirectionalLight());
 	add(Component::ComponentType::SPOT_LIGHT, new SpotLight());
-	add(Component::ComponentType::FLAG, new Physic::Flag(getMaterialFactory().getDefault("default")));
+	add(Component::ComponentType::FLAG, new Physic::Flag(getMaterialFactory().getDefault("defaultLit")));
 	add(Component::ComponentType::PARTICLE_EMITTER, new Physic::ParticleEmitter());
 	add(Component::ComponentType::PATH_POINT, new PathPoint());
 	add(Component::ComponentType::CAMERA, new Camera());

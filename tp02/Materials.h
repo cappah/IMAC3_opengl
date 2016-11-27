@@ -798,9 +798,9 @@ private:
 	GLuint uniform_LayoutOffset;
 	GLuint uniform_FilterTexture;
 
-	//GLuint uniform_DiffuseTexture;
-	//GLuint uniform_BumpTexture;
-	//GLuint uniform_SpecularTexture;
+	GLuint uniform_DiffuseTexture;
+	GLuint uniform_BumpTexture;
+	GLuint uniform_SpecularTexture;
 
 
 public:
@@ -844,18 +844,18 @@ public:
 	{
 		GlHelper::pushParameterToGPU(uniform_TextureRepetition, repetition);
 	}
-	//void setUniformDiffuseTexture(int textureId)
-	//{
-	//	GlHelper::pushParameterToGPU(uniform_DiffuseTexture, textureId);
-	//}
-	//void setUniformBumpTexture(int textureId)
-	//{
-	//	GlHelper::pushParameterToGPU(uniform_BumpTexture, textureId);
-	//}
-	//void setUniformSpecularTexture(int textureId)
-	//{
-	//	GlHelper::pushParameterToGPU(uniform_SpecularTexture, textureId);
-	//}
+	void setUniformDiffuseTexture(int textureId)
+	{
+		GlHelper::pushParameterToGPU(uniform_DiffuseTexture, textureId);
+	}
+	void setUniformBumpTexture(int textureId)
+	{
+		GlHelper::pushParameterToGPU(uniform_BumpTexture, textureId);
+	}
+	void setUniformSpecularTexture(int textureId)
+	{
+		GlHelper::pushParameterToGPU(uniform_SpecularTexture, textureId);
+	}
 	void setUniformSpecularPower(float specularPower)
 	{
 		GlHelper::pushParameterToGPU(uniform_SpecularPower, specularPower);

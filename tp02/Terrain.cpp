@@ -548,13 +548,13 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 	//set the terrain texture : 
 	//bump
 	//m_material.textureBump = &m_terrainBump;
-	m_material.setInternalData<Texture>("BumpTexture", &m_terrainBump);
+	//m_material.setInternalData<Texture>("BumpTexture", &m_terrainBump);
 	//m_material.bumpTextureName = m_terrainBump.getName();
 	//specular
-	m_material.setInternalData<Texture>("SpecularTexture", &m_terrainSpecular);
+	//m_material.setInternalData<Texture>("SpecularTexture", &m_terrainSpecular);
 	//m_material.specularTextureName = m_terrainSpecular.name;
 	//diffuse
-	m_material.setInternalData<Texture>("DiffuseTexture", &m_terrainDiffuse);
+	//m_material.setInternalData<Texture>("DiffuseTexture", &m_terrainDiffuse);
 	//m_material.diffuseTextureName = m_terrainDiffuse.name;
 
 	////////////////////// INIT QUAD MESH ////////////////////////

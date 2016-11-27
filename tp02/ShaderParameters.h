@@ -72,6 +72,9 @@ void pushParameterToGPU(GLuint uniformId, const T& value)
 }
 
 template<>
+void pushParameterToGPU<bool>(GLuint uniformId, const bool& value);
+
+template<>
 void pushParameterToGPU<int>(GLuint uniformId, const int& value);
 
 template<>
