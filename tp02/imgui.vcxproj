@@ -220,6 +220,7 @@
     <ClCompile Include="lib\imgui\imgui.cpp">
       <ObjectFileName>$(IntDir)lib\imgui\imgui.obj</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_demo.cpp" />
     <ClCompile Include="lib\imgui\imgui_draw.cpp">
       <ObjectFileName>$(IntDir)lib\imgui\imgui_draw.obj</ObjectFileName>
     </ClCompile>

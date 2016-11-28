@@ -10,12 +10,12 @@ namespace ImGui {
 
 	bool MyTreeNode(const char* label, ImVec2& itemPos, ImVec2& itemSize)
 	{
-		ImGuiState& g = *GImGui;
+		ImGuiContext& g = *GImGui;
 		ImGuiWindow* window = g.CurrentWindow;
 		const ImGuiStyle& style = g.Style;
 
 		ImU32 id = window->GetID(label);
-		bool opened = ImGui::TreeNodeBehaviorIsOpened(id);
+		bool opened = ImGui::TreeNodeBehaviorIsOpen(id);
 
 		float circle_radius = 8.f;
 
@@ -46,7 +46,7 @@ namespace ImGui {
 
 		const float line_height = ImMax(ImMin(window->DC.CurrentLineHeight, g.FontSize + g.Style.FramePadding.y * 2), g.FontSize);
 		window->DrawList->AddCircleFilled(pos + ImVec2(style.FramePadding.x + g.FontSize*0.5f, line_height*0.5f), circle_radius, GetColorU32(circle_enum_color));
-		RenderCollapseTriangle(pos + ImVec2(3.f,0.f), opened, 1.0f, true);
+		RenderCollapseTriangle(pos + ImVec2(3.f,0.f), opened, 1.0f);
 		ImGui::RenderText(ImVec2(pos.x + button_sz + g.Style.ItemInnerSpacing.x, pos.y + g.Style.FramePadding.y), label);
 
 		ImGui::ItemSize(bb, g.Style.FramePadding.y);
@@ -64,7 +64,7 @@ namespace ImGui {
 		if (window->SkipItems)
 			return false;
 
-		ImGuiState& g = *GImGui;
+		ImGuiContext& g = *GImGui;
 
 		ImGui::PushID(ptr_id);
 		const bool opened = ImGui::MyCollapsingHeader(ptr_id, "", false);
@@ -82,7 +82,7 @@ namespace ImGui {
 		if (window->SkipItems)
 			return false;
 
-		ImGuiState& g = *GImGui;
+		ImGuiContext& g = *GImGui;
 		const ImGuiStyle& style = g.Style;
 		const ImVec2 padding = display_frame ? style.FramePadding : ImVec2(style.FramePadding.x, 0.0f);
 
@@ -114,7 +114,7 @@ namespace ImGui {
 		// (Ideally we'd want to add a flag for the user to specify we want want the hit test to be done up to the right side of the content or not)
 		const ImRect interact_bb = display_frame ? bb : ImRect(bb.Min.x, bb.Min.y, bb.Min.x + text_width + style.ItemSpacing.x * 2, bb.Max.y);
 		bb = interact_bb;
-		bool opened = TreeNodeBehaviorIsOpened(id, (default_open ? ImGuiTreeNodeFlags_DefaultOpen : 0) | (display_frame ? ImGuiTreeNodeFlags_NoAutoExpandOnLog : 0));
+		bool opened = TreeNodeBehaviorIsOpen(id, (default_open ? ImGuiTreeNodeFlags_DefaultOpen : 0) | (display_frame ? ImGuiTreeNodeFlags_NoAutoOpenOnLog : 0));
 		if (!ItemAdd(interact_bb, &id))
 			return opened;
 
@@ -133,7 +133,7 @@ namespace ImGui {
 		{
 			// Framed type
 			RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
-			RenderCollapseTriangle(bb.Min + padding + ImVec2(0.0f, text_base_offset_y), opened, 1.0f, true);
+			RenderCollapseTriangle(bb.Min + padding + ImVec2(0.0f, text_base_offset_y), opened, 1.0f);
 
 				RenderTextClipped(text_pos, bb.Max, label, NULL, &label_size);
 		}
@@ -143,7 +143,7 @@ namespace ImGui {
 			if (hovered)
 				RenderFrame(bb.Min, bb.Max, col, false);
 
-			RenderCollapseTriangle(bb.Min + ImVec2(padding.x, g.FontSize*0.15f + text_base_offset_y), opened, 0.70f, false);
+			RenderCollapseTriangle(bb.Min + ImVec2(padding.x, g.FontSize*0.15f + text_base_offset_y), opened, 0.70f);
 
 			RenderText(text_pos, label, NULL, label_hide_text_after_double_hash);
 		}
@@ -227,7 +227,7 @@ namespace ImGui {
 
 	bool IsMouseClickedAnyButton()
 	{
-		ImGuiState& g = *GImGui;
+		ImGuiContext& g = *GImGui;
 		int arraySize = IM_ARRAYSIZE(g.IO.MouseDown);
 		for (int i = 0; i < arraySize; i++)
 		{
