@@ -12,6 +12,7 @@
 #include "Materials.h"
 #include "Flag.h"
 #include "ParticleEmitter.h"
+#include "FrameBuffer.h"
 
 struct LightCullingInfo
 {
@@ -27,6 +28,9 @@ class Renderer
 	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
 
 private:
+	Texture* m_finalFrame; //%NOCOMMIT% TODO
+	GlHelper::Framebuffer m_mainBuffer;
+
 	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;
 	std::shared_ptr<MaterialShadowPassOmni> shadowPassOmniMaterial;
 
@@ -72,6 +76,9 @@ private:
 public:
 	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight);
 	~Renderer();
+
+	//return the final frame, after all render process
+	Texture* getFinalFrame() const;
 
 	//update deferred textures used by the FBO when we resize the screen.
 	void onResizeWindow();

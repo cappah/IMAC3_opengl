@@ -553,7 +553,7 @@ public :
 };
 
 
-class ResourceTreeView : public EditorWindow
+class ResourceTreeView : public EditorFrame
 {
 //private:
 //	std::vector<ResourceFolder> m_resourceFolders;
@@ -574,7 +574,7 @@ private:
 public:
 	ResourceTreeView(ResourceTree* model = nullptr);
 	~ResourceTreeView();
-	virtual void drawContent() override;
+	virtual void drawContent(Project& project, EditorModal* parentModale = nullptr) override;
 	void setModel(ResourceTree* model);
 	/*void addFolder(const std::string& folderName);
 	void removeFolder(const std::string& folderName);

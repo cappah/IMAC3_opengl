@@ -171,11 +171,26 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	lightManager->setShadowMapCount(LightManager::SPOT, 10);
 	lightManager->setShadowMapCount(LightManager::DIRECTIONAL, 5);
 	lightManager->setShadowMapCount(LightManager::POINT, 10);
+
+	////////////////////// SETUP MAIN FRAMEBUFFER /////////////////////////
+
+	m_finalFrame = GlHelper::makeNewColorTexture(width, height);
+	m_finalFrame->initGL();
+	m_mainBuffer.bind();
+	m_mainBuffer.attachTexture(m_finalFrame, GlHelper::Framebuffer::AttachmentTypes::COLOR);
+	m_mainBuffer.unbind();
+
 }
 
 Renderer::~Renderer()
 {
 	delete lightManager;
+	delete m_finalFrame;
+}
+
+Texture * Renderer::getFinalFrame() const
+{
+	return m_finalFrame;
 }
 
 
@@ -499,6 +514,8 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	////// end G pass
 
 
+	m_mainBuffer.bind();
+
 	///// begin light pass
 	// Disable the depth test
 	glDisable(GL_DEPTH_TEST);
@@ -692,6 +709,8 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 
 	///// end light pass
 
+	m_mainBuffer.unbind();
+
 	///////// end deferred
 
 
@@ -725,6 +744,7 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 		particleEmitters[i]->render(projection, worldToView);
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
+
 }
 
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)

@@ -40,6 +40,8 @@ struct Texture : public Resource
 	~Texture();
 
 	void setTextureParameters(GLint _internalFormat = GL_RGB, GLenum _format = GL_RGB, GLenum _type = GL_UNSIGNED_BYTE, bool _generateMipMap = true);
+	void setTextureMinMaxFilters(GLint _maxFilter = GL_NEAREST, GLint _format = GL_NEAREST);
+	void setTextureWrapping(GLint _uWrapping = GL_CLAMP_TO_EDGE, GLint _vWrapping = GL_CLAMP_TO_EDGE);
 
 	void initGL();
 	void freeGL();
@@ -65,6 +67,11 @@ struct CubeTexture : public Resource
 	GLenum format;
 	GLenum type;
 	bool generateMipMap;
+	GLint textureWrapping_s;
+	GLint textureWrapping_t;
+	GLint textureWrapping_r;
+	GLint minFilter;
+	GLint magFilter;
 
 	int m_textureUseCounts;
 
@@ -74,6 +81,8 @@ struct CubeTexture : public Resource
 	~CubeTexture();
 
 	void setTextureParameters(GLint _internalFormat = GL_RGB, GLenum _format = GL_RGB, GLenum _type = GL_UNSIGNED_BYTE, bool _generateMipMap = false);
+	void setTextureMinMaxFilters(GLint _maxFilter = GL_LINEAR, GLint _format = GL_LINEAR);
+	void setTextureWrapping(GLint _sWrapping = GL_CLAMP_TO_EDGE, GLint _tWrapping = GL_CLAMP_TO_EDGE, GLint _rWrapping = GL_CLAMP_TO_EDGE);
 
 	void initGL();
 	void freeGL();
@@ -84,3 +93,12 @@ struct CubeTexture : public Resource
 	void save(const FileHandler::CompletePath& path) const;
 };
 
+namespace GlHelper{
+
+	//make a basic color texture with GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE
+	Texture* makeNewColorTexture(float width, float height);
+	//make a basic normal texture with GL_RGBA16, GL_RGBA, GL_FLOAT
+	Texture* makeNewNormalTexture(float width, float height);
+	//make a basic depth texture with GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT
+	Texture* makeNewDepthTexture(float width, float height);
+}

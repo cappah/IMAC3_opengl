@@ -175,6 +175,9 @@
     <ClCompile Include="ShaderParameter.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
+    <ClCompile Include="FrameBuffer.cpp">
+      <Filter>Utils\Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -365,6 +368,9 @@
     <ClInclude Include="ShaderParameters.h">
       <Filter>Resources</Filter>
     </ClInclude>
+    <ClInclude Include="FrameBuffer.h">
+      <Filter>Utils\Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -405,6 +411,9 @@
     </Filter>
     <Filter Include="Utils\FileHandling">
       <UniqueIdentifier>{90416a61-ced3-4950-98a6-51767213fb23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils\Rendering">
+      <UniqueIdentifier>{cb08f07d-dee0-414e-81f1-e5d87947b315}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -142,11 +142,16 @@ private:
 	//models
 	std::shared_ptr<ResourceTree> m_resourceTree;
 
-	//windows (views)
-	std::vector<std::shared_ptr<EditorWindow>> m_editorWindows;
+	//Windows and modals handling : 
+	EditorWindowManager m_windowManager;
 
-	//Modals (views)
-	std::vector<std::shared_ptr<EditorWindow>> m_editorModals;
+	ImGuiID m_lastDraggedWindowId;
+
+	////windows (views)
+	//std::vector<std::shared_ptr<EditorWindow>> m_editorWindows;
+
+	////Modals (views)
+	//std::vector<std::shared_ptr<EditorWindow>> m_editorModals;
 
 public:
 	Editor();
@@ -170,8 +175,15 @@ public:
 	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
 	void onResizeWindow();
 	void renderUI(Project& project);
-	void displayDockedWindows(Project& project);
+
+	//Window handling
+	void displayMainWindow(Project& project);
 	void displayFloatingWindows(Project& project);
+
+	// Modals handling
+	void displayModals(Project& project);
+	//void addModal(std::shared_ptr<EditorWindow> modal);
+	//void removeModal(EditorWindow* modal);
 
 	bool testGizmoIntersection(const Ray& ray);
 	void beginMoveGizmo();
@@ -202,11 +214,7 @@ public:
 	void ejectPlayerFromPawn();
 
 	ResourceTree* getResourceTree() const;
-
-	// Modals handling
-	void displayModals(Project& project);
-	void addModal(std::shared_ptr<EditorWindow> modal);
-	void removeModal(EditorWindow* modal);
+	EditorWindowManager* getWindowManager();
 
 	// DroppedFiles handling
 	void onFilesDropped(int count, const char** paths);//fire when we drop some files into the editor window

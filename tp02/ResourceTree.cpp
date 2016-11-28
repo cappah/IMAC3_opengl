@@ -408,7 +408,7 @@ void ResourceTree::addExternalResourceTo(ResourceFile& resourceFile, ResourceFol
 //}
 
 ResourceTreeView::ResourceTreeView(ResourceTree* model)
-	: EditorWindow("ResourceTree")
+	: EditorFrame("ResourceTree")
 	, m_model(model)
 	, m_folderWeRightClicOn(nullptr)
 {
@@ -526,11 +526,11 @@ void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, Res
 
 		ImGui::TreePop();
 	}
-	if (ImGui::IsMouseHoveringBox(rectMin, rectMax) && DragAndDropManager::isDragAndDropping())
+	if (ImGui::IsMouseHoveringRect(rectMin, rectMax) && DragAndDropManager::isDragAndDropping())
 	{
 		ImGui::GetWindowDrawList()->AddRect(ImVec2(rectMin.x - 2, rectMin.y - 2), ImVec2(rectMax.x + 2, rectMax.y + 2), ImColor(255, 255, 0, 255), 5.f);
 	}
-	if (ImGui::IsMouseHoveringBox(rectMin, rectMax) && ImGui::IsMouseReleased(0))
+	if (ImGui::IsMouseHoveringRect(rectMin, rectMax) && ImGui::IsMouseReleased(0))
 	{
 		if (outDropCallback != nullptr)
 		{
@@ -541,7 +541,7 @@ void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, Res
 	}
 
 	//right clic menu open ? 
-	if (ImGui::IsMouseHoveringBox(rectMin, rectMax) && ImGui::IsMouseClicked(1))
+	if (ImGui::IsMouseHoveringRect(rectMin, rectMax) && ImGui::IsMouseClicked(1))
 	{
 		if (outOpenModaleCallback != nullptr)
 		{
@@ -942,7 +942,7 @@ void ResourceTreeView::popUpToAddCubeTexture()
 	ImGui::EndPopup();
 }
 
-void ResourceTreeView::drawContent()
+void ResourceTreeView::drawContent(Project& project, EditorModal* parentModale)
 {
 	DropCallback dropCallback(nullptr, EditorDropContext::DropIntoFileOrFolder);
 	OpenModaleCallback openModaleCallback;

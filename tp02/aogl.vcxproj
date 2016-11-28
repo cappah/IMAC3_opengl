@@ -245,6 +245,7 @@
     <ClCompile Include="Factories.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Flag.cpp" />
+    <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="imgui_extension.cpp" />
@@ -331,6 +332,7 @@
     <ClInclude Include="Factories.h" />
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="Flag.h" />
+    <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="imgui_extension.h" />

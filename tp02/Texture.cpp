@@ -131,6 +131,18 @@ void Texture::setTextureParameters(GLint _internalFormat, GLenum _format, GLenum
 	generateMipMap = _generateMipMap;
 }
 
+void Texture::setTextureMinMaxFilters(GLint _magFilter, GLint _minFilter)
+{
+	magFilter = _magFilter;
+	minFilter = _minFilter;
+}
+
+void Texture::setTextureWrapping(GLint _uWrapping, GLint _vWrapping)
+{
+	textureWrapping_u = _uWrapping;
+	textureWrapping_v = _vWrapping;
+}
+
 void Texture::initGL()
 {
 
@@ -206,6 +218,12 @@ CubeTexture::CubeTexture(const std::vector<FileHandler::CompletePath>& _paths)
 	, type(GL_UNSIGNED_BYTE)
 	, generateMipMap(true)
 	, m_textureUseCounts(0)
+	, magFilter(GL_LINEAR)
+	, minFilter(GL_LINEAR)
+	, textureWrapping_s(GL_CLAMP_TO_EDGE)
+	, textureWrapping_t(GL_CLAMP_TO_EDGE)
+	, textureWrapping_r(GL_CLAMP_TO_EDGE)
+
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -231,6 +249,19 @@ void CubeTexture::setTextureParameters(GLint _internalFormat, GLenum _format, GL
 	generateMipMap = _generateMipMap;
 }
 
+void CubeTexture::setTextureMinMaxFilters(GLint _magFilter, GLint _minFilter)
+{
+	magFilter = _magFilter;
+	minFilter = _minFilter;
+}
+
+void CubeTexture::setTextureWrapping(GLint _sWrapping, GLint _tWrapping, GLint _rWrapping)
+{
+	textureWrapping_s = _sWrapping;
+	textureWrapping_t = _tWrapping;
+	textureWrapping_r = _rWrapping;
+}
+
 void CubeTexture::initGL()
 {
 	if (glId <= 0){
@@ -243,10 +274,11 @@ void CubeTexture::initGL()
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, w, h, 0, format, type, pixels[i]);
 		}
 
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, magFilter);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, minFilter);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, textureWrapping_s);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, textureWrapping_t);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, textureWrapping_r);
 		
 
 		if (generateMipMap)
@@ -322,3 +354,47 @@ void CubeTexture::save(const FileHandler::CompletePath & path) const
 	}
 	stream << root;
 }
+
+///////////////////////////////////////////
+//// BEGIN : texture helpers
+
+
+
+namespace GlHelper {
+
+	Texture* makeNewColorTexture(float width, float height)
+	{
+		// Create color texture
+		Texture* newTexture = new Texture(width, height, true);
+		newTexture->setTextureParameters(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, true);
+		newTexture->setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		newTexture->setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+		return newTexture;
+	}
+
+	Texture* makeNewNormalTexture(float width, float height)
+	{
+		// Create normal texture
+		Texture* newTexture = new Texture(width, height, true);
+		newTexture->setTextureParameters(GL_RGBA16, GL_RGBA, GL_FLOAT, true);
+		newTexture->setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		newTexture->setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+		return newTexture;
+	}
+
+	Texture* makeNewDepthTexture(float width, float height)
+	{
+		// Create depth texture
+		Texture* newTexture = new Texture(width, height, true);
+		newTexture->setTextureParameters(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT, true);
+		newTexture->setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		newTexture->setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+		return newTexture;
+	}
+}
+
+//// END : texture helpers
+///////////////////////////////////////////

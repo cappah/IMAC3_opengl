@@ -295,7 +295,12 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	m_resourceTree = std::make_shared<ResourceTree>(Project::getAssetsFolderPath());
 
 	//Open default windows : 
-	m_editorWindows.push_back(std::make_shared<ResourceTreeView>(m_resourceTree.get())); //ResourceWindow
+	m_windowManager.addWindow(std::make_shared<ResourceTreeView>(m_resourceTree.get())); //ResourceWindow
+	m_windowManager.addWindow(std::make_shared<TerrainToolEditorFrame>()); //Terrain tool
+	m_windowManager.addWindow(std::make_shared<SkyboxToolEditorFrame>()); //Skybox tool
+	m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>()); //Scene manager
+	m_windowManager.addWindow(std::make_shared<FactoriesDebugEditorFrame>()); //Factories debuger
+	m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>()); //Viewport
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -766,6 +771,11 @@ ResourceTree* Editor::getResourceTree() const
 	return m_resourceTree.get();
 }
 
+EditorWindowManager* Editor::getWindowManager()
+{
+	return &m_windowManager;
+}
+
 //////////////////////////////////////////////////////////
 ////////////// BEGIN : MODALS HANDLING 
 
@@ -777,19 +787,21 @@ void Editor::displayModals(Project& project)
 	if (m_loadWindowOpen)
 		ImGui::OpenPopup("load window");
 
-	auto& modalIter = m_editorModals.begin();
-	while (modalIter != m_editorModals.end())
-	{
-		(*modalIter)->drawAsModal();
+	//auto& modalIter = m_editorModals.begin();
+	//while (modalIter != m_editorModals.end())
+	//{
+	//	(*modalIter)->drawAsModal();
 
-		//close modal ?
-		if ((*modalIter)->shouldCloseModale())
-		{
-			modalIter = m_editorModals.erase(modalIter);
-		}
-		else
-			modalIter++;
-	}
+	//	//close modal ?
+	//	if ((*modalIter)->shouldCloseModale())
+	//	{
+	//		modalIter = m_editorModals.erase(modalIter);
+	//	}
+	//	else
+	//		modalIter++;
+	//}
+
+	m_windowManager.displayModals(project, *this);
 
 	//load : 
 	bool loadModalWindowOpen = true;
@@ -855,17 +867,17 @@ void Editor::displayModals(Project& project)
 	}
 }
 
-void Editor::addModal(std::shared_ptr<EditorWindow> modal)
-{
-	m_editorModals.push_back(modal);
-}
-
-void Editor::removeModal(EditorWindow* modal)
-{
-	auto found = std::find_if(m_editorModals.begin(), m_editorModals.end(), [modal](const std::shared_ptr<EditorWindow>& item) { return item.get() == modal; });
-	if(found != m_editorModals.end())
-		m_editorModals.erase(found);
-}
+//void Editor::addModal(std::shared_ptr<EditorWindow> modal)
+//{
+//	m_editorModals.push_back(modal);
+//}
+//
+//void Editor::removeModal(EditorWindow* modal)
+//{
+//	auto found = std::find_if(m_editorModals.begin(), m_editorModals.end(), [modal](const std::shared_ptr<EditorWindow>& item) { return item.get() == modal; });
+//	if(found != m_editorModals.end())
+//		m_editorModals.erase(found);
+//}
 
 void Editor::displayTopLeftWindow(Project& project)
 {
@@ -925,7 +937,9 @@ void Editor::onFilesDropped(int count, const char** paths)
 			m_droppedFiles.push_back(FileHandler::CompletePath(paths[i]));
 	}
 
-	DroppedFileEditorWindow::openPopUp(*this);
+	m_windowManager.addModal(std::make_shared<DroppedFileEditorFrame>(this));
+
+	//DroppedFileEditorWindow::openPopUp(*this);
 }
 
 size_t Editor::getDroppedFilesCount() const
@@ -1226,22 +1240,29 @@ void Editor::renderUI(Project& project)
 
 	displayMenuBar(project);
 
-	displayDockedWindows(project);
+	displayMainWindow(project);
 	displayFloatingWindows(project);
 
 	displayModals(project);
+
+	//%NOCOMMIT% test only
+	//ImGui::ShowTestWindow();
+
+	//asynchonous commands : 
+	m_windowManager.update();
 
 }
 
 void Editor::displayFloatingWindows(Project& project)
 {
-	for (int i = 0; i < m_editorWindows.size(); i++)
-	{
-		m_editorWindows[i]->drawAsWindow();
-	}
+	//for (int i = 0; i < m_editorWindows.size(); i++)
+	//{
+	//	m_editorWindows[i]->drawAsWindow();
+	//}
+	m_windowManager.displayWindows(project, *this);
 }
 
-void Editor::displayDockedWindows(Project& project)
+void Editor::displayMainWindow(Project& project)
 {
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);

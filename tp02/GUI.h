@@ -43,7 +43,7 @@ private:
 public:
 	static bool beginDragAndDrop(std::shared_ptr<DragAndDropOperation> operation);
 	static DragAndDropOperation& cancelDragAndDrop();
-	static DragAndDropOperation& dropDraggedItem(void* customData, int currentOperationType);
+	static DragAndDropOperation& dropDraggedItem(void* customData, int dropContext);
 	static DragAndDropOperation& updateDragAndDrop();
 	static bool isDragAndDropping();
 	static int getOperationType();

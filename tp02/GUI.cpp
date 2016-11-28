@@ -28,15 +28,15 @@ DragAndDropOperation& DragAndDropManager::cancelDragAndDrop()
 
 }
 
-DragAndDropOperation& DragAndDropManager::dropDraggedItem(void* customData, int currentOperationType)
+DragAndDropOperation& DragAndDropManager::dropDraggedItem(void* customData, int dropContext)
 {
 	auto& This = DragAndDropManager::instance();
 
-	if ((currentOperationType & This.getValidDropContext()) == 0)
+	if ((dropContext & This.getValidDropContext()) == 0)
 		return cancelDragAndDrop();
 
 	if (This.m_isDragAndDropping)
-		This.m_currentDragAndDropOperation->dropOperation(customData, currentOperationType);
+		This.m_currentDragAndDropOperation->dropOperation(customData, dropContext);
 	This.m_isDragAndDropping = false;
 
 	return *This.m_currentDragAndDropOperation;
