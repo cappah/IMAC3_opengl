@@ -237,10 +237,12 @@ bool ResourceFolderDragAndDropOperation::canDropInto(void* customData, int dropC
 //// BEGIN : editor frame drag and drop
 
 
-EditorFrameDragAndDropOperation::EditorFrameDragAndDropOperation(int currentDraggedWindowId)
+EditorFrameDragAndDropOperation::EditorFrameDragAndDropOperation(int currentDraggedWindowId, Editor* editorPtr)
 	: DragAndDropOperation(EditorDragAndDropType::EditorFrameDragAndDrop, EditorDropContext::DropIntoEditorWindow)
 	, m_currentDraggedWindowId(currentDraggedWindowId)
+	, m_editorPtr(editorPtr)
 {
+	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setAlpha(0.2f);
 }
 
 void EditorFrameDragAndDropOperation::dragOperation()
@@ -254,16 +256,22 @@ void EditorFrameDragAndDropOperation::dropOperation(void* customData, int dropCo
 	//m_currentDraggedWindow = nullptr;
 	int* ptrToWindowsId = (int*)customData;
 	*ptrToWindowsId = m_currentDraggedWindowId;
+
+	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setAlpha(1.0f);
 	m_currentDraggedWindowId = -1;
+	m_editorPtr = nullptr;
 }
 
 void EditorFrameDragAndDropOperation::cancelOperation()
 {
+	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setAlpha(1.0f);
 	m_currentDraggedWindowId = -1;
+	m_editorPtr = nullptr;
 }
 
 void EditorFrameDragAndDropOperation::updateOperation()
 {
+	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->move(ImGui::GetIO().MouseDelta);
 }
 
 bool EditorFrameDragAndDropOperation::canDropInto(void * customData, int dropContext)
@@ -356,12 +364,14 @@ bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value)
 EditorNode::EditorNode(std::shared_ptr<EditorNodeDisplayLogic> displayLogic)
 	: m_displayLogic(displayLogic)
 	, m_parent(nullptr)
+	, m_size(1,1)
 {
 }
 
 EditorNode::EditorNode(std::shared_ptr<EditorNodeDisplayLogic> displayLogic, std::shared_ptr<EditorNode> firstNode)
 	: m_displayLogic(displayLogic)
 	, m_parent(nullptr)
+	, m_size(1, 1)
 {
 	addChild(firstNode);
 }
@@ -369,6 +379,7 @@ EditorNode::EditorNode(std::shared_ptr<EditorNodeDisplayLogic> displayLogic, std
 EditorNode::EditorNode(std::shared_ptr<EditorFrame> frame)
 	: m_displayLogic(std::make_shared<EditorNodeFrameDisplay>())
 	, m_parent(nullptr)
+	, m_size(1, 1)
 {
 	setFrame(frame);
 }
@@ -382,19 +393,122 @@ void EditorNode::removeChild(int index)
 {
 	assert(index >= 0 && index < m_childNodes.size());
 
+	onBeforeRemoveChild(index);
+
 	m_childNodes[index]->m_parent = nullptr;
 	m_childNodes.erase(m_childNodes.begin() + index);
+}
+
+void EditorNode::removeChild(EditorNode* nodeToRemove)
+{
+	auto found = std::find_if(m_childNodes.begin(), m_childNodes.end(), [nodeToRemove](std::shared_ptr<EditorNode>& item) { return nodeToRemove == item.get(); });
+
+	if (found != m_childNodes.end())
+	{
+		int index = std::distance(m_childNodes.begin(), found);
+
+		onBeforeRemoveChild(index);
+
+		m_childNodes[index]->m_parent = nullptr;
+		m_childNodes.erase(m_childNodes.begin() + index);
+	}
 }
 
 void EditorNode::addChild(std::shared_ptr<EditorNode> childNode)
 {
 	childNode->m_parent = this;
 	m_childNodes.push_back(childNode);
+
+	onChildAdded(m_childNodes.size() - 1);
 }
 
 EditorNode* EditorNode::getParentNode() const
 {
 	return m_parent;
+}
+
+const ImVec2& EditorNode::getSize() const
+{
+	return m_size;
+}
+
+//const ImVec2 & EditorNode::getSizeOffset() const
+//{
+//	return m_sizeOffset;
+//}
+//
+//const ImVec2 & EditorNode::getCorrectedSize() const
+//{
+//	return m_correctedSize;
+//}
+
+void EditorNode::setWidth(float newWidth)
+{
+
+	//Set size
+	const float lastWidth = getSize().x;
+	m_size.x = newWidth;
+
+	////Set corrected size
+	//float widthSizeOffset = 0;
+	//if (m_parent != nullptr)
+	//{
+	//	if (m_parent->getDisplayLogicType() == EditorNodeDisplayLogicType::HorizontalDisplay)
+	//		if(m_parent->getChildCount() == 1)
+	//			widthSizeOffset = 10.0f;
+	//		else
+	//			widthSizeOffset = 7.5f;
+	//	else if(m_parent->getDisplayLogicType() == EditorNodeDisplayLogicType::UniqueDisplay)
+	//		widthSizeOffset = 10.0f;
+
+	//	m_sizeOffset.x = m_parent->getSizeOffset().x + widthSizeOffset;
+	//}
+	//else
+	//	m_sizeOffset.x = 0.f;
+
+	//m_correctedSize.x = m_size.x - m_sizeOffset.x;
+
+	//Recursivity
+	for (auto& child : m_childNodes)
+	{
+		float relativeWidth = child->getSize().x / lastWidth;
+		child->setWidth(relativeWidth * newWidth);
+	}
+	
+}
+
+void EditorNode::setHeight(float newHeight)
+{
+	//Set size
+	const float lastHeight = getSize().y;
+	m_size.y = newHeight;
+
+	////Set corrected height
+	//float heightSizeOffset = 0;
+	//if (m_parent != nullptr)
+	//{
+	//	if (m_parent->getDisplayLogicType() == EditorNodeDisplayLogicType::VerticalDisplay)
+	//		if(m_parent->getChildCount() == 1)
+	//			heightSizeOffset = 10.0f;
+	//		else
+	//			heightSizeOffset = 7.5f;
+	//	else if(m_parent->getDisplayLogicType() == EditorNodeDisplayLogicType::UniqueDisplay)
+	//		heightSizeOffset = 10.0f;
+
+	//	m_sizeOffset.y = m_parent->getSizeOffset().y + heightSizeOffset;
+	//}
+	//else
+	//	m_sizeOffset.y = 0.f;
+
+	//m_correctedSize.y = m_size.y - m_sizeOffset.y;
+
+
+	//Recursivity
+	for (auto& child : m_childNodes)
+	{
+		float relativeHeight = child->getSize().y / lastHeight;
+		child->setHeight(relativeHeight * newHeight);
+	}
 }
 
 std::shared_ptr<EditorNode> EditorNode::getChild(int index) const
@@ -407,12 +521,23 @@ std::shared_ptr<EditorNode> EditorNode::getChild(int index) const
 void EditorNode::insertChild(std::shared_ptr<EditorNode> childNode, int index)
 {
 	m_childNodes.insert(m_childNodes.begin() + index, childNode);
+	onChildAdded(index);
 }
 
-void EditorNode::drawContent(Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas)
+void EditorNode::onChildAdded(int index)
+{
+	m_displayLogic->onChildAdded(*this, index);
+}
+
+void EditorNode::onBeforeRemoveChild(int index)
+{
+	m_displayLogic->onBeforeRemoveChild(*this, index);
+}
+
+bool EditorNode::drawContent(Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset)
 {
 	assert(m_displayLogic);
-	m_displayLogic->drawContent(*this, project, editor, removeNodeDatas);
+	return m_displayLogic->drawContent(*this, project, editor, removeNodeDatas, parentSizeOffset);
 }
 
 void EditorNode::setDisplayLogic(std::shared_ptr<EditorNodeDisplayLogic> displayLogic)
@@ -484,14 +609,13 @@ void EditorNode::onChildRemoved()
 ///////////////////////
 
 //TODO : use active
-int EditorNodeDisplayLogic::drawDropZone(ImVec2 pos, ImVec2 size, bool isActive)
+int EditorNodeDisplayLogic::drawDropZone(ImVec2 rectMin, ImVec2 recMax, bool isActive, Editor& editor)
 {
 	int draggedWindowId = -1;
 	bool isHoveringDropZone = false;
-	const ImVec2 a = pos;
-	const ImVec2 b = ImVec2(pos.x + size.x, pos.y + size.y);
 
-	if (ImGui::IsMouseHoveringRect(a, b)
+	if (ImGui::IsMouseHoveringRect(rectMin, recMax)
+		&& !editor.getWindowManager()->getIsResizingChild()
 		&& DragAndDropManager::isDragAndDropping() 
 		&& DragAndDropManager::getOperationType() == EditorDragAndDropType::EditorFrameDragAndDrop)
 	{
@@ -509,170 +633,310 @@ int EditorNodeDisplayLogic::drawDropZone(ImVec2 pos, ImVec2 size, bool isActive)
 		dropZoneAlpha = 255;
 
 
-	ImGui::GetWindowDrawList()->AddRectFilled(a, b, ImColor(0, 255, 255, dropZoneAlpha));
+	ImGui::GetWindowDrawList()->AddRectFilled(rectMin, recMax, ImColor(0, 255, 255, dropZoneAlpha));
 
 	return draggedWindowId;
 }
 
-void EditorNodeHorizontalDisplay::drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas)
+bool EditorNodeHorizontalDisplay::drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset)
 {
 	const ImVec2 recMin = ImGui::GetWindowContentRegionMin();
 	const ImVec2 recMax = ImGui::GetWindowContentRegionMin();
 	const ImVec2 recSize = ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight());
 	const int childCount = node.m_childNodes.size();
 	const float separatorWidth = 5.f;
+	//const float childWidth = (recSize.x - (childCount + 1)*separatorWidth - padding*2.f) / childCount;
+	//const float childHeight = recSize.y - padding*2.f;
 	const float padding = 2.f; //small top bottom right and left padding
-	const float childWidth = (recSize.x - (childCount + 1)*separatorWidth - padding*2.f) / childCount;
-	const float childHeight = recSize.y - padding*2.f;
-	const float separatorHeight = childHeight;
-
-	drawSeparator(0, separatorWidth, separatorHeight, node, editor);
+	const float separatorHeight = recSize.y;
 
 	bool removeChildNode = false;
 	int removeChildNodeId = -1;
+	bool isResizingChild = false;
+	ImVec2 currentSizeOffset(parentSizeOffset);
+	currentSizeOffset.x += 5.f * (node.getChildCount() + 1.f);
+	ImVec2 perChildSizeOffset(currentSizeOffset.x / (float)node.getChildCount(), currentSizeOffset.y);
 
-	for (int i = 0; i < node.m_childNodes.size(); i++)
+	isResizingChild |= drawSeparator(0, separatorWidth, separatorHeight, node, editor);
+
+	for (int i = 0; i < childCount; i++)
 	{
+		EditorNode& currentChildNode = *(node.m_childNodes[i]);
+
 		ImGui::PushID(i);
 
 		ImGui::SameLine();
 		ImGui::PushID("Child");
-		ImGui::BeginChild(i, ImVec2(childWidth, childHeight), true);
+		ImGui::BeginChild(i, ImVec2(currentChildNode.getSize().x - perChildSizeOffset.x, currentChildNode.getSize().y - perChildSizeOffset.y), true/*, ImGuiWindowFlags_NoScrollbar*/);
 
-		//We began to drag the node, we have to detach it from the parent window
-		if (ImGui::IsWindowHovered() && ImGui::IsMouseDragging()
-			&& node.m_childNodes[i]->getDisplayLogicType() == EditorNodeDisplayLogicType::FrameDisplay)
-		{
-			removeChildNode = true;
-			removeChildNodeId = i;
-		}
-		else
-			node.m_childNodes[i]->drawContent(project, editor, removeNodeDatas);
+		if(currentChildNode.drawContent(project, editor, removeNodeDatas, perChildSizeOffset))
+			removeNodeDatas->nodeToRemove = node.m_childNodes[i];
 
 		ImGui::EndChild();
 		ImGui::PopID();
 
 		ImGui::SameLine();
-		drawSeparator(i + 1, separatorWidth, separatorHeight, node, editor);
+		isResizingChild |= drawSeparator(i + 1, separatorWidth, separatorHeight, node, editor);
 
 		ImGui::PopID();
 	}
 
-	if (removeChildNode)
+	return false;
+}
+
+void EditorNodeHorizontalDisplay::onChildAdded(EditorNode& node, int index)
+{
+	node.m_childNodes[index]->setWidth(node.getSize().x / node.getChildCount());
+	node.m_childNodes[index]->setHeight(node.getSize().y);
+
+	const float availableWidth = node.getSize().x - node.m_childNodes[index]->getSize().x;
+
+	int currentIndex = 0;
+	for (auto& child : node.m_childNodes)
 	{
-		removeNodeDatas->index = removeChildNodeId;
-		removeNodeDatas->parentNode = &node;
+		if (currentIndex != index)
+		{
+			float lastRelativeWidth = child->getSize().x / node.getSize().x;
+			child->setWidth(availableWidth * lastRelativeWidth);
+		}
+
+		currentIndex++;
 	}
 }
 
-void EditorNodeHorizontalDisplay::drawSeparator(int index, float width, float height, EditorNode& node, Editor& editor)
+void EditorNodeHorizontalDisplay::onBeforeRemoveChild(EditorNode & node, int index)
 {
-	//firstseparator
+	const float lastAvailableWidth = node.getSize().x - node.m_childNodes[index]->getSize().x;
+
+	for (auto& child : node.m_childNodes)
+	{
+		float lastRelativeWidth = child->getSize().x / lastAvailableWidth;
+		child->setWidth(node.getSize().x * lastRelativeWidth);
+	}
+}
+
+bool EditorNodeHorizontalDisplay::drawSeparator(int index, float width, float height, EditorNode& node, Editor& editor)
+{
+	bool isResizingChild = false;
+
+	//Invisible button for behavior and sizes
 	ImGui::InvisibleButton("##button", ImVec2(width, height));
-	int droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectSize(), ImGui::IsWindowHovered());
+	const ImVec2 size = ImGui::GetItemRectSize();
+	const ImVec2 recMin = ImGui::GetItemRectMin();
+	const ImVec2 recMax = ImVec2(recMin.x + size.x, recMin.y + size.y);
+	const bool isButtonActive = ImGui::IsItemActive();
+	//Display the drop zone
+	int droppedWindowId = drawDropZone(recMin, recMax, ImGui::IsWindowHovered(), editor);
+
 	if (droppedWindowId != -1)
 	{
-		//we get the dragged node from its parent window id
+		//We get the dragged node from its parent window id
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
 
-		//assure we insert vertical node in an horizonatl list
+		//Assure we insert vertical node in an horizonatl list
 		std::shared_ptr<EditorNode> newNode = droppedNode;
 		if (droppedNode->getDisplayLogicType() != EditorNodeDisplayLogicType::VerticalDisplay)
 			newNode = std::make_shared<EditorNode>(std::make_shared<EditorNodeVerticalDisplay>(), droppedNode);
 
-		//we insert the new node
-		node.insertChild(newNode, 0);
+		if (node.getChildCount() == 1)
+		{
+			std::shared_ptr<EditorNode> child = node.getChild(0);
+			node.removeChild(0);
+			node.addChild(std::make_shared<EditorNode>(std::make_shared<EditorNodeVerticalDisplay>(), child));
+		}
 
-		//we delete the dragged window
+		//We insert the new node
+		node.insertChild(newNode, index);
+
+		//We delete the dragged window
 		editor.getWindowManager()->removeWindow(droppedWindowId);
 	}
+	else
+	{
+		//We handle the resize
+		if (isButtonActive)
+		{
+			if (index > 0)
+			{
+				const float lastWidth = node.getChild(index - 1)->getSize().x;
+				node.getChild(index - 1)->setWidth(lastWidth + ImGui::GetIO().MouseDelta.x);
+			}
+			if (index <= node.getChildCount())
+			{
+				const float lastWidth = node.getChild(index)->getSize().x;
+				node.getChild(index)->setWidth(lastWidth - ImGui::GetIO().MouseDelta.x);
+			}
+
+			isResizingChild = true;
+			editor.getWindowManager()->setIsResizingChild(true);
+		}
+	}
+
+	return isResizingChild;
 }
 
-void EditorNodeVerticalDisplay::drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas)
+bool EditorNodeVerticalDisplay::drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset)
 {
 	const ImVec2 recMin = ImGui::GetWindowContentRegionMin();
 	const ImVec2 recMax = ImGui::GetWindowContentRegionMin();
 	const ImVec2 recSize = ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight());
 	const int childCount = node.m_childNodes.size();
 	const float padding = 2.f; //small top bottom right and left padding
+	//const float childWidth = recSize.x - padding*2.f;
+	//const float childHeight = (recSize.y - (childCount + 1)*separatorHeight - padding*2.f) / childCount;
 	const float separatorHeight = 5.f;
-	const float childWidth = recSize.x - padding*2.f;
-	const float childHeight = (recSize.y - (childCount + 1)*separatorHeight - padding*2.f) / childCount;
-	const float separatorWidth = childWidth;
-
-	drawSeparator(0, separatorWidth, separatorHeight, node, editor);
+	const float separatorWidth = recSize.x;
 
 	bool removeChildNode = false;
 	int removeChildNodeId = -1;
+	bool isResizingChild = false;
+	ImVec2 currentSizeOffset(parentSizeOffset);
+	currentSizeOffset.y += 5.0f * (node.getChildCount() + 1.f);
+	ImVec2 perChildSizeOffset(currentSizeOffset.x, currentSizeOffset.y / (float)node.getChildCount());
+
+	isResizingChild |= drawSeparator(0, separatorWidth, separatorHeight, node, editor);
 
 	for (int i = 0; i < node.m_childNodes.size(); i++)
 	{
+		EditorNode& currentChildNode = *node.m_childNodes[i];
+
 		ImGui::PushID(i);
 
 		ImGui::PushID("Child");
-		ImGui::BeginChild(i, ImVec2(childWidth, childHeight), true);
+		ImGui::BeginChild(i, ImVec2(currentChildNode.getSize().x - perChildSizeOffset.x, currentChildNode.getSize().y - perChildSizeOffset.y), true/*, ImGuiWindowFlags_NoScrollbar*/);
 
-		//We began to drag the node, we have to detach it from the parent window
-		if (ImGui::IsWindowHovered() && ImGui::IsMouseDragging()
-			&& node.m_childNodes[i]->getDisplayLogicType() == EditorNodeDisplayLogicType::FrameDisplay)
-		{
-			removeChildNode = true;
-			removeChildNodeId = i;
-		}
-		else
-			node.m_childNodes[i]->drawContent(project, editor, removeNodeDatas);
+		if (currentChildNode.drawContent(project, editor, removeNodeDatas, perChildSizeOffset))
+			removeNodeDatas->nodeToRemove = node.m_childNodes[i];
 
 		ImGui::EndChild();
 		ImGui::PopID();
 
-		drawSeparator(i + 1, separatorWidth, separatorHeight, node, editor);
+		isResizingChild |= drawSeparator(i + 1, separatorWidth, separatorHeight, node, editor);
 
 		ImGui::PopID();
 	}
 
-	if (removeChildNode)
+	return false;
+}
+
+void EditorNodeVerticalDisplay::onChildAdded(EditorNode & node, int index)
+{
+	node.m_childNodes[index]->setWidth(node.getSize().x);
+	node.m_childNodes[index]->setHeight(node.getSize().y / (float) node.getChildCount());
+
+	const float availableHeight = node.getSize().y - node.m_childNodes[index]->getSize().y;
+
+	int currentIndex = 0;
+	for (auto& child : node.m_childNodes)
 	{
-		removeNodeDatas->index = removeChildNodeId;
-		removeNodeDatas->parentNode = &node;
+		if (currentIndex != index)
+		{
+			float lastRelativeHeight = child->getSize().y / (float) node.getSize().y;
+			child->setHeight(availableHeight * lastRelativeHeight);
+		}
+
+		currentIndex++;
 	}
 }
 
-void EditorNodeVerticalDisplay::drawSeparator(int index, float width, float height, EditorNode& node, Editor& editor)
+void EditorNodeVerticalDisplay::onBeforeRemoveChild(EditorNode & node, int index)
 {
-	//firstseparator
+	const float lastAvailableHeight = node.getSize().y - node.m_childNodes[index]->getSize().y;
+
+	for (auto& child : node.m_childNodes)
+	{
+		float lastRelativeHeight = child->getSize().y / lastAvailableHeight;
+		child->setHeight(node.getSize().y * lastRelativeHeight);
+	}
+}
+
+bool EditorNodeVerticalDisplay::drawSeparator(int index, float width, float height, EditorNode& node, Editor& editor)
+{
+	bool isResizingChild = false;
+
+	//Invisible button for behavior and sizes
 	ImGui::InvisibleButton("##button", ImVec2(width, height));
-	int droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectSize(), ImGui::IsWindowHovered());
+	const ImVec2 size = ImGui::GetItemRectSize();
+	const ImVec2 recMin = ImGui::GetItemRectMin();
+	const ImVec2 recMax = ImVec2(recMin.x + size.x, recMin.y + size.y);
+	const bool isButtonActive = ImGui::IsItemActive();
+	//Display the drop zone
+	int droppedWindowId = drawDropZone(recMin, recMax, ImGui::IsWindowHovered(), editor);
+
+	//We handle the window drop : 
 	if (droppedWindowId != -1)
 	{
-		//we get the dragged node from its parent window id
+		//We get the dragged node from its parent window id
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
 
-		//assure we insert horizontal node in a vertical list
+		//Assure we insert horizontal node in a vertical list
 		std::shared_ptr<EditorNode> newNode = droppedNode;
 		if (droppedNode->getDisplayLogicType() != EditorNodeDisplayLogicType::HorizontalDisplay)
 			newNode = std::make_shared<EditorNode>(std::make_shared<EditorNodeHorizontalDisplay>(), droppedNode);
 
-		//we insert the new node
-		node.insertChild(newNode, 0);
+		if (node.getChildCount() == 1)
+		{
+			std::shared_ptr<EditorNode> child = node.getChild(0);
+			node.removeChild(0);
+			node.addChild(std::make_shared<EditorNode>(std::make_shared<EditorNodeHorizontalDisplay>(), child));
+		}
 
-		//we delete the dragged window
+		//We insert the new node
+		node.insertChild(newNode, index);
+
+		//We delete the dragged window
 		editor.getWindowManager()->removeWindow(droppedWindowId);
 	}
+	else
+	{
+		//We handle the resize 
+		if (isButtonActive)
+		{
+			if (index > 0)
+			{
+				const float lastHeight = node.getChild(index - 1)->getSize().y;
+				node.getChild(index - 1)->setHeight(lastHeight + ImGui::GetIO().MouseDelta.y);
+			}
+			if (index <= node.getChildCount())
+			{
+				const float lastHeight = node.getChild(index)->getSize().y;
+				node.getChild(index)->setHeight(lastHeight - ImGui::GetIO().MouseDelta.y);
+			}
+
+			isResizingChild = true;
+			editor.getWindowManager()->setIsResizingChild(true);
+		}
+	}
+
+	return isResizingChild;
 }
 
-void EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas)
+void EditorNodeUniqueDisplay::onChildAdded(EditorNode & node, int index)
+{
+	assert(index == 0);
+	assert(node.getChildCount() == 1);
+
+	node.m_childNodes[index]->setWidth(node.getSize().x);
+	node.m_childNodes[index]->setHeight(node.getSize().y);
+}
+
+bool EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset)
 {
 	const ImVec2 recMin = ImGui::GetItemRectMin();
 	const ImVec2 recMax = ImGui::GetItemRectMax();
-	const ImVec2 recSize = ImGui::GetItemRectSize();
+	const ImVec2 recSize = ImVec2(ImGui::GetWindowContentRegionWidth(), recMax.y - recMin.y);
 	const int childCount = node.m_childNodes.size();
 	const float horizontalSeparatorHeight = 5.f;
 	const float verticalSeparatorWidth = 5.f;
-	const float padding = 2.f; //small top bottom right and left padding
+	const float padding = 0.f; //small top bottom right and left padding
 	const float childWidth = (recSize.x - 2*verticalSeparatorWidth - padding*2.f);
 	const float childHeight = (recSize.y - 2*horizontalSeparatorHeight - padding*2.f);
 	const float verticalSeparatorHeight = childHeight;
-	const float horizontalSeparatorWidth = childHeight;
+	const float horizontalSeparatorWidth = recSize.x;
+
+	ImVec2 currentSizeOffset(parentSizeOffset);
+	currentSizeOffset.x += 10.f;
+	currentSizeOffset.y += 10.f;
 
 	assert(childCount == 1);
 
@@ -683,7 +947,7 @@ void EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	ImGui::InvisibleButton("##button01", ImVec2(horizontalSeparatorWidth, horizontalSeparatorHeight));
 	//ImGui::EndChild();
 
-	int droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectSize(), ImGui::IsWindowHovered());
+	int droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor);
 	if (droppedWindowId != -1)
 	{
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
@@ -705,7 +969,7 @@ void EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	ImGui::InvisibleButton("##button02", ImVec2(verticalSeparatorWidth, verticalSeparatorHeight));
 	//ImGui::EndChild();
 
-	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectSize(), ImGui::IsWindowHovered());
+	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor);
 	if (droppedWindowId != -1)
 	{
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
@@ -723,8 +987,8 @@ void EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	}
 
 	ImGui::SameLine();
-	ImGui::BeginChild("##child", ImVec2(childWidth, childHeight), true);
-	node.m_childNodes[0]->drawContent(project, editor, removeNodeDatas);
+	ImGui::BeginChild("##child", ImVec2(childWidth, childHeight), true/*, ImGuiWindowFlags_NoScrollbar*/);
+	node.m_childNodes[0]->drawContent(project, editor, removeNodeDatas, currentSizeOffset);
 	ImGui::EndChild();
 
 	//right separator
@@ -733,7 +997,7 @@ void EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	ImGui::InvisibleButton("##button03", ImVec2(verticalSeparatorWidth, verticalSeparatorHeight));
 	//ImGui::EndChild();
 
-	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectSize(), ImGui::IsWindowHovered());
+	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor);
 	if (droppedWindowId != -1)
 	{
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
@@ -755,7 +1019,7 @@ void EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	ImGui::InvisibleButton("##button04", ImVec2(horizontalSeparatorWidth, horizontalSeparatorHeight));
 	//ImGui::EndChild();
 
-	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectSize(), ImGui::IsWindowHovered());
+	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor);
 	if (droppedWindowId != -1)
 	{
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
@@ -773,18 +1037,82 @@ void EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	}
 
 	ImGui::PopID();
+
+	return false;
 }
 
-void EditorNodeEmptyDisplay::drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas)
+bool EditorNodeEmptyDisplay::drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset)
 {
 	//TODO
+	return false;
 }
 
-void EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, Editor& editor, RemovedNodeDatas* removeNodeDatas)
+bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset)
 {
+	bool needRemove = false;
+
+	EditorStyleSheet::pushFramePadding();
 	ImGui::PushID(this);
+
+	//ImGui::BeginChild("##button", ImVec2(node.getSize().x - parentSizeOffset.x, 20), false, ImGuiWindowFlags_NoScrollbar);
+	////We began to drag the node, we have to detach it from the parent window
+	//if (node.getParentNode()->getDisplayLogicType() != EditorNodeDisplayLogicType::UniqueDisplay)
+	//{
+	//	////Draw custom button : 
+	//	{
+	//		//const char label[] = {'>', '\0'};
+	//		//const ImRect bb(ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionWidth() - 20, ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - 20
+	//		//	, ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowPos().y + ImGui::GetWindowHeight());
+	//		//const ImGuiID id = ImGui::GetCurrentWindow()->GetID(label);
+	//		//bool hovered, held;
+	//		//bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
+
+	//		//// Render
+	//		//const ImGuiStyle style = ImGui::GetStyle();
+	//		//const ImU32 col = ImGui::GetColorU32((hovered && held) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+	//		//ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
+	//		//ImGui::RenderTextClipped(ImVec2(bb.Min.x + style.FramePadding.x, bb.Min.y + style.FramePadding.y)
+	//		//	, ImVec2(bb.Max.x - style.FramePadding.x, bb.Max.y - style.FramePadding.y)
+	//		//	, label, NULL, nullptr, ImVec2(0.f, 0.f), &bb);
+
+	//		ImGui::Text(node.getFrameName().c_str());
+	//		ImGui::SameLine();
+	//		ImGui::Separator();
+	//		ImGui::SameLine();
+	//		ImGui::PushItemWidth(-20);
+	//		if (ImGui::SmallButton(">"))
+	//		{
+	//			needRemove = true;
+	//		}
+	//		ImGui::PopItemWidth();
+	//	}
+	//}
+	//ImGui::EndChild();
+	ImVec2 windowSize(node.getSize().x - parentSizeOffset.x, node.getSize().y - parentSizeOffset.y);
+	ImGui::BeginChild("##child", windowSize, true, ImGuiWindowFlags_HorizontalScrollbar /*, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar*/);
+
+	if (node.getParentNode()->getDisplayLogicType() != EditorNodeDisplayLogicType::UniqueDisplay)
+	{
+		ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetWindowPos(), ImVec2(ImGui::GetWindowPos().x + windowSize.x, ImGui::GetWindowPos().y + 20), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_TitleBg]));
+		if (ImGui::SmallButton(">"))
+		{
+			needRemove = true;
+		}
+		ImGui::SameLine();
+		ImGui::Dummy(ImVec2(10, 0));
+		ImGui::SameLine();
+		ImGui::Text(node.getFrameName().c_str());
+	}
+	ImGui::Separator();
+
 	node.getFrame()->drawContent(project, nullptr);
+	ImGui::EndChild();
+
 	ImGui::PopID();
+
+	EditorStyleSheet::popFramePadding();
+
+	return needRemove;
 }
 
 
@@ -830,64 +1158,148 @@ void EditorModal::closeModal()
 
 EditorWindow::EditorWindow(int windowId, std::shared_ptr<EditorFrame> frame) 
 	: m_windowId(windowId)
+	, m_size(200, 300)
+	, m_position(0, 0)
+	, m_alpha(1)
 {
-	m_node = std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), std::make_shared<EditorNode>(frame));
+	setNode(std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), std::make_shared<EditorNode>(frame)));
 	m_windowStrId = "editorWindow_" + std::to_string(m_windowId);
 }
 
 EditorWindow::EditorWindow(int windowId, std::shared_ptr<EditorNode> node)
 	: m_windowId(windowId)
+	, m_size(200, 300)
+	, m_position(0, 0)
+	, m_alpha(1)
 {
-	m_node = std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), node);
+	setNode(std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), node));
 	m_windowStrId = "editorWindow_" + std::to_string(m_windowId);
 }
 
 void EditorWindow::draw(Project& project, Editor& editor)
 {
 	RemovedNodeDatas removeNodeDatas;
+	ImVec2 currentWindowSize = m_size;
+	ImVec2 currentWindowPosition = m_position;
+
+	////BEGIN DRAW
+
+	//Override style
+	float previousAlpha = ImGui::GetStyle().Alpha;
+	ImGui::GetStyle().Alpha = m_alpha;
 
 	////TODO : move this code
 	if (m_node->getDisplayLogicType() == EditorNodeDisplayLogicType::UniqueDisplay
 		&& m_node->getChildCount() == 1 && m_node->getChild(0)->getDisplayLogicType() == EditorNodeDisplayLogicType::FrameDisplay)
 	{
 		m_windowLabel = m_node->getFrameName();
-		ImGui::Begin(m_windowLabel.data(), nullptr);
+		//ImGui::Begin(m_windowLabel.data(), nullptr/*, ImGuiWindowFlags_NoScrollbar*/);
 	}
-	else
-		ImGui::Begin( ("##"+m_windowStrId).c_str(), nullptr);
+	//else
+	//	ImGui::Begin( ("##"+m_windowStrId).c_str(), nullptr/*, ImGuiWindowFlags_NoScrollbar*/);
 
-	//launch drag and drop of the window
-	if (ImGui::IsWindowHovered() && ImGui::IsMouseDragging())
-	{
-		DragAndDropManager::beginDragAndDrop(std::make_shared<EditorFrameDragAndDropOperation>(m_windowId));
-	}
-
+	ImGui::SetNextWindowPos(m_position);
+	ImGui::Begin(m_windowStrId.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar);
 	ImGui::PushID(m_windowStrId.c_str());
 
-	m_node->drawContent(project, editor, &removeNodeDatas);
+	bool shouldClose = false, shouldMove = false;
+	drawHeader(m_windowLabel, shouldClose, shouldMove);
+	//launch drag and drop of the window
+	if (shouldMove)
+		DragAndDropManager::beginDragAndDrop(std::make_shared<EditorFrameDragAndDropOperation>(m_windowId, &editor));
+	else 
+	{
+		currentWindowPosition = ImGui::GetWindowPos();
+	}
+
+	ImGui::BeginChild("##childs", ImVec2(0, 0), false);
+	ImVec2 sizeOffset(0, 0);
+	m_node->drawContent(project, editor, &removeNodeDatas, sizeOffset);
+	currentWindowSize = ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowContentRegionMax().y - ImGui::GetWindowContentRegionMin().y);
+	ImGui::EndChild();
 
 	ImGui::PopID();
 	ImGui::End();
 
-	//we want to remove a node
-	if (removeNodeDatas.parentNode != nullptr && removeNodeDatas.index != -1)
+	ImGui::GetStyle().Alpha = previousAlpha;
+
+	////END DRAW
+
+	//We have resized the window
+	if (std::abs(currentWindowSize.x - m_size.x) > 0.1f || std::abs(currentWindowSize.y - m_size.y) > 0.1f)
 	{
-		std::shared_ptr<EditorNode> childNode = removeNodeDatas.parentNode->getChild(removeNodeDatas.index);
-		removeNodeDatas.parentNode->removeChild(removeNodeDatas.index);
-		editor.getWindowManager()->addWindowAsynchrone(childNode);
-		removeNodeDatas.parentNode->onChildRemoved();
+		m_size = currentWindowSize;
+		m_node->setWidth(m_size.x);
+		m_node->setHeight(m_size.y);
+	}
+	//we have moved the window
+	if (std::abs(currentWindowPosition.x - m_position.x) > 0.1f || std::abs(currentWindowPosition.y - m_position.y) > 0.1f)
+	{
+		m_position = currentWindowPosition;
 	}
 
+	//We want to remove a node
+	if (removeNodeDatas.nodeToRemove)
+	{
+		auto parentNode = removeNodeDatas.nodeToRemove->getParentNode();
+		parentNode->removeChild(removeNodeDatas.nodeToRemove.get());
+		editor.getWindowManager()->addWindowAsynchrone(removeNodeDatas.nodeToRemove);
+		parentNode->onChildRemoved();
+		//std::shared_ptr<EditorNode> childNode = removeNodeDatas.parentNode->getChild(removeNodeDatas.index);
+		//removeNodeDatas.parentNode->removeChild(removeNodeDatas.index);
+		//editor.getWindowManager()->addWindowAsynchrone(childNode);
+		//removeNodeDatas.parentNode->onChildRemoved();
+	}
+
+	//We want to close the window
+	//close window
+	if (!shouldMove && shouldClose)
+	{
+		editor.getWindowManager()->removeWindow(m_windowId);
+	}
 }
 
 void EditorWindow::setNode(std::shared_ptr<EditorNode> newNode)
 {
 	m_node = newNode;
+	m_node->setWidth(m_size.x);
+	m_node->setHeight(m_size.y);
 }
 
 std::shared_ptr<EditorNode> EditorWindow::getNode() const
 {
 	return m_node;
+}
+
+void EditorWindow::setAlpha(float alpha)
+{
+	m_alpha = alpha;
+}
+
+float EditorWindow::getAlpha() const
+{
+	return m_alpha;
+}
+
+void EditorWindow::drawHeader(const std::string& title, bool& shouldClose, bool& shouldMove)
+{
+	ImGui::PushID(title.c_str());
+	ImGui::BeginChild("##Header", ImVec2(0, 20), false);
+	ImGui::Text(title.c_str());
+	float textWidth = ImGui::GetItemRectSize().x;
+	ImGui::SameLine();
+	ImGui::Dummy(ImVec2(ImGui::GetWindowWidth() - 25 - textWidth, 0));
+	ImGui::SameLine();
+	shouldClose = ImGui::Button("><##Header", ImVec2(20, 20));
+	shouldMove = ImGui::IsMouseHoveringWindow() && ImGui::IsWindowFocused() && ImGui::IsMouseDragging();
+	ImGui::EndChild();
+	ImGui::PopID();
+}
+
+void EditorWindow::move(const ImVec2 & delta)
+{
+	m_position.x += delta.x;
+	m_position.y += delta.y;
 }
 
 
@@ -926,6 +1338,16 @@ void EditorWindowManager::removeModal(int modalId)
 {
 	m_editorModals[modalId].reset();
 	m_freeModalIds.push_back(modalId);
+}
+
+void EditorWindowManager::setIsResizingChild(bool state)
+{
+	m_isResizingChild = state;
+}
+
+bool EditorWindowManager::getIsResizingChild() const
+{
+	return m_isResizingChild;
 }
 
 void EditorWindowManager::displayModals(Project& project, Editor& editor)
@@ -1030,8 +1452,109 @@ void EditorWindowManager::update()
 		addWindow(windowToAdd);
 	}
 	m_windowsToAdd.clear();
+
+	if(ImGui::IsMouseReleased(GLFW_MOUSE_BUTTON_LEFT))
+		setIsResizingChild(false);
 }
 
 
 //// END : Editor Window manager
+///////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////
+//// BEGIN : Editor style sheet
+
+namespace EditorStyleSheet {
+
+	void applyDefaultStyleSheet()
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		//Scrollbar
+		style.ScrollbarRounding = 0.5f;
+		style.ScrollbarSize = 10.0f;
+		//Frame
+		style.FrameRounding = 0.5f;
+		style.FramePadding = ImVec2(1, 1);
+		//Grab
+		style.GrabMinSize = 3.f;
+		style.GrabRounding = 0.5f;
+		//Window
+		style.WindowPadding = ImVec2(0.0f, 0.0f);
+		style.WindowRounding = 0.5f;
+		//Spacing
+		style.ItemSpacing = ImVec2(0.0f, 0.0f);
+
+		//Colors
+		ImColor mainBgColor(0.4f, 0.4f, 0.4f);
+		ImColor mainBgTitleColor(0.6f, 0.6f, 0.6f);
+		ImColor mainBgChildColor(0.5f, 0.5f, 0.5f);
+		ImColor mainBorderColor(0.5f, 0.5f, 0.0f);
+		ImColor mainTextColor(1.f, 1.f, 1.f);
+		ImColor mainHoveredColor(0.3f, 0.3f, 0.3f);
+		ImColor mainActiveColor(0.4f, 0.4f, 0.4f);
+		ImColor mainDisabledColor(0.8f, 0.8f, 0.8f);
+
+
+		style.Colors[ImGuiCol_Text] = mainTextColor;
+		style.Colors[ImGuiCol_TextDisabled] = mainDisabledColor;
+		style.Colors[ImGuiCol_WindowBg] = mainBgColor;              // Background of normal windows
+		style.Colors[ImGuiCol_ChildWindowBg] = mainBgChildColor;         // Background of child windows
+		style.Colors[ImGuiCol_PopupBg] = mainBgChildColor;               // Background of popups, menus, tooltips windows
+		style.Colors[ImGuiCol_Border] = mainBorderColor;
+		//style.Colors[ImGuiCol_BorderShadow] 
+		style.Colors[ImGuiCol_FrameBg] = mainBgColor;               // Background of checkbox, radio button, plot, slider, text input
+		style.Colors[ImGuiCol_FrameBgHovered] = mainHoveredColor;
+		style.Colors[ImGuiCol_FrameBgActive] = mainActiveColor;
+		style.Colors[ImGuiCol_TitleBg] = mainBgTitleColor;
+		style.Colors[ImGuiCol_TitleBgCollapsed] = mainBgTitleColor;
+		style.Colors[ImGuiCol_TitleBgActive] = mainBgTitleColor;
+		style.Colors[ImGuiCol_MenuBarBg] = mainBgTitleColor;
+		//style.Colors[ImGuiCol_ScrollbarBg],
+		//style.Colors[ImGuiCol_ScrollbarGrab],
+		//style.Colors[ImGuiCol_ScrollbarGrabHovered],
+		//style.Colors[ImGuiCol_ScrollbarGrabActive],
+		//style.Colors[ImGuiCol_ComboBg],
+		//style.Colors[ImGuiCol_CheckMark],
+		//style.Colors[ImGuiCol_SliderGrab],
+		//style.Colors[ImGuiCol_SliderGrabActive],
+		//style.Colors[ImGuiCol_Button],
+		//style.Colors[ImGuiCol_ButtonHovered],
+		//style.Colors[ImGuiCol_ButtonActive],
+		//style.Colors[ImGuiCol_Header],
+		//style.Colors[ImGuiCol_HeaderHovered],
+		//style.Colors[ImGuiCol_HeaderActive],
+		//style.Colors[ImGuiCol_Column],
+		//style.Colors[ImGuiCol_ColumnHovered],
+		//style.Colors[ImGuiCol_ColumnActive],
+		//style.Colors[ImGuiCol_ResizeGrip],
+		//style.Colors[ImGuiCol_ResizeGripHovered],
+		//style.Colors[ImGuiCol_ResizeGripActive],
+		//style.Colors[ImGuiCol_CloseButton],
+		//style.Colors[ImGuiCol_CloseButtonHovered],
+		//style.Colors[ImGuiCol_CloseButtonActive],
+		//style.Colors[ImGuiCol_PlotLines],
+		//style.Colors[ImGuiCol_PlotLinesHovered],
+		//style.Colors[ImGuiCol_PlotHistogram],
+		//style.Colors[ImGuiCol_PlotHistogramHovered],
+		//style.Colors[ImGuiCol_TextSelectedBg],
+		//style.Colors[ImGuiCol_ModalWindowDarkening],  // darken entire screen when a modal window is active
+	}
+
+	void pushFramePadding()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.f, 3.f));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.f, 3.f));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(3.f, 3.f));
+	}
+
+	void popFramePadding()
+	{
+		ImGui::PopStyleVar(3);
+	}
+
+}
+
+
+//// END : Editor style sheet
 ///////////////////////////////////////////////////////////

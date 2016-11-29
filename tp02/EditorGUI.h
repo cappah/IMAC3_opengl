@@ -94,8 +94,10 @@ class EditorFrameDragAndDropOperation : public DragAndDropOperation
 private:
 	//Don't use it directly ! otherwise, use a shared_from_this. We only need this to get the node of the window.
 	int m_currentDraggedWindowId;
+	Editor* m_editorPtr;
+
 public:
-	EditorFrameDragAndDropOperation(int currentDraggedWindowId);
+	EditorFrameDragAndDropOperation(int currentDraggedWindowId, Editor* editor);
 	virtual void dragOperation() override;
 	virtual void dropOperation(void* customData, int dropContext) override;
 	virtual void cancelOperation() override;
@@ -125,9 +127,12 @@ private:
 public:
 	EditorNodeDisplayLogic(EditorNodeDisplayLogicType logicType) : m_logicType(logicType)
 	{}
-	virtual void drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas = nullptr) = 0;
+	virtual bool drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset) = 0;
+
+	virtual void onChildAdded(EditorNode& node, int index) {};
+	virtual void onBeforeRemoveChild(EditorNode& node, int index) {};
 	EditorNodeDisplayLogicType getLogicType() const { return m_logicType; }
-	int drawDropZone(ImVec2 pos, ImVec2 size, bool isActive);
+	int drawDropZone(ImVec2 pos, ImVec2 size, bool isActive, Editor& editor);
 };
 
 class EditorNodeHorizontalDisplay : public EditorNodeDisplayLogic
@@ -135,9 +140,11 @@ class EditorNodeHorizontalDisplay : public EditorNodeDisplayLogic
 public:
 	EditorNodeHorizontalDisplay() : EditorNodeDisplayLogic(EditorNodeDisplayLogicType::HorizontalDisplay)
 	{}
-	virtual void drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas = nullptr) override;
+	virtual bool drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset) override;
 
-	void drawSeparator(int index, float width, float height, EditorNode& node, Editor& editor);
+	virtual void onChildAdded(EditorNode& node, int index) override;
+	virtual void onBeforeRemoveChild(EditorNode& node, int index) override;
+	bool drawSeparator(int index, float width, float height, EditorNode& node, Editor& editor);
 };
 
 class EditorNodeVerticalDisplay : public EditorNodeDisplayLogic
@@ -145,9 +152,11 @@ class EditorNodeVerticalDisplay : public EditorNodeDisplayLogic
 public:
 	EditorNodeVerticalDisplay() : EditorNodeDisplayLogic(EditorNodeDisplayLogicType::VerticalDisplay)
 	{}
-	virtual void drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas = nullptr) override;
+	virtual bool drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset) override;
 
-	void drawSeparator(int index, float width, float height, EditorNode& node, Editor& editor);
+	virtual void onChildAdded(EditorNode& node, int index) override;
+	virtual void onBeforeRemoveChild(EditorNode& node, int index) override;
+	bool drawSeparator(int index, float width, float height, EditorNode& node, Editor& editor);
 };
 
 class EditorNodeUniqueDisplay : public EditorNodeDisplayLogic
@@ -155,7 +164,10 @@ class EditorNodeUniqueDisplay : public EditorNodeDisplayLogic
 public:
 	EditorNodeUniqueDisplay() : EditorNodeDisplayLogic(EditorNodeDisplayLogicType::UniqueDisplay)
 	{}
-	virtual void drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas = nullptr) override;
+
+	virtual bool drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset) override;
+
+	virtual void onChildAdded(EditorNode& node, int index) override;
 };
 
 class EditorNodeEmptyDisplay : public EditorNodeDisplayLogic
@@ -163,7 +175,7 @@ class EditorNodeEmptyDisplay : public EditorNodeDisplayLogic
 public:
 	EditorNodeEmptyDisplay() : EditorNodeDisplayLogic(EditorNodeDisplayLogicType::EmptyDisplay)
 	{}
-	virtual void drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas = nullptr) override;
+	virtual bool drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset) override;
 };
 
 class EditorNodeFrameDisplay : public EditorNodeDisplayLogic
@@ -171,7 +183,7 @@ class EditorNodeFrameDisplay : public EditorNodeDisplayLogic
 public:
 	EditorNodeFrameDisplay() : EditorNodeDisplayLogic(EditorNodeDisplayLogicType::FrameDisplay)
 	{}
-	virtual void drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas = nullptr) override;
+	virtual bool drawContent(EditorNode& node, Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset) override;
 };
 
 class EditorNode
@@ -181,20 +193,31 @@ private:
 	std::vector<std::shared_ptr<EditorNode>> m_childNodes;
 	std::shared_ptr<EditorFrame> m_frame;
 	EditorNode* m_parent;
+	ImVec2 m_size;
+	//ImVec2 m_sizeOffset;
+	//ImVec2 m_correctedSize;
 
 public:
 	EditorNode::EditorNode(std::shared_ptr<EditorNodeDisplayLogic> displayLogic);
 	EditorNode(std::shared_ptr<EditorNodeDisplayLogic> displayLogic, std::shared_ptr<EditorNode> firstNode);
 	EditorNode(std::shared_ptr<EditorFrame> frame);
 	EditorNode* EditorNode::getParentNode() const;
+	const ImVec2& getSize() const;
+	//const ImVec2& getSizeOffset() const;
+	//const ImVec2& getCorrectedSize() const;
+	void setWidth(float newWidth);
+	void setHeight(float newHeight);
 
 	void removeChild(int index);
+	void removeChild(EditorNode* nodeToRemove);
 	void addChild(std::shared_ptr<EditorNode> childNode);
 	int getChildCount() const;
 	std::shared_ptr<EditorNode> getChild(int index) const;
 	void insertChild(std::shared_ptr<EditorNode> childNode, int index);
+	void onChildAdded(int index);
+	void onBeforeRemoveChild(int index);
 
-	void drawContent(Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas);
+	bool drawContent(Project& project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset);
 	void setDisplayLogic(std::shared_ptr<EditorNodeDisplayLogic> displayLogic);
 	EditorNodeDisplayLogicType getDisplayLogicType() const;
 	const std::string& getFrameName() const;
@@ -239,23 +262,22 @@ public:
 
 //A small helper to allaw asynchronous node removal
 struct RemovedNodeDatas {
-	int index;
-	EditorNode* parentNode;
-
-	RemovedNodeDatas() : parentNode(nullptr), index(-1)
-	{}
+	std::shared_ptr<EditorNode> nodeToRemove;
 };
 
 //A window displayed in the editor
 class EditorWindow
 {
-
 protected:
 	std::string m_windowLabel;
 	std::string m_windowStrId;
 	int m_windowId;
 	std::shared_ptr<EditorNode> m_node;
+	ImVec2 m_size;
+	ImVec2 m_position;
 
+	//Style
+	float m_alpha; //[0.f, 1.f]
 public:
 	EditorWindow(int windowId, std::shared_ptr<EditorFrame> frame);
 	EditorWindow(int windowId, std::shared_ptr<EditorNode> node);
@@ -263,6 +285,13 @@ public:
 
 	void setNode(std::shared_ptr<EditorNode> newNode);
 	std::shared_ptr<EditorNode> getNode() const;
+
+	void setAlpha(float alpha);
+	float getAlpha() const;
+
+	void drawHeader(const std::string& title, bool& shouldClose, bool& shouldMove);
+
+	void move(const ImVec2& delta);
 };
 
 
@@ -279,6 +308,8 @@ private:
 	std::vector<std::shared_ptr<EditorModal>> m_editorModals;
 	std::vector<int> m_freeModalIds;
 
+	bool m_isResizingChild;
+
 public:
 
 	void displayWindows(Project& project, Editor& editor);
@@ -294,11 +325,29 @@ public:
 	void removeModal(EditorModal* modal);
 	void removeModal(int modalId);
 
+	void setIsResizingChild(bool state);
+	bool getIsResizingChild() const;
+
 	//deals with asynchonous commands
 	void update();
 };
 
 //// END : Editor windows
+///////////////////////////////////////////
+
+
+///////////////////////////////////////////
+//// BEGIN : Editor style sheet
+
+namespace EditorStyleSheet
+{
+	void applyDefaultStyleSheet();
+	void pushFramePadding();
+	void popFramePadding();
+};
+
+
+//// END : Editor style sheet
 ///////////////////////////////////////////
 
 

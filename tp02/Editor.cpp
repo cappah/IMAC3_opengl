@@ -273,14 +273,14 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 
 	init_gui_states(m_guiStates);
 
-	//ui : 
+	//UI : 
 	m_windowDecal = glm::vec2(1, 20);
 	m_windowRect = glm::vec4(m_windowDecal.x, m_windowDecal.y, Application::get().getWindowWidth(), Application::get().getWindowHeight());
 	m_topLeftPanelRect = glm::vec4(m_windowRect.x, m_windowRect.y, 100, 200);
 	m_bottomLeftPanelRect = glm::vec4(m_windowRect.x,m_topLeftPanelRect.w, m_topLeftPanelRect.z, m_windowRect.w - m_topLeftPanelRect.w);
 	m_bottomPanelRect = glm::vec4(m_windowRect.x + m_topLeftPanelRect.z, 200, m_windowRect.z - m_topLeftPanelRect.z, m_windowRect.w - 200 );
 
-	//defaults : 
+	//Defaults : 
 	m_terrainToolVisible = true;
 	m_skyboxToolVisible = false;
 	m_textureFactoryVisible = false;
@@ -291,7 +291,7 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	m_sceneManagerVisible = false;
 	m_skeletalAnimationFactoryVisible = false;
 
-	//models : 
+	//Models : 
 	m_resourceTree = std::make_shared<ResourceTree>(Project::getAssetsFolderPath());
 
 	//Open default windows : 
@@ -301,6 +301,9 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>()); //Scene manager
 	m_windowManager.addWindow(std::make_shared<FactoriesDebugEditorFrame>()); //Factories debuger
 	m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>()); //Viewport
+
+	//Apply default style sheet
+	EditorStyleSheet::applyDefaultStyleSheet();
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -1246,7 +1249,7 @@ void Editor::renderUI(Project& project)
 	displayModals(project);
 
 	//%NOCOMMIT% test only
-	//ImGui::ShowTestWindow();
+	ImGui::ShowTestWindow();
 
 	//asynchonous commands : 
 	m_windowManager.update();
