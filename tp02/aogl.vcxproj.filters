@@ -178,6 +178,15 @@
     <ClCompile Include="FrameBuffer.cpp">
       <Filter>Utils\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="EditorFrames.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorNodes.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorWindowManager.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -370,6 +379,15 @@
     </ClInclude>
     <ClInclude Include="FrameBuffer.h">
       <Filter>Utils\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorFrames.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorNodes.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorWindowManager.h">
+      <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

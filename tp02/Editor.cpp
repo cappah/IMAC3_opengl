@@ -8,9 +8,7 @@
 #include "InputHandler.h"
 #include "Project.h"
 #include "EditorGUI.h"
-#include "EditorWindows.h"
-
-
+#include "EditorFrames.h"
 
 ///////////////////////////////// INSPECTOR
 
@@ -294,16 +292,25 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	//Models : 
 	m_resourceTree = std::make_shared<ResourceTree>(Project::getAssetsFolderPath());
 
+	//Main window : 
+	//m_windowManager.getBackgroundWindow()->setNode(std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), std::make_shared<EditorNode>(std::make_shared<ViewportEditorFrame>("Viewport")))); //Viewport
+	m_windowManager.setBackgroundWindow(std::make_shared<EditorBackgroundWindow>(std::make_shared<ViewportEditorFrame>("Viewport")));
+
+
 	//Open default windows : 
-	m_windowManager.addWindow(std::make_shared<ResourceTreeView>(m_resourceTree.get())); //ResourceWindow
-	m_windowManager.addWindow(std::make_shared<TerrainToolEditorFrame>()); //Terrain tool
-	m_windowManager.addWindow(std::make_shared<SkyboxToolEditorFrame>()); //Skybox tool
-	m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>()); //Scene manager
-	m_windowManager.addWindow(std::make_shared<FactoriesDebugEditorFrame>()); //Factories debuger
-	m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>()); //Viewport
+	//m_windowManager.addWindow(std::make_shared<ResourceTreeView>(m_resourceTree.get())); //ResourceWindow
+	//m_windowManager.addWindow(std::make_shared<TerrainToolEditorFrame>()); //Terrain tool
+	//m_windowManager.addWindow(std::make_shared<SkyboxToolEditorFrame>()); //Skybox tool
+	//m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>()); //Scene manager
+	//m_windowManager.addWindow(std::make_shared<FactoriesDebugEditorFrame>()); //Factories debuger
 
 	//Apply default style sheet
 	EditorStyleSheet::applyDefaultStyleSheet();
+}
+
+float Editor::getMenuTopOffset() const
+{
+	return m_menuTopOffset;
 }
 
 void Editor::changeCurrentSelected(Entity* entity)
@@ -466,278 +473,339 @@ void Editor::displayMenuBar(Project& project)
 
 	if (ImGui::BeginMainMenuBar())
 	{
-		if (ImGui::BeginMenu("options"))
-		{
-			if (ImGui::Selectable("save"))
-			{
-				if (project.getName() == "")
-					m_saveWindowOpen = true;
-				else
-					project.save();
-				//ImGui::OpenPopup("save window");
-			}
-			if (ImGui::Selectable("save as"))
-			{
-				m_saveWindowOpen = true;
-			}
-			if(ImGui::Selectable("load"))
-			{
-				m_loadWindowOpen = true;
-				//ImGui::OpenPopup("load window");
-			}
+		drawMenuEntry_options(project);
+		drawMenuEntry_visibilities(scene);
+		drawMenuEntry_windows();
+		drawMenuEntry_addEntity(scene);
+		drawMenuEntry_camera();
+		drawMenuEntry_playModes(project);
 
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("toggle visibility"))
-		{
-			if (ImGui::RadioButton("colliders visibility", scene.getAreCollidersVisible()))
-			{
-				scene.toggleColliderVisibility();
-			}
-
-			if (ImGui::RadioButton("debug deferred visibility", scene.getIsDebugDeferredVisible()))
-			{
-				scene.toggleDebugDeferredVisibility();
-			}
-
-			if (ImGui::RadioButton("debug physic visibility", scene.getIsDebugPhysicVisible()))
-			{
-				scene.toggleDebugPhysicVisibility();
-			}
-
-			if (ImGui::RadioButton("gizmo visibility", m_isGizmoVisible))
-			{
-				toggleGizmoVisibility();
-			}
-
-			if (ImGui::RadioButton("light boundingBox visibility", scene.getAreLightsBoundingBoxVisible()))
-			{
-				scene.toggleLightsBoundingBoxVisibility();
-			}
-
-			if (ImGui::RadioButton("octrees visibility", scene.getAreOctreesVisible()))
-			{
-				scene.toggleOctreesVisibility();
-			}
-
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Add default entities"))
-		{
-			if (ImGui::Button("add empty entity"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				newEntity->add(newCollider);
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("add pointLight"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto light = new PointLight();
-				light->setBoundingBoxVisual( getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				newEntity->add(newCollider).add(light);
-				newEntity->setName("point light");
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("add directionalLight"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto light = new DirectionalLight();
-				newEntity->add(newCollider).add(light);
-				newEntity->setName("directional light");
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("add spotLight"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto light = new SpotLight();
-				light->setBoundingBoxVisual(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				newEntity->add(newCollider).add(light);
-				newEntity->setName("spot light");
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-
-			if (ImGui::Button("add cube"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto meshRenderer = new MeshRenderer(getMeshFactory().getDefault("cube"), getMaterialFactory().getDefault("brick"));
-				newEntity->add(newCollider).add(meshRenderer);
-				newEntity->setName("cube");
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-
-			if (ImGui::Button("add Camera"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto camera = new Camera();
-				newEntity->add(newCollider).add(camera);
-				newEntity->setName("camera");
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-
-			if (ImGui::Button("add flag"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto flag = new Physic::Flag(getMaterialFactory().getDefault("defaultLit"), 10);
-				newEntity->add(newCollider).add(flag);
-				newEntity->setName("flag");
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-
-			if (ImGui::Button("add path point"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto pathPoint = new PathPoint();
-				newEntity->add(newCollider).add(pathPoint);
-				newEntity->setName("path point");
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-
-			if (ImGui::Button("add wind zone"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto windZone = new Physic::WindZone();
-				newEntity->add(newCollider).add(windZone);
-				newEntity->setName("wind zone");
-
-				newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
-				changeCurrentSelected(newEntity);
-			}
-
-			if (ImGui::Button("add billboard"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto billboard = new Billboard();
-				newEntity->add(newCollider).add(billboard);
-				newEntity->setName("billboard");
-			}
-
-			if (ImGui::Button("add particle emitter"))
-			{
-				auto newEntity = new Entity(&scene);
-				auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
-				auto particleEmitter = new Physic::ParticleEmitter();
-				newEntity->add(newCollider).add(particleEmitter);
-				newEntity->setName("particle emitter");
-			}
-
-
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("camera mode"))
-		{
-			if (ImGui::RadioButton("editor camera", !m_cameraFPS))
-			{
-				if (m_cameraFPS)
-				{
-					//CameraEditor* newCam = new CameraEditor();
-					////newCam->switchFromCameraFPS(*m_camera); //set up the camera
-					//delete m_camera;
-					//m_camera = newCam;
-					//toogleCamera(*m_camera);
-					m_camera->setFPSMode(false);
-					m_cameraFPS = false;
-				}
-			}
-			if (ImGui::RadioButton("FPS camera", m_cameraFPS))
-			{
-				if (!m_cameraFPS)
-				{
-					//CameraFPS* newCam = new CameraFPS();
-					////newCam->switchFromCameraEditor(*m_camera); //set up the camera
-					//delete m_camera;
-					//m_camera = newCam;
-					//toogleCamera(*m_camera);
-					m_camera->setFPSMode(true);
-					m_cameraFPS = true;
-				}
-			}
-			if (ImGui::RadioButton("hide cursor", m_hideCursorWhenMovingCamera))
-			{
-				m_hideCursorWhenMovingCamera = !m_hideCursorWhenMovingCamera;
-			}
-			ImGui::SliderFloat("camera base speed", &m_cameraBaseSpeed, 0.01f, 1.f);
-			ImGui::SliderFloat("camera boost speed", &m_cameraBoostSpeed, 0.01f, 1.f);
-			float tmpFloat = m_camera->getFOV();
-			if(ImGui::SliderFloat("camera fov", &(tmpFloat), 0.f, glm::pi<float>()))
-				m_camera->setFOV(tmpFloat);
-
-			tmpFloat = m_camera->getNear();
-			if (ImGui::SliderFloat("camera near", &(tmpFloat), 0.001f, 5.f))
-				m_camera->setNear(tmpFloat);
-
-			tmpFloat = m_camera->getFar();
-			if (ImGui::SliderFloat("camera far", &(tmpFloat), 0.01f, 1000.f))
-				m_camera->setFar(tmpFloat);
-
-			tmpFloat = m_camera->getAspect();
-			if (ImGui::SliderFloat("camera aspect", &(tmpFloat), 0.01f, 10.f))
-				m_camera->setAspect(tmpFloat);
-
-			ImGui::EndMenu();
-		}
-
-		if (!m_isPlaying)
-		{
-			if (ImGui::Button("play"))
-				launchGameInEditMode(project);
-		}
-		else{
-			if (ImGui::Button("stop"))
-			{
-				stopGameInEditMode(project);
-			}
-			ImGui::SameLine();
-			if (m_isOwningPlayer) 
-			{
-				if (ImGui::Button("eject"))
-				{
-					ejectPlayerFromPawn();
-				}
-			}
-			else 
-			{
-				if (ImGui::Button("possess"))
-				{
-					possessPawn();
-				}
-			}
-		}
 		ImGui::SameLine();
 		ImGui::Text("                     Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
+		m_menuTopOffset = ImGui::GetWindowHeight();
+
 		ImGui::EndMainMenuBar();
 	}
+}
 
+void Editor::drawMenuEntry_options(Project& project)
+{
+	if (ImGui::BeginMenu("options"))
+	{
+		if (ImGui::Selectable("save"))
+		{
+			if (project.getName() == "")
+				m_saveWindowOpen = true;
+			else
+				project.save();
+			//ImGui::OpenPopup("save window");
+		}
+		if (ImGui::Selectable("save as"))
+		{
+			m_saveWindowOpen = true;
+		}
+		if (ImGui::Selectable("load"))
+		{
+			m_loadWindowOpen = true;
+			//ImGui::OpenPopup("load window");
+		}
+
+		ImGui::EndMenu();
+	}
+}
+
+void Editor::drawMenuEntry_visibilities(Scene& scene)
+{
+	if (ImGui::BeginMenu("toggle visibility"))
+	{
+		if (ImGui::RadioButton("colliders visibility", scene.getAreCollidersVisible()))
+		{
+			scene.toggleColliderVisibility();
+		}
+
+		if (ImGui::RadioButton("debug deferred visibility", scene.getIsDebugDeferredVisible()))
+		{
+			scene.toggleDebugDeferredVisibility();
+		}
+
+		if (ImGui::RadioButton("debug physic visibility", scene.getIsDebugPhysicVisible()))
+		{
+			scene.toggleDebugPhysicVisibility();
+		}
+
+		if (ImGui::RadioButton("gizmo visibility", m_isGizmoVisible))
+		{
+			toggleGizmoVisibility();
+		}
+
+		if (ImGui::RadioButton("light boundingBox visibility", scene.getAreLightsBoundingBoxVisible()))
+		{
+			scene.toggleLightsBoundingBoxVisibility();
+		}
+
+		if (ImGui::RadioButton("octrees visibility", scene.getAreOctreesVisible()))
+		{
+			scene.toggleOctreesVisibility();
+		}
+
+		ImGui::EndMenu();
+	}
+
+}
+
+void Editor::drawMenuEntry_playModes(Project& project)
+{
+	if (!m_isPlaying)
+	{
+		if (ImGui::Button("play"))
+			launchGameInEditMode(project);
+	}
+	else {
+		if (ImGui::Button("stop"))
+		{
+			stopGameInEditMode(project);
+		}
+		ImGui::SameLine();
+		if (m_isOwningPlayer)
+		{
+			if (ImGui::Button("eject"))
+			{
+				ejectPlayerFromPawn();
+			}
+		}
+		else
+		{
+			if (ImGui::Button("possess"))
+			{
+				possessPawn();
+			}
+		}
+	}
+}
+
+void Editor::drawMenuEntry_camera()
+{
+	if (ImGui::BeginMenu("camera mode"))
+	{
+		if (ImGui::RadioButton("editor camera", !m_cameraFPS))
+		{
+			if (m_cameraFPS)
+			{
+				//CameraEditor* newCam = new CameraEditor();
+				////newCam->switchFromCameraFPS(*m_camera); //set up the camera
+				//delete m_camera;
+				//m_camera = newCam;
+				//toogleCamera(*m_camera);
+				m_camera->setFPSMode(false);
+				m_cameraFPS = false;
+			}
+		}
+		if (ImGui::RadioButton("FPS camera", m_cameraFPS))
+		{
+			if (!m_cameraFPS)
+			{
+				//CameraFPS* newCam = new CameraFPS();
+				////newCam->switchFromCameraEditor(*m_camera); //set up the camera
+				//delete m_camera;
+				//m_camera = newCam;
+				//toogleCamera(*m_camera);
+				m_camera->setFPSMode(true);
+				m_cameraFPS = true;
+			}
+		}
+		if (ImGui::RadioButton("hide cursor", m_hideCursorWhenMovingCamera))
+		{
+			m_hideCursorWhenMovingCamera = !m_hideCursorWhenMovingCamera;
+		}
+		ImGui::SliderFloat("camera base speed", &m_cameraBaseSpeed, 0.01f, 1.f);
+		ImGui::SliderFloat("camera boost speed", &m_cameraBoostSpeed, 0.01f, 1.f);
+		float tmpFloat = m_camera->getFOV();
+		if (ImGui::SliderFloat("camera fov", &(tmpFloat), 0.f, glm::pi<float>()))
+			m_camera->setFOV(tmpFloat);
+
+		tmpFloat = m_camera->getNear();
+		if (ImGui::SliderFloat("camera near", &(tmpFloat), 0.001f, 5.f))
+			m_camera->setNear(tmpFloat);
+
+		tmpFloat = m_camera->getFar();
+		if (ImGui::SliderFloat("camera far", &(tmpFloat), 0.01f, 1000.f))
+			m_camera->setFar(tmpFloat);
+
+		tmpFloat = m_camera->getAspect();
+		if (ImGui::SliderFloat("camera aspect", &(tmpFloat), 0.01f, 10.f))
+			m_camera->setAspect(tmpFloat);
+
+		ImGui::EndMenu();
+	}
+}
+
+void Editor::drawMenuEntry_addEntity(Scene& scene)
+{
+	if (ImGui::BeginMenu("Add default entities"))
+	{
+		if (ImGui::Button("add empty entity"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			newEntity->add(newCollider);
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("add pointLight"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto light = new PointLight();
+			light->setBoundingBoxVisual(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			newEntity->add(newCollider).add(light);
+			newEntity->setName("point light");
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("add directionalLight"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto light = new DirectionalLight();
+			newEntity->add(newCollider).add(light);
+			newEntity->setName("directional light");
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("add spotLight"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto light = new SpotLight();
+			light->setBoundingBoxVisual(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			newEntity->add(newCollider).add(light);
+			newEntity->setName("spot light");
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+
+		if (ImGui::Button("add cube"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto meshRenderer = new MeshRenderer(getMeshFactory().getDefault("cube"), getMaterialFactory().getDefault("brick"));
+			newEntity->add(newCollider).add(meshRenderer);
+			newEntity->setName("cube");
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+
+		if (ImGui::Button("add Camera"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto camera = new Camera();
+			newEntity->add(newCollider).add(camera);
+			newEntity->setName("camera");
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+
+		if (ImGui::Button("add flag"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto flag = new Physic::Flag(getMaterialFactory().getDefault("defaultLit"), 10);
+			newEntity->add(newCollider).add(flag);
+			newEntity->setName("flag");
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+
+		if (ImGui::Button("add path point"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto pathPoint = new PathPoint();
+			newEntity->add(newCollider).add(pathPoint);
+			newEntity->setName("path point");
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+
+		if (ImGui::Button("add wind zone"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto windZone = new Physic::WindZone();
+			newEntity->add(newCollider).add(windZone);
+			newEntity->setName("wind zone");
+
+			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			changeCurrentSelected(newEntity);
+		}
+
+		if (ImGui::Button("add billboard"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto billboard = new Billboard();
+			newEntity->add(newCollider).add(billboard);
+			newEntity->setName("billboard");
+		}
+
+		if (ImGui::Button("add particle emitter"))
+		{
+			auto newEntity = new Entity(&scene);
+			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
+			auto particleEmitter = new Physic::ParticleEmitter();
+			newEntity->add(newCollider).add(particleEmitter);
+			newEntity->setName("particle emitter");
+		}
+
+
+		ImGui::EndMenu();
+	}
+}
+
+void Editor::drawMenuEntry_windows()
+{
+	if (ImGui::BeginMenu("Windows"))
+	{
+
+		if (!m_windowManager.isFrameOpen("Viewport") && ImGui::Button("Viewport"))
+		{
+			m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>("Viewport"));
+		}
+		if (!m_windowManager.isFrameOpen("Resource tree") && ImGui::Button("Resource tree"))
+		{
+			m_windowManager.addWindow(std::make_shared<ResourceTreeView>("Resource tree", m_resourceTree.get()));
+		}
+		if (!m_windowManager.isFrameOpen("Terrain tool") && ImGui::Button("Terrain tool"))
+		{
+			m_windowManager.addWindow(std::make_shared<TerrainToolEditorFrame>("Terrain tool"));
+		}
+		if (!m_windowManager.isFrameOpen("Skybox tool") && ImGui::Button("Skybox tool"))
+		{
+			m_windowManager.addWindow(std::make_shared<SkyboxToolEditorFrame>("Skybox tool"));
+		}
+		if (!m_windowManager.isFrameOpen("Scene manager") && ImGui::Button("Scene manager"))
+		{
+			m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>("Scene manager"));
+		}
+		if (!m_windowManager.isFrameOpen("Factories debuger") && ImGui::Button("Factories debuger"))
+		{
+			m_windowManager.addWindow(std::make_shared<FactoriesDebugEditorFrame>("Factories debuger"));
+		}
+		ImGui::EndMenu();
+	}
 }
 
 void Editor::launchGameInEditMode(Project& project)
@@ -1230,12 +1298,13 @@ void Editor::onResizeWindow()
 	m_windowRect.z = Application::get().getWindowWidth();
 	m_windowRect.w = Application::get().getWindowHeight();
 
-	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+	//updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+
+	m_windowManager.onScreenResized();
 }
 
 void Editor::renderUI(Project& project)
 {
-
 	Scene& scene = *project.getActiveScene();
 
 	if (!m_isUIVisible)
@@ -1243,13 +1312,14 @@ void Editor::renderUI(Project& project)
 
 	displayMenuBar(project);
 
-	displayMainWindow(project);
+	displayBackgroundWindow(project);
+
 	displayFloatingWindows(project);
 
 	displayModals(project);
 
 	//%NOCOMMIT% test only
-	ImGui::ShowTestWindow();
+	//ImGui::ShowTestWindow();
 
 	//asynchonous commands : 
 	m_windowManager.update();
@@ -1262,30 +1332,40 @@ void Editor::displayFloatingWindows(Project& project)
 	//{
 	//	m_editorWindows[i]->drawAsWindow();
 	//}
-	m_windowManager.displayWindows(project, *this);
+	m_windowManager.displayFloatingWindows(project, *this);
 }
 
-void Editor::displayMainWindow(Project& project)
+void Editor::displayBackgroundWindow(Project& project)
 {
+	m_windowManager.displayBackgroundWindows(project, *this);
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1, 0.1, 0.1, 255));
+	//ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+	//ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1, 0.1, 0.1, 255));
 
-	//top left window :
-	ImGui::SetNextWindowSize(ImVec2(m_topLeftPanelRect.z, m_windowRect.w));
-	ImGui::SetNextWindowContentSize(ImVec2(m_topLeftPanelRect.z, m_windowRect.w));
-	ImGui::SetNextWindowPos(ImVec2(m_topLeftPanelRect.x, m_topLeftPanelRect.y));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-	ImGui::Begin("leftWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
-	ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_windowRect.w));
+	////top left window :
+	//ImGui::SetNextWindowSize(ImVec2(m_topLeftPanelRect.z, m_windowRect.w));
+	//ImGui::SetNextWindowContentSize(ImVec2(m_topLeftPanelRect.z, m_windowRect.w));
+	//ImGui::SetNextWindowPos(ImVec2(m_topLeftPanelRect.x, m_topLeftPanelRect.y));
+	//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	//ImGui::Begin("leftWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
+	//ImGui::BeginChild("leftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_windowRect.w));
 
-	ImGui::SetNextWindowContentWidth(m_topLeftPanelRect.z - 30);
-	ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
-	displayTopLeftWindow(project);
-	ImGui::EndChild();
+	//ImGui::SetNextWindowContentWidth(m_topLeftPanelRect.z - 30);
+	//ImGui::BeginChild("topLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_topLeftPanelRect.w - 16.f));
+	//displayTopLeftWindow(project);
+	//ImGui::EndChild();
 
 
-	//ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
+	////ImGui::InvisibleButton("hSplitter0", ImVec2(m_topLeftPanelRect.z, 8.f));
+	////if (ImGui::IsItemActive())
+	////{
+	////	m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
+	////	if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
+	////	else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
+	////	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+	////}
+	//ImGui::Separator();
+	//ImGui::InvisibleButton("hSplitter1", ImVec2(m_topLeftPanelRect.z, 8.f));
 	//if (ImGui::IsItemActive())
 	//{
 	//	m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
@@ -1293,65 +1373,56 @@ void Editor::displayMainWindow(Project& project)
 	//	else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
 	//	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
 	//}
-	ImGui::Separator();
-	ImGui::InvisibleButton("hSplitter1", ImVec2(m_topLeftPanelRect.z, 8.f));
-	if (ImGui::IsItemActive())
-	{
-		m_topLeftPanelRect.w += ImGui::GetIO().MouseDelta.y;
-		if (m_topLeftPanelRect.w < 10) m_topLeftPanelRect.w = 10;
-		else if (m_topLeftPanelRect.w > m_windowRect.w - 20) m_topLeftPanelRect.w = m_topLeftPanelRect.w - 20;
-		updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
-	}
-	ImGui::Separator();
-
-	ImGui::BeginChild("bottomLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_bottomLeftPanelRect.w - 16.f));
-	displayBottomLeftWindow(project);
-	ImGui::EndChild();
-
-	ImGui::EndChild();
-	ImGui::SameLine();
-
-	ImGui::InvisibleButton("vSplitter", ImVec2(20.f, m_windowRect.w));
-	if (ImGui::IsItemActive())
-	{
-		m_topLeftPanelRect.z += ImGui::GetIO().MouseDelta.x;
-		if (m_topLeftPanelRect.z < 10) m_topLeftPanelRect.z = 10;
-		else if (m_topLeftPanelRect.z > m_windowRect.z - 10) m_topLeftPanelRect.z = m_windowRect.z - 10;
-		updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
-	}
-
-	ImGui::End();
-	ImGui::PopStyleVar();
-
-	//bottom window :
-	ImGui::SetNextWindowSize(ImVec2(m_bottomPanelRect.z, m_bottomPanelRect.w));
-	ImGui::SetNextWindowContentSize(ImVec2(m_bottomPanelRect.z, m_bottomPanelRect.w));
-	ImGui::SetNextWindowPos(ImVec2(m_bottomPanelRect.x, m_bottomPanelRect.y));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-	ImGui::Begin("bottomWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
-
-	ImGui::InvisibleButton("hsplitter", ImVec2(m_bottomPanelRect.z, 20.f));
 	//ImGui::Separator();
-	if (ImGui::IsItemActive())
-	{
-		m_bottomPanelRect.w -= ImGui::GetIO().MouseDelta.y;
-		if (m_bottomPanelRect.w < 10) m_bottomPanelRect.w = 10;
-		else if (m_bottomPanelRect.w > m_windowRect.w - 20) m_bottomPanelRect.w = m_bottomPanelRect.w - 20;
-		updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
-	}
 
-	ImGui::BeginChild("bottomWindowContent");
-	displayBottomWindow(project);
-	ImGui::EndChild();
-
-	ImGui::End();
-	ImGui::PopStyleVar();
-
-	ImGui::PopStyleVar();
-	ImGui::PopStyleColor();
-
-	//ImGui::BeginChild("bottomWindow", ImVec2(screenWidth, screenHeight - m_leftPanelHeight));
+	//ImGui::BeginChild("bottomLeftWindowContent", ImVec2(m_topLeftPanelRect.z - 30, m_bottomLeftPanelRect.w - 16.f));
+	//displayBottomLeftWindow(project);
 	//ImGui::EndChild();
+
+	//ImGui::EndChild();
+	//ImGui::SameLine();
+
+	//ImGui::InvisibleButton("vSplitter", ImVec2(20.f, m_windowRect.w));
+	//if (ImGui::IsItemActive())
+	//{
+	//	m_topLeftPanelRect.z += ImGui::GetIO().MouseDelta.x;
+	//	if (m_topLeftPanelRect.z < 10) m_topLeftPanelRect.z = 10;
+	//	else if (m_topLeftPanelRect.z > m_windowRect.z - 10) m_topLeftPanelRect.z = m_windowRect.z - 10;
+	//	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+	//}
+
+	//ImGui::End();
+	//ImGui::PopStyleVar();
+
+	////bottom window :
+	//ImGui::SetNextWindowSize(ImVec2(m_bottomPanelRect.z, m_bottomPanelRect.w));
+	//ImGui::SetNextWindowContentSize(ImVec2(m_bottomPanelRect.z, m_bottomPanelRect.w));
+	//ImGui::SetNextWindowPos(ImVec2(m_bottomPanelRect.x, m_bottomPanelRect.y));
+	//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	//ImGui::Begin("bottomWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_ShowBorders);
+
+	//ImGui::InvisibleButton("hsplitter", ImVec2(m_bottomPanelRect.z, 20.f));
+	////ImGui::Separator();
+	//if (ImGui::IsItemActive())
+	//{
+	//	m_bottomPanelRect.w -= ImGui::GetIO().MouseDelta.y;
+	//	if (m_bottomPanelRect.w < 10) m_bottomPanelRect.w = 10;
+	//	else if (m_bottomPanelRect.w > m_windowRect.w - 20) m_bottomPanelRect.w = m_bottomPanelRect.w - 20;
+	//	updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
+	//}
+
+	//ImGui::BeginChild("bottomWindowContent");
+	//displayBottomWindow(project);
+	//ImGui::EndChild();
+
+	//ImGui::End();
+	//ImGui::PopStyleVar();
+
+	//ImGui::PopStyleVar();
+	//ImGui::PopStyleColor();
+
+	////ImGui::BeginChild("bottomWindow", ImVec2(screenWidth, screenHeight - m_leftPanelHeight));
+	////ImGui::EndChild();
 }
 
 bool Editor::testGizmoIntersection(const Ray & ray)

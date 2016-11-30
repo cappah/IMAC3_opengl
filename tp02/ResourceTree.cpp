@@ -407,8 +407,8 @@ void ResourceTree::addExternalResourceTo(ResourceFile& resourceFile, ResourceFol
 //	loadRecursivly(root);
 //}
 
-ResourceTreeView::ResourceTreeView(ResourceTree* model)
-	: EditorFrame("ResourceTree")
+ResourceTreeView::ResourceTreeView(const std::string& name, ResourceTree* model)
+	: EditorFrame(name)
 	, m_model(model)
 	, m_folderWeRightClicOn(nullptr)
 {

@@ -6,6 +6,7 @@
 #include "Gizmo.h"
 #include "ResourceTree.h"
 #include "ISingleton.h"
+#include "EditorWindowManager.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -80,6 +81,8 @@ public:
 	SINGLETON_IMPL(Editor);
 
 private:
+	float m_menuTopOffset;
+
 	//current entity selected
 	std::vector<Entity*> m_currentSelected;
 	//current components selected, for multiple editing
@@ -156,6 +159,14 @@ private:
 public:
 	Editor();
 
+	float getMenuTopOffset() const;
+	void drawMenuEntry_windows();
+	void drawMenuEntry_addEntity(Scene& scene);
+	void drawMenuEntry_camera();
+	void drawMenuEntry_playModes(Project& project);
+	void drawMenuEntry_visibilities(Scene& scene);
+	void drawMenuEntry_options(Project& project);
+
 	void changeCurrentSelected(Entity* entity);
 	void changeCurrentSelected(std::vector<Entity*> entities);
 	void addCurrentSelected(Entity* entity);
@@ -177,7 +188,7 @@ public:
 	void renderUI(Project& project);
 
 	//Window handling
-	void displayMainWindow(Project& project);
+	void displayBackgroundWindow(Project& project);
 	void displayFloatingWindows(Project& project);
 
 	// Modals handling

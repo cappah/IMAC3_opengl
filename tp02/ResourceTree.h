@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "EditorGUI.h"
+#include "EditorNodes.h"
 #include "imgui_extension.h"
 #include "FileHandler.h"
 #include "Factories.h"
@@ -572,7 +573,7 @@ private:
 	FileHandler::Path m_folderWaitingPastPath;
 
 public:
-	ResourceTreeView(ResourceTree* model = nullptr);
+	ResourceTreeView(const std::string& name, ResourceTree* model = nullptr);
 	~ResourceTreeView();
 	virtual void drawContent(Project& project, EditorModal* parentModale = nullptr) override;
 	void setModel(ResourceTree* model);
