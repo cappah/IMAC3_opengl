@@ -4,6 +4,7 @@
 
 #include "ResourceTree.h"
 #include "imgui/imgui.h"
+#include "imgui_extension.h"
 #include "EditorGUI.h"
 #include "Factories.h"
 #include "project.h"
@@ -563,7 +564,7 @@ void ResourceTreeView::displayModales()
 		if (ImGui::Button("Rename file."))
 		{
 			ImGui::EndPopup();
-			ImGui::OpenPopupEx("RenameFileModale", true);
+			ImGui::Ext::openStackingPopUp("RenameFileModale");
 		}
 		else if (ImGui::Button("Copy file."))
 		{
@@ -601,12 +602,12 @@ void ResourceTreeView::displayModales()
 		if (ImGui::Button("Rename folder."))
 		{
 			ImGui::EndPopup();
-			ImGui::OpenPopupEx("RenameFolderModale", true);
+			ImGui::Ext::openStackingPopUp("RenameFolderModale");
 		}
 		else if (ImGui::Button("Add folder."))
 		{
 			ImGui::EndPopup();
-			ImGui::OpenPopupEx("AddFolderModale", true);
+			ImGui::Ext::openStackingPopUp("AddFolderModale");
 		}
 		else if (ImGui::Button("Copy folder."))
 		{
@@ -672,7 +673,7 @@ void ResourceTreeView::displayModales()
 		else if (ImGui::Button("Add resource."))
 		{
 			ImGui::EndPopup();
-			ImGui::OpenPopupEx("AddResourcePopUp", true);
+			ImGui::Ext::openStackingPopUp("AddResourcePopUp");
 		}
 		else
 			ImGui::EndPopup();
@@ -696,12 +697,12 @@ void ResourceTreeView::displayModales()
 		if (ImGui::Button("Material."))
 		{
 			ImGui::EndPopup();
-			ImGui::OpenPopupEx("ChooseMaterialPopUp", true);
+			ImGui::Ext::openStackingPopUp("ChooseMaterialPopUp");
 		}
 		else if (ImGui::Button("CubeTexture."))
 		{
 			ImGui::EndPopup();
-			ImGui::OpenPopupEx("AddCubeTexturePopUp", true);
+			ImGui::Ext::openStackingPopUp("AddCubeTexturePopUp");
 		}
 		else
 			ImGui::EndPopup();
@@ -866,7 +867,7 @@ void ResourceTreeView::popUpToChooseMaterial()
 		{
 			m_chooseMaterialName = matName;
 			ImGui::EndPopup();
-			ImGui::OpenPopupEx("AddMaterialPopUp", true);
+			ImGui::Ext::openStackingPopUp("AddMaterialPopUp");
 			shouldEndPopup = false;
 		}
 		//else

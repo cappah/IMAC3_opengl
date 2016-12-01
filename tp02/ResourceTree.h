@@ -7,7 +7,6 @@
 
 #include "EditorGUI.h"
 #include "EditorNodes.h"
-#include "imgui_extension.h"
 #include "FileHandler.h"
 #include "Factories.h"
 
@@ -521,7 +520,7 @@ struct OpenModaleCallback
 	{
 		if (shouldOpen)
 		{
-			ImGui::OpenPopupEx(modaleName.data(), true);
+			ImGui::OpenPopup(modaleName.data());
 		}
 	}
 };
