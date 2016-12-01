@@ -32,11 +32,12 @@ struct Texture : public Resource
 	int m_textureUseCounts;
 
 	Texture(int width = 0, int height = 0, bool useAlpha = false);
-	Texture(unsigned char* _pixels, int width, int height, int _comp);
-	Texture(char r, char g, char b);
-	Texture(const FileHandler::CompletePath& _path, bool alphaChannel = true);
+	Texture(unsigned char* _pixels, int width, int height, bool useAlpha, int _comp);
+	Texture::Texture(const glm::vec3& color);
+	Texture::Texture(const glm::vec4& color);
 	Texture(int width, int height, const glm::vec4& color);
-	Texture(int width, int height, const glm::vec3 & color);
+	Texture(int width, int height, const glm::vec3& color);
+	Texture(const FileHandler::CompletePath& _path, bool alphaChannel = true);
 	~Texture();
 
 	void setTextureParameters(GLint _internalFormat = GL_RGB, GLenum _format = GL_RGB, GLenum _type = GL_UNSIGNED_BYTE, bool _generateMipMap = true);

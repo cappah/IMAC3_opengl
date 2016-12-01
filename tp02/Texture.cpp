@@ -6,7 +6,7 @@
 
 #include "jsoncpp/json/json.h"
 
-Texture::Texture(int width, int height, bool useAlpha) 
+Texture::Texture(int width, int height, bool useAlpha)
 	: glId(0)
 	, type(GL_UNSIGNED_BYTE)
 	, generateMipMap(true)
@@ -24,11 +24,13 @@ Texture::Texture(int width, int height, bool useAlpha)
 	{
 		internalFormat = GL_RGB;
 		format = GL_RGB;
+		comp = 3;
 	}
 	else
 	{
 		internalFormat = GL_RGBA;
 		format = GL_RGBA;
+		comp = 4;
 	}
 
 	//pixels = new unsigned char[3*width*height];
@@ -37,24 +39,26 @@ Texture::Texture(int width, int height, bool useAlpha)
 	//}
 }
 
-Texture::Texture(unsigned char * _pixels, int width, int height, int _comp) 
-	: Texture(width, height)
+Texture::Texture(unsigned char * _pixels, int width, int height, bool useAlpha, int _comp) 
+	: Texture(width, height, useAlpha)
 {
 	comp = _comp;
 	pixels = _pixels;
 }
 
-Texture::Texture(char r, char g, char b) 
-	: Texture(1, 1)
+Texture::Texture(const glm::vec4& color)
+	: Texture(1, 1, color)
 {
-	comp = 4;
-	pixels = new unsigned char[3];
-	pixels[0] = r;
-	pixels[1] = g;
-	pixels[2] = b;
+
 }
 
-Texture::Texture(int width, int height, const glm::vec4 & color) 
+Texture::Texture(const glm::vec3& color)
+	: Texture(1, 1, color)
+{
+
+}
+
+Texture::Texture(int width, int height, const glm::vec4& color) 
 	: Texture(width, height, true)
 {
 	comp = 4;
@@ -68,7 +72,7 @@ Texture::Texture(int width, int height, const glm::vec4 & color)
 	}
 }
 
-Texture::Texture(int width, int height, const glm::vec3 & color) 
+Texture::Texture(int width, int height, const glm::vec3& color) 
 	: Texture(width, height, false)
 {
 	comp = 3;
@@ -80,7 +84,6 @@ Texture::Texture(int width, int height, const glm::vec3 & color)
 		pixels[i + 2] = color.b;
 	}
 }
-
 
 Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 	: Resource(_path)
@@ -198,7 +201,7 @@ CubeTexture::CubeTexture(char r, char g, char b)
 	, generateMipMap(true)
 	, m_textureUseCounts(0)
 {
-	comp = 4;
+	comp = 3;
 	w = 1;
 	h = 1;
 

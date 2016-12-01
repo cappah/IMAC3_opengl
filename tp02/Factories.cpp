@@ -117,7 +117,7 @@ template<>
 void ResourceFactory<Texture>::initDefaults()
 {
 	//default diffuse
-	auto newTex = new Texture(255, 255, 255);
+	auto newTex = new Texture(glm::vec3(255, 255, 255));
 	newTex->initGL();
 	//newTex->name = "default";
 	addDefault("default", newTex);
