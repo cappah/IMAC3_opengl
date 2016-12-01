@@ -45,6 +45,9 @@ protected:
 	std::shared_ptr<EditorNode> m_node;
 	ImVec2 m_size;
 	ImVec2 m_position;
+	bool m_isActive;
+	ImVec2 m_separatorSize;
+	bool m_areSeparatorsHidden;
 
 	//Style
 	float m_alpha; //[0.f, 1.f]
@@ -61,11 +64,19 @@ public:
 	std::shared_ptr<EditorNode> getNode() const;
 
 	//Modifiers : 
+	void setIsActive(bool state);
+	bool getIsActive() const;
 	void setAlpha(float alpha);
 	float getAlpha() const;
 	void move(const ImVec2& delta);
 	void setSize(float w, float h);
 	void setPosition(float x, float y);
+
+	void showSeparators();
+	void hideSeparators();
+	float getSeparatorWidth() const;
+	float getSeparatorHeight() const;
+	bool getAreSeparatorsHidden() const;
 
 	void simplifyNodeAsynchrone(EditorNode* nodeToSimplify);
 	void executeNodeSimplification();

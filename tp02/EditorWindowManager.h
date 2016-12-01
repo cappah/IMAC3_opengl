@@ -47,6 +47,9 @@ public:
 	void setIsResizingChild(bool state);
 	bool getIsResizingChild() const;
 
+	void showSeparators();
+	void hideSeparators();
+
 	//deals with asynchonous commands
 	void update();
 

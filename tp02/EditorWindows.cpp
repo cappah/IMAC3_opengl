@@ -8,6 +8,9 @@
 ///////////////////////////////////////////////////////////
 //// BEGIN : Editor Windows and modals
 
+static float s_separatorWidth = 5.0f;
+static float s_separatorHeight = 5.0f;
+
 EditorModal::EditorModal(int windowId, std::shared_ptr<EditorFrame> frame)
 	: m_modalId(windowId)
 	, m_shouldCloseModale(false)
@@ -46,6 +49,8 @@ EditorWindow::EditorWindow(int windowId, std::shared_ptr<EditorFrame> frame)
 	, m_size(200, 300)
 	, m_position(0, 0)
 	, m_alpha(1)
+	, m_separatorSize(s_separatorWidth, s_separatorHeight)
+	, m_areSeparatorsHidden(true)
 {
 	setNode(std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), std::make_shared<EditorNode>(frame)));
 	m_windowStrId = "editorWindow_" + std::to_string(m_windowId);
@@ -56,6 +61,8 @@ EditorWindow::EditorWindow(int windowId, std::shared_ptr<EditorNode> node)
 	, m_size(200, 300)
 	, m_position(0, 0)
 	, m_alpha(1)
+	, m_separatorSize(s_separatorWidth, s_separatorHeight)
+	, m_areSeparatorsHidden(true)
 {
 	setNode(std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), node));
 	m_windowStrId = "editorWindow_" + std::to_string(m_windowId);
@@ -81,14 +88,19 @@ void EditorWindow::draw(Project& project, Editor& editor)
 		m_windowLabel = "Window";
 
 	ImGui::SetNextWindowPos(m_position);
-	ImGui::Begin(m_windowStrId.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove;
+	ImGuiWindowFlags inputFlag = m_isActive ? 0 : ImGuiWindowFlags_NoInputs;
+	flags |= inputFlag;
+	ImGui::Begin(m_windowStrId.c_str(), nullptr, flags);
 	ImGui::PushID(m_windowStrId.c_str());
 
 	bool shouldClose = false, shouldMove = false;
 	drawHeader(m_windowLabel, shouldClose, shouldMove);
 	//launch drag and drop of the window
 	if (shouldMove)
+	{
 		DragAndDropManager::beginDragAndDrop(std::make_shared<EditorFrameDragAndDropOperation>(m_windowId, &editor));
+	}
 	else
 	{
 		currentWindowPosition = ImGui::GetWindowPos();
@@ -152,6 +164,16 @@ std::shared_ptr<EditorNode> EditorWindow::getNode() const
 	return m_node;
 }
 
+void EditorWindow::setIsActive(bool state)
+{
+	m_isActive = state;
+}
+
+bool EditorWindow::getIsActive() const
+{
+	return m_isActive;
+}
+
 void EditorWindow::setAlpha(float alpha)
 {
 	m_alpha = alpha;
@@ -164,8 +186,11 @@ float EditorWindow::getAlpha() const
 
 void EditorWindow::drawHeader(const std::string& title, bool& shouldClose, bool& shouldMove)
 {
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove;
+	flags |= m_isActive ? 0 : ImGuiWindowFlags_NoInputs;
+
 	ImGui::PushID(title.c_str());
-	ImGui::BeginChild("##Header", ImVec2(0, 20), false);
+	ImGui::BeginChild("##Header", ImVec2(0, 20), false, flags);
 	ImGui::Text(title.c_str());
 	float textWidth = ImGui::GetItemRectSize().x;
 	ImGui::SameLine();
@@ -196,6 +221,31 @@ void EditorWindow::setPosition(float x, float y)
 {
 	m_position.x = x;
 	m_position.y = y;
+}
+
+void EditorWindow::showSeparators()
+{
+	m_areSeparatorsHidden = false;
+}
+
+void EditorWindow::hideSeparators()
+{
+	m_areSeparatorsHidden = true;
+}
+
+float EditorWindow::getSeparatorWidth() const
+{
+	return m_separatorSize.x;
+}
+
+float EditorWindow::getSeparatorHeight() const
+{
+	return m_separatorSize.y;
+}
+
+bool EditorWindow::getAreSeparatorsHidden() const
+{
+	return m_areSeparatorsHidden;
 }
 
 void EditorWindow::simplifyNodeAsynchrone(EditorNode* nodeToSimplify)

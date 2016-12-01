@@ -3,9 +3,12 @@
 #include "EditorWindows.h" //Forward
 #include "EditorFrames.h" //Forward
 #include "Editor.h" //Forward
+#include "imgui_extension.h"
 
 ///////////////////////////////////////////////////////////
 //// BEGIN : Editor nodes
+
+bool EditorNode::s_shouldDrawMouseCursorWithImGui = false;
 
 EditorNode::EditorNode(std::shared_ptr<EditorNodeDisplayLogic> displayLogic)
 	: m_displayLogic(displayLogic)
@@ -407,24 +410,40 @@ void EditorNode::simplifyNode()
 ///////////////////////
 
 //TODO : use active
-int EditorNodeDisplayLogic::drawDropZone(ImVec2 rectMin, ImVec2 recMax, bool isActive, Editor& editor)
+int EditorNodeDisplayLogic::drawDropZone(EditorNode& node, ImVec2 rectMin, ImVec2 recMax, bool isActive, Editor& editor, ResizeMode resizeMode)
 {
 	int draggedWindowId = -1;
 	bool isHoveringDropZone = false;
 
 	if (ImGui::IsMouseHoveringRect(rectMin, recMax)
-		// && ImGui::IsMouseHoveringWindow() TODO
-		&& !editor.getWindowManager()->getIsResizingChild()
-		&& DragAndDropManager::isDragAndDropping()
-		&& DragAndDropManager::getOperationType() == EditorDragAndDropType::EditorFrameDragAndDrop)
+		&& ImGui::IsMouseHoveringWindow())
 	{
-
-		if (ImGui::IsMouseReleased(GLFW_MOUSE_BUTTON_LEFT))
+		if (!editor.getWindowManager()->getIsResizingChild()
+			&& DragAndDropManager::isDragAndDropping()
+			&& DragAndDropManager::getOperationType() == EditorDragAndDropType::EditorFrameDragAndDrop)
 		{
-			DragAndDropManager::dropDraggedItem(&draggedWindowId, EditorDropContext::DropIntoEditorWindow);
+			if (ImGui::IsMouseReleased(GLFW_MOUSE_BUTTON_LEFT))
+			{
+				DragAndDropManager::dropDraggedItem(&draggedWindowId, EditorDropContext::DropIntoEditorWindow);
+			}
+			else
+			{
+				isHoveringDropZone = true;
+			}
 		}
 		else
-			isHoveringDropZone = true;
+		{
+			if (resizeMode == ResizeMode::HORIZONTAL)
+			{
+				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+				EditorNode::s_shouldDrawMouseCursorWithImGui = true;
+			}
+			else if (resizeMode == ResizeMode::VERTICAL)
+			{
+				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+				EditorNode::s_shouldDrawMouseCursorWithImGui = true;
+			}
+		}
 	}
 
 	int dropZoneAlpha = 100;
@@ -453,7 +472,7 @@ bool EditorNodeHorizontalDisplay::drawContent(EditorNode& node, Project& project
 	const ImVec2 recMax = ImGui::GetWindowContentRegionMin();
 	const ImVec2 recSize = ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight());
 	const int childCount = node.m_childNodes.size();
-	const float separatorWidth = 5.f;
+	const float separatorWidth = (node.getParentWindow()->getAreSeparatorsHidden() /*| !ImGui::IsWindowHovered()*/) ? 0.f : node.getParentWindow()->getSeparatorWidth();
 	//const float childWidth = (recSize.x - (childCount + 1)*separatorWidth - padding*2.f) / childCount;
 	//const float childHeight = recSize.y - padding*2.f;
 	const float padding = 2.f; //small top bottom right and left padding
@@ -463,7 +482,7 @@ bool EditorNodeHorizontalDisplay::drawContent(EditorNode& node, Project& project
 	int removeChildNodeId = -1;
 	bool isResizingChild = false;
 	ImVec2 currentSizeOffset(parentSizeOffset);
-	currentSizeOffset.x += 5.f * (node.getChildCount() + 1.f);
+	currentSizeOffset.x += separatorWidth * (node.getChildCount() + 1.f);
 	ImVec2 perChildSizeOffset(currentSizeOffset.x / (float)node.getChildCount(), currentSizeOffset.y);
 
 	isResizingChild |= drawSeparator(0, separatorWidth, separatorHeight, node, editor);
@@ -485,7 +504,7 @@ bool EditorNodeHorizontalDisplay::drawContent(EditorNode& node, Project& project
 		ImGui::PopID();
 
 		ImGui::SameLine();
-		isResizingChild |= drawSeparator(i + 1, separatorWidth, separatorHeight, node, editor);
+		isResizingChild |= drawSeparator(i + 1, node.getParentWindow()->getSeparatorWidth(), separatorHeight, node, editor);
 
 		ImGui::PopID();
 	}
@@ -540,7 +559,7 @@ bool EditorNodeHorizontalDisplay::drawSeparator(int index, float width, float he
 	const ImVec2 recMax = ImVec2(recMin.x + size.x, recMin.y + size.y);
 	const bool isButtonActive = ImGui::IsItemActive();
 	//Display the drop zone
-	int droppedWindowId = drawDropZone(recMin, recMax, ImGui::IsWindowHovered(), editor);
+	int droppedWindowId = drawDropZone(node, recMin, recMax, ImGui::IsWindowHovered(), editor, ResizeMode::HORIZONTAL);
 
 	if (droppedWindowId != -1)
 	{
@@ -601,14 +620,14 @@ bool EditorNodeVerticalDisplay::drawContent(EditorNode& node, Project& project, 
 	const float padding = 2.f; //small top bottom right and left padding
 							   //const float childWidth = recSize.x - padding*2.f;
 							   //const float childHeight = (recSize.y - (childCount + 1)*separatorHeight - padding*2.f) / childCount;
-	const float separatorHeight = 5.f;
+	const float separatorHeight = (node.getParentWindow()->getAreSeparatorsHidden() /*| !ImGui::IsWindowHovered()*/) ? 0.f : node.getParentWindow()->getSeparatorHeight();
 	const float separatorWidth = recSize.x;
 
 	bool removeChildNode = false;
 	int removeChildNodeId = -1;
 	bool isResizingChild = false;
 	ImVec2 currentSizeOffset(parentSizeOffset);
-	currentSizeOffset.y += 5.0f * (node.getChildCount() + 1.f);
+	currentSizeOffset.y += separatorHeight * (node.getChildCount() + 1.f);
 	ImVec2 perChildSizeOffset(currentSizeOffset.x, currentSizeOffset.y / (float)node.getChildCount());
 
 	isResizingChild |= drawSeparator(0, separatorWidth, separatorHeight, node, editor);
@@ -628,7 +647,7 @@ bool EditorNodeVerticalDisplay::drawContent(EditorNode& node, Project& project, 
 		ImGui::EndChild();
 		ImGui::PopID();
 
-		isResizingChild |= drawSeparator(i + 1, separatorWidth, separatorHeight, node, editor);
+		isResizingChild |= drawSeparator(i + 1, separatorWidth, node.getParentWindow()->getSeparatorHeight(), node, editor);
 
 		ImGui::PopID();
 	}
@@ -683,7 +702,7 @@ bool EditorNodeVerticalDisplay::drawSeparator(int index, float width, float heig
 	const ImVec2 recMax = ImVec2(recMin.x + size.x, recMin.y + size.y);
 	const bool isButtonActive = ImGui::IsItemActive();
 	//Display the drop zone
-	int droppedWindowId = drawDropZone(recMin, recMax, ImGui::IsWindowHovered(), editor);
+	int droppedWindowId = drawDropZone(node, recMin, recMax, ImGui::IsWindowHovered(), editor, ResizeMode::VERTICAL);
 
 	//We handle the window drop : 
 	if (droppedWindowId != -1)
@@ -751,8 +770,8 @@ bool EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	const ImVec2 recMax = ImGui::GetItemRectMax();
 	const ImVec2 recSize = ImVec2(ImGui::GetWindowContentRegionWidth(), recMax.y - recMin.y);
 	const int childCount = node.m_childNodes.size();
-	const float horizontalSeparatorHeight = 5.f;
-	const float verticalSeparatorWidth = 5.f;
+	const float horizontalSeparatorHeight = (node.getParentWindow()->getAreSeparatorsHidden() /*| !ImGui::IsWindowHovered()*/) ? 0.f : node.getParentWindow()->getSeparatorHeight();
+	const float verticalSeparatorWidth = (node.getParentWindow()->getAreSeparatorsHidden() /*| !ImGui::IsWindowHovered()*/) ? 0.f : node.getParentWindow()->getSeparatorWidth();
 	const float padding = 0.f; //small top bottom right and left padding
 	const float childWidth = (recSize.x - 2 * verticalSeparatorWidth - padding*2.f);
 	const float childHeight = (recSize.y - 2 * horizontalSeparatorHeight - padding*2.f);
@@ -760,8 +779,8 @@ bool EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	const float horizontalSeparatorWidth = recSize.x;
 
 	ImVec2 currentSizeOffset(parentSizeOffset);
-	currentSizeOffset.x += 10.f;
-	currentSizeOffset.y += 10.f;
+	currentSizeOffset.x += verticalSeparatorWidth * 2.0f;
+	currentSizeOffset.y += horizontalSeparatorHeight * 2.0f;
 
 	assert(childCount == 1);
 
@@ -772,7 +791,7 @@ bool EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	ImGui::InvisibleButton("##button01", ImVec2(horizontalSeparatorWidth, horizontalSeparatorHeight));
 	//ImGui::EndChild();
 
-	int droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor);
+	int droppedWindowId = drawDropZone(node, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor, ResizeMode::VERTICAL);
 	if (droppedWindowId != -1)
 	{
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
@@ -798,7 +817,7 @@ bool EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	ImGui::InvisibleButton("##button02", ImVec2(verticalSeparatorWidth, verticalSeparatorHeight));
 	//ImGui::EndChild();
 
-	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor);
+	droppedWindowId = drawDropZone(node, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor, ResizeMode::HORIZONTAL);
 	if (droppedWindowId != -1)
 	{
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
@@ -829,7 +848,7 @@ bool EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	ImGui::InvisibleButton("##button03", ImVec2(verticalSeparatorWidth, verticalSeparatorHeight));
 	//ImGui::EndChild();
 
-	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor);
+	droppedWindowId = drawDropZone(node, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor, ResizeMode::HORIZONTAL);
 	if (droppedWindowId != -1)
 	{
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);
@@ -854,7 +873,7 @@ bool EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	ImGui::InvisibleButton("##button04", ImVec2(horizontalSeparatorWidth, horizontalSeparatorHeight));
 	//ImGui::EndChild();
 
-	droppedWindowId = drawDropZone(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor);
+	droppedWindowId = drawDropZone(node, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImGui::IsWindowHovered(), editor, ResizeMode::VERTICAL);
 	if (droppedWindowId != -1)
 	{
 		std::shared_ptr<EditorNode> droppedNode = editor.getWindowManager()->getWindow(droppedWindowId)->getNode()->getChild(0);

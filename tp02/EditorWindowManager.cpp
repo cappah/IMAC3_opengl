@@ -49,12 +49,29 @@ void EditorWindowManager::removeModal(int modalId)
 void EditorWindowManager::setIsResizingChild(bool state)
 {
 	m_isResizingChild = state;
-	ImGui::GetIO().MouseDrawCursor = state; //TODO %NOCOMMIT%
 }
 
 bool EditorWindowManager::getIsResizingChild() const
 {
 	return m_isResizingChild;
+}
+
+void EditorWindowManager::showSeparators()
+{
+	for (auto window : m_editorWindows)
+	{
+		if(window)
+			window->showSeparators();
+	}
+}
+
+void EditorWindowManager::hideSeparators()
+{
+	for (auto window : m_editorWindows)
+	{
+		if (window)
+			window->hideSeparators();
+	}
 }
 
 void EditorWindowManager::displayModals(Project& project, Editor& editor)
@@ -200,15 +217,19 @@ void EditorWindowManager::update()
 			window->update();
 	}
 
+	ImGui::GetIO().MouseDrawCursor = m_isResizingChild || EditorNode::s_shouldDrawMouseCursorWithImGui;
+
+	if (ImGui::IsMouseReleased(GLFW_MOUSE_BUTTON_LEFT))
+	{
+		setIsResizingChild(false);
+	}
+
 	//deals with asynchronous adding
 	for (auto& windowToAdd : m_windowsToAdd)
 	{
 		addWindow(windowToAdd);
 	}
 	m_windowsToAdd.clear();
-
-	if (ImGui::IsMouseReleased(GLFW_MOUSE_BUTTON_LEFT))
-		setIsResizingChild(false);
 }
 
 void EditorWindowManager::onScreenResized()

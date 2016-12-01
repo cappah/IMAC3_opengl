@@ -236,5 +236,51 @@ namespace ImGui {
 		}
 		return false;
 	}
+
+	namespace Ext {
+
+	ImGuiWindow* FindHoveredWindow(ImVec2 pos, bool excluding_childs, int offsetIndex)
+	{
+		ImGuiContext& g = *GImGui;
+
+		if (offsetIndex > g.Windows.Size - 1)
+			return NULL;
+		int ignoredWindowCount = 0;
+		int finalOffsetIndex = offsetIndex;
+
+		int idx = 0;
+		while (ignoredWindowCount != offsetIndex)
+		{
+			ImGuiWindow* window = g.Windows[idx];
+			while ((window->Flags & ImGuiWindowFlags_ChildWindow) != 0)
+			{
+				window = g.Windows[idx];
+				finalOffsetIndex++;
+				idx++;
+			}
+			ignoredWindowCount++;
+			idx++;
+		}
+
+		for (int i = g.Windows.Size - 1 - finalOffsetIndex; i >= 0; i--)
+		{
+			ImGuiWindow* window = g.Windows[i];
+
+			if (!window->Active)
+				continue;
+			if (window->Flags & ImGuiWindowFlags_NoInputs)
+				continue;
+			if (excluding_childs && (window->Flags & ImGuiWindowFlags_ChildWindow) != 0)
+				continue;
+
+			// Using the clipped AABB so a child window will typically be clipped by its parent.
+			ImRect bb(window->WindowRectClipped.Min - g.Style.TouchExtraPadding, window->WindowRectClipped.Max + g.Style.TouchExtraPadding);
+			if (bb.Contains(pos))
+				return window;
+		}
+		return NULL;
+	}
+
+	}
 }
 

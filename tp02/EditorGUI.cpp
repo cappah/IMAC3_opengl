@@ -242,6 +242,8 @@ EditorFrameDragAndDropOperation::EditorFrameDragAndDropOperation(int currentDrag
 	, m_editorPtr(editorPtr)
 {
 	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setAlpha(0.2f);
+	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setIsActive(false);
+	m_editorPtr->getWindowManager()->showSeparators();
 }
 
 void EditorFrameDragAndDropOperation::dragOperation()
@@ -257,6 +259,8 @@ void EditorFrameDragAndDropOperation::dropOperation(void* customData, int dropCo
 	*ptrToWindowsId = m_currentDraggedWindowId;
 
 	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setAlpha(1.0f);
+	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setIsActive(true);
+	m_editorPtr->getWindowManager()->hideSeparators();
 	m_currentDraggedWindowId = -1;
 	m_editorPtr = nullptr;
 }
@@ -264,6 +268,8 @@ void EditorFrameDragAndDropOperation::dropOperation(void* customData, int dropCo
 void EditorFrameDragAndDropOperation::cancelOperation()
 {
 	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setAlpha(1.0f);
+	m_editorPtr->getWindowManager()->getWindow(m_currentDraggedWindowId)->setIsActive(true);
+	m_editorPtr->getWindowManager()->hideSeparators();
 	m_currentDraggedWindowId = -1;
 	m_editorPtr = nullptr;
 }

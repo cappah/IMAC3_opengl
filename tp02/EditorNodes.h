@@ -24,6 +24,13 @@ enum EditorNodeDisplayLogicType {
 
 class EditorNodeDisplayLogic
 {
+public:
+	enum ResizeMode {
+		NONE,
+		HORIZONTAL,
+		VERTICAL
+	};
+
 private:
 	EditorNodeDisplayLogicType m_logicType;
 public:
@@ -35,7 +42,7 @@ public:
 	virtual void onBeforeRemoveChild(EditorNode& node, int index) {};
 	void onAfterRemoveChild(EditorNode & node);
 	EditorNodeDisplayLogicType getLogicType() const { return m_logicType; }
-	int drawDropZone(ImVec2 pos, ImVec2 size, bool isActive, Editor& editor);
+	int drawDropZone(EditorNode& node, ImVec2 pos, ImVec2 size, bool isActive, Editor& editor, ResizeMode resizeMode);
 };
 
 class EditorNodeHorizontalDisplay : public EditorNodeDisplayLogic
@@ -91,6 +98,9 @@ public:
 
 class EditorNode
 {
+public:
+	static bool s_shouldDrawMouseCursorWithImGui;
+
 private:
 	std::shared_ptr<EditorNodeDisplayLogic> m_displayLogic;
 	std::vector<std::shared_ptr<EditorNode>> m_childNodes;

@@ -1312,8 +1312,8 @@ void Editor::renderUI(Project& project)
 
 	displayMenuBar(project);
 
+	EditorNode::s_shouldDrawMouseCursorWithImGui = false;
 	displayBackgroundWindow(project);
-
 	displayFloatingWindows(project);
 
 	displayModals(project);

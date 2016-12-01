@@ -13,4 +13,8 @@ namespace ImGui {
 	bool MyCollapsingHeader(const char* label, const char* str_id = NULL, bool display_frame = true, bool default_open = false);
 	bool InputFilePath(const char* label, char* entry, size_t stringSize);
 	bool IsMouseClickedAnyButton();
+
+	namespace Ext {
+		ImGuiWindow* FindHoveredWindow(ImVec2 pos, bool excluding_childs, int offsetIndex);
+	}
 }
