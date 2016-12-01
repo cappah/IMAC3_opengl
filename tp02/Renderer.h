@@ -28,7 +28,8 @@ class Renderer
 	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
 
 private:
-	Texture* m_finalFrame; //%NOCOMMIT% TODO
+	Texture* m_finalFrameColor; //%NOCOMMIT% TODO
+	Texture* m_finalFrameDepth;
 	GlHelper::Framebuffer m_mainBuffer;
 
 	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;

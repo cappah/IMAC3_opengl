@@ -174,10 +174,18 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 	////////////////////// SETUP MAIN FRAMEBUFFER /////////////////////////
 
-	m_finalFrame = GlHelper::makeNewColorTexture(width, height);
-	m_finalFrame->initGL();
+	m_finalFrameColor = GlHelper::makeNewColorTexture(width, height);
+	m_finalFrameColor->initGL();
+
+	m_finalFrameDepth = GlHelper::makeNewDepthTexture(width, height);
+	m_finalFrameDepth->initGL();
+
 	m_mainBuffer.bind();
-	m_mainBuffer.attachTexture(m_finalFrame, GlHelper::Framebuffer::AttachmentTypes::COLOR);
+	m_mainBuffer.attachTexture(m_finalFrameColor, GlHelper::Framebuffer::AttachmentTypes::COLOR);
+	m_mainBuffer.attachTexture(m_finalFrameDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
+	GLuint drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+	m_mainBuffer.setDrawBuffers(1, drawBuffers);
+	m_mainBuffer.checkIntegrity();
 	m_mainBuffer.unbind();
 
 }
@@ -185,12 +193,13 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 Renderer::~Renderer()
 {
 	delete lightManager;
-	delete m_finalFrame;
+	delete m_finalFrameColor;
+	delete m_finalFrameDepth;
 }
 
 Texture * Renderer::getFinalFrame() const
 {
-	return m_finalFrame;
+	return m_finalFrameColor;
 }
 
 
@@ -515,6 +524,7 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 
 
 	m_mainBuffer.bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	///// begin light pass
 	// Disable the depth test
@@ -722,9 +732,10 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	///////// turn on forward rendering : 
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, gbufferFbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
+	m_mainBuffer.bind(GL_DRAW_FRAMEBUFFER);
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_mainBuffer.bind();
 
 	//blending turn on for grass rendering
 	//glEnable(GL_BLEND);

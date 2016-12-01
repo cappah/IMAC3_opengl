@@ -307,7 +307,10 @@ void Project::edit()
 		//synchronize input handler : 
 		InputHandler::synchronize();
 
-		//rendering : 
+		//rendering :
+		// TODO : Symplify this
+		///////////////////////////////////////////////
+		//BEGIN RENDERING THE SCENE
 		//renderer.render(camera, entities);
 		scene->render(currentCamera);
 		scene->renderPaths(currentCamera);
@@ -323,6 +326,9 @@ void Project::edit()
 		glDisable(GL_DEPTH_TEST);
 		editor.renderGizmo();
 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO : movethis ?
+		//END RENDERING THE SCENE
+		///////////////////////////////////////////////
 
 #if 1
 		/*
@@ -334,8 +340,12 @@ void Project::edit()
 		ImGui::End();
 		*/
 
+		///////////////////////////////////////////////
+		//BEGIN RENDERING THE HUD
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI(*this);
+		//END RENDERING THE HUD
+		///////////////////////////////////////////////
 
 		//TODO : bouger ça là où il faut
 		DragAndDropManager::updateDragAndDrop();

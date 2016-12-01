@@ -2,6 +2,7 @@
 
 #include <map>
 #include "Texture.h"
+#include "ErrorHandler.h"
 
 namespace GlHelper {
 
@@ -64,19 +65,38 @@ public:
 		glDeleteFramebuffers(1, &m_glId);
 	}
 
+	void setDrawBuffers(int count, GLenum* datas)
+	{
+		glDrawBuffers(count, datas);
+	}
+
+	void setDrawBuffer(GLenum data)
+	{
+		glDrawBuffer(data);
+	}
+
+	void checkIntegrity()
+	{
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+		{
+			PRINT_ERROR("Error when building framebuffer\n opengl error enum : " + status);
+		}
+	}
+
 	GLuint getId() const
 	{
 		return m_glId;
 	}
 
-	void bind()
+	void bind(GLenum bindingStatus = GL_FRAMEBUFFER)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_glId);
+		glBindFramebuffer(bindingStatus, m_glId);
 	}
 
-	void unbind()
+	void unbind(GLenum bindingStatus = GL_FRAMEBUFFER)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(bindingStatus, 0);
 	}
 
 	void attachTexture(const Texture* textureToAttach, AttachmentTypes attachment, int mipMapLevel = 0, int colorAttachmentOffset = 0)
