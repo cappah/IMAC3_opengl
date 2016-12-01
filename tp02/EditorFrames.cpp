@@ -76,7 +76,7 @@ ViewportEditorFrame::ViewportEditorFrame(const std::string& name)
 void ViewportEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
 {
 	Texture* finalFrame = project.getActiveScene()->getRenderer().getFinalFrame();
-	ImGui::Image((void*)(finalFrame->glId), ImVec2(finalFrame->w, finalFrame->h));
+	ImGui::Image((void*)(finalFrame->glId), ImVec2(finalFrame->w, finalFrame->h), ImVec2(0, 1), ImVec2(1,0) );
 }
 
 ///////////////////////////////

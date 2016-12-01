@@ -106,12 +106,33 @@ public:
 ///////////////////////////////////////////
 //// BEGIN : Editor style sheet
 
-namespace EditorStyleSheet
+class EditorStyleSheet
 {
-	void applyDefaultStyleSheet();
-	void pushFramePadding();
-	void popFramePadding();
+private:
+	ImColor m_mainBgColor;
+	ImColor m_mainBgTitleColor;
+	ImColor m_mainBgChildColor;
+	ImColor m_mainBorderColor;
+	ImColor m_mainTextColor;
+	float m_windowRounding;
+	float m_frameRounding;
+	float m_childWindowRounding;
+	ImColor m_mainColor;
+
+public:
+	EditorStyleSheet();
+	const ImColor& getMainColor() const;
+	void applyDefaultStyleSheet() const;
+	void pushFramePadding() const;
+	void popFramePadding() const;
+	void pushMenuStyle() const;
+	void popMenuStyle() const;
+	void pushFloatingWindowStyle() const;
+	void popFloatingWindowStyle() const;
+	void pushBackgroundWindowStyle() const;
+	void popBackgroundWindowStyle() const;
 };
+
 
 
 //// END : Editor style sheet

@@ -26,6 +26,7 @@ public:
 	EditorWindowManager();
 
 	bool isFrameOpen(const std::string& frameName) const;
+	void onFrameClosed(const std::string& frameName);
 
 	std::shared_ptr<EditorWindow> getBackgroundWindow() const;
 	void setBackgroundWindow(std::shared_ptr<EditorWindow> window);

@@ -81,6 +81,8 @@ public:
 	void simplifyNodeAsynchrone(EditorNode* nodeToSimplify);
 	void executeNodeSimplification();
 	void update();
+
+	void findAllChildFramesRecursivly(std::vector<std::shared_ptr<EditorFrame>>& childFrames) const;
 };
 
 class EditorBackgroundWindow : public EditorWindow

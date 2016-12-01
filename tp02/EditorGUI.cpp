@@ -364,97 +364,144 @@ bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value)
 ///////////////////////////////////////////////////////////
 //// BEGIN : Editor style sheet
 
-namespace EditorStyleSheet {
-
-	void applyDefaultStyleSheet()
-	{
-		ImGuiStyle& style = ImGui::GetStyle();
-
-		//Scrollbar
-		style.ScrollbarRounding = 0.5f;
-		style.ScrollbarSize = 10.0f;
-		//Frame
-		style.FrameRounding = 0.5f;
-		style.FramePadding = ImVec2(1, 1);
-		//Grab
-		style.GrabMinSize = 3.f;
-		style.GrabRounding = 0.5f;
-		//Window
-		style.WindowPadding = ImVec2(0.0f, 0.0f);
-		style.WindowRounding = 0.5f;
-		//Spacing
-		style.ItemSpacing = ImVec2(0.0f, 0.0f);
-
-		//Colors
-		ImColor mainBgColor(0.4f, 0.4f, 0.4f);
-		ImColor mainBgTitleColor(0.6f, 0.6f, 0.6f);
-		ImColor mainBgChildColor(0.5f, 0.5f, 0.5f);
-		ImColor mainBorderColor(0.5f, 0.5f, 0.0f);
-		ImColor mainTextColor(1.f, 1.f, 1.f);
-		ImColor mainHoveredColor(0.3f, 0.3f, 0.3f);
-		ImColor mainActiveColor(0.4f, 0.4f, 0.4f);
-		ImColor mainDisabledColor(0.8f, 0.8f, 0.8f);
-
-
-		style.Colors[ImGuiCol_Text] = mainTextColor;
-		style.Colors[ImGuiCol_TextDisabled] = mainDisabledColor;
-		style.Colors[ImGuiCol_WindowBg] = mainBgColor;              // Background of normal windows
-		style.Colors[ImGuiCol_ChildWindowBg] = mainBgChildColor;         // Background of child windows
-		style.Colors[ImGuiCol_PopupBg] = mainBgChildColor;               // Background of popups, menus, tooltips windows
-		style.Colors[ImGuiCol_Border] = mainBorderColor;
-		//style.Colors[ImGuiCol_BorderShadow] 
-		style.Colors[ImGuiCol_FrameBg] = mainBgColor;               // Background of checkbox, radio button, plot, slider, text input
-		style.Colors[ImGuiCol_FrameBgHovered] = mainHoveredColor;
-		style.Colors[ImGuiCol_FrameBgActive] = mainActiveColor;
-		style.Colors[ImGuiCol_TitleBg] = mainBgTitleColor;
-		style.Colors[ImGuiCol_TitleBgCollapsed] = mainBgTitleColor;
-		style.Colors[ImGuiCol_TitleBgActive] = mainBgTitleColor;
-		style.Colors[ImGuiCol_MenuBarBg] = mainBgTitleColor;
-		//style.Colors[ImGuiCol_ScrollbarBg],
-		//style.Colors[ImGuiCol_ScrollbarGrab],
-		//style.Colors[ImGuiCol_ScrollbarGrabHovered],
-		//style.Colors[ImGuiCol_ScrollbarGrabActive],
-		//style.Colors[ImGuiCol_ComboBg],
-		//style.Colors[ImGuiCol_CheckMark],
-		//style.Colors[ImGuiCol_SliderGrab],
-		//style.Colors[ImGuiCol_SliderGrabActive],
-		//style.Colors[ImGuiCol_Button],
-		//style.Colors[ImGuiCol_ButtonHovered],
-		//style.Colors[ImGuiCol_ButtonActive],
-		//style.Colors[ImGuiCol_Header],
-		//style.Colors[ImGuiCol_HeaderHovered],
-		//style.Colors[ImGuiCol_HeaderActive],
-		//style.Colors[ImGuiCol_Column],
-		//style.Colors[ImGuiCol_ColumnHovered],
-		//style.Colors[ImGuiCol_ColumnActive],
-		//style.Colors[ImGuiCol_ResizeGrip],
-		//style.Colors[ImGuiCol_ResizeGripHovered],
-		//style.Colors[ImGuiCol_ResizeGripActive],
-		//style.Colors[ImGuiCol_CloseButton],
-		//style.Colors[ImGuiCol_CloseButtonHovered],
-		//style.Colors[ImGuiCol_CloseButtonActive],
-		//style.Colors[ImGuiCol_PlotLines],
-		//style.Colors[ImGuiCol_PlotLinesHovered],
-		//style.Colors[ImGuiCol_PlotHistogram],
-		//style.Colors[ImGuiCol_PlotHistogramHovered],
-		//style.Colors[ImGuiCol_TextSelectedBg],
-		//style.Colors[ImGuiCol_ModalWindowDarkening],  // darken entire screen when a modal window is active
-	}
-
-	void pushFramePadding()
-	{
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.f, 3.f));
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.f, 3.f));
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(3.f, 3.f));
-	}
-
-	void popFramePadding()
-	{
-		ImGui::PopStyleVar(3);
-	}
-
+EditorStyleSheet::EditorStyleSheet()
+	: m_mainColor(0.5f, 0.5f, 0.f)
+	, m_mainBgColor(0.4f, 0.4f, 0.4f)
+	, m_mainBgTitleColor(0.6f, 0.6f, 0.6f)
+	, m_mainBgChildColor(0.3f, 0.3f, 0.3f)
+	, m_mainBorderColor(0.5f, 0.5f, 0.0f)
+	, m_mainTextColor(1.f, 1.f, 1.f)
+	, m_windowRounding(0.5f)
+	, m_frameRounding(0.5f)
+	, m_childWindowRounding(0.5f)
+{
 }
 
+const ImColor & EditorStyleSheet::getMainColor() const
+{
+	return m_mainColor;
+}
+
+void EditorStyleSheet::applyDefaultStyleSheet() const
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+
+	//Scrollbar
+	style.ScrollbarRounding = 0.f;
+	style.ScrollbarSize = 10.0f;
+	//Frame
+	style.FrameRounding = 0.5f;
+	style.FramePadding = ImVec2(1, 1);
+	//Grab
+	style.GrabMinSize = 3.f;
+	style.GrabRounding = 0.5f;
+	//Window
+	style.WindowPadding = ImVec2(0.0f, 0.0f);
+	style.WindowRounding = 0.5f;
+	//Spacing
+	style.ItemSpacing = ImVec2(0.0f, 0.0f);
+
+
+	style.Colors[ImGuiCol_Text] = m_mainTextColor;
+	style.Colors[ImGuiCol_WindowBg] = m_mainBgColor;              // Background of normal windows
+	style.Colors[ImGuiCol_ChildWindowBg] = m_mainBgChildColor;         // Background of child windows
+	style.Colors[ImGuiCol_PopupBg] = m_mainBgChildColor;               // Background of popups, menus, tooltips windows
+	style.Colors[ImGuiCol_Border] = m_mainBorderColor;
+	style.Colors[ImGuiCol_TitleBg] = m_mainBgTitleColor;
+	style.Colors[ImGuiCol_TitleBgActive] = m_mainBgTitleColor;
+	style.Colors[ImGuiCol_TitleBgCollapsed] = m_mainBgTitleColor;
+	style.Colors[ImGuiCol_MenuBarBg] = m_mainBgTitleColor;
+	//style.Colors[ImGuiCol_TextDisabled] = mainDisabledColor;
+	//style.Colors[ImGuiCol_BorderShadow] 
+	//style.Colors[ImGuiCol_FrameBg] = mainBgColor;               // Background of checkbox, radio button, plot, slider, text input
+	//style.Colors[ImGuiCol_FrameBgHovered] = mainHoveredColor;
+	//style.Colors[ImGuiCol_FrameBgActive] = mainActiveColor;
+	//style.Colors[ImGuiCol_ScrollbarBg],
+	//style.Colors[ImGuiCol_ScrollbarGrab],
+	//style.Colors[ImGuiCol_ScrollbarGrabHovered],
+	//style.Colors[ImGuiCol_ScrollbarGrabActive],
+	//style.Colors[ImGuiCol_ComboBg],
+	//style.Colors[ImGuiCol_CheckMark],
+	//style.Colors[ImGuiCol_SliderGrab],
+	//style.Colors[ImGuiCol_SliderGrabActive],
+	//style.Colors[ImGuiCol_Button],
+	//style.Colors[ImGuiCol_ButtonHovered],
+	//style.Colors[ImGuiCol_ButtonActive],
+	//style.Colors[ImGuiCol_Header],
+	//style.Colors[ImGuiCol_HeaderHovered],
+	//style.Colors[ImGuiCol_HeaderActive],
+	//style.Colors[ImGuiCol_Column],
+	//style.Colors[ImGuiCol_ColumnHovered],
+	//style.Colors[ImGuiCol_ColumnActive],
+	//style.Colors[ImGuiCol_ResizeGrip],
+	//style.Colors[ImGuiCol_ResizeGripHovered],
+	//style.Colors[ImGuiCol_ResizeGripActive],
+	//style.Colors[ImGuiCol_CloseButton],
+	//style.Colors[ImGuiCol_CloseButtonHovered],
+	//style.Colors[ImGuiCol_CloseButtonActive],
+	//style.Colors[ImGuiCol_PlotLines],
+	//style.Colors[ImGuiCol_PlotLinesHovered],
+	//style.Colors[ImGuiCol_PlotHistogram],
+	//style.Colors[ImGuiCol_PlotHistogramHovered],
+	//style.Colors[ImGuiCol_TextSelectedBg],
+	//style.Colors[ImGuiCol_ModalWindowDarkening],  // darken entire screen when a modal window is active
+}
+
+void EditorStyleSheet::pushFramePadding() const
+{
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.f, 3.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.f, 3.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(3.f, 3.f));
+}
+
+void EditorStyleSheet::popFramePadding() const
+{
+	ImGui::PopStyleVar(3);
+}
+
+void EditorStyleSheet::pushMenuStyle() const
+{
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.f, 3.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(3.f, 3.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(3.f, 3.f));
+}
+
+void EditorStyleSheet::popMenuStyle() const
+{
+	ImGui::PopStyleVar(3);
+}
+
+void EditorStyleSheet::pushFloatingWindowStyle() const
+{
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.f, 0.f));
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, m_windowRounding);
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildWindowRounding, m_childWindowRounding);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, m_frameRounding);
+}
+
+void EditorStyleSheet::popFloatingWindowStyle() const
+{
+	ImGui::PopStyleVar(6);
+}
+
+void EditorStyleSheet::pushBackgroundWindowStyle() const
+{
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.f, 0.f));
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildWindowRounding, m_childWindowRounding);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, m_frameRounding);
+}
+
+void EditorStyleSheet::popBackgroundWindowStyle() const
+{
+	ImGui::PopStyleVar(6);
+}
 
 //// END : Editor style sheet
 ///////////////////////////////////////////////////////////

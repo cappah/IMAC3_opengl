@@ -2,9 +2,8 @@
 #include <cmath>
 #include <algorithm>
 #include "imgui/imgui.h"
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui/imgui_internal.h"
 
+class ImGuiWindow;
 
 namespace ImGui {
 
@@ -16,5 +15,8 @@ namespace ImGui {
 
 	namespace Ext {
 		ImGuiWindow* FindHoveredWindow(ImVec2 pos, bool excluding_childs, int offsetIndex);
+		bool SquaredCloseButton(const char* str_id, const ImVec2& pos, float width);
+		bool ButtonWithTriangleToLeft(const char* str_id, const ImVec2& pos, const ImVec2& size, const ImColor& triangleColor);
+		void openStackingPopUp(const char* str_id);
 	}
 }

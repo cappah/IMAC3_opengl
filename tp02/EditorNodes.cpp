@@ -185,13 +185,13 @@ EditorWindow * EditorNode::getParentWindow() const
 	return m_parentWindow;
 }
 
-void EditorNode::findAllChildFrames(std::vector<std::shared_ptr<EditorFrame>>& frames) const
+void EditorNode::findAllChildFramesRecursivly(std::vector<std::shared_ptr<EditorFrame>>& frames) const
 {
 	if(m_frame)
 		frames.push_back(m_frame);
 
 	for (auto child : m_childNodes)
-		child->findAllChildFrames(frames);
+		child->findAllChildFramesRecursivly(frames);
 }
 
 std::shared_ptr<EditorNode> EditorNode::getChild(int index) const
@@ -495,7 +495,7 @@ bool EditorNodeHorizontalDisplay::drawContent(EditorNode& node, Project& project
 
 		ImGui::SameLine();
 		ImGui::PushID("Child");
-		ImGui::BeginChild(i, ImVec2(currentChildNode.getSize().x - perChildSizeOffset.x, currentChildNode.getSize().y - perChildSizeOffset.y), true/*, ImGuiWindowFlags_NoScrollbar*/);
+		ImGui::BeginChild(i, ImVec2(currentChildNode.getSize().x - perChildSizeOffset.x, currentChildNode.getSize().y - perChildSizeOffset.y), true /*, ImGuiWindowFlags_NoScrollbar*/);
 
 		if (currentChildNode.drawContent(project, editor, removeNodeDatas, perChildSizeOffset))
 			removeNodeDatas->nodeToRemove = node.m_childNodes[i];
@@ -908,7 +908,7 @@ bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, E
 {
 	bool needRemove = false;
 
-	EditorStyleSheet::pushFramePadding();
+	editor.getStyleSheet().pushFramePadding();
 	ImGui::PushID(this);
 
 	ImVec2 windowSize(node.getSize().x - parentSizeOffset.x, node.getSize().y - parentSizeOffset.y);
@@ -916,8 +916,8 @@ bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, E
 
 	if (node.getParentNode()->getDisplayLogicType() != EditorNodeDisplayLogicType::UniqueDisplay)
 	{
-		ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetWindowPos(), ImVec2(ImGui::GetWindowPos().x + windowSize.x, ImGui::GetWindowPos().y + 20), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_TitleBg]));
-		if (ImGui::SmallButton(">"))
+		ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetWindowPos(), ImVec2(ImGui::GetWindowPos().x + windowSize.x, ImGui::GetWindowPos().y + 20.f), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_TitleBg]));
+		if (ImGui::Ext::ButtonWithTriangleToLeft("##detach", ImVec2(ImGui::GetWindowPos().x + 8.f, ImGui::GetWindowPos().y + 10.f ), ImVec2(20, 20), editor.getStyleSheet().getMainColor()))
 		{
 			needRemove = true;
 		}
@@ -933,7 +933,7 @@ bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, E
 
 	ImGui::PopID();
 
-	EditorStyleSheet::popFramePadding();
+	editor.getStyleSheet().popFramePadding();
 
 	return needRemove;
 }

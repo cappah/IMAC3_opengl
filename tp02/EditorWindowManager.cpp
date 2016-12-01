@@ -15,6 +15,14 @@ bool EditorWindowManager::isFrameOpen(const std::string & frameName) const
 	return m_frameMapping.find(frameName) != m_frameMapping.end();
 }
 
+void EditorWindowManager::onFrameClosed(const std::string & frameName)
+{
+	auto found = m_frameMapping.find(frameName);
+	assert(found != m_frameMapping.end());
+
+	m_frameMapping.erase(found);
+}
+
 void EditorWindowManager::addModal(std::shared_ptr<EditorFrame> windowFrame)
 {
 	if (!m_freeModalIds.empty())
@@ -129,7 +137,7 @@ void EditorWindowManager::addWindow(std::shared_ptr<EditorNode> windowNode)
 	}
 
 	std::vector<std::shared_ptr<EditorFrame>> foundFrames;
-	windowNode->findAllChildFrames(foundFrames);
+	windowNode->findAllChildFramesRecursivly(foundFrames);
 	for (auto frame : foundFrames)
 	{
 		m_frameMapping[frame->getName()] = frame;
@@ -143,6 +151,11 @@ void EditorWindowManager::addWindowAsynchrone(std::shared_ptr<EditorNode> window
 
 void EditorWindowManager::removeWindow(EditorWindow* window)
 {
+	std::vector<std::shared_ptr<EditorFrame>> childFrames;
+	window->findAllChildFramesRecursivly(childFrames);
+	for (auto frame : childFrames)
+		onFrameClosed(frame->getName());
+
 	auto found = std::find_if(m_editorWindows.begin(), m_editorWindows.end(), [window](const std::shared_ptr<EditorWindow>& item) { return item.get() == window; });
 	if (found != m_editorWindows.end())
 	{
@@ -153,8 +166,13 @@ void EditorWindowManager::removeWindow(EditorWindow* window)
 
 void EditorWindowManager::removeWindow(int windowId)
 {
+	std::vector<std::shared_ptr<EditorFrame>> childFrames;
+	m_editorWindows[windowId]->findAllChildFramesRecursivly(childFrames);
+	for(auto frame : childFrames)
+		onFrameClosed(frame->getName());
+
 	m_editorWindows[windowId].reset();
-	m_freeWindowIds.push_back(windowId);
+	m_freeWindowIds.push_back(windowId);	
 }
 
 std::shared_ptr<EditorWindow> EditorWindowManager::getWindow(int windowId) const
@@ -176,7 +194,7 @@ void EditorWindowManager::setBackgroundWindow(std::shared_ptr<EditorWindow> wind
 	m_editorWindows[0]->setSize(Application::get().getWindowWidth(), Application::get().getWindowHeight());
 
 	std::vector<std::shared_ptr<EditorFrame>> foundFrames;
-	window->getNode()->findAllChildFrames(foundFrames);
+	window->getNode()->findAllChildFramesRecursivly(foundFrames);
 	for (auto frame : foundFrames)
 	{
 		m_frameMapping[frame->getName()] = frame;

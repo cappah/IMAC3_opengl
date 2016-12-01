@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "imgui_extension.h"
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui/imgui_internal.h"
 //forwards : 
 #include "dirent.h"
 #include "Utils.h"
@@ -237,7 +239,7 @@ namespace ImGui {
 		return false;
 	}
 
-	namespace Ext {
+namespace Ext {
 
 	ImGuiWindow* FindHoveredWindow(ImVec2 pos, bool excluding_childs, int offsetIndex)
 	{
@@ -281,6 +283,61 @@ namespace ImGui {
 		return NULL;
 	}
 
+	bool ButtonWithTriangleToLeft(const char* str_id, const ImVec2& pos, const ImVec2& size, const ImColor& triangleColor)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		ImGuiStyle& style = ImGui::GetStyle();
+		const ImGuiID id = window->GetID(str_id);
+
+		const ImRect bb(pos - size*0.5f, pos + size*0.5f);
+
+		bool hovered, held;
+		bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
+
+		// Render
+		const ImU32 col = ImGui::GetColorU32((held && hovered) ? ImGuiCol_CloseButtonActive : hovered ? ImGuiCol_CloseButtonHovered : ImGuiCol_CloseButton);
+		window->DrawList->AddRectFilled(bb.Min, bb.Max, col, style.FrameRounding);
+		const ImVec2 offset(3.f, 3.f);
+		ImVec2 a = bb.Min + ImVec2(offset.x, bb.GetSize().y * 0.5f);
+		ImVec2 b = bb.Min + ImVec2(size.x - offset.x, offset.y);
+		ImVec2 c = b + ImVec2(0.f, bb.GetSize().y - 2.f * offset.y);
+
+		window->DrawList->AddTriangleFilled(a, b, c, triangleColor);
+
+		return pressed;
+
 	}
-}
+
+	bool SquaredCloseButton(const char* str_id, const ImVec2& pos, float width)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		ImGuiStyle& style = ImGui::GetStyle();
+		const ImGuiID id = window->GetID(str_id);
+
+		const ImRect bb(pos - ImVec2(width*0.5f, width*0.5f), pos + ImVec2(width*0.5f, width*0.5f));
+
+		bool hovered, held;
+		bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
+
+		// Render
+		const ImU32 col = ImGui::GetColorU32((held && hovered) ? ImGuiCol_CloseButtonActive : hovered ? ImGuiCol_CloseButtonHovered : ImGuiCol_CloseButton);
+		window->DrawList->AddRectFilled(bb.Min, bb.Max, col, style.FrameRounding);
+
+		const float cross_extent = (width * 0.35355f) - 1.0f;
+		if (hovered)
+		{
+			window->DrawList->AddLine(pos + ImVec2(+cross_extent, +cross_extent), pos + ImVec2(-cross_extent, -cross_extent), ImGui::GetColorU32(ImGuiCol_Text));
+			window->DrawList->AddLine(pos + ImVec2(+cross_extent, -cross_extent), pos + ImVec2(-cross_extent, +cross_extent), ImGui::GetColorU32(ImGuiCol_Text));
+		}
+
+		return pressed;
+	}
+
+	void openStackingPopUp(const char* str_id)
+	{
+		ImGui::OpenPopupEx(str_id, true);
+	}
+
+
+}}
 

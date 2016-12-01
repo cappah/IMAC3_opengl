@@ -3,6 +3,9 @@
 #include "EditorWindows.h"
 #include "ResourceTree.h"
 #include "Project.h" //forward
+#include "imgui_extension.h"
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui/imgui_internal.h"
 
 
 ///////////////////////////////////////////////////////////
@@ -88,7 +91,7 @@ void EditorWindow::draw(Project& project, Editor& editor)
 		m_windowLabel = "Window";
 
 	ImGui::SetNextWindowPos(m_position);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_ShowBorders;
 	ImGuiWindowFlags inputFlag = m_isActive ? 0 : ImGuiWindowFlags_NoInputs;
 	flags |= inputFlag;
 	ImGui::Begin(m_windowStrId.c_str(), nullptr, flags);
@@ -191,13 +194,21 @@ void EditorWindow::drawHeader(const std::string& title, bool& shouldClose, bool&
 
 	ImGui::PushID(title.c_str());
 	ImGui::BeginChild("##Header", ImVec2(0, 20), false, flags);
-	ImGui::Text(title.c_str());
-	float textWidth = ImGui::GetItemRectSize().x;
-	ImGui::SameLine();
-	ImGui::Dummy(ImVec2(ImGui::GetWindowWidth() - 25 - textWidth, 0));
-	ImGui::SameLine();
-	shouldClose = ImGui::Button("><##Header", ImVec2(20, 20));
+
+	//Render title
+	const float topPadding = 3.f;
+	const float leftPadding = 5.f;
+	const ImGuiWindow* window = ImGui::GetCurrentWindow();
+	const ImGuiStyle& style = ImGui::GetStyle();
+
+	const ImVec2 textPos(ImGui::GetWindowPos().x + leftPadding, ImGui::GetWindowPos().y + topPadding);
+	ImGui::GetWindowDrawList()->AddText(textPos, ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_Text]), title.c_str());
+
+	ImVec2 buttonPos = ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - 15.f, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()*0.5);
+	shouldClose = ImGui::Ext::SquaredCloseButton("><##Header", buttonPos, 16.f);
+
 	shouldMove = ImGui::IsMouseHoveringWindow() && ImGui::IsWindowFocused() && ImGui::IsMouseDragging();
+
 	ImGui::EndChild();
 	ImGui::PopID();
 }
@@ -269,7 +280,16 @@ void EditorWindow::update()
 	executeNodeSimplification();
 }
 
-
+void EditorWindow::findAllChildFramesRecursivly(std::vector<std::shared_ptr<EditorFrame>>& childFrames) const
+{
+	if (m_node->getDisplayLogicType() == EditorNodeDisplayLogicType::FrameDisplay)
+	{
+		auto frame = m_node->getFrame();
+		if (frame)
+			childFrames.push_back(frame);
+	}
+	m_node->findAllChildFramesRecursivly(childFrames);
+}
 
 EditorBackgroundWindow::EditorBackgroundWindow(std::shared_ptr<EditorFrame> frame)
 	: EditorWindow(0, frame)

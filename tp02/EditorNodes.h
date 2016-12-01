@@ -123,7 +123,7 @@ public:
 	void setHeight(float newHeight);
 	void setParentWindow(EditorWindow* parentWindow);
 	EditorWindow* getParentWindow() const;
-	void findAllChildFrames(std::vector<std::shared_ptr<EditorFrame>>& frames) const;
+	void findAllChildFramesRecursivly(std::vector<std::shared_ptr<EditorFrame>>& frames) const;
 
 	void removeChild(int index);
 	void removeChild(EditorNode* nodeToRemove);

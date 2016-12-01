@@ -304,8 +304,15 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	//m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>()); //Scene manager
 	//m_windowManager.addWindow(std::make_shared<FactoriesDebugEditorFrame>()); //Factories debuger
 
+	//Create the style sheet
+	m_styleSheet = std::make_shared<EditorStyleSheet>();
 	//Apply default style sheet
-	EditorStyleSheet::applyDefaultStyleSheet();
+	m_styleSheet->applyDefaultStyleSheet();
+}
+
+const EditorStyleSheet & Editor::getStyleSheet() const
+{
+	return *m_styleSheet;
 }
 
 float Editor::getMenuTopOffset() const
@@ -466,6 +473,8 @@ void Editor::hideAllToolsUI()
 
 void Editor::displayMenuBar(Project& project)
 {
+	m_styleSheet->pushMenuStyle();
+
 	Scene& scene = *project.getActiveScene();
 
 	m_saveWindowOpen = false;
@@ -487,6 +496,8 @@ void Editor::displayMenuBar(Project& project)
 
 		ImGui::EndMainMenuBar();
 	}
+
+	m_styleSheet->popMenuStyle();
 }
 
 void Editor::drawMenuEntry_options(Project& project)
@@ -1305,6 +1316,9 @@ void Editor::onResizeWindow()
 
 void Editor::renderUI(Project& project)
 {
+	//We assure we are rendering the HUD in the default framebuffer.
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	Scene& scene = *project.getActiveScene();
 
 	if (!m_isUIVisible)
@@ -1332,12 +1346,18 @@ void Editor::displayFloatingWindows(Project& project)
 	//{
 	//	m_editorWindows[i]->drawAsWindow();
 	//}
+	m_styleSheet->pushFloatingWindowStyle();
 	m_windowManager.displayFloatingWindows(project, *this);
+	m_styleSheet->popFloatingWindowStyle();
 }
 
 void Editor::displayBackgroundWindow(Project& project)
 {
+	m_styleSheet->pushBackgroundWindowStyle();
+
 	m_windowManager.displayBackgroundWindows(project, *this);
+
+	m_styleSheet->popBackgroundWindowStyle();
 
 	//ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
 	//ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1, 0.1, 0.1, 255));

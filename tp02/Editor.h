@@ -150,6 +150,8 @@ private:
 
 	ImGuiID m_lastDraggedWindowId;
 
+	std::shared_ptr<EditorStyleSheet> m_styleSheet;
+
 	////windows (views)
 	//std::vector<std::shared_ptr<EditorWindow>> m_editorWindows;
 
@@ -158,6 +160,7 @@ private:
 
 public:
 	Editor();
+	const EditorStyleSheet& getStyleSheet() const;
 
 	float getMenuTopOffset() const;
 	void drawMenuEntry_windows();
