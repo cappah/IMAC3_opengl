@@ -240,7 +240,7 @@ public:
 	//init unifom id
 	void init(GLuint glProgramId) override
 	{
-		for (int i = 0; i < m_data.size(); i++)
+		for (int i = 0; i < m_datas.size(); i++)
 			m_uniformIds[i] = glGetUniformLocation(glProgram, (m_name+"[" + std::to_string(i) + "]").c_str());
 	}
 
@@ -330,47 +330,14 @@ private:
 	GLuint m_uniformId;
 
 public:
-	InternalShaderParameter(const std::string& name)
-		: InternalShaderParameterBase(name)
-		, m_uniformId(0)
-	{}
-
-	//init unifom id
-	void init(GLuint glProgramId)
-	{
-		m_uniformId = glGetUniformLocation(glProgramId, m_name.data());
-	}
-
-	void drawUI() override
-	{
-		EditorGUI::ResourceField<CubeTexture>(m_name, m_data); //TODO 10
-	}
-
-	void pushToGPU(int& boundTextureCount) override
-	{
-		glActiveTexture(GL_TEXTURE0 + boundTextureCount);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_data->glId);
-		glUniform1i(m_uniformId, boundTextureCount);
-		boundTextureCount++;
-	}
-
-	void save(Json::Value & entityRoot) const override
-	{
-		m_data.save(entityRoot);
-	}
-	void load(const Json::Value & entityRoot) override
-	{
-		m_data.load(entityRoot);
-	}
-
-	void setData(const void* data) override
-	{
-		m_data = *(static_cast< const ResourcePtr<CubeTexture> *>(data));
-	}
-	void getData(void* outData) override
-	{
-		outData = (void*)(&m_data);
-	}
+	InternalShaderParameter(const std::string& name);
+	void init(GLuint glProgramId);
+	void drawUI() override;
+	void pushToGPU(int& boundTextureCount) override;
+	void save(Json::Value & entityRoot) const override;
+	void load(const Json::Value & entityRoot) override;
+	void setData(const void* data) override;
+	void getData(void* outData) override;
 };
 
 //utility function to make a shader from its type

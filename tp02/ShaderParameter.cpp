@@ -181,6 +181,7 @@ InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderPar
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::init(GLuint glProgramId)
 {
 	m_uniformId = glGetUniformLocation(glProgramId, m_name.data());
+	m_data = getTextureFactory().getDefault("default");
 }
 
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::drawUI()
@@ -217,4 +218,50 @@ void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::setData(cons
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::getData(void* outData)
 {
 	outData = (void*)(m_data.get());
+}
+
+
+// Cube texture : 
+
+InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name)
+	: InternalShaderParameterBase(name)
+	, m_uniformId(0)
+{}
+
+//init unifom id
+void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::init(GLuint glProgramId)
+{
+	m_uniformId = glGetUniformLocation(glProgramId, m_name.data());
+	//m_data = getCubeTextureFactory().getDefault("default");
+}
+
+void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::drawUI()
+{
+	EditorGUI::ResourceField<CubeTexture>(m_name, m_data); //TODO 10
+}
+
+void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount)
+{
+	glActiveTexture(GL_TEXTURE0 + boundTextureCount);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_data->glId);
+	glUniform1i(m_uniformId, boundTextureCount);
+	boundTextureCount++;
+}
+
+void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::save(Json::Value & entityRoot) const
+{
+	m_data.save(entityRoot);
+}
+void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::load(const Json::Value & entityRoot)
+{
+	m_data.load(entityRoot);
+}
+
+void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::setData(const void* data)
+{
+	m_data = *(static_cast< const ResourcePtr<CubeTexture> *>(data));
+}
+void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::getData(void* outData)
+{
+	outData = (void*)(&m_data);
 }

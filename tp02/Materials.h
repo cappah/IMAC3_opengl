@@ -78,15 +78,15 @@ public:
 	}
 
 	//TODO 10
-	template<typename T, typename U = ShaderParameter::IsNotArray>
-	ExternalShaderParameter<T, U>& getExternalParameter(const std::string& parameterName) const
-	{
-		auto& foundParameter = m_externalParameters.find(parameterName);
-		if (foundParameter != m_externalParameters.end())
-		{
-			return *static_cast<ExternalShaderParameter<T, U>*>(foundParameter->second().get());
-		}
-	}
+	//template<typename T, typename U = ShaderParameter::IsNotArray>
+	//ExternalShaderParameter<T, U>& getExternalParameter(const std::string& parameterName) const
+	//{
+	//	auto& foundParameter = m_externalParameters.find(parameterName);
+	//	if (foundParameter != m_externalParameters.end())
+	//	{
+	//		return *static_cast<ExternalShaderParameter<T, U>*>(foundParameter->second().get());
+	//	}
+	//}
 
 	void loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 	// Save and load internal parameters 
@@ -520,9 +520,9 @@ public:
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
-		uniform_normalMatrix = MaterialHelper::getUniform(m_glProgramId, "normalMatrix");
-		uniform_bonesTransform = MaterialHelper::getUniforms(m_glProgramId, "bonesTransform", MAX_BONE_COUNT);
-		uniform_useSkeleton = MaterialHelper::getUniform(m_glProgramId, "useSkeleton");
+		uniform_normalMatrix = MaterialHelper::getUniform(m_glProgramId, "NormalMatrix");
+		uniform_bonesTransform = MaterialHelper::getUniforms(m_glProgramId, "BonesTransform", MAX_BONE_COUNT);
+		uniform_useSkeleton = MaterialHelper::getUniform(m_glProgramId, "UseSkeleton");
 	}
 
 	void setUniform_MVP(glm::mat4& mvp)
