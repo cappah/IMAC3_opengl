@@ -212,3 +212,35 @@ void FactoriesDebugEditorFrame::drawContent(Project& project, EditorModal* paren
 	ImGui::End();
 	}*/
 }
+
+//////////////////////////////
+
+InspectorEditorFrame::InspectorEditorFrame(const std::string & name, std::shared_ptr<Inspector> model)
+	: EditorFrame(name)
+{
+	m_inspector = model;
+}
+
+void InspectorEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
+{
+	if (!m_inspector.expired())
+	{
+		m_inspector.lock()->drawUI();
+	}
+}
+
+//////////////////////////////
+
+SceneHierarchyEditorFrame::SceneHierarchyEditorFrame(const std::string& name, std::shared_ptr<SceneHierarchy> model)
+	: EditorFrame(name)
+{
+	m_sceneHierarchy = model;
+}
+
+void SceneHierarchyEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
+{
+	if (!m_sceneHierarchy.expired())
+	{
+		m_sceneHierarchy.lock()->drawUI();
+	}
+}

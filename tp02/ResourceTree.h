@@ -175,6 +175,13 @@ public:
 		addResourceToFactory(file.getPath());
 	}
 
+	template<typename U>
+	void addFile(const ResourceFile& file, U* resource)
+	{
+		m_filesContainer.push_back(ResourceFile(file));
+		getResourceFactory<U>().add(file.getPath(), resource);
+	}
+
 	void moveFileFrom(const FileHandler::CompletePath& oldPath, const FileHandler::CompletePath& newPath, ResourceFolder& folderFrom)
 	{
 		m_filesContainer.push_back(ResourceFile(newPath));
@@ -540,6 +547,7 @@ public :
 	static void copyResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
 
 	static void addNewMaterialTo(const std::string& materialName, const std::string& ShaderProgramName, ResourceFolder& folderTo);
+	static void addNewCubeTextureTo(const std::string& textureName, ResourceFolder& folderTo);
 	static void addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo);
 
 	static void moveSubFolderTo(const std::string& folderName, ResourceFolder& folderFrom, ResourceFolder& folderTo);

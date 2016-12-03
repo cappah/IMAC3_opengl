@@ -136,11 +136,11 @@ void EditorWindowManager::addWindow(std::shared_ptr<EditorNode> windowNode)
 		m_editorWindows.push_back(std::make_shared<EditorWindow>(currentId, windowNode));
 	}
 
-	std::vector<std::shared_ptr<EditorFrame>> foundFrames;
+	std::vector<std::weak_ptr<EditorFrame>> foundFrames;
 	windowNode->findAllChildFramesRecursivly(foundFrames);
 	for (auto frame : foundFrames)
 	{
-		m_frameMapping[frame->getName()] = frame;
+		m_frameMapping[frame.lock()->getName()] = frame;
 	}
 }
 
@@ -151,10 +151,11 @@ void EditorWindowManager::addWindowAsynchrone(std::shared_ptr<EditorNode> window
 
 void EditorWindowManager::removeWindow(EditorWindow* window)
 {
-	std::vector<std::shared_ptr<EditorFrame>> childFrames;
+	std::vector<std::weak_ptr<EditorFrame>> childFrames;
 	window->findAllChildFramesRecursivly(childFrames);
+	std::vector<std::string> childFrameNames;
 	for (auto frame : childFrames)
-		onFrameClosed(frame->getName());
+		childFrameNames.push_back(frame.lock()->getName());
 
 	auto found = std::find_if(m_editorWindows.begin(), m_editorWindows.end(), [window](const std::shared_ptr<EditorWindow>& item) { return item.get() == window; });
 	if (found != m_editorWindows.end())
@@ -162,17 +163,36 @@ void EditorWindowManager::removeWindow(EditorWindow* window)
 		found->reset();
 		m_freeWindowIds.push_back((int)std::distance(m_editorWindows.begin(), found));
 	}
+
+	int index = 0;
+	for (auto frame : childFrames)
+	{
+		if (frame.expired())
+			onFrameClosed(childFrameNames[index]);
+
+		index++;
+	}
 }
 
 void EditorWindowManager::removeWindow(int windowId)
 {
-	std::vector<std::shared_ptr<EditorFrame>> childFrames;
+	std::vector<std::weak_ptr<EditorFrame>> childFrames;
 	m_editorWindows[windowId]->findAllChildFramesRecursivly(childFrames);
-	for(auto frame : childFrames)
-		onFrameClosed(frame->getName());
+	std::vector<std::string> childFrameNames;
+	for (auto frame : childFrames)
+		childFrameNames.push_back(frame.lock()->getName());
 
 	m_editorWindows[windowId].reset();
 	m_freeWindowIds.push_back(windowId);	
+
+	int index = 0;
+	for (auto frame : childFrames)
+	{
+		if(frame.expired())
+			onFrameClosed(childFrameNames[index]);
+
+		index++;
+	}
 }
 
 std::shared_ptr<EditorWindow> EditorWindowManager::getWindow(int windowId) const
@@ -193,11 +213,11 @@ void EditorWindowManager::setBackgroundWindow(std::shared_ptr<EditorWindow> wind
 	m_editorWindows[0] = window;
 	m_editorWindows[0]->setSize(Application::get().getWindowWidth(), Application::get().getWindowHeight());
 
-	std::vector<std::shared_ptr<EditorFrame>> foundFrames;
+	std::vector<std::weak_ptr<EditorFrame>> foundFrames;
 	window->getNode()->findAllChildFramesRecursivly(foundFrames);
 	for (auto frame : foundFrames)
 	{
-		m_frameMapping[frame->getName()] = frame;
+		m_frameMapping[frame.lock()->getName()] = frame;
 	}
 }
 

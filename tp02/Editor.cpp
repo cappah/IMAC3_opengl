@@ -12,7 +12,8 @@
 
 ///////////////////////////////// INSPECTOR
 
-Inspector::Inspector()
+Inspector::Inspector(Editor* editorPtr)
+	: m_editorPtr(editorPtr)
 {
 
 }
@@ -22,216 +23,403 @@ Inspector::~Inspector()
 
 }
 
-void Inspector::drawUI(const std::vector<PointLight*>& pointLights)
+void Inspector::setScene(Scene * currentScene)
 {
-	if (pointLights.size() == 0)
-		return;
+	m_currentScene = currentScene;
+}
 
-	if (ImGui::CollapsingHeader("point light"))
+void Inspector::drawUI()
+{
+	int entityId = 0;
+
+	auto& selection = m_editorPtr->getCurrentSelection();
+
+	if (!selection.empty())
 	{
-		floatValue = pointLights[0]->getIntensity();
-		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
+		//can't add or remove components in multiple editing, only change components parameters
+		if (selection.size() == 1)
 		{
-			for (auto& light : pointLights)
-			{
-				light->setIntensity( floatValue );
-			}
+			if(m_multipleEditing)
+				m_multipleEditing = false;
 		}
-		vector3Value = pointLights[0]->getColor();
-		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
+		else if (ImGui::RadioButton("multiple editing", m_multipleEditing))
 		{
-			for (auto& light : pointLights)
+			m_multipleEditing = !m_multipleEditing;
+
+			//if (m_multipleEditing)
+			//{
+			//	refreshSelectedComponents(true);
+			//}
+		}
+
+		if (m_multipleEditing)
+		{
+			assert(selection.size() > 0);
+			selection[0]->drawInInspector(*m_currentScene, selection);
+		}
+		else
+		{
+			for (auto& selected : selection)
 			{
-				light->setColor( vector3Value );
+				ImGui::PushID(entityId);
+				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str())) {
+					selected->drawInInspector(*m_currentScene);
+				}
+				ImGui::PopID();
+
+				entityId++;
 			}
 		}
 	}
 }
+//
+//
+//void Inspector::drawUI(const std::vector<Entity*>& entities)
+//{
+//	if (entities.size() == 0)
+//		return;
+//
+//	std::string tmpName = entities[0]->getName();
+//	tmpName.copy(textValue, tmpName.size(), 0);
+//	textValue[tmpName.size()] = '\0';
+//
+//	if (ImGui::InputText("name", textValue, 20))
+//	{
+//		for (auto& entity : entities)
+//		{
+//			entity->setName(textValue);
+//		}
+//	}
+//
+//	vector3Value = entities[0]->getEulerRotation();
+//	if (ImGui::SliderFloat3("rotation", &vector3Value[0], 0, 2 * glm::pi<float>()))
+//	{
+//		for (auto& entity : entities)
+//		{
+//			entity->setEulerRotation(vector3Value);
+//			//entity->setRotation(glm::quat(vector3Value));
+//			//entity->applyTransform();
+//		}
+//	}
+//
+//	vector3Value = entities[0]->getScale();
+//	if (ImGui::InputFloat3("scale", &vector3Value[0]))
+//	{
+//		for (auto& entity : entities)
+//		{
+//			entity->setScale(vector3Value);
+//			//entity->applyTransform();
+//		}
+//	}
+//}
 
-void Inspector::drawUI(const std::vector<DirectionalLight*>& directionalLights)
+
+//
+//void Inspector::drawUI(const std::vector<PointLight*>& pointLights)
+//{
+//	if (pointLights.size() == 0)
+//		return;
+//
+//	if (ImGui::CollapsingHeader("point light"))
+//	{
+//		floatValue = pointLights[0]->getIntensity();
+//		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
+//		{
+//			for (auto& light : pointLights)
+//			{
+//				light->setIntensity( floatValue );
+//			}
+//		}
+//		vector3Value = pointLights[0]->getColor();
+//		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
+//		{
+//			for (auto& light : pointLights)
+//			{
+//				light->setColor( vector3Value );
+//			}
+//		}
+//	}
+//}
+//
+//void Inspector::drawUI(const std::vector<DirectionalLight*>& directionalLights)
+//{
+//	if (directionalLights.size() == 0)
+//		return;
+//
+//	if (ImGui::CollapsingHeader("directional light"))
+//	{
+//		floatValue = directionalLights[0]->getIntensity();
+//		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 10.f))
+//		{
+//			for (auto& light : directionalLights)
+//			{
+//				light->setIntensity( floatValue );
+//			}
+//		}
+//		vector3Value = directionalLights[0]->getColor();
+//		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
+//		{
+//			for (auto& light : directionalLights)
+//			{
+//				light->setColor( vector3Value );
+//			}
+//		}
+//	}
+//}
+//
+//void Inspector::drawUI(const std::vector<SpotLight*>& spotLights)
+//{
+//	if (spotLights.size() == 0)
+//		return;
+//
+//	if (ImGui::CollapsingHeader("spot light"))
+//	{
+//		floatValue = spotLights[0]->getIntensity();
+//		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
+//		{
+//			for (auto& light : spotLights)
+//			{
+//				light->setIntensity( floatValue );
+//			}
+//		}
+//		vector3Value = spotLights[0]->getColor();
+//		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
+//		{
+//			for (auto& light : spotLights)
+//			{
+//				light->setColor( vector3Value );
+//			}
+//		}
+//		floatValue = spotLights[0]->angle;
+//		if (ImGui::SliderFloat("light angles", &floatValue, 0.f, glm::pi<float>()))
+//		{
+//			for (auto& light : spotLights)
+//			{
+//				light->angle = floatValue;
+//			}
+//		}
+//	}
+//}
+//
+//void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
+//{
+//	if (meshRenderers.size() == 0)
+//		return;
+//
+//	//std::string tmpName = meshRenderers[0]->getMaterialName(0);
+//	//tmpName.copy(textValue, tmpName.size(), 0);
+//	//textValue[tmpName.size()] = '\0';
+//
+//	//%NOCOMMIT%
+//	//if (ImGui::InputText("materialName", textValue, 20))
+//	//{
+//	//	if (getMaterialFactory().contains<Material3DObject>(textValue))
+//	//	{
+//	//		for (auto& meshRenderer : meshRenderers)
+//	//		{
+//	//			meshRenderer->setMaterial( getMaterialFactory().get<Material3DObject>(textValue), 0);
+//	//		}
+//	//	}
+//	//}
+//	ResourcePtr<Material> materialPtrQuery;
+//	//EditorGUI::ResourceField<Material>(materialPtrQuery, "materialName", textValue, 100);
+//	EditorGUI::ResourceField<Material>("materialName", materialPtrQuery);
+//
+//	if (materialPtrQuery.isValid())
+//	{
+//		for (auto& meshRenderer : meshRenderers)
+//		{
+//			meshRenderer->setMaterial(materialPtrQuery, 0);
+//		}
+//	}
+//
+//	//meshRenderers[0]->getMaterial()->drawUI();
+//
+//	//tmpName = meshRenderers[0]->getMeshName();
+//	//tmpName.copy(textValue, tmpName.size(), 0);
+//	//textValue[tmpName.size()] = '\0';
+//
+//	//if (ImGui::InputText("meshName", textValue, 20))
+//	//{
+//	//	if (getMeshFactory().contains(textValue))
+//	//	{
+//	//		for (auto& meshRenderer : meshRenderers)
+//	//		{
+//	//			meshRenderer->setMesh( getMeshFactory().get(textValue) );
+//	//		}
+//	//	}
+//	//}
+//	ResourcePtr<Mesh> meshPtrQuery;
+//	//EditorGUI::ResourceField<Mesh>(meshPtrQuery, "meshName", textValue, 100);
+//	EditorGUI::ResourceField<Mesh>("meshName", meshPtrQuery);
+//
+//	if (meshPtrQuery.isValid())
+//	{
+//		for (auto& meshRenderer : meshRenderers)
+//		{
+//			meshRenderer->setMesh(meshPtrQuery);
+//		}
+//	}
+//}
+//
+//void Inspector::drawUI(const std::vector<Collider*>& colliders)
+//{
+//	if (colliders.size() == 0)
+//		return;
+//
+//	vector3Value = colliders[0]->offsetPosition;
+//	if (ImGui::InputFloat3("offset position", &vector3Value[0]))
+//	{
+//		for (auto& collider : colliders)
+//		{
+//			collider->setOffsetPosition(vector3Value);
+//		}
+//	}
+//	vector3Value = colliders[0]->offsetScale;
+//	if (ImGui::InputFloat3("offset scale", &vector3Value[0]))
+//	{
+//		for (auto& collider : colliders)
+//		{
+//			collider->setOffsetScale(vector3Value);
+//		}
+//	}
+//}
+
+////////////////////////////////////////// EDITOR HIERARCHY
+
+SceneHierarchy::SceneHierarchy(Editor * editorPtr)
+	: m_editorPtr(editorPtr)
 {
-	if (directionalLights.size() == 0)
-		return;
 
-	if (ImGui::CollapsingHeader("directional light"))
-	{
-		floatValue = directionalLights[0]->getIntensity();
-		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 10.f))
-		{
-			for (auto& light : directionalLights)
-			{
-				light->setIntensity( floatValue );
-			}
-		}
-		vector3Value = directionalLights[0]->getColor();
-		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
-		{
-			for (auto& light : directionalLights)
-			{
-				light->setColor( vector3Value );
-			}
-		}
-	}
 }
 
-void Inspector::drawUI(const std::vector<SpotLight*>& spotLights)
+void SceneHierarchy::setScene(Scene* scene)
 {
-	if (spotLights.size() == 0)
-		return;
+	m_currentScene = scene;
+}
 
-	if (ImGui::CollapsingHeader("spot light"))
+Scene* SceneHierarchy::getScene() const
+{
+	return m_currentScene;
+}
+
+
+void SceneHierarchy::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected)
+{
+	ImGui::PushID(entityId);
+	bool nodeOpen = false;
+
+	bool isSelected = entity->getIsSelected();
+	if (isSelected)
 	{
-		floatValue = spotLights[0]->getIntensity();
-		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		//ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1, 1, 0, 1));
+		//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0, 0, 1));
+		//ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0.8, 0.8, 1));
+	}
+
+	ImVec2 itemPos;
+	ImVec2 itemSize;
+	if (ImGui::MyTreeNode(std::to_string(entityId).c_str(), itemPos, itemSize))
+		nodeOpen = true;
+	ImGui::SameLine();
+
+
+	if (ImGui::Button(entity->getName().c_str(), ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
+	{
+		if (isSelected)
 		{
-			for (auto& light : spotLights)
+			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_editorPtr->getCamera().getCameraForward()*3.f;
+			m_editorPtr->getCamera().setTranslation(cameraFinalPosition);
+		}
+		else
+			m_editorPtr->changeCurrentSelected(entity);
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("<"))
+	{
+		setParenting = true;
+		parentToAttachSelected = entity;
+	}
+
+	if (nodeOpen)
+	{
+		if (isSelected)
+		{
+			//ImGui::PopStyleColor();
+			//ImGui::PopStyleColor();
+			//ImGui::PopStyleColor();
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
+		}
+
+		for (int c = 0; c < entity->getChildCount(); c++)
+		{
+			entityId++;
+			displayTreeEntityNode(entity->getChild(c), entityId, setParenting, parentToAttachSelected);
+		}
+	}
+
+	if (nodeOpen)
+		ImGui::TreePop();
+
+	if (isSelected && !nodeOpen)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
+		//ImGui::PopStyleColor();
+		//ImGui::PopStyleColor();
+		//ImGui::PopStyleColor();
+	}
+
+	ImGui::PopID();
+	entityId++;
+}
+
+
+void SceneHierarchy::drawUI()
+{
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
+
+	auto entities = m_currentScene->getEntities();
+
+	int entityId = 0;
+	bool setParenting = false;
+	Entity* parentToAttachSelected = nullptr;
+	for (auto& entity : entities)
+	{
+		if (!entity->hasParent())
+		{
+			displayTreeEntityNode(entity, entityId, setParenting, parentToAttachSelected);
+		}
+	}
+
+	if (setParenting)
+	{
+		if (parentToAttachSelected->getIsSelected())
+			parentToAttachSelected->setParent(nullptr);
+		else
+		{
+			const std::vector<Entity*>& currentSelection = m_editorPtr->getCurrentSelection();
+			for (int i = 0; i < currentSelection.size(); i++)
 			{
-				light->setIntensity( floatValue );
+				currentSelection[i]->setParent(parentToAttachSelected);
 			}
 		}
-		vector3Value = spotLights[0]->getColor();
-		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
-		{
-			for (auto& light : spotLights)
-			{
-				light->setColor( vector3Value );
-			}
-		}
-		floatValue = spotLights[0]->angle;
-		if (ImGui::SliderFloat("light angles", &floatValue, 0.f, glm::pi<float>()))
-		{
-			for (auto& light : spotLights)
-			{
-				light->angle = floatValue;
-			}
-		}
 	}
+
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
 }
-
-void Inspector::drawUI(const std::vector<Entity*>& entities)
-{
-	if (entities.size() == 0)
-		return;
-
-	std::string tmpName = entities[0]->getName();
-	tmpName.copy(textValue, tmpName.size(), 0);
-	textValue[tmpName.size()] = '\0';
-
-	if (ImGui::InputText("name", textValue, 20))
-	{
-		for (auto& entity : entities)
-		{
-			entity->setName(textValue);
-		}
-	}
-
-	vector3Value = entities[0]->getEulerRotation();
-	if (ImGui::SliderFloat3("rotation", &vector3Value[0], 0, 2 * glm::pi<float>()))
-	{
-		for (auto& entity : entities)
-		{
-			entity->setEulerRotation(vector3Value);
-			//entity->setRotation(glm::quat(vector3Value));
-			//entity->applyTransform();
-		}
-	}
-
-	vector3Value = entities[0]->getScale();
-	if (ImGui::InputFloat3("scale", &vector3Value[0]))
-	{
-		for (auto& entity : entities)
-		{
-			entity->setScale(vector3Value);
-			//entity->applyTransform();
-		}
-	}
-}
-
-void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
-{
-	if (meshRenderers.size() == 0)
-		return;
-
-	//std::string tmpName = meshRenderers[0]->getMaterialName(0);
-	//tmpName.copy(textValue, tmpName.size(), 0);
-	//textValue[tmpName.size()] = '\0';
-
-	//%NOCOMMIT%
-	//if (ImGui::InputText("materialName", textValue, 20))
-	//{
-	//	if (getMaterialFactory().contains<Material3DObject>(textValue))
-	//	{
-	//		for (auto& meshRenderer : meshRenderers)
-	//		{
-	//			meshRenderer->setMaterial( getMaterialFactory().get<Material3DObject>(textValue), 0);
-	//		}
-	//	}
-	//}
-	ResourcePtr<Material> materialPtrQuery;
-	//EditorGUI::ResourceField<Material>(materialPtrQuery, "materialName", textValue, 100);
-	EditorGUI::ResourceField<Material>("materialName", materialPtrQuery);
-
-	if (materialPtrQuery.isValid())
-	{
-		for (auto& meshRenderer : meshRenderers)
-		{
-			meshRenderer->setMaterial(materialPtrQuery, 0);
-		}
-	}
-
-	//meshRenderers[0]->getMaterial()->drawUI();
-
-	//tmpName = meshRenderers[0]->getMeshName();
-	//tmpName.copy(textValue, tmpName.size(), 0);
-	//textValue[tmpName.size()] = '\0';
-
-	//if (ImGui::InputText("meshName", textValue, 20))
-	//{
-	//	if (getMeshFactory().contains(textValue))
-	//	{
-	//		for (auto& meshRenderer : meshRenderers)
-	//		{
-	//			meshRenderer->setMesh( getMeshFactory().get(textValue) );
-	//		}
-	//	}
-	//}
-	ResourcePtr<Mesh> meshPtrQuery;
-	//EditorGUI::ResourceField<Mesh>(meshPtrQuery, "meshName", textValue, 100);
-	EditorGUI::ResourceField<Mesh>("meshName", meshPtrQuery);
-
-	if (meshPtrQuery.isValid())
-	{
-		for (auto& meshRenderer : meshRenderers)
-		{
-			meshRenderer->setMesh(meshPtrQuery);
-		}
-	}
-}
-
-void Inspector::drawUI(const std::vector<Collider*>& colliders)
-{
-	if (colliders.size() == 0)
-		return;
-
-	vector3Value = colliders[0]->offsetPosition;
-	if (ImGui::InputFloat3("offset position", &vector3Value[0]))
-	{
-		for (auto& collider : colliders)
-		{
-			collider->setOffsetPosition(vector3Value);
-		}
-	}
-	vector3Value = colliders[0]->offsetScale;
-	if (ImGui::InputFloat3("offset scale", &vector3Value[0]))
-	{
-		for (auto& collider : colliders)
-		{
-			collider->setOffsetScale(vector3Value);
-		}
-	}
-}
-
-
 
 ////////////////////////////////////////// GUI STATES
 
@@ -271,38 +459,14 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 
 	init_gui_states(m_guiStates);
 
-	//UI : 
-	m_windowDecal = glm::vec2(1, 20);
-	m_windowRect = glm::vec4(m_windowDecal.x, m_windowDecal.y, Application::get().getWindowWidth(), Application::get().getWindowHeight());
-	m_topLeftPanelRect = glm::vec4(m_windowRect.x, m_windowRect.y, 100, 200);
-	m_bottomLeftPanelRect = glm::vec4(m_windowRect.x,m_topLeftPanelRect.w, m_topLeftPanelRect.z, m_windowRect.w - m_topLeftPanelRect.w);
-	m_bottomPanelRect = glm::vec4(m_windowRect.x + m_topLeftPanelRect.z, 200, m_windowRect.z - m_topLeftPanelRect.z, m_windowRect.w - 200 );
-
-	//Defaults : 
-	m_terrainToolVisible = true;
-	m_skyboxToolVisible = false;
-	m_textureFactoryVisible = false;
-	m_cubeTextureFactoryVisible = false;
-	m_meshFactoryVisible = false;
-	m_programFactoryVisible = false;
-	m_materialFactoryVisible = false;
-	m_sceneManagerVisible = false;
-	m_skeletalAnimationFactoryVisible = false;
-
 	//Models : 
 	m_resourceTree = std::make_shared<ResourceTree>(Project::getAssetsFolderPath());
+	m_inspector = std::make_shared<Inspector>(this);
+	m_sceneHierarchy = std::make_shared<SceneHierarchy>(this);
 
 	//Main window : 
 	//m_windowManager.getBackgroundWindow()->setNode(std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), std::make_shared<EditorNode>(std::make_shared<ViewportEditorFrame>("Viewport")))); //Viewport
 	m_windowManager.setBackgroundWindow(std::make_shared<EditorBackgroundWindow>(std::make_shared<ViewportEditorFrame>("Viewport")));
-
-
-	//Open default windows : 
-	//m_windowManager.addWindow(std::make_shared<ResourceTreeView>(m_resourceTree.get())); //ResourceWindow
-	//m_windowManager.addWindow(std::make_shared<TerrainToolEditorFrame>()); //Terrain tool
-	//m_windowManager.addWindow(std::make_shared<SkyboxToolEditorFrame>()); //Skybox tool
-	//m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>()); //Scene manager
-	//m_windowManager.addWindow(std::make_shared<FactoriesDebugEditorFrame>()); //Factories debuger
 
 	//Create the style sheet
 	m_styleSheet = std::make_shared<EditorStyleSheet>();
@@ -322,7 +486,7 @@ float Editor::getMenuTopOffset() const
 
 void Editor::changeCurrentSelected(Entity* entity)
 {
-	clearSelectedComponents();
+	//clearSelectedComponents();
 
 	m_gizmo->setTarget(nullptr);
 	m_currentSelected.clear();
@@ -331,7 +495,7 @@ void Editor::changeCurrentSelected(Entity* entity)
 
 void Editor::changeCurrentSelected(std::vector<Entity*> entities)
 {
-	clearSelectedComponents();
+	//clearSelectedComponents();
 
 	m_gizmo->setTarget(nullptr);
 	m_currentSelected.clear();
@@ -356,7 +520,7 @@ void Editor::addCurrentSelected(Entity * entity)
 			m_gizmo->setTargets(m_currentSelected); //set multiple targets
 	}
 
-	refreshSelectedComponents(false);
+	//refreshSelectedComponents(false);
 }
 
 void Editor::removeCurrentSelected(Entity * entity)
@@ -379,7 +543,7 @@ void Editor::removeCurrentSelected(Entity * entity)
 			m_gizmo->setTargets(m_currentSelected); //set multiple targets
 	}
 
-	refreshSelectedComponents(true);
+	//refreshSelectedComponents(true);
 }
 
 void Editor::toggleCurrentSelected(Entity* entity)
@@ -395,6 +559,11 @@ void Editor::toggleCurrentSelected(Entity* entity)
 		addCurrentSelected(entity);
 }
 
+const std::vector<Entity*>& Editor::getCurrentSelection() const
+{
+	return m_currentSelected;
+}
+
 void Editor::renderGizmo()
 {
 	if (!m_isGizmoVisible)
@@ -407,69 +576,56 @@ void Editor::renderGizmo()
 	m_gizmo->render(projectionMatrix, viewMatrix);
 }
 
-void Editor::clearSelectedComponents()
-{
-	m_pointLights.clear();
-	m_directionlLights.clear();
-	m_spotLights.clear();
-	m_meshRenderers.clear();
-	m_colliders.clear();
-}
-
-void Editor::refreshSelectedComponents(bool clearComponentLists)
-{
-	if (clearComponentLists)
-	{
-		m_pointLights.clear();
-		m_directionlLights.clear();
-		m_spotLights.clear();
-		m_meshRenderers.clear();
-		m_colliders.clear();
-	}
-
-	for (auto& selected : m_currentSelected)
-	{
-		PointLight* pointLight = static_cast<PointLight*>(selected->getComponent(Component::POINT_LIGHT));
-		DirectionalLight* directionalLight = static_cast<DirectionalLight*>(selected->getComponent(Component::DIRECTIONAL_LIGHT));
-		SpotLight* spotLight = static_cast<SpotLight*>(selected->getComponent(Component::SPOT_LIGHT));
-		MeshRenderer* meshRenderer = static_cast<MeshRenderer*>(selected->getComponent(Component::MESH_RENDERER));
-		Collider* collider = static_cast<Collider*>(selected->getComponent(Component::COLLIDER));
-
-		if (pointLight != nullptr)
-		{
-			m_pointLights.push_back(pointLight);
-		}
-		if (directionalLight != nullptr)
-		{
-			m_directionlLights.push_back(directionalLight);
-		}
-		if (spotLight != nullptr)
-		{
-			m_spotLights.push_back(spotLight);
-		}
-		if (meshRenderer != nullptr)
-		{
-			m_meshRenderers.push_back(meshRenderer);
-		}
-		if (collider != nullptr)
-		{
-			m_colliders.push_back(collider);
-		}
-	}
-}
-
-void Editor::hideAllToolsUI()
-{
-	m_terrainToolVisible = false;
-	m_skyboxToolVisible = false;
-	m_textureFactoryVisible = false;
-	m_cubeTextureFactoryVisible = false;
-	m_meshFactoryVisible = false;
-	m_programFactoryVisible = false;
-	m_materialFactoryVisible = false;
-	m_skeletalAnimationFactoryVisible = false;
-	m_sceneManagerVisible = false;
-}
+//void Editor::clearSelectedComponents()
+//{
+//	m_pointLights.clear();
+//	m_directionlLights.clear();
+//	m_spotLights.clear();
+//	m_meshRenderers.clear();
+//	m_colliders.clear();
+//}
+//
+//void Editor::refreshSelectedComponents(bool clearComponentLists)
+//{
+//	if (clearComponentLists)
+//	{
+//		m_pointLights.clear();
+//		m_directionlLights.clear();
+//		m_spotLights.clear();
+//		m_meshRenderers.clear();
+//		m_colliders.clear();
+//	}
+//
+//	for (auto& selected : m_currentSelected)
+//	{
+//		PointLight* pointLight = static_cast<PointLight*>(selected->getComponent(Component::POINT_LIGHT));
+//		DirectionalLight* directionalLight = static_cast<DirectionalLight*>(selected->getComponent(Component::DIRECTIONAL_LIGHT));
+//		SpotLight* spotLight = static_cast<SpotLight*>(selected->getComponent(Component::SPOT_LIGHT));
+//		MeshRenderer* meshRenderer = static_cast<MeshRenderer*>(selected->getComponent(Component::MESH_RENDERER));
+//		Collider* collider = static_cast<Collider*>(selected->getComponent(Component::COLLIDER));
+//
+//		if (pointLight != nullptr)
+//		{
+//			m_pointLights.push_back(pointLight);
+//		}
+//		if (directionalLight != nullptr)
+//		{
+//			m_directionlLights.push_back(directionalLight);
+//		}
+//		if (spotLight != nullptr)
+//		{
+//			m_spotLights.push_back(spotLight);
+//		}
+//		if (meshRenderer != nullptr)
+//		{
+//			m_meshRenderers.push_back(meshRenderer);
+//		}
+//		if (collider != nullptr)
+//		{
+//			m_colliders.push_back(collider);
+//		}
+//	}
+//}
 
 void Editor::displayMenuBar(Project& project)
 {
@@ -795,6 +951,14 @@ void Editor::drawMenuEntry_windows()
 		{
 			m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>("Viewport"));
 		}
+		if (!m_windowManager.isFrameOpen("SceneHierarchy") && ImGui::Button("SceneHierarchy"))
+		{
+			m_windowManager.addWindow(std::make_shared<SceneHierarchyEditorFrame>("SceneHierarchy", m_sceneHierarchy));
+		}
+		if (!m_windowManager.isFrameOpen("Inspector") && ImGui::Button("Inspector"))
+		{
+			m_windowManager.addWindow(std::make_shared<InspectorEditorFrame>("Inspector", m_inspector));
+		}
 		if (!m_windowManager.isFrameOpen("Resource tree") && ImGui::Button("Resource tree"))
 		{
 			m_windowManager.addWindow(std::make_shared<ResourceTreeView>("Resource tree", m_resourceTree.get()));
@@ -960,50 +1124,49 @@ void Editor::displayModals(Project& project)
 //	if(found != m_editorModals.end())
 //		m_editorModals.erase(found);
 //}
-
-void Editor::displayTopLeftWindow(Project& project)
-{
-	Scene& scene = *project.getActiveScene();
-
-	int entityId = 0;
-
-
-	if (!m_currentSelected.empty())
-	{
-		//can't add or remove components in multiple editing, only change components parameters
-		if (ImGui::RadioButton("multiple editing", m_multipleEditing))
-		{
-			m_multipleEditing = !m_multipleEditing;
-
-			if (m_multipleEditing)
-			{
-				refreshSelectedComponents(true);
-			}
-		}
-
-		if (!m_multipleEditing)
-		{
-			for (auto& selected : m_currentSelected)
-			{
-				ImGui::PushID(entityId);
-				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str())) {
-					selected->drawUI(scene);
-				}
-				ImGui::PopID();
-
-				entityId++;
-			}
-		}
-		else
-		{
-			m_inspector.drawUI(m_currentSelected);
-			m_inspector.drawUI(m_pointLights);
-			m_inspector.drawUI(m_directionlLights);
-			m_inspector.drawUI(m_spotLights);
-			m_inspector.drawUI(m_meshRenderers);
-		}
-	}
-}
+//
+//void Editor::displayTopLeftWindow(Project& project)
+//{
+//	Scene& scene = *project.getActiveScene();
+//
+//	int entityId = 0;
+//
+//	if (!m_currentSelected.empty())
+//	{
+//		//can't add or remove components in multiple editing, only change components parameters
+//		if (ImGui::RadioButton("multiple editing", m_multipleEditing))
+//		{
+//			m_multipleEditing = !m_multipleEditing;
+//
+//			if (m_multipleEditing)
+//			{
+//				refreshSelectedComponents(true);
+//			}
+//		}
+//
+//		if (!m_multipleEditing)
+//		{
+//			for (auto& selected : m_currentSelected)
+//			{
+//				ImGui::PushID(entityId);
+//				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str())) {
+//					selected->drawUI(scene);
+//				}
+//				ImGui::PopID();
+//
+//				entityId++;
+//			}
+//		}
+//		else
+//		{
+//			m_inspector.drawUI(m_currentSelected);
+//			m_inspector.drawUI(m_pointLights);
+//			m_inspector.drawUI(m_directionlLights);
+//			m_inspector.drawUI(m_spotLights);
+//			m_inspector.drawUI(m_meshRenderers);
+//		}
+//	}
+//}
 
 ////////////// END : MODALS HANDLING 
 //////////////////////////////////////////////////////////
@@ -1059,256 +1222,177 @@ void Editor::removeDroppedFile(const FileHandler::CompletePath& filePath)
 
 ////////////// END : DROPPEDFILES HANDLING 
 //////////////////////////////////////////////////////////
+//
+//void Editor::displayBottomLeftWindow(Project& project)
+//{
+//	Scene& scene = *project.getActiveScene();
+//
+//	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2) );
+//	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
+//	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
+//
+//	auto entities = scene.getEntities();
+//
+//	int entityId = 0;
+//	bool setParenting = false;
+//	Entity* parentToAttachSelected = nullptr;
+//	for (auto& entity : entities)
+//	{
+//		if (!entity->hasParent())
+//		{
+//			displayTreeEntityNode(entity, entityId, setParenting, parentToAttachSelected);
+//		}
+//	}
+//
+//	if (setParenting)
+//	{
+//		if (parentToAttachSelected->getIsSelected())
+//			parentToAttachSelected->setParent(nullptr);
+//		else
+//		{
+//			for (int i = 0; i < m_currentSelected.size(); i++)
+//			{
+//				m_currentSelected[i]->setParent(parentToAttachSelected);
+//			}
+//		}
+//	}
+//
+//	ImGui::PopStyleColor();
+//	ImGui::PopStyleColor();
+//	ImGui::PopStyleColor();
+//}
+//
+//void Editor::displayBottomWindow(Project& project)
+//{
+//	Scene& scene = *project.getActiveScene();
+//
+//	ImGui::BeginChild("choose tool", ImVec2(200, ImGui::GetWindowHeight()));
+//	if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
+//	{
+//		hideAllToolsUI();
+//		m_terrainToolVisible = true;
+//	}
+//	if (ImGui::RadioButton("skybox tool", m_skyboxToolVisible))
+//	{
+//		hideAllToolsUI();
+//		m_skyboxToolVisible = true;
+//	}
+//	if (ImGui::RadioButton("texture factory", m_textureFactoryVisible))
+//	{
+//		hideAllToolsUI();
+//		m_textureFactoryVisible = true;
+//	}
+//	if (ImGui::RadioButton("cube texture factory", m_cubeTextureFactoryVisible))
+//	{
+//		hideAllToolsUI();
+//		m_cubeTextureFactoryVisible = true;
+//	}
+//	if (ImGui::RadioButton("mesh factory", m_meshFactoryVisible))
+//	{
+//		hideAllToolsUI();
+//		m_meshFactoryVisible = true;
+//	}
+//	if (ImGui::RadioButton("program factory", m_programFactoryVisible))
+//	{
+//		hideAllToolsUI();
+//		m_programFactoryVisible = true;
+//	}
+//	if (ImGui::RadioButton("material factory", m_materialFactoryVisible))
+//	{
+//		hideAllToolsUI();
+//		m_materialFactoryVisible = true;
+//	}
+//	if (ImGui::RadioButton("skeletal animation factory", m_skeletalAnimationFactoryVisible))
+//	{
+//		hideAllToolsUI();
+//		m_skeletalAnimationFactoryVisible = true;
+//	}
+//	if (ImGui::RadioButton("scene manager", m_sceneManagerVisible))
+//	{
+//		hideAllToolsUI();
+//		m_sceneManagerVisible = true;
+//	}
+//	ImGui::EndChild();
+//	
+//	ImGui::SameLine();
+//
+//	if (m_terrainToolVisible)
+//	{
+//		ImGui::BeginChild("Terrain tool");
+//		scene.getTerrain().drawUI();
+//		ImGui::End();
+//	}
+//
+//	if (m_skyboxToolVisible)
+//	{
+//		ImGui::BeginChild("Skybox tool");
+//		scene.getSkybox().drawUI();
+//		ImGui::End();
+//	}
+//	//%NOCOMMIT%
+///*
+//	if (m_textureFactoryVisible)
+//	{
+//		ImGui::BeginChild("Texture factory");
+//		getTextureFactory().drawUI();
+//		ImGui::End();
+//	}
+//
+//	if (m_cubeTextureFactoryVisible)
+//	{
+//		ImGui::BeginChild("Cube Texture factory");
+//		getCubeTextureFactory().drawUI();
+//		ImGui::End();
+//	}
+//
+//	if (m_meshFactoryVisible)
+//	{
+//		ImGui::BeginChild("Mesh factory");
+//		getMeshFactory().drawUI();
+//		ImGui::End();
+//	}
+//
+//	if (m_programFactoryVisible)
+//	{
+//		ImGui::BeginChild("Program factory");
+//		getProgramFactory().drawUI();
+//		ImGui::End();
+//	}
+//
+//	if (m_materialFactoryVisible)
+//	{
+//		ImGui::BeginChild("Material factory");
+//		getMaterialFactory().drawUI();
+//		ImGui::End();
+//	}
+//
+//	if (m_skeletalAnimationFactoryVisible)
+//	{
+//		ImGui::BeginChild("SkeletalAnimation factory");
+//		getSkeletalAnimationFactory().drawUI();
+//		ImGui::End();
+//	}*/
+//
+//	if (m_sceneManagerVisible)
+//	{
+//		ImGui::BeginChild("Scene manager");
+//		project.drawUI();
+//		ImGui::End();
+//	}
+//}
 
-void Editor::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected)
-{
-	ImGui::PushID(entityId);
-	bool nodeOpen = false;
-
-	bool isSelected = entity->getIsSelected();
-	if (isSelected)
-	{
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		//ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1, 1, 0, 1));
-		//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0, 0, 1));
-		//ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0.8, 0.8, 1));
-	}
-
-	ImVec2 itemPos;
-	ImVec2 itemSize;
-	if (ImGui::MyTreeNode( std::to_string(entityId).c_str(), itemPos, itemSize))
-		nodeOpen = true;
-	ImGui::SameLine();
-
-
-	if (ImGui::Button(entity->getName().c_str(), ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
-	{
-		if (isSelected)
-		{
-			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_camera->getCameraForward()*3.f;
-			m_camera->setTranslation(cameraFinalPosition);
-		}
-		else
-			changeCurrentSelected(entity);
-	}
-
-	ImGui::SameLine();
-
-	if (ImGui::Button("<"))
-	{
-		setParenting = true;
-		parentToAttachSelected = entity;
-	}
-
-	if (nodeOpen)
-	{
-		if (isSelected)
-		{
-			//ImGui::PopStyleColor();
-			//ImGui::PopStyleColor();
-			//ImGui::PopStyleColor();
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
-		}
-
-		for (int c = 0; c < entity->getChildCount(); c++)
-		{
-			entityId++;
-			displayTreeEntityNode(entity->getChild(c), entityId, setParenting, parentToAttachSelected);
-		}
-	}
-
-	if(nodeOpen)
-		ImGui::TreePop();
-
-	if (isSelected && !nodeOpen)
-	{
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
-		//ImGui::PopStyleColor();
-		//ImGui::PopStyleColor();
-		//ImGui::PopStyleColor();
-	}
-
-	ImGui::PopID();
-	entityId++;
-}
-
-void Editor::displayBottomLeftWindow(Project& project)
-{
-	Scene& scene = *project.getActiveScene();
-
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2) );
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
-
-	auto entities = scene.getEntities();
-
-	int entityId = 0;
-	bool setParenting = false;
-	Entity* parentToAttachSelected = nullptr;
-	for (auto& entity : entities)
-	{
-		if (!entity->hasParent())
-		{
-			displayTreeEntityNode(entity, entityId, setParenting, parentToAttachSelected);
-		}
-	}
-
-	if (setParenting)
-	{
-		if (parentToAttachSelected->getIsSelected())
-			parentToAttachSelected->setParent(nullptr);
-		else
-		{
-			for (int i = 0; i < m_currentSelected.size(); i++)
-			{
-				m_currentSelected[i]->setParent(parentToAttachSelected);
-			}
-		}
-	}
-
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
-}
-
-void Editor::displayBottomWindow(Project& project)
-{
-	Scene& scene = *project.getActiveScene();
-
-	ImGui::BeginChild("choose tool", ImVec2(200, ImGui::GetWindowHeight()));
-	if (ImGui::RadioButton("terrain tool", m_terrainToolVisible))
-	{
-		hideAllToolsUI();
-		m_terrainToolVisible = true;
-	}
-	if (ImGui::RadioButton("skybox tool", m_skyboxToolVisible))
-	{
-		hideAllToolsUI();
-		m_skyboxToolVisible = true;
-	}
-	if (ImGui::RadioButton("texture factory", m_textureFactoryVisible))
-	{
-		hideAllToolsUI();
-		m_textureFactoryVisible = true;
-	}
-	if (ImGui::RadioButton("cube texture factory", m_cubeTextureFactoryVisible))
-	{
-		hideAllToolsUI();
-		m_cubeTextureFactoryVisible = true;
-	}
-	if (ImGui::RadioButton("mesh factory", m_meshFactoryVisible))
-	{
-		hideAllToolsUI();
-		m_meshFactoryVisible = true;
-	}
-	if (ImGui::RadioButton("program factory", m_programFactoryVisible))
-	{
-		hideAllToolsUI();
-		m_programFactoryVisible = true;
-	}
-	if (ImGui::RadioButton("material factory", m_materialFactoryVisible))
-	{
-		hideAllToolsUI();
-		m_materialFactoryVisible = true;
-	}
-	if (ImGui::RadioButton("skeletal animation factory", m_skeletalAnimationFactoryVisible))
-	{
-		hideAllToolsUI();
-		m_skeletalAnimationFactoryVisible = true;
-	}
-	if (ImGui::RadioButton("scene manager", m_sceneManagerVisible))
-	{
-		hideAllToolsUI();
-		m_sceneManagerVisible = true;
-	}
-	ImGui::EndChild();
-	
-	ImGui::SameLine();
-
-	if (m_terrainToolVisible)
-	{
-		ImGui::BeginChild("Terrain tool");
-		scene.getTerrain().drawUI();
-		ImGui::End();
-	}
-
-	if (m_skyboxToolVisible)
-	{
-		ImGui::BeginChild("Skybox tool");
-		scene.getSkybox().drawUI();
-		ImGui::End();
-	}
-	//%NOCOMMIT%
-/*
-	if (m_textureFactoryVisible)
-	{
-		ImGui::BeginChild("Texture factory");
-		getTextureFactory().drawUI();
-		ImGui::End();
-	}
-
-	if (m_cubeTextureFactoryVisible)
-	{
-		ImGui::BeginChild("Cube Texture factory");
-		getCubeTextureFactory().drawUI();
-		ImGui::End();
-	}
-
-	if (m_meshFactoryVisible)
-	{
-		ImGui::BeginChild("Mesh factory");
-		getMeshFactory().drawUI();
-		ImGui::End();
-	}
-
-	if (m_programFactoryVisible)
-	{
-		ImGui::BeginChild("Program factory");
-		getProgramFactory().drawUI();
-		ImGui::End();
-	}
-
-	if (m_materialFactoryVisible)
-	{
-		ImGui::BeginChild("Material factory");
-		getMaterialFactory().drawUI();
-		ImGui::End();
-	}
-
-	if (m_skeletalAnimationFactoryVisible)
-	{
-		ImGui::BeginChild("SkeletalAnimation factory");
-		getSkeletalAnimationFactory().drawUI();
-		ImGui::End();
-	}*/
-
-	if (m_sceneManagerVisible)
-	{
-		ImGui::BeginChild("Scene manager");
-		project.drawUI();
-		ImGui::End();
-	}
-}
-
-void Editor::updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight)
-{
-	m_windowRect = glm::vec4(m_windowDecal.x, m_windowDecal.y, Application::get().getWindowWidth(), Application::get().getWindowHeight());
-	m_topLeftPanelRect = glm::vec4(m_windowRect.x, m_windowRect.y, topLeftWidth, topLeftHeight);
-	m_bottomLeftPanelRect = glm::vec4(m_windowRect.x, m_topLeftPanelRect.w, m_topLeftPanelRect.z, m_windowRect.w - m_topLeftPanelRect.w);
-	m_bottomPanelRect = glm::vec4(m_windowRect.x + m_topLeftPanelRect.z, m_windowRect.w - bottomHeight, m_windowRect.z - m_topLeftPanelRect.z, bottomHeight);
-}
+//void Editor::updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight)
+//{
+//	m_windowRect = glm::vec4(m_windowDecal.x, m_windowDecal.y, Application::get().getWindowWidth(), Application::get().getWindowHeight());
+//	m_topLeftPanelRect = glm::vec4(m_windowRect.x, m_windowRect.y, topLeftWidth, topLeftHeight);
+//	m_bottomLeftPanelRect = glm::vec4(m_windowRect.x, m_topLeftPanelRect.w, m_topLeftPanelRect.z, m_windowRect.w - m_topLeftPanelRect.w);
+//	m_bottomPanelRect = glm::vec4(m_windowRect.x + m_topLeftPanelRect.z, m_windowRect.w - bottomHeight, m_windowRect.z - m_topLeftPanelRect.z, bottomHeight);
+//}
 
 void Editor::onResizeWindow()
 {
-	m_windowRect.z = Application::get().getWindowWidth();
-	m_windowRect.w = Application::get().getWindowHeight();
-
+	//m_windowRect.z = Application::get().getWindowWidth();
+	//m_windowRect.w = Application::get().getWindowHeight();
 	//updatePanelSize(m_topLeftPanelRect.z, m_topLeftPanelRect.w, m_bottomPanelRect.w);
 
 	m_windowManager.onScreenResized();
@@ -1320,6 +1404,8 @@ void Editor::renderUI(Project& project)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	Scene& scene = *project.getActiveScene();
+	m_inspector->setScene(&scene);
+	m_sceneHierarchy->setScene(&scene);
 
 	if (!m_isUIVisible)
 		return;
@@ -1791,8 +1877,8 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 	float screenWidth = Application::get().getWindowWidth();
 	float screenHeight = Application::get().getWindowHeight();
 
-	//update tools : 
-	if (m_terrainToolVisible) // for terrain
+	//Terrain tool
+	if (m_windowManager.isFrameOpen("Terrain tool"))
 	{
 		if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_1, InputHandler::FOCUSING_EDITOR) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
 		{

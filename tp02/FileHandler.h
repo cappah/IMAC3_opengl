@@ -7,6 +7,7 @@
 #include <iterator>
 #include <vector>
 
+#include "ErrorHandler.h"
 
 /**
 * FileHandler system :
@@ -27,6 +28,8 @@ enum FileType
 	MESH,
 	SOUND,
 	SHADER_PROGRAM,
+	MATERIAL,
+	CUBE_TEXTURE,
 };
 
 class CompletePath;

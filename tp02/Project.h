@@ -78,6 +78,10 @@ public:
 	static const FileHandler::Path& getPath();
 	static const FileHandler::Path& getAssetsFolderPath();
 	static const FileHandler::Path& getShaderFolderPath();
+	static FileHandler::CompletePath getAbsolutePathFromRelativePath(const FileHandler::CompletePath& relativeCompletePath);
+	static FileHandler::Path getAbsolutePathFromRelativePath(const FileHandler::Path& relativePath);
+	static bool isPathPointingInsideProjectFolder(const FileHandler::Path& path);
+	static bool isPathPointingInsideProjectFolder(const FileHandler::CompletePath& completePath);
 
 private :
 	GLFWwindow* Project::initGLFW(int width, int height);

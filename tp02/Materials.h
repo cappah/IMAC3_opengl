@@ -595,7 +595,7 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_color = MaterialHelper::getUniform(m_glProgramId, "color");
+		uniform_color = MaterialHelper::getUniform(m_glProgramId, "Color");
 	}
 
 	void setUniform_color(glm::vec3 color)

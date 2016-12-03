@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "TransformNode.h"
+#include "Entity.h" //forward
 
 
 TransformNode::TransformNode() : m_translation(0, 0, 0), m_scale(1, 1, 1), m_eulerRotation(0, 0, 0), m_localEulerRotation(0, 0, 0), m_localScale(1, 1, 1), m_localTranslation(0, 0, 0)
@@ -232,6 +233,60 @@ void TransformNode::drawUI(bool local)
 		{
 			setLocalScale(tmpScale);
 			applyTransform();
+		}
+	}
+}
+
+void TransformNode::drawInInspector(bool local, const std::vector<Entity*>& selection)
+{
+	if (selection.size() == 0)
+		return;
+
+	if (!local)
+	{
+		glm::vec3 tmpRot = selection[0]->m_eulerRotation * (180.f / glm::pi<float>());
+		if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 360))
+		{
+			//m_eulerRotation = tmpRot * glm::pi<float>() / 180.f;
+			//setRotation(glm::quat(m_eulerRotation));
+
+			for (auto& node : selection)
+			{
+				node->setEulerRotation(tmpRot * glm::pi<float>() / 180.f);
+				node->applyTransform();
+			}
+		}
+
+		glm::vec3 tmpScale = selection[0]->m_scale;
+		if (ImGui::InputFloat3("scale", &tmpScale[0]))
+		{
+			for (auto& node : selection)
+			{
+				node->setScale(tmpScale);
+				node->applyTransform();
+			}
+		}
+	}
+	else
+	{
+		glm::vec3 tmpRot = selection[0]->m_localEulerRotation * (180.f / glm::pi<float>());
+		if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 360))
+		{
+			for (auto& node : selection)
+			{
+				node->setLocalEulerRotation(tmpRot * glm::pi<float>() / 180.f);
+				node->applyTransform();
+			}
+		}
+
+		glm::vec3 tmpScale = selection[0]->m_localScale;
+		if (ImGui::InputFloat3("scale", &tmpScale[0]))
+		{
+			for (auto& node : selection)
+			{
+				node->setLocalScale(tmpScale);
+				node->applyTransform();
+			}
 		}
 	}
 }

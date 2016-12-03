@@ -272,6 +272,7 @@
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourcePointer.cpp" />
     <ClCompile Include="ResourceTree.cpp" />
     <ClCompile Include="Rigidbody.cpp" />
@@ -341,6 +342,7 @@
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="IDrawableInInspector.h" />
     <ClInclude Include="imgui_extension.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="ISerializable.h" />

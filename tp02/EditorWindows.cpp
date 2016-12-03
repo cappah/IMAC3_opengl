@@ -280,7 +280,7 @@ void EditorWindow::update()
 	executeNodeSimplification();
 }
 
-void EditorWindow::findAllChildFramesRecursivly(std::vector<std::shared_ptr<EditorFrame>>& childFrames) const
+void EditorWindow::findAllChildFramesRecursivly(std::vector<std::weak_ptr<EditorFrame>>& childFrames) const
 {
 	if (m_node->getDisplayLogicType() == EditorNodeDisplayLogicType::FrameDisplay)
 	{

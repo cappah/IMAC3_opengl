@@ -185,7 +185,7 @@ EditorWindow * EditorNode::getParentWindow() const
 	return m_parentWindow;
 }
 
-void EditorNode::findAllChildFramesRecursivly(std::vector<std::shared_ptr<EditorFrame>>& frames) const
+void EditorNode::findAllChildFramesRecursivly(std::vector<std::weak_ptr<EditorFrame>>& frames) const
 {
 	if(m_frame)
 		frames.push_back(m_frame);

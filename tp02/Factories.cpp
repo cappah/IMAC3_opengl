@@ -79,27 +79,27 @@ void ResourceFactory<ShaderProgram>::initDefaults()
 }
 */
 
-template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path)
-{
-	Material* newResource = makeNewMaterialInstance(path);
-	newResource->init(path);
-
-	m_resources[path] = newResource;
-	m_resourceMapping[path] = ++s_resourceCount;
-	m_resourcesFromHashKey[s_resourceCount] = newResource;
-}
-
-template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
-{
-	Material* newResource = makeNewMaterialInstance(path);
-	newResource->init(path);
-
-	m_resources[path] = newResource;
-	m_resourceMapping[path] = hashKey;
-	m_resourcesFromHashKey[hashKey] = newResource;
-}
+//template<>
+//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path)
+//{
+//	Material* newResource = makeNewMaterialInstance(path);
+//	newResource->init(path);
+//
+//	m_resources[path] = newResource;
+//	m_resourceMapping[path] = ++s_resourceCount;
+//	m_resourcesFromHashKey[s_resourceCount] = newResource;
+//}
+//
+//template<>
+//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
+//{
+//	Material* newResource = makeNewMaterialInstance(path);
+//	newResource->init(path);
+//
+//	m_resources[path] = newResource;
+//	m_resourceMapping[path] = hashKey;
+//	m_resourcesFromHashKey[hashKey] = newResource;
+//}
 
 
 //Cube Texture
@@ -398,6 +398,12 @@ ResourceType getResourceType<CubeTexture>()
 }
 
 template<>
+ResourceType getResourceType<Mesh>()
+{
+	return ResourceType::MESH;
+}
+
+template<>
 ResourceType getResourceType<SkeletalAnimation>()
 {
 	return ResourceType::SKELETAL_ANIMATION;
@@ -415,8 +421,6 @@ ResourceType getResourceType<ShaderProgram>()
 	return ResourceType::PROGRAME;
 }
 
-
-
 ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
 {
 	switch (fileType)
@@ -425,10 +429,14 @@ ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
 		return ResourceType::NONE;
 	case FileHandler::IMAGE:
 		return ResourceType::TEXTURE;
+	case FileHandler::CUBE_TEXTURE:
+		return ResourceType::CUBE_TEXTURE;
 	case FileHandler::MESH:
 		return ResourceType::MESH;
 	case FileHandler::SOUND:
 		return ResourceType::NONE; //TODO sound
+	case FileHandler::MATERIAL:
+		return ResourceType::MATERIAL;
 	default:
 		break;
 	}
@@ -449,7 +457,7 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 		getResourceFactory<Texture>().add(completePath);
 		break;
 	case CUBE_TEXTURE:
-		//getResourceFactory<CubeTexture>().add(completePath); //TODO
+		getResourceFactory<CubeTexture>().add(completePath); //TODO
 		break;
 	case MESH:
 		getResourceFactory<Mesh>().add(completePath);
@@ -458,7 +466,7 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 		//getResourceFactory<SkeletalAnimation>().add(completePath); //TODO
 		break;
 	case MATERIAL:
-		//getResourceFactory<Material>().add(completePath); //TODO
+		getResourceFactory<Material>().add(completePath); //TODO
 		break;
 	default:
 		break;

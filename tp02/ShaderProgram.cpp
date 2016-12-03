@@ -65,10 +65,7 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 	{
 		assert(internalShaderParameters.isValidIndex(i));
 
-		std::string parameterType = internalShaderParameters[i].get("type", "").asString();
-		std::string parameterName = internalShaderParameters[i].get("name", "").asString();
-
-		m_internalShaderParameters.push_back(MakeNewInternalShaderParameter(parameterType, parameterName));
+		m_internalShaderParameters.push_back(MakeNewInternalShaderParameter(internalShaderParameters[i]));
 	}
 
 	//external parameters

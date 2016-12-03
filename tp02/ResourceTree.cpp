@@ -198,17 +198,26 @@ void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::
 
 	//We create and save the new resource
 	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath().toString(), materialName, ".mat");
-	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), materialName, ".mat");
 
-	//TODO 01
 	//create new instance
+	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), materialName, ".mat");
 	Material* newMaterial = getProgramFactory().get(materialModelName)->makeNewMaterialInstance();
-	newMaterial->save(resourceCompletePath);
+	newMaterial->save(resourceFilePath);
 
-	//we store the resource in its factory
-	getMaterialFactory().add(resourceCompletePath, newMaterial);
+	folderTo.addFile<Material>(ResourceFile(resourceCompletePath), newMaterial);
+}
 
-	//TODO : Add resources
+void ResourceTree::addNewCubeTextureTo(const std::string& textureName, ResourceFolder& folderTo)
+{
+	//We create and save the new resource
+	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath().toString(), textureName, ".ctx");
+
+	//create new instance
+	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), textureName, ".ctx");
+	CubeTexture* newCubeTexture = new CubeTexture();
+	newCubeTexture->save(resourceFilePath);
+
+	folderTo.addFile<CubeTexture>(ResourceFile(resourceCompletePath), newCubeTexture);
 }
 
 void ResourceTree::addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo)
@@ -878,7 +887,6 @@ void ResourceTreeView::popUpToChooseMaterial()
 		ImGui::EndPopup();
 }
 
-
 void ResourceTreeView::popUpToAddMaterial()
 {
 	assert(!m_chooseMaterialName.empty());
@@ -894,12 +902,6 @@ void ResourceTreeView::popUpToAddMaterial()
 			if (m_folderWeRightClicOn != nullptr)
 			{
 				ResourceTree::addNewMaterialTo(m_uiString, m_chooseMaterialName, *m_folderWeRightClicOn);
-				////We create and save the new resource
-				//const FileHandler::CompletePath resourceCompletePath(m_folderWeRightClicOn->getPath(), m_uiString, ".mat");
-				//Material* newMaterial = MaterialFactory::instance().getInstance(m_chooseMaterialName);
-				//newMaterial->save(resourceCompletePath);
-				////we store the resource in its factory
-				//getMaterialFactory().add(resourceCompletePath, newMaterial);
 			}
 			m_folderWeRightClicOn = nullptr;
 			ImGui::CloseCurrentPopup();
@@ -911,7 +913,6 @@ void ResourceTreeView::popUpToAddMaterial()
 	}
 	ImGui::EndPopup();
 }
-
 
 void ResourceTreeView::popUpToAddCubeTexture()
 {
@@ -925,12 +926,7 @@ void ResourceTreeView::popUpToAddCubeTexture()
 		{
 			if (m_folderWeRightClicOn != nullptr)
 			{
-				//We create and save the new resource
-				const FileHandler::CompletePath resourceCompletePath(m_folderWeRightClicOn->getPath(), m_uiString, ".ctx");
-				CubeTexture* newCubeTexture = new CubeTexture();
-				newCubeTexture->save(resourceCompletePath);
-				//we store the resource in its factory
-				getCubeTextureFactory().add(resourceCompletePath, newCubeTexture);
+				ResourceTree::addNewCubeTextureTo(m_uiString, *m_folderWeRightClicOn);
 			}
 			m_folderWeRightClicOn = nullptr;
 			ImGui::CloseCurrentPopup();

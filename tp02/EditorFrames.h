@@ -8,6 +8,8 @@
 //forwards
 class Editor;
 class EditorModal;
+class Inspector;
+class SceneHierarchy;
 
 class DroppedFileEditorFrame : public EditorFrame
 {
@@ -79,6 +81,30 @@ private:
 public:
 	FactoriesDebugEditorFrame(const std::string& name);
 	void hideAllDebugViews();
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+/////////////////////////////////////////
+
+class InspectorEditorFrame : public EditorFrame
+{
+private:
+	std::weak_ptr<Inspector> m_inspector;
+
+public:
+	InspectorEditorFrame(const std::string& name, std::shared_ptr<Inspector> model);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+/////////////////////////////////////////
+
+class SceneHierarchyEditorFrame : public EditorFrame
+{
+private:
+	std::weak_ptr<SceneHierarchy> m_sceneHierarchy;
+
+public:
+	SceneHierarchyEditorFrame(const std::string& name, std::shared_ptr<SceneHierarchy> model);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
 };
 

@@ -3,6 +3,7 @@
 #include "Texture.h"
 #include "Utils.h"
 #include "ErrorHandler.h"
+#include "Project.h"
 
 #include "jsoncpp/json/json.h"
 
@@ -114,6 +115,9 @@ Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 void Texture::init(const FileHandler::CompletePath& path)
 {
 	Resource::init(path);
+
+	assert(!Project::isPathPointingInsideProjectFolder(path));
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
 
 	internalFormat = GL_RGB;
 	format = GL_RGB;
@@ -307,11 +311,16 @@ void CubeTexture::init(const FileHandler::CompletePath & path)
 {
 	Resource::init(path);
 
-	load(path);
+	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
+
+	load(absolutePath);
 }
 
 void CubeTexture::load(const FileHandler::CompletePath & path)
 {
+	Resource::init(path);
+
 	std::ifstream stream;
 	stream.open(path.toString());
 	if (!stream.is_open())

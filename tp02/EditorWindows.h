@@ -82,7 +82,7 @@ public:
 	void executeNodeSimplification();
 	void update();
 
-	void findAllChildFramesRecursivly(std::vector<std::shared_ptr<EditorFrame>>& childFrames) const;
+	void findAllChildFramesRecursivly(std::vector<std::weak_ptr<EditorFrame>>& childFrames) const;
 };
 
 class EditorBackgroundWindow : public EditorWindow

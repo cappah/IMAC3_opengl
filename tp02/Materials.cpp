@@ -104,11 +104,15 @@ void Material::initInternalParameters()
 
 void Material::init(const FileHandler::CompletePath& path)
 {
+	Resource::init(path);
+
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
+
 	std::ifstream stream;
-	stream.open(path.toString());
+	stream.open(absolutePath.toString());
 	if (!stream.is_open())
 	{
-		std::cout << "error, can't load material at path : " << path.toString() << std::endl;
+		std::cout << "error, can't load material at path : " << absolutePath.toString() << std::endl;
 		return;
 	}
 	Json::Value root;
@@ -173,10 +177,10 @@ void Material::save(Json::Value & entityRoot) const
 
 void Material::load(const Json::Value & entityRoot)
 {
-	std::string shaderProgramName = entityRoot.get("shaderProgramName", "").asString();
-	assert(shaderProgramName != "");
+	m_glProgramName = entityRoot.get("shaderProgramName", "").asString();
+	assert(m_glProgramName != "");
 
-	getProgramFactory().get(shaderProgramName)->LoadMaterialInstance(this);
+	getProgramFactory().get(m_glProgramName)->LoadMaterialInstance(this);
 
 	int parameterIdx = 0;
 	for (auto& parameter : m_internalParameters)
@@ -190,6 +194,9 @@ void Material::load(const Json::Value & entityRoot)
 
 void Material::save(const FileHandler::CompletePath& path) const
 {
+	//We check that we have the absolute project path
+	assert(Project::isPathPointingInsideProjectFolder(path));
+
 	std::ofstream stream;
 	stream.open(path.toString());
 	if (!stream.is_open())

@@ -148,7 +148,7 @@ bool ResourceDragAndDropOperation::canDropInto(void* customData, int dropContext
 		return !resourceFolder->hasFile(m_resourceDragged->getKey());
 	}
 	else if(dropContext == EditorDropContext::DropIntoResourceField)
-		return (m_resourceDragged->getType() & *static_cast<ResourceType*>(customData)) != 0;
+		return (m_resourceDragged->getType() && *static_cast<ResourceType*>(customData)) != 0;
 }
 
 //// END : ResourceDragAndDropOperation

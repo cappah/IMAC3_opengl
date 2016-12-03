@@ -29,7 +29,7 @@ void jsonSaveValue(Json::Value& jsonValue, const std::string& key, const T& valu
 template<typename T>
 void jsonLoadValue(const Json::Value& jsonValue, const std::string& key, T& value)
 {
-	value = fromJsonValue<T>(jsonValue);
+	value = fromJsonValue<T>(jsonValue[key]);
 }
 
 
@@ -245,13 +245,6 @@ T fromJsonValue(const Json::Value& value, const T& default)
 	}
 }
 
-template<typename T>
-T fromJsonValue(const Json::Value& value)
-{
-	assert(0 && "invalid value.");
-	return T();
-}
-
 template<>
 inline float fromJsonValue<float>(const Json::Value& value, const float& default)
 {
@@ -318,6 +311,34 @@ inline glm::vec4 fromJsonValue<glm::vec4>(const Json::Value& value, const glm::v
 		return glm::vec4(value[0].asFloat(), value[1].asFloat(), value[2].asFloat(), value[3].asFloat());
 }
 
+
+template<>
+inline glm::ivec2 fromJsonValue<glm::ivec2>(const Json::Value& value, const glm::ivec2& default)
+{
+	if (value.empty())
+		return default;
+	else
+		return glm::ivec2(value[0].asFloat(), value[1].asFloat());
+}
+
+template<>
+inline glm::ivec3 fromJsonValue<glm::ivec3>(const Json::Value& value, const glm::ivec3& default)
+{
+	if (value.empty())
+		return default;
+	else
+		return glm::ivec3(value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
+}
+
+template<>
+inline glm::ivec4 fromJsonValue<glm::ivec4>(const Json::Value& value, const glm::ivec4& default)
+{
+	if (value.empty())
+		return default;
+	else
+		return glm::ivec4(value[0].asFloat(), value[1].asFloat(), value[2].asFloat(), value[3].asFloat());
+}
+
 template<>
 inline glm::mat3 fromJsonValue<glm::mat3>(const Json::Value& value, const glm::mat3& default)
 {
@@ -356,5 +377,123 @@ inline glm::mat4 fromJsonValue<glm::mat4>(const Json::Value& value, const glm::m
 	}
 }
 
+////////////////////
+
+template<typename T>
+T fromJsonValue(const Json::Value& value)
+{
+	assert(0 && "invalid value.");
+	return T();
+}
+
+template<>
+inline float fromJsonValue<float>(const Json::Value& value)
+{
+	return value.asFloat();
+}
+
+template<>
+inline GLuint fromJsonValue<GLuint>(const Json::Value& value)
+{
+	return (GLuint)value.asInt();
+}
+
+template<>
+inline int fromJsonValue<int>(const Json::Value& value)
+{
+	return value.asInt();
+}
+
+template<>
+inline bool fromJsonValue<bool>(const Json::Value& value)
+{
+	return value.asBool();
+}
+
+template<>
+inline std::string fromJsonValue<std::string>(const Json::Value& value)
+{
+	return value.asString();
+}
+
+template<>
+inline glm::quat fromJsonValue<glm::quat>(const Json::Value& value)
+{
+	assert(!value.empty());
+	return glm::quat(value[3].asFloat(), value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
+}
+
+template<>
+inline glm::vec2 fromJsonValue<glm::vec2>(const Json::Value& value)
+{
+	assert(!value.empty());
+	return glm::vec2(value[0].asFloat(), value[1].asFloat());
+}
+
+template<>
+inline glm::vec3 fromJsonValue<glm::vec3>(const Json::Value& value)
+{
+	assert(!value.empty());
+	return glm::vec3(value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
+}
+
+template<>
+inline glm::vec4 fromJsonValue<glm::vec4>(const Json::Value& value)
+{
+	assert(!value.empty());
+	return glm::vec4(value[0].asFloat(), value[1].asFloat(), value[2].asFloat(), value[3].asFloat());
+}
+
+
+template<>
+inline glm::ivec2 fromJsonValue<glm::ivec2>(const Json::Value& value)
+{
+	assert(!value.empty());
+	return glm::ivec2(value[0].asFloat(), value[1].asFloat());
+}
+
+template<>
+inline glm::ivec3 fromJsonValue<glm::ivec3>(const Json::Value& value)
+{
+	assert(!value.empty());
+	return glm::ivec3(value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
+}
+
+template<>
+inline glm::ivec4 fromJsonValue<glm::ivec4>(const Json::Value& value)
+{
+	assert(!value.empty());
+	return glm::ivec4(value[0].asFloat(), value[1].asFloat(), value[2].asFloat(), value[3].asFloat());
+}
+
+template<>
+inline glm::mat3 fromJsonValue<glm::mat3>(const Json::Value& value)
+{
+	assert(!value.empty());
+	glm::mat3 matrix;
+	for (int i = 0, k = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++, k++)
+		{
+			matrix[i][j] = value[k].asFloat();
+		}
+	}
+	return matrix;
+}
+
+template<>
+inline glm::mat4 fromJsonValue<glm::mat4>(const Json::Value& value)
+{
+	assert(!value.empty());
+	glm::mat4 matrix;
+	for (int i = 0, k = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++, k++)
+		{
+			matrix[i][j] = value[k].asFloat();
+		}
+	}
+	return matrix;
+}
 
 

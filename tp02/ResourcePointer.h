@@ -15,7 +15,6 @@ enum ResourceType
 	SKELETAL_ANIMATION,
 	MATERIAL,
 };
-ENUM_MASK_IMPLEMENTATION(ResourceType);
 
 static unsigned int s_resourceCount = 0;
 

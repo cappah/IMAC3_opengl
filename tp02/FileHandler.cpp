@@ -365,6 +365,8 @@ void CompletePath::format()
 
 	m_fileName.shrink_to_fit();
 	m_extention.shrink_to_fit();
+	m_fileName = m_fileName.substr(0, m_fileName.find_first_of('\0'));
+	m_extention = m_extention.substr(0, m_extention.find_first_of('\0'));
 
 	if (!m_fileName.empty())
 	{
@@ -388,7 +390,9 @@ void CompletePath::format()
 		}
 	}
 
-	m_data = m_path.toString() + m_fileName + m_extention;
+	m_data += m_path.toString();
+	m_data += m_fileName;
+	m_data += m_extention;
 	if (!m_subFileName.empty())
 		m_data += ("/" + m_subFileName);
 }
@@ -418,7 +422,10 @@ size_t getExtentionFromExtendedFilename(const std::string& filename, std::string
 {
 	size_t cutPos = filename.find_last_of('.');
 	if (cutPos == std::string::npos)
+	{
+		outExtention = "";
 		return cutPos;
+	}
 	else
 	{
 		outExtention = filename.substr(cutPos);
@@ -459,9 +466,17 @@ FileType getFileTypeFromExtention(const std::string& extention)
 	{
 		return FileType::SHADER_PROGRAM;
 	}
+	else if (extention == ".mat")
+	{
+		return FileType::MATERIAL;
+	}
+	else if (extention == ".ctx")
+	{
+		return FileType::CUBE_TEXTURE;
+	}
 	else
 	{
-		std::cerr << "L'extention : " << extention << " n'est pas prix en charge." << std::endl;
+		PRINT_ERROR("L'extention : " << extention << " n'est pas prix en charge.")
 		return FileType::NONE;
 	}
 }

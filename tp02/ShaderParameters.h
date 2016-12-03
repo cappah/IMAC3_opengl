@@ -2,7 +2,6 @@
 
 //#include <glew/glew.h>
 
-//#include <glm/glm.hpp>
 #include "EditorGUI.h"
 #include "ISerializable.h"
 
@@ -182,11 +181,13 @@ private:
 	bool m_isEditable;
 
 public:
-	InternalShaderParameter(const std::string& name, bool isEditable = true)
+	InternalShaderParameter(const std::string& name, bool isEditable, T defaultValue)
 		: InternalShaderParameterBase(name)
 		, m_isEditable(isEditable)
 		, m_uniformId(0)
-	{}
+	{
+		m_data = defaultValue;
+	}
 
 	//init unifom id
 	void init(GLuint glProgramId) override
@@ -289,9 +290,10 @@ class InternalShaderParameter<Texture, ShaderParameter::IsNotArray> : public Int
 private:
 	ResourcePtr<Texture> m_data;
 	GLuint m_uniformId;
+	bool m_isEditable;
 
 public:
-	InternalShaderParameter(const std::string& name);
+	InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<Texture> defaultValue);
 
 	//init unifom id
 	void init(GLuint glProgramId);
@@ -328,9 +330,10 @@ class InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray> : public
 private:
 	ResourcePtr<CubeTexture> m_data;
 	GLuint m_uniformId;
+	bool m_isEditable;
 
 public:
-	InternalShaderParameter(const std::string& name);
+	InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<CubeTexture> defaultValue);
 	void init(GLuint glProgramId);
 	void drawUI() override;
 	void pushToGPU(int& boundTextureCount) override;
@@ -341,7 +344,7 @@ public:
 };
 
 //utility function to make a shader from its type
-std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(const std::string& literaltype, std::string& name);
+std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(const Json::Value& parameterAsJsonValue);
 
 ////////// END : internal parameters
 //////////////////////////////////////////////////////////////////////////////////////////

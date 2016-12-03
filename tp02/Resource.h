@@ -8,28 +8,10 @@ protected:
 	FileHandler::CompletePath m_completePath;
 
 public:
-	Resource()
-	{}
-
-	virtual ~Resource()
-	{}
-
-	Resource(const FileHandler::CompletePath& completePath)
-		:m_completePath(completePath)
-	{}
-
-	virtual void init(const FileHandler::CompletePath& completePath)
-	{
-		m_completePath = completePath;
-	}
-
-	const FileHandler::CompletePath& getCompletePath() const
-	{
-		return m_completePath;
-	}
-
-	const std::string& getName() const
-	{
-		return m_completePath.getFilename();
-	}
+	Resource();
+	virtual ~Resource();
+	Resource(const FileHandler::CompletePath& completePath);
+	virtual void init(const FileHandler::CompletePath& completePath);
+	const FileHandler::CompletePath& getCompletePath() const;
+	const std::string& getName() const;
 };

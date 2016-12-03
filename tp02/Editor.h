@@ -26,16 +26,38 @@ private:
 	float floatValue;
 	glm::vec3 vector3Value;
 
+	bool m_multipleEditing;
+	Scene* m_currentScene;
+	Editor* m_editorPtr;
+
 public:
-	Inspector();
+	Inspector(Editor* editorPtr);
 	~Inspector();
 
-	void drawUI(const std::vector<PointLight*>& pointLights);
-	void drawUI(const std::vector<DirectionalLight*>& directionalLights);
-	void drawUI(const std::vector<SpotLight*>& spotLights);
-	void drawUI(const std::vector<Entity*>& entities);
-	void drawUI(const std::vector<MeshRenderer*>& meshRenderers);
-	void drawUI(const std::vector<Collider*>& colliders);
+	void setScene(Scene* currentScene);
+	void drawUI();
+
+	//void drawUI(const std::vector<Entity*>& entities);
+	//void drawUI(const std::vector<PointLight*>& pointLights);
+	//void drawUI(const std::vector<DirectionalLight*>& directionalLights);
+	//void drawUI(const std::vector<SpotLight*>& spotLights);
+	//void drawUI(const std::vector<MeshRenderer*>& meshRenderers);
+	//void drawUI(const std::vector<Collider*>& colliders);
+};
+
+/////////////////////////////////////////
+
+class SceneHierarchy
+{
+private:
+	Scene* m_currentScene;
+	Editor* m_editorPtr;
+public:
+	SceneHierarchy(Editor* editorPtr);
+	void setScene(Scene* scene);
+	Scene* getScene() const;
+	void displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
+	void drawUI();
 };
 
 /////////////////////////////////////////
@@ -101,19 +123,7 @@ private:
 	bool m_isUIVisible;
 	bool m_isGizmoVisible;
 
-	bool m_terrainToolVisible;
-	bool m_skyboxToolVisible;
-	bool m_textureFactoryVisible;
-	bool m_cubeTextureFactoryVisible;
-	bool m_meshFactoryVisible;
-	bool m_programFactoryVisible;
-	bool m_materialFactoryVisible;
-	bool m_skeletalAnimationFactoryVisible;
-	bool m_sceneManagerVisible;
-
 	bool m_multipleEditing;
-
-	Inspector m_inspector;
 
 	GUIStates m_guiStates;
 
@@ -123,12 +133,6 @@ private:
 	float m_cameraBoostSpeed;
 
 	bool m_hideCursorWhenMovingCamera;
-
-	glm::vec2 m_windowDecal;
-	glm::vec4 m_windowRect;
-	glm::vec4 m_topLeftPanelRect;
-	glm::vec4 m_bottomLeftPanelRect;
-	glm::vec4 m_bottomPanelRect;
 
 	char m_savePath[60];
 	char m_loadPath[60];
@@ -144,6 +148,8 @@ private:
 
 	//models
 	std::shared_ptr<ResourceTree> m_resourceTree;
+	std::shared_ptr<Inspector> m_inspector;
+	std::shared_ptr<SceneHierarchy> m_sceneHierarchy;
 
 	//Windows and modals handling : 
 	EditorWindowManager m_windowManager;
@@ -175,20 +181,22 @@ public:
 	void addCurrentSelected(Entity* entity);
 	void removeCurrentSelected(Entity* entity);
 	void toggleCurrentSelected(Entity* entity);
+	const std::vector<Entity*>& getCurrentSelection() const;
 
 	void renderGizmo();
 
-	void hideAllToolsUI();
+	//void hideAllToolsUI();
+	//void displayTopLeftWindow(Project& project);
+	//void displayBottomWindow(Project& project);
+	//void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
+	//void displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
+	//void displayBottomLeftWindow(Project& project);
+	void renderUI(Project& project);
 	void displayMenuBar(Project& project);
-	void displayTopLeftWindow(Project& project);
-	void displayBottomWindow(Project& project);
-	void displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
-	void displayBottomLeftWindow(Project& project);
+	void onResizeWindow();
+
 	void launchGameInEditMode(Project& project);
 	void stopGameInEditMode(Project& project);
-	void updatePanelSize(float topLeftWidth, float topLeftHeight, float bottomHeight);
-	void onResizeWindow();
-	void renderUI(Project& project);
 
 	//Window handling
 	void displayBackgroundWindow(Project& project);
@@ -239,8 +247,8 @@ public:
 	void removeDroppedFile(const FileHandler::CompletePath& filePath);
 
 	//for multiple editing : 
-	void clearSelectedComponents();
-	void refreshSelectedComponents(bool clearComponentLists = true);
+	//void clearSelectedComponents();
+	//void refreshSelectedComponents(bool clearComponentLists = true);
 
 };
 

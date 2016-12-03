@@ -15,6 +15,7 @@
 #include "Utils.h"
 #include "ISerializable.h"
 
+class Entity; //forward
 
 class TransformNode : public ISerializable
 {
@@ -83,8 +84,10 @@ public:
 	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) = 0;
 
 	void drawUI(bool local = false);
+	static void drawInInspector(bool local, const std::vector<Entity*>& selection);
 
 	virtual void save(Json::Value& entityRoot) const override;
 	virtual void load(const Json::Value& entityRoot) override;
+
 };
 

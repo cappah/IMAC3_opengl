@@ -175,7 +175,6 @@ void Entity::applyTransformFromPhysicSimulation()
 	}
 }
 
-
 void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId)
 {
 	ImGui::SetNextWindowContentWidth(80);
@@ -200,7 +199,7 @@ void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id
 	if (nodeOpen) {
 		//ImGui::SetNextWindowContentWidth(500);
 		//ImGui::BeginChild(ImGuiID(id), ImVec2(500, 0), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_ChildWindowAutoFitY | ImGuiWindowFlags_ChildWindowAutoFitX);
-		component->drawUI(scene);
+		component->drawInInspector(scene);
 		//ImGui::EndChild();
 	}
 
@@ -208,9 +207,32 @@ void Entity::displayTreeNodeInspector(Scene& scene, Component* component, int id
 		ImGui::TreePop();
 }
 
-void Entity::drawUI(Scene& scene)
+void Entity::displayTreeNodeInspector(Scene& scene, std::vector<Component*>& components, int id, bool& hasToRemoveComponent, int& removeId)
 {
+	if (components.size() == 0)
+		return;
 
+	ImGui::SetNextWindowContentWidth(80);
+	bool nodeOpen = false;
+
+	ImVec2 itemPos;
+	ImVec2 itemSize;
+	if (ImGui::MyTreeNode("", itemPos, itemSize))
+		nodeOpen = true;
+	ImGui::SameLine();
+
+	ImGui::Text(Component::ComponentTypeName[flagBitToInt(components[0]->type())].c_str());
+
+	if (nodeOpen) {
+		components[0]->drawInInspector(scene, components);
+	}
+
+	if (nodeOpen)
+		ImGui::TreePop();
+}
+
+void Entity::drawInInspector(Scene& scene)
+{
 	char tmpName[20];
 	m_name.copy(tmpName, m_name.size(), 0);
 	tmpName[m_name.size()] = '\0';
@@ -223,7 +245,7 @@ void Entity::drawUI(Scene& scene)
 
 	bool hasToRemoveComponent = false;
 	int removeId = 0;
-	bool expendComponent = false;
+	//bool expendComponent = false;
 	for (int i = 0; i < m_components.size(); i++)
 	{
 		ImGui::PushID(i);
@@ -251,7 +273,7 @@ void Entity::drawUI(Scene& scene)
 
 		ImGui::PopID();
 
-		expendComponent = false;
+		//expendComponent = false;
 	}
 	if(hasToRemoveComponent)
 		m_components[removeId]->eraseFromEntity(*this);
@@ -269,6 +291,42 @@ void Entity::drawUI(Scene& scene)
 		ImGui::EndPopup();
 	}
 
+}
+
+void extractAllComponents(const std::vector<Entity*>& entitiesIn, std::map<int, std::vector<Component*>>& componentsOut)
+{
+	for (auto& entity : entitiesIn)
+	{
+		entity->getAllComponentsByTypes(componentsOut);
+	}
+}
+
+void Entity::drawInInspector(Scene& scene, const std::vector<Entity*>& selection)
+{
+	char tmpName[20];
+	m_name.copy(tmpName, m_name.size(), 0);
+	tmpName[m_name.size()] = '\0';
+	if (ImGui::InputText("name", tmpName, 20))
+	{
+		for(int i = 0; i < selection.size(); i++)
+			selection[i]->m_name = tmpName;
+	}
+
+	TransformNode::drawInInspector(hasParent(), selection);
+
+	bool hasToRemoveComponent = false;
+	int removeId = 0;
+
+	std::map<int, std::vector<Component*>> outComponents;
+	extractAllComponents(selection, outComponents);
+
+	for (auto& componentsByType : outComponents)
+	{
+		ImGui::PushID(componentsByType.first);
+		displayTreeNodeInspector(scene, componentsByType.second, componentsByType.first, hasToRemoveComponent, removeId);
+		ImGui::PopID();
+	}
+	
 }
 
 bool Entity::getIsSelected() const
@@ -714,6 +772,14 @@ void Entity::eraseAllComponents()
 		//m_components[i] = nullptr;
 	}
 	m_components.clear();
+}
+
+void Entity::getAllComponentsByTypes(std::map<int, std::vector<Component*>>& outComponents)
+{
+	for (int i = 0; i < m_components.size(); i++)
+	{
+		outComponents[flagBitToInt(m_components[i]->type())].push_back(m_components[i]);
+	}
 }
 
 bool Entity::hasParent() const

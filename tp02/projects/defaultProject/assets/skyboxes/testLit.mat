@@ -1,0 +1,29 @@
+{
+	"internalParameters" : 
+	[
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 21
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 21
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 21
+		},
+		{
+			"data" : 0
+		},
+		{
+			"data" : 
+			[
+				1,
+				1
+			]
+		}
+	],
+	"programType" : 2,
+	"shaderProgramName" : "lit"
+}

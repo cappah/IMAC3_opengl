@@ -265,6 +265,24 @@ void Renderer::onResizeWindow()
 
 	// Back to the default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+	////////////////////// RESIZE MAIN TEXTURE /////////////////////////
+
+	delete m_finalFrameColor;
+	delete m_finalFrameDepth;
+
+	m_finalFrameColor = GlHelper::makeNewColorTexture(width, height);
+	m_finalFrameColor->initGL();
+	m_finalFrameDepth = GlHelper::makeNewDepthTexture(width, height);
+	m_finalFrameDepth->initGL();
+
+	m_mainBuffer.bind();
+	m_mainBuffer.attachTexture(m_finalFrameColor, GlHelper::Framebuffer::AttachmentTypes::COLOR);
+	m_mainBuffer.attachTexture(m_finalFrameDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
+	m_mainBuffer.checkIntegrity();
+	m_mainBuffer.unbind();
 }
 
 

@@ -622,6 +622,26 @@ const FileHandler::Path& Project::getShaderFolderPath()
 	return m_shaderFolderPath;
 }
 
+FileHandler::CompletePath Project::getAbsolutePathFromRelativePath(const FileHandler::CompletePath& relativeCompletePath)
+{
+	return FileHandler::CompletePath(getPath().toString() + relativeCompletePath.toString());
+}
+
+FileHandler::Path Project::getAbsolutePathFromRelativePath(const FileHandler::Path& relativePath)
+{
+	return FileHandler::Path(getPath().toString() + relativePath.toString());
+}
+
+bool Project::isPathPointingInsideProjectFolder(const FileHandler::Path& path)
+{
+	return path.toString().find(getPath().toString()) != std::string::npos;
+}
+
+bool Project::isPathPointingInsideProjectFolder(const FileHandler::CompletePath& completePath)
+{
+	return completePath.toString().find(getPath().toString()) != std::string::npos;
+}
+
 void Project::drawUI()
 {
 	if (m_scenes.find(m_activeSceneName) == m_scenes.end()) {

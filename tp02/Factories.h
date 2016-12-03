@@ -248,7 +248,7 @@ void ResourceFactory<T>::add(const FileHandler::CompletePath& path, T* value)
 template<typename T>
 void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
 {
-	T* newResource = new T(path);
+	T* newResource = new T();
 	newResource->init(path);
 
 	m_resources[path] = newResource;
@@ -464,12 +464,12 @@ typename std::map<std::string, T*>::iterator ResourceFactory<T>::defaultResource
 }
 
 //Specialisations : 
-
-template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path);
-
-template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
+//
+//template<>
+//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path);
+//
+//template<>
+//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
 // Creation : 
 
 //template<>
@@ -530,7 +530,8 @@ template<>
 ResourceType getResourceType<Texture>();
 template<>
 ResourceType getResourceType<CubeTexture>();
-
+template<>
+ResourceType getResourceType<Mesh>();
 template<>
 ResourceType getResourceType<SkeletalAnimation>();
 template<>
@@ -580,7 +581,7 @@ inline void ResourcePtr<ShaderProgram>::load(const Json::Value & entityRoot)
 namespace EditorGUI {
 
 template<typename T>
-bool ResourceField(const std::string& label, ResourcePtr<T> resourcePtr)
+bool ResourceField(const std::string& label, ResourcePtr<T>& resourcePtr)
 {
 	const int bufSize = 100;
 	std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getCompletePath().getFilename() : "INVALID");
@@ -598,25 +599,27 @@ bool ResourceField(const std::string& label, ResourcePtr<T> resourcePtr)
 		colStyleCount++;
 	}
 
-	bool enterPressed = ImGui::InputText(label.c_str(), &currentResourceName[0], bufSize, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_ReadOnly);
-	isTextEdited = (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
-	ImGui::SameLine();
-	needClearPtr = ImGui::SmallButton(std::string("<##" + label).data());
-
+	ImGui::InputText(label.c_str(), &currentResourceName[0], bufSize, ImGuiInputTextFlags_ReadOnly);
+	//isTextEdited = (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
+	ImVec2 dropRectMin = ImGui::GetItemRectMin();
+	ImVec2 dropRectMax = ImGui::GetItemRectMax();
 
 	//borders if can drop here : 
-	if (ImGui::IsItemHovered() && canDropIntoField)
+	if (ImGui::IsMouseHoveringRect(dropRectMin, dropRectMax) && canDropIntoField)
 	{
 		ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 2.f);
 	}
 
 	//drop resource : 
 	FileHandler::CompletePath droppedResourcePath;
-	if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0))
+	if (ImGui::IsMouseHoveringRect(dropRectMin, dropRectMax) && ImGui::IsMouseReleased(0) && canDropIntoField)
 	{
 		DragAndDropManager::dropDraggedItem(&droppedResourcePath, (EditorDropContext::DropIntoResourceField));
 		isTextEdited = true;
 	}
+
+	ImGui::SameLine();
+	needClearPtr = ImGui::SmallButton(std::string("<##" + label).data());
 
 	ImGui::PopStyleColor(colStyleCount);
 

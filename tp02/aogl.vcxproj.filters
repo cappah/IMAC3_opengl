@@ -143,7 +143,6 @@
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="SplineAnimation.cpp" />
-    <ClCompile Include="CharacterController.cpp" />
     <ClCompile Include="ResourceTree.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
@@ -186,6 +185,12 @@
     </ClCompile>
     <ClCompile Include="EditorWindowManager.cpp">
       <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="CharacterController.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource.cpp">
+      <Filter>Resources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -333,7 +338,6 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="SplineAnimation.h" />
-    <ClInclude Include="CharacterController.h" />
     <ClInclude Include="ResourceTree.h">
       <Filter>Editor</Filter>
     </ClInclude>
@@ -388,6 +392,12 @@
     </ClInclude>
     <ClInclude Include="EditorWindowManager.h">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="IDrawableInInspector.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterController.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

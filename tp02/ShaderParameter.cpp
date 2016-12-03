@@ -1,4 +1,7 @@
 #include <memory>
+#include "glm/common.hpp"
+#include "glm/glm.hpp"
+
 #include "ShaderParameters.h"
 #include "Factories.h" //forward
 
@@ -67,8 +70,12 @@ void pushParametersToGPU<float>(GLuint uniformId, int count, const std::vector<f
 
 
 //utility function to make a shader from its type
-std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(const std::string& literaltype, std::string& name)
+std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(const Json::Value& parameterAsJsonValue)
 {
+	std::string literaltype = parameterAsJsonValue.get("type", "").asString();
+	std::string name = parameterAsJsonValue.get("name", "").asString();
+	bool isEditable = parameterAsJsonValue.get("editable", true).asBool();
+
 	ShaderParameter::ShaderParameterType parameterType = ShaderParameter::ShaderParameterType::TYPE_COUNT;
 	auto foundTypeIt = std::find(ShaderParameter::LiteralShaderParameterType.begin(), ShaderParameter::LiteralShaderParameterType.end(), literaltype);
 	if (foundTypeIt != ShaderParameter::LiteralShaderParameterType.end())
@@ -80,29 +87,79 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 	switch (parameterType)
 	{
 	case ShaderParameter::ShaderParameterType::INT:
-		return std::make_shared<InternalShaderParameter<int, ShaderParameter::IsNotArray>>(name);
+	{
+		int defaultValue = parameterAsJsonValue.get("default", 0).asInt();
+		return std::make_shared<InternalShaderParameter<int, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
+	}
 	case ShaderParameter::ShaderParameterType::INT2:
-		return std::make_shared<InternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name);
+	{
+		glm::ivec2 defaultValue(0, 0);
+		Json::Value arrayValue = parameterAsJsonValue.get("default", Json::Value(Json::ValueType::arrayValue));
+		if (arrayValue.size() == 2)
+		{
+			defaultValue.x = arrayValue[0].asInt();
+			defaultValue.y = arrayValue[1].asInt();
+		}
+		return std::make_shared<InternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
+	}
 	case ShaderParameter::ShaderParameterType::INT3:
-		return std::make_shared<InternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name);
+	{
+		glm::ivec3 defaultValue(0, 0, 0);
+		Json::Value arrayValue = parameterAsJsonValue.get("default", Json::Value(Json::ValueType::arrayValue));
+		if (arrayValue.size() == 3)
+		{
+			defaultValue.x = arrayValue[0].asInt();
+			defaultValue.y = arrayValue[1].asInt();
+			defaultValue.z = arrayValue[2].asInt();
+		}
+		return std::make_shared<InternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
+	}
 	case ShaderParameter::ShaderParameterType::FLOAT:
-		return std::make_shared<InternalShaderParameter<float, ShaderParameter::IsNotArray>>(name);
+	{
+		int defaultValue = parameterAsJsonValue.get("default", 0).asFloat();
+		return std::make_shared<InternalShaderParameter<float, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
+	}
 	case ShaderParameter::ShaderParameterType::FLOAT2:
-		return std::make_shared<InternalShaderParameter<glm::vec2, ShaderParameter::IsNotArray>>(name);
+	{
+		glm::vec2 defaultValue(0.f, 0.f);
+		Json::Value arrayValue = parameterAsJsonValue.get("default", Json::Value(Json::ValueType::arrayValue));
+		if (arrayValue.size() == 2)
+		{
+			defaultValue.x = arrayValue[0].asFloat();
+			defaultValue.y = arrayValue[1].asFloat();
+		}
+		return std::make_shared<InternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
+	}
 	case ShaderParameter::ShaderParameterType::FLOAT3:
-		return std::make_shared<InternalShaderParameter<glm::vec3, ShaderParameter::IsNotArray>>(name);
+	{
+		glm::vec3 defaultValue(0.f, 0.f, 0.f);
+		Json::Value arrayValue = parameterAsJsonValue.get("default", Json::Value(Json::ValueType::arrayValue));
+		if (arrayValue.size() == 3)
+		{
+			defaultValue.x = arrayValue[0].asFloat();
+			defaultValue.y = arrayValue[1].asFloat();
+			defaultValue.z = arrayValue[2].asFloat();
+		}
+		return std::make_shared<InternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
+	}
 	case ShaderParameter::ShaderParameterType::TEXTURE:
-		return std::make_shared<InternalShaderParameter<Texture, ShaderParameter::IsNotArray>>(name);
+	{
+		ResourcePtr<Texture> defaultValue = getTextureFactory().getDefault(parameterAsJsonValue.get("default", "default").asString());
+		return std::make_shared<InternalShaderParameter<Texture, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
+	}
 	case ShaderParameter::ShaderParameterType::CUBE_TEXTURE:
-		return std::make_shared<InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>>(name);
+	{
+		ResourcePtr<CubeTexture> defaultValue = getCubeTextureFactory().getDefault(parameterAsJsonValue.get("default", "default").asString());
+		return std::make_shared<InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
+	}
 	default:
 		return nullptr;
 		break;
@@ -172,9 +229,11 @@ std::shared_ptr<ExternalShaderParameterBase> MakeNewExternalShaderParameter(cons
 	}
 }
 
-InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name)
+InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<Texture> defaultValue)
 	: InternalShaderParameterBase(name)
 	, m_uniformId(0)
+	, m_isEditable(isEditable)
+	, m_data(defaultValue)
 {}
 
 //init unifom id
@@ -223,9 +282,11 @@ void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::getData(void
 
 // Cube texture : 
 
-InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name)
+InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<CubeTexture> defaultValue)
 	: InternalShaderParameterBase(name)
 	, m_uniformId(0)
+	, m_isEditable(isEditable)
+	, m_data(defaultValue)
 {}
 
 //init unifom id

@@ -146,7 +146,7 @@ public:
 namespace EditorGUI {
 
 	template<typename T>
-	bool ResourceField(const std::string& label, ResourcePtr<T> resourcePtr);
+	bool ResourceField(const std::string& label, ResourcePtr<T>& resourcePtr);
 	//{
 	//	const int bufSize = 100;
 	//	std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getCompletePath().getFilename() : "INVALID");

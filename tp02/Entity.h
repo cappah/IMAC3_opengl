@@ -117,10 +117,9 @@ public:
 	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) override;
 	void applyTransformFromPhysicSimulation();
 
-	//helper to draw UI : 
-	void displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId);
 	//draw the entity UI
-	void drawUI(Scene& scene);
+	void drawInInspector(Scene& scene);
+	void drawInInspector(Scene& scene, const std::vector<Entity*>& selection);
 
 	//return the value of m_isSelected
 	bool getIsSelected() const ;
@@ -215,6 +214,8 @@ public:
 	// function to get components of a certain type.
 	template<typename T>
 	std::vector<T*> getComponents(Component::ComponentType type);
+	//If you want to access to all components in this entity, by types
+	void getAllComponentsByTypes(std::map<int, std::vector<Component*>>& outComponents);
 
 	bool hasParent() const;
 	bool hasChild() const;
@@ -241,6 +242,10 @@ private:
 	void removeParent();
 	void addChildAtomic(Entity* child);
 	void setParentAtomic(Entity* parent);
+
+	//helper to draw UI : 
+	void displayTreeNodeInspector(Scene& scene, std::vector<Component*>& components, int id, bool& hasToRemoveComponent, int& removeId);
+	void displayTreeNodeInspector(Scene& scene, Component* component, int id, bool& hasToRemoveComponent, int& removeId);
 
 };
 
