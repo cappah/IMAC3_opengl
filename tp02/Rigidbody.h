@@ -81,7 +81,8 @@ public:
 	void setIsTrigger(bool state);
 
 
-	virtual void drawUI(Scene& scene) override;
+	virtual void drawInInspector(Scene& scene) override;
+	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat());
 	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat());

@@ -35,7 +35,7 @@ int PathPoint::getPathId() const
 	return m_pathId;
 }
 
-void PathPoint::drawUI(Scene& scene)
+void PathPoint::drawInInspector(Scene& scene)
 {
 	int oldPathId = m_pathId;
 	if (ImGui::InputInt("path id", &m_pathId))
@@ -49,6 +49,34 @@ void PathPoint::drawUI(Scene& scene)
 	if (ImGui::Button("update visual"))
 	{
 		scene.getPathManager().updateVisual(m_pathId);
+	}
+}
+
+void PathPoint::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	int oldPathId = m_pathId;
+	if (ImGui::InputInt("path id", &m_pathId))
+	{
+		scene.getPathManager().updatePathId(m_pathId, oldPathId, this);
+		for (auto component : components)
+		{
+			PathPoint* castedComponent = static_cast<PathPoint*>(component);
+			castedComponent->m_pathId = m_pathId;
+			scene.getPathManager().updatePathId(m_pathId, oldPathId, castedComponent);
+		}
+	}
+	//No reason to use this in multi editing because multiple points in a same path can't have the same index !
+	//if (ImGui::InputInt("point index", &m_pointIdx))
+	//{
+	//	scene.getPathManager().updatePointIdx(m_pathId);
+	//}
+	if (ImGui::Button("update visual"))
+	{
+		for (auto component : components)
+		{
+			PathPoint* castedComponent = static_cast<PathPoint*>(component);
+			scene.getPathManager().updateVisual(castedComponent->m_pathId);
+		}
 	}
 }
 

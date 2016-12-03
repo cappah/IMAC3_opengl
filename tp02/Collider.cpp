@@ -231,11 +231,27 @@ void Collider::load(const Json::Value & rootComponent)
 	modelMatrix = fromJsonValue<glm::mat4>(rootComponent["modelMatrix"], glm::mat4());
 }
 
-void Collider::drawUI(Scene& scene)
+void Collider::drawInInspector(Scene & scene)
 {
 	glm::vec3 tmpOffset = offsetPosition;
 	if (ImGui::InputFloat3("offset position", &tmpOffset[0]))
 		setOffsetPosition(tmpOffset);
+}
+
+void Collider::drawInInspector(Scene & scene, const std::vector<Component*>& components)
+{
+	if (components.size() == 0)
+		return;
+
+	glm::vec3 tmpOffset = offsetPosition; //we are already in the first component
+	if (ImGui::InputFloat3("offset position", &tmpOffset[0]))
+	{
+		for (auto component : components)
+		{
+			Collider* castedComponent = static_cast<Collider*>(component);
+			castedComponent->setOffsetPosition(tmpOffset);
+		}
+	}
 }
 
 
@@ -360,12 +376,27 @@ bool BoxCollider::isIntersectedByRay(const Ray& ray, float* t)
 	return false;*/
 }
 
-void BoxCollider::drawUI(Scene& scene)
+void BoxCollider::drawInInspector(Scene& scene)
 {
-	Collider::drawUI(scene);
+	Collider::drawInInspector(scene);
 	glm::vec3 tmpOffsetScale = offsetScale;
 	if (ImGui::InputFloat3("offset scale", &tmpOffsetScale[0]))
 		setOffsetScale(tmpOffsetScale);
+}
+
+void BoxCollider::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	Collider::drawInInspector(scene, components);
+	glm::vec3 tmpOffsetScale = offsetScale;
+	if (ImGui::InputFloat3("offset scale", &tmpOffsetScale[0]))
+	{
+		for (auto component : components)
+		{
+			BoxCollider* castedComponent = static_cast<BoxCollider*>(component);
+
+			setOffsetScale(tmpOffsetScale);
+		}
+	}
 }
 
 Component* BoxCollider::clone(Entity* entity)
@@ -467,9 +498,9 @@ bool CapsuleCollider::isIntersectedByRay(const Ray & ray, float * t)
 	return false;
 }
 
-void CapsuleCollider::drawUI(Scene & scene)
+void CapsuleCollider::drawInInspector(Scene & scene)
 {
-	Collider::drawUI(scene);
+	Collider::drawInInspector(scene);
 	if (ImGui::InputFloat("height", &height)) {
 		offsetScale.y = height*0.5f;
 		offsetScale.x = radius * 2.f;
@@ -481,6 +512,36 @@ void CapsuleCollider::drawUI(Scene & scene)
 		offsetScale.x = radius * 2.f;
 		offsetScale.z = radius * 2.f;
 		updateOffsetMatrix();
+	}
+}
+
+void CapsuleCollider::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	Collider::drawInInspector(scene, components);
+
+	if (ImGui::InputFloat("height", &height)) 
+	{
+		for (auto component : components)
+		{
+			CapsuleCollider* castedComponent = static_cast<CapsuleCollider*>(component);
+
+			castedComponent->offsetScale.y = height*0.5f;
+			castedComponent->offsetScale.x = radius * 2.f;
+			castedComponent->offsetScale.z = radius * 2.f;
+			castedComponent->updateOffsetMatrix();
+		}
+	}
+	if (ImGui::InputFloat("radius", &radius)) 
+	{
+		for (auto component : components)
+		{
+			CapsuleCollider* castedComponent = static_cast<CapsuleCollider*>(component);
+
+			castedComponent->offsetScale.y = height*0.5f;
+			castedComponent->offsetScale.x = radius * 2.f;
+			castedComponent->offsetScale.z = radius * 2.f;
+			castedComponent->updateOffsetMatrix();
+		}
 	}
 }
 

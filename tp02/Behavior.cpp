@@ -45,7 +45,12 @@ void Behavior::onCollisionStay(Scene& scene, const CollisionInfo& collisionInfo)
 	//to override
 }
 
-void Behavior::drawUI(Scene & scene)
+void Behavior::drawInInspector(Scene & scene)
+{
+	//to override
+}
+
+void Behavior::drawInInspector(Scene & scene, const std::vector<Component*>& components)
 {
 	//to override
 }

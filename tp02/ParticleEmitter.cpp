@@ -398,10 +398,9 @@ namespace Physic {
 		m_scale = scale;
 	}
 
-	void ParticleEmitter::drawUI(Scene& scene)
+	void ParticleEmitter::drawInInspector(Scene& scene)
 	{
 		float width = ImGui::GetWindowContentRegionWidth();
-
 
 		//particle texture : 
 		char texName[20];
@@ -524,7 +523,249 @@ namespace Physic {
 		if (ImGui::RadioButton("sort particles", m_sortParticles)) {
 			m_sortParticles = !m_sortParticles;
 		}
+	}
 
+	void ParticleEmitter::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+	{
+		float width = ImGui::GetWindowContentRegionWidth();
+
+		//particle texture : 
+		if (EditorGUI::ResourceField<Texture>("textureName", m_particleTexture))
+		{
+			for (auto component : components)
+			{
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+				castedComponent->m_particleTexture = m_particleTexture;
+			}
+		}
+		
+
+		//size step :
+		bool sizeStepsEdited = false;
+
+		ImGui::PushID("SizeSteps");
+		if (ImGui::Button("add size step")) 
+		{
+			m_sizeSteps_times.push_back(1.f);
+			m_sizeSteps_values.push_back(glm::vec2(1, 1));
+			sizeStepsEdited = true;
+		}
+		for (int i = 0; i < m_sizeSteps_times.size(); i++)
+		{
+			ImGui::PushItemWidth(width*0.25);
+			ImGui::PushID(i);
+			if (ImGui::InputFloat("##sizeStepTime", &m_sizeSteps_times[i])) 
+			{
+				if (m_sizeSteps_times[i] < 0)
+					m_sizeSteps_times[i] = 0;
+				else if (m_sizeSteps_times[i] > 1.f)
+					m_sizeSteps_times[i] = 1.f;
+				sizeStepsEdited = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::InputFloat2("##sizeStepValue", &m_sizeSteps_values[i][0]))
+			{
+				sizeStepsEdited = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("remove"))
+			{
+				m_sizeSteps_times.erase(m_sizeSteps_times.begin() + i);
+				m_sizeSteps_values.erase(m_sizeSteps_values.begin() + i);
+				i--;
+				sizeStepsEdited = true;
+			}
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopID();
+
+		if (sizeStepsEdited)
+		{
+			for (auto component : components)
+			{
+				if (component == this)
+					continue;
+
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+				castedComponent->m_sizeSteps_times = m_sizeSteps_times;
+				castedComponent->m_sizeSteps_values = m_sizeSteps_values;
+			}
+		}
+
+		//color step :
+		bool isColorStepEdited = false;
+		ImGui::PushID("ColorSteps");
+		if (ImGui::Button("add color step")) 
+		{
+			m_colorSteps_times.push_back(1.f);
+			m_colorSteps_values.push_back(glm::vec4(1, 1, 1, 1));
+			isColorStepEdited = true;
+		}
+		for (int i = 0; i < m_colorSteps_times.size(); i++)
+		{
+			ImGui::PushItemWidth(width*0.25);
+			ImGui::PushID(i);
+			if (ImGui::InputFloat("##colorStepTime", &m_colorSteps_times[i])) 
+			{
+				if (m_colorSteps_times[i] < 0) 
+					m_colorSteps_times[i] = 0;
+				else if (m_colorSteps_times[i] > 1.f) 
+					m_colorSteps_times[i] = 1.f;
+				isColorStepEdited = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::ColorEdit4("##colorStepValue", &m_colorSteps_values[i][0]))
+			{
+				isColorStepEdited = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("remove")) 
+			{
+				m_colorSteps_times.erase(m_colorSteps_times.begin() + i);
+				m_colorSteps_values.erase(m_colorSteps_values.begin() + i);
+				i--;
+				isColorStepEdited = true;
+			}
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopID();
+
+		if (isColorStepEdited)
+		{
+			for (auto component : components)
+			{
+				if (component == this)
+					continue;
+
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+				castedComponent->m_colorSteps_times = m_colorSteps_times;
+				castedComponent->m_colorSteps_values = m_colorSteps_values;
+			}
+		}
+
+		//force step :
+		bool isForceStepEdited = false;
+
+		ImGui::PushID("ForceSteps");
+		if (ImGui::Button("add force step")) 
+		{
+			m_forceSteps_times.push_back(1.f);
+			m_forceSteps_values.push_back(glm::vec3(0, 0, 0));
+			isForceStepEdited = true;
+		}
+		for (int i = 0; i < m_forceSteps_times.size(); i++)
+		{
+			ImGui::PushItemWidth(width*0.25);
+			ImGui::PushID(i);
+			if (ImGui::InputFloat("##colorStepTime", &m_forceSteps_times[i])) 
+			{
+				if (m_forceSteps_times[i] < 0) 
+					m_forceSteps_times[i] = 0;
+				else if (m_forceSteps_times[i] > 1.f) 
+					m_forceSteps_times[i] = 1.f;
+				isForceStepEdited = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::InputFloat3("##forceStepValue", &m_forceSteps_values[i][0]))
+			{
+				isForceStepEdited = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("remove"))
+			{
+				m_forceSteps_times.erase(m_forceSteps_times.begin() + i);
+				m_forceSteps_values.erase(m_forceSteps_values.begin() + i);
+				i--;
+				isForceStepEdited = true;
+			}
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+		}
+		ImGui::PopID();
+
+		if (isForceStepEdited)
+		{
+			for (auto component : components)
+			{
+				if (component == this)
+					continue;
+
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+				castedComponent->m_forceSteps_times = m_forceSteps_times;
+				castedComponent->m_forceSteps_values = m_forceSteps_values;
+			}
+		}
+
+		//particle by second :
+		if(ImGui::InputFloat("particle count by second", &m_particleCountBySecond))
+		{
+			for (auto component : components)
+			{
+				if (component == this) continue;
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+
+				castedComponent->m_particleCountBySecond = m_particleCountBySecond;
+			}
+		}
+
+		//life time interval :
+		if (ImGui::InputFloat2("life time interval", &m_lifeTimeInterval[0]))
+		{
+			for (auto component : components)
+			{
+				if (component == this) continue;
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+
+				castedComponent->m_lifeTimeInterval = m_lifeTimeInterval;
+			}
+		}
+
+		//initial velocity interval :
+		if (ImGui::InputFloat2("initial velocity interval", &m_initialVelocityInterval[0]))
+		{
+			for (auto component : components)
+			{
+				if (component == this) continue;
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+
+				castedComponent->m_initialVelocityInterval = m_initialVelocityInterval;
+			}
+		}
+
+		//max particle count : 
+		if (ImGui::InputInt("max particle count", &m_maxParticleCount)) 
+		{
+			for (auto component : components)
+			{
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+				castedComponent->m_maxParticleCount = m_maxParticleCount;
+				castedComponent->onChangeMaxParticleCount();
+			}
+		}
+
+		//Emit particle inside shape volume : 
+		if (ImGui::RadioButton("emit in shape", m_emitInShape)) 
+		{
+			m_emitInShape = !m_emitInShape;
+			for (auto component : components)
+			{
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+				castedComponent->m_emitInShape = m_emitInShape;
+			}
+		}
+
+		//sort particles (reduce performances) : 
+		if (ImGui::RadioButton("sort particles", m_sortParticles)) 
+		{
+			m_sortParticles = !m_sortParticles;
+			for (auto component : components)
+			{
+				ParticleEmitter* castedComponent = static_cast<ParticleEmitter*>(component);
+				castedComponent->m_sortParticles = m_sortParticles;
+			}
+		}
 	}
 
 	void ParticleEmitter::eraseFromScene(Scene& scene)

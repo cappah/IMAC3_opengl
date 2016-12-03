@@ -80,7 +80,10 @@ public:
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 
-	virtual void drawUI(Scene& scene) override;
+	virtual void drawInInspector(Scene& scene) override;
+	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
+
+
 	virtual void eraseFromScene(Scene & scene) override;
 	virtual void addToScene(Scene & scene) override;
 	virtual Component * clone(Entity * entity) override;

@@ -19,7 +19,8 @@ public:
 	int getPointIdx() const;
 	int getPathId() const;
 
-	void drawUI(Scene& scene);
+	void drawInInspector(Scene& scene) override;
+	void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
 	// Hérité via Component
 	virtual void eraseFromScene(Scene & scene) override;

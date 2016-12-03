@@ -30,7 +30,9 @@ public:
 	MeshRenderer(ResourcePtr<Mesh> _mesh, ResourcePtr<Material> _material);
 	virtual ~MeshRenderer();
 
-	virtual void drawUI(Scene& scene) override;
+	virtual void drawInInspector(Scene& scene) override;
+	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
+
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
 	virtual void addToScene(Scene& scene) override;

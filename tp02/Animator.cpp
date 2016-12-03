@@ -68,7 +68,7 @@ void Animator::play(int animationIdx)
 	}
 }
 
-void Animator::drawUI(Scene & scene)
+void Animator::drawInInspector(Scene & scene)
 {
 	char tmpSkeletalPath[100];
 	m_skeletonName.copy(tmpSkeletalPath, m_skeletonName.size());
@@ -128,6 +128,84 @@ void Animator::drawUI(Scene & scene)
 			if (m_currentAnimIdx == imguiId)
 				m_currentAnimIdx = 0;
 			m_skeletonAnimations.erase(m_skeletonAnimations.begin() + i);
+		}
+
+		ImGui::PopID();
+		imguiId++;
+	}
+}
+
+void Animator::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	//char tmpSkeletalPath[100];
+	//m_skeletonName.copy(tmpSkeletalPath, m_skeletonName.size());
+	//tmpSkeletalPath[m_skeletonName.size()] = '\0';
+
+	//%NOCOMMIT%
+	//if (ImGui::InputText("skeleton/mesh name", tmpSkeletalName, 20)) {
+
+	//	m_skeletonName = tmpSkeletalName;
+
+	//	if (getMeshFactory().contains(m_skeletonName)) {
+	//		ResourcePtr<Mesh> tmpMesh = getMeshFactory().get(m_skeletonName);
+	//		if (tmpMesh.isValid()) {
+	//			m_currentSkeletonName = m_skeletonName;
+	//			m_skeleton = tmpMesh->getSkeleton();
+	//		}
+	//	}
+	//}
+
+	//Get mesh skeleton from mesh
+	ResourcePtr<Mesh> meshPtrQuery;
+	EditorGUI::ResourceField<Mesh>("skeleton/mesh name", meshPtrQuery);
+	if (meshPtrQuery.isValid())
+	{
+		for (auto component : components)
+		{
+			Animator* castedComponent = static_cast<Animator*>(component);
+
+			castedComponent->m_skeleton = meshPtrQuery->getSkeleton();
+			castedComponent->m_skeletonPath = meshPtrQuery->getCompletePath();// ::CompletePath(tmpSkeletalPath);
+		}
+	}
+
+
+	//char tmpAnimationName[60];
+	//m_animationName.copy(tmpAnimationName, m_animationName.size());
+	//tmpAnimationName[m_animationName.size()] = '\0';
+
+	//Get animation
+	ResourcePtr<SkeletalAnimation> animationPtrQuery;
+	//EditorGUI::ResourceField<SkeletalAnimation>(animationPtrQuery, "animation", tmpAnimationName, 60);
+	EditorGUI::ResourceField<SkeletalAnimation>("animation", animationPtrQuery);
+	ImGui::SameLine();
+	if (ImGui::Button("add")) {
+		if (animationPtrQuery.isValid())
+		{
+			for (auto component : components)
+			{
+				Animator* castedComponent = static_cast<Animator*>(component);
+				castedComponent->m_skeletonAnimations.push_back(animationPtrQuery);
+			}
+		}
+	}
+
+	int imguiId = 0;
+	for (int i = 0; i < m_skeletonAnimations.size(); i++)
+	{
+		ImGui::PushID(imguiId);
+
+		ImGui::Text(m_skeletonAnimations[i]->getCompletePath().c_str());
+		ImGui::SameLine();
+		if (ImGui::Button("remove"))
+		{
+			for (auto component : components)
+			{
+				Animator* castedComponent = static_cast<Animator*>(component);
+				if (castedComponent->m_currentAnimIdx == imguiId)
+					castedComponent->m_currentAnimIdx = 0;
+				castedComponent->m_skeletonAnimations.erase(castedComponent->m_skeletonAnimations.begin() + i);
+			}
 		}
 
 		ImGui::PopID();

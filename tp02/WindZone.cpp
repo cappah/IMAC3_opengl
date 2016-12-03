@@ -110,7 +110,7 @@ namespace Physic {
 		m_direction = rotation * glm::vec3(0, 0, 1);
 	}
 
-	void WindZone::drawUI(Scene & scene)
+	void WindZone::drawInInspector(Scene & scene)
 	{
 		if (ImGui::InputFloat("amplitude", &m_amplitude))
 			updateSpline();
@@ -126,6 +126,73 @@ namespace Physic {
 		if (ImGui::RadioButton("attenuation", m_isAttenuated))
 			m_isAttenuated = !m_isAttenuated;
 		ImGui::SliderFloat("radius", &m_radius, 0.1f, 500.f);
+	}
+
+	void WindZone::drawInInspector(Scene & scene, const std::vector<Component*>& components)
+	{
+		if (ImGui::InputFloat("amplitude", &m_amplitude))
+		{
+			for(auto component : components)
+			{
+				WindZone* castedComponent = static_cast<WindZone*>(component);
+				castedComponent->m_amplitude = m_amplitude;
+				castedComponent->updateSpline();
+			}
+		}
+		if (ImGui::InputFloat("frequency", &m_frequency))
+		{
+			for (auto component : components)
+			{
+				WindZone* castedComponent = static_cast<WindZone*>(component);
+				castedComponent->m_frequency = m_frequency;
+				castedComponent->updateSpline();
+			}
+		}
+		if (ImGui::InputFloat("offset", &m_offset))
+		{
+			for (auto component : components)
+			{
+				WindZone* castedComponent = static_cast<WindZone*>(component);
+				castedComponent->m_offset = m_offset;
+				castedComponent->updateSpline();
+			}
+		}
+		if (ImGui::InputFloat("random factor", &m_randomFactor))
+		{
+			for (auto component : components)
+			{
+				WindZone* castedComponent = static_cast<WindZone*>(component);
+				castedComponent->m_randomFactor;
+				castedComponent->updateSpline();
+			}
+		}
+		int currentItemTypeEmission = (int)m_emissionType;
+		if (ImGui::ListBox("emission type", &currentItemTypeEmission, m_emissionTypeNames, 2))
+		{
+			for (auto component : components)
+			{
+				WindZone* castedComponent = static_cast<WindZone*>(component);
+				castedComponent->m_emissionType = (EmissionType)currentItemTypeEmission;
+			}
+		}
+		if (ImGui::RadioButton("attenuation", m_isAttenuated))
+		{
+			m_isAttenuated = !m_isAttenuated;
+			for (auto component : components)
+			{
+				if (component == this) continue;
+				WindZone* castedComponent = static_cast<WindZone*>(component);
+				castedComponent->m_isAttenuated = m_isAttenuated;
+			}
+		}
+		if (ImGui::SliderFloat("radius", &m_radius, 0.1f, 500.f))
+		{
+			for (auto component : components)
+			{
+				WindZone* castedComponent = static_cast<WindZone*>(component);
+				castedComponent->m_radius = m_radius;
+			}
+		}
 	}
 
 	void WindZone::eraseFromScene(Scene & scene)

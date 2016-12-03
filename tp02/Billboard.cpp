@@ -85,7 +85,7 @@ void Billboard::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 	m_translation = translation;
 }
 
-void Billboard::drawUI(Scene & scene)
+void Billboard::drawInInspector(Scene & scene)
 {
 	//char texName[100];
 	//int stringLength = std::min((int)m_textureName.size(), 100);
@@ -105,6 +105,28 @@ void Billboard::drawUI(Scene & scene)
 	EditorGUI::ResourceField<Texture>("textureName", m_texture);
 
 	ImGui::ColorEdit4("Color", glm::value_ptr(m_color));
+}
+
+void Billboard::drawInInspector(Scene & scene, const std::vector<Component*>& components)
+{
+	if (EditorGUI::ResourceField<Texture>("textureName", m_texture))
+	{
+		for (auto component : components)
+		{
+			Billboard* castedComponent = static_cast<Billboard*>(component);
+			castedComponent->m_texture = m_texture;
+		}
+	}
+
+	if (ImGui::ColorEdit4("Color", glm::value_ptr(m_color)))
+	{
+		for (auto component : components)
+		{
+			Billboard* castedComponent = static_cast<Billboard*>(component);
+			castedComponent->m_color = m_color;
+		}
+	}
+	
 }
 
 void Billboard::eraseFromScene(Scene & scene)

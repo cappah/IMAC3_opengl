@@ -838,7 +838,7 @@ namespace Physic {
 		m_mesh.draw();
 	}
 
-	void Flag::drawUI(Scene& scene)
+	void Flag::drawInInspector(Scene& scene)
 	{
 		if (ImGui::InputFloat("mass", &m_mass))
 			updatePhysic();
@@ -883,6 +883,107 @@ namespace Physic {
 
 		//m_material->drawUI();
 	}
+
+	void Flag::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+	{
+		float _mass = m_mass;
+		float _viscosity = m_viscosity;
+		float _rigidity = m_rigidity;
+		if (ImGui::InputFloat("mass", &_mass))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_mass = _mass;
+				updatePhysic();
+			}
+		}
+		if (ImGui::InputFloat("viscosity", &_viscosity))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_viscosity = _viscosity;
+				updatePhysic();
+			}
+		}
+		if (ImGui::InputFloat("rigidity", &_rigidity))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_rigidity = _rigidity;
+				updatePhysic();
+			}
+		}
+
+		int _subdivision = m_subdivision;
+		int tmpSub = m_subdivision;
+		if (ImGui::InputInt("subdivision", &_subdivision))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_subdivision = _subdivision;
+				castedComponent->m_mass *= ((castedComponent->m_subdivision * castedComponent->m_subdivision) / (float)(tmpSub*tmpSub)); // change mass because we add matter, otherwise the system isn't stable
+				castedComponent->regenerateFlag();
+			}
+		}
+
+		if (ImGui::Button("restart simulation"))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->restartSimulation();
+			}
+		}
+
+		bool _computeAutoCollision = m_computeAutoCollision;
+		if (ImGui::RadioButton("computeAutoCollision", _computeAutoCollision))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_computeAutoCollision = !_computeAutoCollision;
+			}
+		}
+
+		if(ImGui::InputFloat("autoCollisionDistance", &m_autoCollisionDistance))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_autoCollisionDistance = m_autoCollisionDistance;
+			}
+		}
+		if (ImGui::InputFloat("autoCollisionRigidity", &m_autoCollisionRigidity))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_autoCollisionRigidity = m_autoCollisionRigidity;
+			}
+		}
+		if(ImGui::InputFloat("autoCollisionViscosity", &m_autoCollisionViscosity))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_autoCollisionViscosity = m_autoCollisionViscosity;
+			}
+		}
+
+		if (EditorGUI::ResourceField<Material>("materialName", m_material))
+		{
+			for (auto component : components)
+			{
+				Flag* castedComponent = static_cast<Flag*>(component);
+				castedComponent->m_material = m_material;
+			}
+		}
+	}
+
 
 	void Flag::applyForce(const glm::vec3 & force)
 	{

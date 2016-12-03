@@ -318,7 +318,7 @@ void CharacterController::move(glm::vec3 direction)
 	m_force += glm::vec3(direction.x * xSpeed, direction.y * ySpeed, direction.z * zSpeed);
 }
 
-void CharacterController::drawUI(Scene & scene)
+void CharacterController::drawInInspector(Scene & scene)
 {
 	ImGui::InputFloat("forward speed", &m_speedFactor[Direction::FORWARD]);
 	ImGui::InputFloat("backward speed", &m_speedFactor[Direction::BACKWARD]);
@@ -338,6 +338,78 @@ void CharacterController::drawUI(Scene & scene)
 	}
 }
 
+void CharacterController::drawInInspector(Scene & scene, const std::vector<Component*>& components)
+{
+	if (ImGui::InputFloat("forward speed", &m_speedFactor[Direction::FORWARD]))
+	{
+		for (auto component : components)
+		{
+			CharacterController* castedComponent = static_cast<CharacterController*>(component);
+			castedComponent->m_speedFactor[Direction::FORWARD] = m_speedFactor[Direction::FORWARD];
+		}
+	}
+	if (ImGui::InputFloat("backward speed", &m_speedFactor[Direction::BACKWARD]))
+	{
+		for (auto component : components)
+		{
+			CharacterController* castedComponent = static_cast<CharacterController*>(component);
+			castedComponent->m_speedFactor[Direction::BACKWARD] = m_speedFactor[Direction::BACKWARD];
+		}
+	}
+	if (ImGui::InputFloat("right speed", &m_speedFactor[Direction::RIGHT]))
+	{
+		for (auto component : components)
+		{
+			CharacterController* castedComponent = static_cast<CharacterController*>(component);
+			castedComponent->m_speedFactor[Direction::RIGHT] = m_speedFactor[Direction::RIGHT];
+		}
+	}
+	if (ImGui::InputFloat("left speed", &m_speedFactor[Direction::LEFT]))
+	{
+		for (auto component : components)
+		{
+			CharacterController* castedComponent = static_cast<CharacterController*>(component);
+			castedComponent->m_speedFactor[Direction::LEFT] = m_speedFactor[Direction::LEFT];
+		}
+	}
+
+	if (ImGui::InputFloat("gravity", &m_gravityFactor))
+	{
+		for (auto component : components)
+		{
+			CharacterController* castedComponent = static_cast<CharacterController*>(component);
+			castedComponent->m_gravityFactor = m_gravityFactor;
+		}
+	}
+	if (ImGui::InputFloat("jump", &m_jumpFactor))
+	{
+		for (auto component : components)
+		{
+			CharacterController* castedComponent = static_cast<CharacterController*>(component);
+			castedComponent->m_jumpFactor = m_jumpFactor;
+		}
+	}
+
+	float tmpFloat = m_height;
+	if (ImGui::InputFloat("height", &tmpFloat)) 
+	{
+		for (auto component : components)
+		{
+			CharacterController* castedComponent = static_cast<CharacterController*>(component);
+			castedComponent->setHeight(tmpFloat);
+		}
+	}
+	tmpFloat = m_radius;
+	if (ImGui::InputFloat("radius", &tmpFloat)) 
+	{
+		for (auto component : components)
+		{
+			CharacterController* castedComponent = static_cast<CharacterController*>(component);
+			castedComponent->setRadius(tmpFloat);
+		}
+	}
+}
+
 void CharacterController::eraseFromScene(Scene & scene)
 {
 	scene.erase(this);
@@ -351,7 +423,6 @@ Component* CharacterController::clone(Entity* entity)
 
 	return newCharacterController;
 }
-
 
 void CharacterController::addToScene(Scene& scene)
 {

@@ -80,12 +80,38 @@ void PointLight::updateBoundingBox()
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
 }
 
-void PointLight::drawUI(Scene& scene)
+void PointLight::drawInInspector(Scene& scene)
 {
 	if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
 		updateBoundingBox();
 	if (ImGui::ColorEdit3("light color", &color[0]))
 		updateBoundingBox();
+}
+
+void PointLight::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	float _intensity = intensity;
+	if (ImGui::SliderFloat("light intensity", &_intensity, 0.f, 50.f))
+	{
+		for (auto component : components)
+		{
+			PointLight* castedComponent = static_cast<PointLight*>(component);
+
+			castedComponent->intensity = _intensity;
+			castedComponent->updateBoundingBox();
+		}
+	}
+	glm::vec3 _color = color;
+	if (ImGui::ColorEdit3("light color", &_color[0]))
+	{
+		for (auto component : components)
+		{
+			PointLight* castedComponent = static_cast<PointLight*>(component);
+
+			castedComponent->color = _color;
+			castedComponent->updateBoundingBox();
+		}
+	}
 }
 
 void PointLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -164,10 +190,32 @@ DirectionalLight::~DirectionalLight()
 {
 }
 
-void DirectionalLight::drawUI(Scene& scene)
+void DirectionalLight::drawInInspector(Scene& scene)
 {
 	ImGui::SliderFloat("light intensity", &intensity, 0.f, 10.f);
 	ImGui::ColorEdit3("light color", &color[0]);
+}
+
+void DirectionalLight::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	float _intensity = intensity;
+	if (ImGui::SliderFloat("light intensity", &_intensity, 0.f, 10.f))
+	{
+		for (auto component : components)
+		{
+			DirectionalLight* castedComponent = static_cast<DirectionalLight*>(component);
+			castedComponent->intensity = _intensity;
+		}
+	}
+	glm::vec3 _color = color;
+	if (ImGui::ColorEdit3("light color", &_color[0]))
+	{
+		for (auto component : components)
+		{
+			DirectionalLight* castedComponent = static_cast<DirectionalLight*>(component);
+			castedComponent->color = _color;
+		}
+	}
 }
 
 void DirectionalLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -245,7 +293,7 @@ void SpotLight::updateBoundingBox()
 	boundingBox.applyScale(glm::vec3(lightRadius, lightRadius, lightRadius));
 }
 
-void SpotLight::drawUI(Scene& scene)
+void SpotLight::drawInInspector(Scene& scene)
 {
 	if (ImGui::SliderFloat("light intensity", &intensity, 0.f, 50.f))
 		updateBoundingBox();
@@ -253,6 +301,39 @@ void SpotLight::drawUI(Scene& scene)
 		updateBoundingBox();
 
 	ImGui::SliderFloat("light angles", &angle, 0.f, glm::pi<float>());
+}
+
+void SpotLight::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	float _intensity = intensity;
+	if (ImGui::SliderFloat("light intensity", &_intensity, 0.f, 10.f))
+	{
+		for (auto component : components)
+		{
+			SpotLight* castedComponent = static_cast<SpotLight*>(component);
+			castedComponent->intensity = _intensity;
+			updateBoundingBox();
+		}
+	}
+	glm::vec3 _color = color;
+	if (ImGui::ColorEdit3("light color", &_color[0]))
+	{
+		for (auto component : components)
+		{
+			SpotLight* castedComponent = static_cast<SpotLight*>(component);
+			castedComponent->color = _color;
+			updateBoundingBox();
+		}
+	}
+	float _angle = angle;
+	if (ImGui::SliderFloat("light angles", &_angle, 0.f, glm::pi<float>()))
+	{
+		for (auto component : components)
+		{
+			SpotLight* castedComponent = static_cast<SpotLight*>(component);
+			castedComponent->angle = _angle;
+		}
+	}
 }
 
 void SpotLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)

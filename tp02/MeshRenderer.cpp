@@ -27,7 +27,7 @@ MeshRenderer::~MeshRenderer()
 	material.clear();
 }
 
-void MeshRenderer::drawUI(Scene& scene)
+void MeshRenderer::drawInInspector(Scene& scene)
 {
 	//char tmpMaterialName[20];
 	//materialName.copy(tmpMaterialName, materialName.size());
@@ -61,6 +61,7 @@ void MeshRenderer::drawUI(Scene& scene)
 				material.push_back(tmpMat);
 		}
 	}*/
+
 	ResourcePtr<Material> materialQuery;
 	//EditorGUI::ResourceField<Material>(materialQuery, "materialName", tmpMaterialName, 20);
 	EditorGUI::ResourceField<Material>("materialName", materialQuery);
@@ -74,9 +75,11 @@ void MeshRenderer::drawUI(Scene& scene)
 	{
 		ImGui::PushID(i);
 		ImGui::Text(material[i]->getName().c_str());
-		if (material.size() > 1){
+		if (material.size() > 1)
+		{
 			ImGui::SameLine();
-			if (ImGui::Button("remove")){
+			if (ImGui::Button("remove"))
+			{
 				material.erase(material.begin() + i);
 			}
 		}
@@ -107,6 +110,50 @@ void MeshRenderer::drawUI(Scene& scene)
 	if (meshQuery.isValid())
 	{
 		setMesh(meshQuery);
+	}
+}
+
+void MeshRenderer::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	ResourcePtr<Material> materialQuery;
+	EditorGUI::ResourceField<Material>("materialName", materialQuery);
+	if (materialQuery.isValid())
+	{
+		for (auto component : components)
+		{
+			MeshRenderer* castedComponent = static_cast<MeshRenderer*>(component);
+			castedComponent->material.push_back(materialQuery);
+		}
+	}
+
+	for (int i = 0; i < material.size(); i++)
+	{
+		ImGui::PushID(i);
+		ImGui::Text(material[i]->getName().c_str());
+		if (material.size() > 1) 
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("remove")) 
+			{
+				for (auto component : components)
+				{
+					MeshRenderer* castedComponent = static_cast<MeshRenderer*>(component);
+					castedComponent->material.erase(material.begin() + i);
+				}
+			}
+		}
+		ImGui::PopID();
+	}
+
+	ResourcePtr<Mesh> meshQuery;
+	EditorGUI::ResourceField<Mesh>("meshName", meshQuery);
+	if (meshQuery.isValid())
+	{
+		for (auto component : components)
+		{
+			MeshRenderer* castedComponent = static_cast<MeshRenderer*>(component);
+			castedComponent->setMesh(meshQuery);
+		}
 	}
 }
 

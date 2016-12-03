@@ -33,7 +33,7 @@ void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & sca
 	m_viewMatrix = glm::lookAt(m_position, m_lookPosition, m_up);
 }
 
-void Camera::drawUI(Scene& scene)
+void Camera::drawInInspector(Scene& scene)
 {
 	if (ImGui::RadioButton("perspective", (m_cameraMode == CameraMode::PERSPECTIVE)))
 	{
@@ -58,6 +58,62 @@ void Camera::drawUI(Scene& scene)
 	if (ImGui::SliderFloat("aspect", &(m_aspect), 0.01f, 10.f))
 	{
 		updateProjection();
+	}
+}
+
+void Camera::drawInInspector(Scene& scene, const std::vector<Component*>& components)
+{
+	if (ImGui::RadioButton("perspective", (m_cameraMode == CameraMode::PERSPECTIVE)))
+	{
+		for (auto component : components)
+		{
+			Camera* castedComponent = static_cast<Camera*>(component);
+			castedComponent->m_cameraMode = CameraMode::PERSPECTIVE;
+		}
+	}
+	if (ImGui::RadioButton("orthographic", (m_cameraMode == CameraMode::ORTHOGRAPHIC)))
+	{
+		for (auto component : components)
+		{
+			Camera* castedComponent = static_cast<Camera*>(component);
+			castedComponent->m_cameraMode = CameraMode::ORTHOGRAPHIC;
+		}
+	}
+	if (ImGui::SliderFloat("fov", &(m_fovy), 0.f, glm::pi<float>()))
+	{
+		for (auto component : components)
+		{
+			Camera* castedComponent = static_cast<Camera*>(component);
+			castedComponent->m_fovy = m_fovy;
+			castedComponent->updateProjection();
+		}
+	}
+	if (ImGui::SliderFloat("near", &(m_zNear), 0.001f, 5.f))
+	{
+		for (auto component : components)
+		{
+			Camera* castedComponent = static_cast<Camera*>(component);
+			castedComponent->m_zNear = m_zNear;
+			castedComponent->updateProjection();
+		}
+	}
+	if (ImGui::SliderFloat("far", &(m_zFar), 0.01f, 1000.f))
+	{
+		for (auto component : components)
+		{
+			Camera* castedComponent = static_cast<Camera*>(component);
+			castedComponent->m_zFar = m_zFar;
+			castedComponent->updateProjection();
+		}
+	}
+	if (ImGui::SliderFloat("aspect", &(m_aspect), 0.01f, 10.f))
+	{
+		for (auto component : components)
+		{
+			Camera* castedComponent = static_cast<Camera*>(component);
+			castedComponent->m_aspect = m_aspect;
+			castedComponent->updateProjection();
+		}
 	}
 }
 

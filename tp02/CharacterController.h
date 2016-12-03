@@ -119,7 +119,9 @@ public:
 	void jump();
 	void move(glm::vec3 direction);
 
-	virtual void drawUI(Scene & scene) override;
+	virtual void drawInInspector(Scene & scene) override;
+	virtual void drawInInspector(Scene & scene, const std::vector<Component*>& components) override;
+
 	virtual void eraseFromScene(Scene & scene) override;
 	virtual void addToScene(Scene & scene) override;
 	virtual void eraseFromEntity(Entity & entity) override;

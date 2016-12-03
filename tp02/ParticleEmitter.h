@@ -100,8 +100,11 @@ namespace Physic{
 		//TODO
 
 		virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
+		
 		//draw the ui of particle emitter
-		virtual void drawUI(Scene& scene) override;
+		virtual void drawInInspector(Scene& scene) override;
+		virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
+
 		//herited from Component
 		virtual void eraseFromScene(Scene & scene) override;
 		virtual void addToScene(Scene & scene) override;
