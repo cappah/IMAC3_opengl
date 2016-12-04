@@ -202,10 +202,10 @@ glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, Bas
 	float z = 1.0f;
 	glm::vec3 ray_nds = glm::vec3(x, y, z);
 
-	glm::vec4 ray_clip = glm::vec4(ray_nds.x, ray_nds.y, -1.0, 1.0);
+	glm::vec4 ray_clip = glm::vec4(ray_nds.x, ray_nds.y, 1.0, 1.0); // -1.0, 1.0)
 
 	glm::vec4 ray_eye = inverse(projectionMatrix) * ray_clip;
-	ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0, 0.0);
+	ray_eye = glm::vec4(ray_eye.x, ray_eye.y, ray_eye.z, 0.0);// -1.0, 0.0);
 	ray_eye = (inverse(viewMatrix) * ray_eye);
 
 	glm::vec3 ray_wor(ray_eye.x, ray_eye.y, ray_eye.z);

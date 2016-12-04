@@ -123,7 +123,7 @@ void ResourceFactory<Texture>::initDefaults()
 	addDefault("default", newTex);
 
 	//default normal
-	newTex = new Texture(0, 0, 125);
+	newTex = new Texture(glm::vec3(0, 0, 125));
 	newTex->initGL();
 	//newTex->name = "defaultNormal";
 	addDefault("defaultNormal", newTex);
@@ -172,6 +172,9 @@ void ResourceFactory<Material>::initDefaults()
 
 	newMat = new MaterialDebugDrawer(*getProgramFactory().get("debugDrawer"));
 	addDefault("debugDrawer", newMat);	
+
+	newMat = new MaterialBlit(*getProgramFactory().get("blit"));
+	addDefault("blit", newMat);
 }
 
 //Mesh
@@ -442,6 +445,39 @@ ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
 	}
 }
 
+Resource* getResourceFromTypeAndCompletePath(ResourceType resourceType, const FileHandler::CompletePath& completePath)
+{
+	switch (resourceType)
+	{
+	case NONE:
+		PRINT_WARNING("Your are trying to use getResourceFromTypeAndCompletePath() on an unknown resource type. It will return null");
+		return nullptr;
+		break;
+	case PROGRAME:
+		PRINT_WARNING("Your are trying to use getResourceFromTypeAndCompletePath() on ShaderProgram. It will return null");
+		return nullptr;
+		break;
+	case TEXTURE:
+		return getResourceFactory<Texture>().get(completePath).get();
+		break;
+	case CUBE_TEXTURE:
+		return getResourceFactory<CubeTexture>().get(completePath).get();
+		break;
+	case MESH:
+		return getResourceFactory<Mesh>().get(completePath).get();
+		break;
+	case SKELETAL_ANIMATION:
+		PRINT_WARNING("Your are trying to use getResourceFromTypeAndCompletePath() on skeletal animation. It will return null");
+		return nullptr;
+		break;
+	case MATERIAL:
+		return getResourceFactory<Material>().get(completePath).get();
+		break;
+	default:
+		break;
+	}
+}
+
 void addResourceToFactory(const FileHandler::CompletePath& completePath)
 {
 	ResourceType resourceType = getResourceTypeFromFileType(completePath.getFileType());
@@ -471,7 +507,6 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 	default:
 		break;
 	}
-
 }
 
 void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, const FileHandler::CompletePath& newResourcePath)

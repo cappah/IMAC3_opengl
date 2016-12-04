@@ -9,6 +9,10 @@
 #include "EditorNodes.h"
 #include "FileHandler.h"
 #include "Factories.h"
+#include "Resource.h"
+
+//forward :
+class Editor;
 
 //handle simple key which are unique for each file, taking the file name and the file type into account
 struct ResourceFileKey
@@ -16,7 +20,7 @@ struct ResourceFileKey
 	ResourceType type;
 	std::string name;
 
-	ResourceFileKey(ResourceType _type, std::string _name) : name(_name), type(_type)
+	ResourceFileKey(ResourceType _type = ResourceType::NONE, std::string _name = "") : name(_name), type(_type)
 	{}
 
 	bool operator==(const ResourceFileKey& other) const {
@@ -35,7 +39,7 @@ struct ResourceFileKey
 	}
 };
 
-class ResourceFile
+class ResourceFile : public IDrawableInInspector
 {
 private:
 	//TODO
@@ -43,6 +47,7 @@ private:
 	ResourceFileKey m_key;
 	FileHandler::CompletePath m_path;
 	bool m_isBeingRenamed;
+	Resource* m_pointedResource;
 
 public:
 
@@ -53,14 +58,18 @@ public:
 	{
 		m_key.type = getResourceTypeFromFileType(completePath.getFileType());
 		assert(m_key.type != ResourceType::NONE);
+		m_pointedResource = getResourceFromTypeAndCompletePath(m_key.type, completePath);
+		assert(m_pointedResource != nullptr);
 	}
 
 	ResourceFile(const ResourceFile& other)
 		: m_key(other.m_key)
 		, m_path(other.m_path)
 		, m_isBeingRenamed(false)
+		, m_pointedResource(other.m_pointedResource)
 	{
 		assert(m_key.type != ResourceType::NONE);
+		assert(m_pointedResource != nullptr);
 	}
 
 	//ResourceFile(const ResourceFile& other, const std::string& path)
@@ -119,6 +128,9 @@ public:
 	}
 
 	bool operator<(const ResourceFile& other) { return m_key < other.m_key; }
+
+	void drawInInspector(Scene & scene, const std::vector<IDrawableInInspector*>& selection) override;
+	void drawInInspector(Scene & scene) override;
 };
 
 class ResourceFolder
@@ -165,21 +177,21 @@ public:
 	{
 		FileHandler::CompletePath resourcePath(m_path, fileNameAndExtention);
 
-		m_filesContainer.push_back(ResourceFile(resourcePath));
 		addResourceToFactory(resourcePath);
+		m_filesContainer.push_back(ResourceFile(resourcePath));
 	}
 
 	void addFile(const ResourceFile& file) 
 	{ 
-		m_filesContainer.push_back(ResourceFile(file));
 		addResourceToFactory(file.getPath());
+		m_filesContainer.push_back(ResourceFile(file));
 	}
 
 	template<typename U>
 	void addFile(const ResourceFile& file, U* resource)
 	{
-		m_filesContainer.push_back(ResourceFile(file));
 		getResourceFactory<U>().add(file.getPath(), resource);
+		m_filesContainer.push_back(ResourceFile(file));
 	}
 
 	void moveFileFrom(const FileHandler::CompletePath& oldPath, const FileHandler::CompletePath& newPath, ResourceFolder& folderFrom)
@@ -535,10 +547,20 @@ struct OpenModaleCallback
 
 class ResourceTree : public ResourceFolder
 {
+private:
+	FileHandler::Path m_selectedFileFolderPath;
+	ResourceFileKey m_selectedFileKey;
+
 public :
 	ResourceTree(const FileHandler::Path& assetResourcePath);
 	virtual ~ResourceTree()
 	{}
+
+	ResourceFile* getSelectedResource();
+	const FileHandler::Path& getSelectedFileFolderPath() const;
+	const ResourceFileKey& getSelectedFileKey() const;
+	void setSelectedFileFolderPath(const FileHandler::Path& resourceFolderPath);
+	void setSelectedFileKey(const ResourceFileKey& resourceKey);
 
 	static void deleteSubFolderFrom(const std::string& folderName, ResourceFolder& folderFrom);
 	static void deleteResourceFrom(const ResourceFile& resourceFileToDelete, ResourceFolder& folderFrom);
@@ -568,6 +590,7 @@ class ResourceTreeView : public EditorFrame
 //	std::vector<ResourceFile> m_resourceFiles;
 private:
 	ResourceTree* m_model;
+	Editor* m_editorPtr;
 
 	std::string m_uiString;
 	ResourceFolder* m_folderWeRightClicOn;
@@ -580,7 +603,7 @@ private:
 	FileHandler::Path m_folderWaitingPastPath;
 
 public:
-	ResourceTreeView(const std::string& name, ResourceTree* model = nullptr);
+	ResourceTreeView(const std::string& name, ResourceTree* model, Editor* editorPtr);
 	~ResourceTreeView();
 	virtual void drawContent(Project& project, EditorModal* parentModale = nullptr) override;
 	void setModel(ResourceTree* model);

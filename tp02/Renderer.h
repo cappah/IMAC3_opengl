@@ -14,6 +14,8 @@
 #include "ParticleEmitter.h"
 #include "FrameBuffer.h"
 
+class DebugDrawRenderer;
+
 struct LightCullingInfo
 {
 	glm::vec4 viewport;
@@ -21,7 +23,6 @@ struct LightCullingInfo
 
 	inline LightCullingInfo(const glm::vec4& _viewport, int _idx) : viewport(_viewport), idx(_idx) {}
 };
-
 
 class Renderer
 {
@@ -31,6 +32,7 @@ private:
 	Texture* m_finalFrameColor; //%NOCOMMIT% TODO
 	Texture* m_finalFrameDepth;
 	GlHelper::Framebuffer m_mainBuffer;
+	glm::vec2 m_viewportRenderSize;
 
 	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;
 	std::shared_ptr<MaterialShadowPassOmni> shadowPassOmniMaterial;
@@ -80,6 +82,7 @@ public:
 
 	//return the final frame, after all render process
 	Texture* getFinalFrame() const;
+	const glm::vec2& getViewportRenderSize() const;
 
 	//update deferred textures used by the FBO when we resize the screen.
 	void onResizeWindow();
@@ -96,13 +99,13 @@ public:
 	void renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, MeshRenderer & meshRenderer);
 
 	//render all entities of the scene, using deferred shading.
-	void render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters);
+	void render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer);
 
 	//draw colliders on scene.
 	void debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities);
 
 	//draw textures of gPass.
-	void debugDrawDeferred();
+	//void debugDrawDeferred();
 
 	//draw lights bounding box.
 	void debugDrawLights(const BaseCamera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights);

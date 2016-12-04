@@ -396,19 +396,18 @@ Scene & Scene::erase(Behavior * behavior)
 
 void Scene::render(const BaseCamera& camera)
 {
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters);
+	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, nullptr);
+}
+
+void Scene::render(const BaseCamera& camera, DebugDrawRenderer& debugDrawer)
+{
+	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, &debugDrawer);
 }
 
 void Scene::renderColliders(const BaseCamera & camera)
 {
 	if(m_areCollidersVisible)
 		m_renderer->debugDrawColliders(camera, m_entities);
-}
-
-void Scene::renderDebugDeferred()
-{
-	if(m_isDebugDeferredVisible)
-		m_renderer->debugDrawDeferred();
 }
 
 void Scene::renderDebugLights(const BaseCamera & camera)

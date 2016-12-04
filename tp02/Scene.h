@@ -145,8 +145,8 @@ public:
 	Scene& erase(Behavior* behavior);
 
 	void render(const BaseCamera& camera);
+	void render(const BaseCamera& camera, DebugDrawRenderer& debugDrawer);
 	void renderColliders(const BaseCamera& camera);
-	void renderDebugDeferred();
 	void renderDebugLights(const BaseCamera& camera);
 	void renderPaths(const BaseCamera& camera);
 	void renderDebugOctrees(const BaseCamera& camera);

@@ -82,6 +82,9 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 
 		m_externalShaderParameters.push_back(MakeNewExternalShaderParameter(parameterType, parameterName));
 	}
+
+	if (!checkError("Uniforms"))
+		PRINT_ERROR("error in shader program initialization.")
 }
 //
 //void ShaderProgram::load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)

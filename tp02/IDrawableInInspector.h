@@ -2,8 +2,11 @@
 
 #include <vector>
 
-template <typename T>
+class Scene;
+
 class IDrawableInInspector
 {
-	virtual void drawInInspector(std::vector<T> selection) = 0;
+public:
+	virtual void drawInInspector(Scene& scene, const std::vector<IDrawableInInspector*>& selection) = 0;
+	virtual void drawInInspector(Scene& scene) = 0;
 };

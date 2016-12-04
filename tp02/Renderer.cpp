@@ -1,9 +1,13 @@
 #include "stdafx.h"
 
 #include "Renderer.h"
-#include "Factories.h" //forward
 
-Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight)  : quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
+//forwards :
+#include "Factories.h"
+#include "EditorTools.h" 
+
+Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight)  
+	: quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
 {
 
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
@@ -109,8 +113,14 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	//////////////////// MAKE NEW LIGHTING MATERIALS ///////////////////
 
 	m_pointLightMaterial = std::make_shared<MaterialPointLight>(*getProgramFactory().get("pointLight"));
+	if (!checkError("uniforms"))
+		PRINT_ERROR();
 	m_directionalLightMaterial = std::make_shared<MaterialDirectionalLight>(*getProgramFactory().get("directionalLight"));
+	if (!checkError("uniforms"))
+		PRINT_ERROR();
 	m_spotLightMaterial = std::make_shared<MaterialSpotLight>(*getProgramFactory().get("spotLight"));
+	if (!checkError("uniforms"))
+		PRINT_ERROR();
 
 	//////////////////// INITIALIZE FRAME BUFFER ///////////////////
 
@@ -188,6 +198,13 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	m_mainBuffer.checkIntegrity();
 	m_mainBuffer.unbind();
 
+	////////////////////// FINALLY STORE THE VIEWPORT SIZE /////////////////////////
+	m_viewportRenderSize.x = width;
+	m_viewportRenderSize.y = height;
+
+	if (!checkError("uniforms"))
+		PRINT_ERROR();
+
 }
 
 Renderer::~Renderer()
@@ -200,6 +217,11 @@ Renderer::~Renderer()
 Texture * Renderer::getFinalFrame() const
 {
 	return m_finalFrameColor;
+}
+
+const glm::vec2 & Renderer::getViewportRenderSize() const
+{
+	return m_viewportRenderSize;
 }
 
 
@@ -266,8 +288,6 @@ void Renderer::onResizeWindow()
 	// Back to the default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-
 	////////////////////// RESIZE MAIN TEXTURE /////////////////////////
 
 	delete m_finalFrameColor;
@@ -283,6 +303,10 @@ void Renderer::onResizeWindow()
 	m_mainBuffer.attachTexture(m_finalFrameDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
 	m_mainBuffer.checkIntegrity();
 	m_mainBuffer.unbind();
+
+	////////////////////// FINALLY STORE THE VIEWPORT SIZE /////////////////////////
+	m_viewportRenderSize.x = width;
+	m_viewportRenderSize.y = height;
 }
 
 
@@ -379,7 +403,7 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 }
 
 
-void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters)
+void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer)
 {
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 	glm::vec3 cameraPosition = camera.getCameraPosition();
@@ -774,6 +798,16 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
 
+	///////////////////////////////////////////////
+	///// Debug draw : 
+	if (debugDrawer != nullptr)
+	{
+		debugDrawer->drawOutputIfNeeded("gBuffer_color", gbufferTextures[0]);
+		debugDrawer->drawOutputIfNeeded("gBuffer_normal", gbufferTextures[1]);
+		debugDrawer->drawOutputIfNeeded("gBuffer_depth", gbufferTextures[2]);
+		m_mainBuffer.bind();
+	}
+
 }
 
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)
@@ -799,48 +833,48 @@ void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<En
 		collider->render(projection, view, colliderColor);
 	}
 }
-
-void Renderer::debugDrawDeferred()
-{
-	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-
-	///////////// begin draw blit quad
-	glDisable(GL_DEPTH_TEST);
-
-	//glUseProgram(glProgram_blit);
-	glProgram_blit->use();
-
-	for (int i = 0; i < 3; i++)
-	{
-		glViewport((width * i) / 4, 0, width / 4, height / 4);
-
-		glActiveTexture(GL_TEXTURE0);
-		// Bind gbuffer color texture
-		glBindTexture(GL_TEXTURE_2D, gbufferTextures[i]);
-		//glUniform1i(uniformTextureBlit, 0);
-		glProgram_blit->setUniformBlitTexture(0);
-
-		quadMesh.draw();
-	}
-
-	//shadow : 
-	if (lightManager->getShadowMapCount(LightManager::DIRECTIONAL) > 0)
-	{
-		glViewport((width * 3) / 4, 0, width / 4, height / 4);
-		glActiveTexture(GL_TEXTURE0);
-		lightManager->bindShadowMapTexture(LightManager::DIRECTIONAL, 0);
-		//glUniform1i(uniformTextureBlit, 0);
-		glProgram_blit->setUniformBlitTexture(0);
-
-		quadMesh.draw();
-	}
-
-
-	glViewport(0, 0, width, height);
-
-	glEnable(GL_DEPTH_TEST);
-	///////////// end draw blit quad
-}
+//
+//void Renderer::debugDrawDeferred()
+//{
+//	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
+//
+//	///////////// begin draw blit quad
+//	glDisable(GL_DEPTH_TEST);
+//
+//	//glUseProgram(glProgram_blit);
+//	glProgram_blit->use();
+//
+//	for (int i = 0; i < 3; i++)
+//	{
+//		glViewport((width * i) / 4, 0, width / 4, height / 4);
+//
+//		glActiveTexture(GL_TEXTURE0);
+//		// Bind gbuffer color texture
+//		glBindTexture(GL_TEXTURE_2D, gbufferTextures[i]);
+//		//glUniform1i(uniformTextureBlit, 0);
+//		glProgram_blit->setUniformBlitTexture(0);
+//
+//		quadMesh.draw();
+//	}
+//
+//	//shadow : 
+//	if (lightManager->getShadowMapCount(LightManager::DIRECTIONAL) > 0)
+//	{
+//		glViewport((width * 3) / 4, 0, width / 4, height / 4);
+//		glActiveTexture(GL_TEXTURE0);
+//		lightManager->bindShadowMapTexture(LightManager::DIRECTIONAL, 0);
+//		//glUniform1i(uniformTextureBlit, 0);
+//		glProgram_blit->setUniformBlitTexture(0);
+//
+//		quadMesh.draw();
+//	}
+//
+//
+//	glViewport(0, 0, width, height);
+//
+//	glEnable(GL_DEPTH_TEST);
+//	///////////// end draw blit quad
+//}
 
 void Renderer::debugDrawLights(const BaseCamera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
 {

@@ -8,6 +8,7 @@
 #include "EditorGUI.h"
 #include "Factories.h"
 #include "project.h"
+#include "Editor.h"
 
 
 /////////// RESSOURCE FOLDER /////////////////
@@ -105,6 +106,35 @@ ResourceTree::ResourceTree(const FileHandler::Path& assetResourcePath)
 	: ResourceFolder(FileHandler::Path("assets"))
 {
 	fillDatasFromExplorerFolder(assetResourcePath);
+}
+
+ResourceFile * ResourceTree::getSelectedResource()
+{
+	ResourceFolder* folder = m_selectedFileFolderPath == getPath() ? this : getSubFolder(m_selectedFileFolderPath);
+	if (folder != nullptr)
+		return folder->getFile(m_selectedFileKey);
+	else
+		return nullptr;
+}
+
+const FileHandler::Path & ResourceTree::getSelectedFileFolderPath() const
+{
+	return m_selectedFileFolderPath;
+}
+
+const ResourceFileKey & ResourceTree::getSelectedFileKey() const
+{
+	return m_selectedFileKey;
+}
+
+void ResourceTree::setSelectedFileFolderPath(const FileHandler::Path & resourceFolderPath)
+{
+	m_selectedFileFolderPath = resourceFolderPath;
+}
+
+void ResourceTree::setSelectedFileKey(const ResourceFileKey & resourceKey)
+{
+	m_selectedFileKey = resourceKey;
 }
 
 void ResourceTree::deleteSubFolderFrom(const std::string& folderName, ResourceFolder& folderFrom)
@@ -417,10 +447,11 @@ void ResourceTree::addExternalResourceTo(ResourceFile& resourceFile, ResourceFol
 //	loadRecursivly(root);
 //}
 
-ResourceTreeView::ResourceTreeView(const std::string& name, ResourceTree* model)
+ResourceTreeView::ResourceTreeView(const std::string& name, ResourceTree* model, Editor* editorPtr)
 	: EditorFrame(name)
 	, m_model(model)
 	, m_folderWeRightClicOn(nullptr)
+	, m_editorPtr(editorPtr)
 {
 	
 	//std::vector<const std::string&> resourcePath;
@@ -466,7 +497,14 @@ void ResourceTreeView::displayFiles(ResourceFolder* parentFolder, ResourceFolder
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
 		if (!currentFile.isBeingRenamed())
 		{
-			ImGui::Button(currentFile.getName().c_str());
+			
+			bool isActive = (currentFolder.getPath() == m_model->getSelectedFileFolderPath() && m_model->getSelectedFileKey() == currentFile.getKey());
+			if (ImGui::RadioButton(currentFile.getName().c_str(), isActive))
+			{
+				m_model->setSelectedFileFolderPath(currentFolder.getPath());
+				m_model->setSelectedFileKey(currentFile.getKey());
+				m_editorPtr->onResourceSelected();
+			}
 
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1))
 			{
@@ -961,7 +999,6 @@ void ResourceTreeView::setModel(ResourceTree* model)
 	m_model = model;
 }
 
-
 /*
 void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, std::vector<ResourceFolder>& foldersToDisplay, std::vector<ResourceFile>& filesToDisplay)
 {
@@ -1159,4 +1196,14 @@ ImGui::PopStyleColor(colorStyleModifierCount);
 //}
 
 //TODO
-//Save and load ...
+
+void ResourceFile::drawInInspector(Scene & scene, const std::vector<IDrawableInInspector*>& selection)
+{
+	assert(false && "multiple edition of resource file isn't implemented.");
+}
+
+void ResourceFile::drawInInspector(Scene & scene)
+{
+	assert(m_pointedResource != nullptr);
+	m_pointedResource->drawInInspector(scene);
+}

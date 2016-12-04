@@ -63,6 +63,11 @@ public:
 	std::string back() const;
 
 	Path getSubPath(int begin, int count) const;
+
+	bool operator==(const Path& other) const
+	{
+		return m_data == other.m_data;
+	}
 };
 
 std::ofstream& operator<<(std::ofstream& os, const Path& path);

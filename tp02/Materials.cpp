@@ -121,6 +121,17 @@ void Material::init(const FileHandler::CompletePath& path)
 	load(root);
 }
 
+void Material::init(const ShaderProgram & shaderProgram)
+{
+	m_glProgramId = shaderProgram.id;
+	m_internalParameters = shaderProgram.getInternalParameters();
+	m_glProgramName = shaderProgram.getName();
+
+	initInternalParameters();
+	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+	setExternalParameters(shaderProgram.getExternalParameters());
+}
+
 void Material::drawUI()
 {
 	for (auto& parameter : m_internalParameters)

@@ -301,15 +301,18 @@ void extractAllComponents(const std::vector<Entity*>& entitiesIn, std::map<int, 
 	}
 }
 
-void Entity::drawInInspector(Scene& scene, const std::vector<Entity*>& selection)
+void Entity::drawInInspector(Scene& scene, const std::vector<IDrawableInInspector*>& selection)
 {
 	char tmpName[20];
 	m_name.copy(tmpName, m_name.size(), 0);
 	tmpName[m_name.size()] = '\0';
 	if (ImGui::InputText("name", tmpName, 20))
 	{
-		for(int i = 0; i < selection.size(); i++)
-			selection[i]->m_name = tmpName;
+		for (int i = 0; i < selection.size(); i++)
+		{
+			Entity* entity = static_cast<Entity*>(selection[i]);
+			entity->m_name = tmpName;
+		}
 	}
 
 	TransformNode::drawInInspector(hasParent(), selection);
@@ -318,7 +321,11 @@ void Entity::drawInInspector(Scene& scene, const std::vector<Entity*>& selection
 	int removeId = 0;
 
 	std::map<int, std::vector<Component*>> outComponents;
-	extractAllComponents(selection, outComponents);
+	for (int i = 0; i < selection.size(); i++)
+	{
+		Entity* entity = static_cast<Entity*>(selection[i]);
+		entity->getAllComponentsByTypes(outComponents);
+	}
 
 	for (auto& componentsByType : outComponents)
 	{

@@ -541,6 +541,8 @@ ResourceType getResourceType<ShaderProgram>();
 
 ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType);
 
+Resource* getResourceFromTypeAndCompletePath(ResourceType resourceType, const FileHandler::CompletePath& completePath);
+
 void addResourceToFactory(const FileHandler::CompletePath& completePath);
 void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, const FileHandler::CompletePath& newResourcePath);
 void removeResourceFromFactory(const FileHandler::CompletePath& resourcePath);

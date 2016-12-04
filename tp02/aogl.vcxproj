@@ -242,6 +242,7 @@
     <ClCompile Include="EditorFrames.cpp" />
     <ClCompile Include="EditorGUI.cpp" />
     <ClCompile Include="EditorNodes.cpp" />
+    <ClCompile Include="EditorTools.cpp" />
     <ClCompile Include="EditorWindowManager.cpp" />
     <ClCompile Include="EditorWindows.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -323,6 +324,7 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentFactory.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="Coroutine.h" />
     <ClInclude Include="CSpline.h" />
     <ClInclude Include="DebugDrawer.h" />
@@ -332,6 +334,7 @@
     <ClInclude Include="EditorFrames.h" />
     <ClInclude Include="EditorGUI.h" />
     <ClInclude Include="EditorNodes.h" />
+    <ClInclude Include="EditorTools.h" />
     <ClInclude Include="EditorWindowManager.h" />
     <ClInclude Include="EditorWindows.h" />
     <ClInclude Include="Entity.h" />

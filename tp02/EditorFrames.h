@@ -10,6 +10,8 @@ class Editor;
 class EditorModal;
 class Inspector;
 class SceneHierarchy;
+class DebugDrawRenderer;
+class Viewport;
 
 class DroppedFileEditorFrame : public EditorFrame
 {
@@ -30,17 +32,20 @@ public:
 
 class ViewportEditorFrame : public EditorFrame
 {
+private:
+	std::weak_ptr<Viewport> m_viewport;
 
 public:
-	ViewportEditorFrame(const std::string& name);
+	ViewportEditorFrame(const std::string& name, std::shared_ptr<Viewport> model);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
+	void onFrameMoved() override;
+	void onFrameResized() override;
 };
 
 /////////////////////////////////////////
 
 class TerrainToolEditorFrame : public EditorFrame
 {
-
 public:
 	TerrainToolEditorFrame(const std::string& name);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
@@ -50,7 +55,6 @@ public:
 
 class SkyboxToolEditorFrame : public EditorFrame
 {
-
 public:
 	SkyboxToolEditorFrame(const std::string& name);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
@@ -60,7 +64,6 @@ public:
 
 class SceneManagerEditorFrame : public EditorFrame
 {
-
 public:
 	SceneManagerEditorFrame(const std::string& name);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
@@ -93,6 +96,17 @@ private:
 
 public:
 	InspectorEditorFrame(const std::string& name, std::shared_ptr<Inspector> model);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+/////////////////////////////////////////
+
+class DebugRenderEditorFrame : public EditorFrame
+{
+private:
+	std::weak_ptr<DebugDrawRenderer> m_debugDrawRenderer;
+public:
+	DebugRenderEditorFrame(const std::string& name, std::shared_ptr<DebugDrawRenderer> model);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
 };
 

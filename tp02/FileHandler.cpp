@@ -476,7 +476,7 @@ FileType getFileTypeFromExtention(const std::string& extention)
 	}
 	else
 	{
-		PRINT_ERROR("L'extention : " << extention << " n'est pas prix en charge.")
+		PRINT_WARNING("L'extention : " << extention << " n'est pas prix en charge.")
 		return FileType::NONE;
 	}
 }

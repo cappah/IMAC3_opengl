@@ -7,58 +7,17 @@
 #include "ResourceTree.h"
 #include "ISingleton.h"
 #include "EditorWindowManager.h"
+#include "EditorTools.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 #include "imgui_extension.h"
 #include "GLFW/glfw3.h"
+#include "IDrawableInInspector.h"
 
 //forward
 class Scene;
 class Project;
-
-
-class Inspector
-{
-private:
-	char textValue[30];
-	int intValue;
-	float floatValue;
-	glm::vec3 vector3Value;
-
-	bool m_multipleEditing;
-	Scene* m_currentScene;
-	Editor* m_editorPtr;
-
-public:
-	Inspector(Editor* editorPtr);
-	~Inspector();
-
-	void setScene(Scene* currentScene);
-	void drawUI();
-
-	//void drawUI(const std::vector<Entity*>& entities);
-	//void drawUI(const std::vector<PointLight*>& pointLights);
-	//void drawUI(const std::vector<DirectionalLight*>& directionalLights);
-	//void drawUI(const std::vector<SpotLight*>& spotLights);
-	//void drawUI(const std::vector<MeshRenderer*>& meshRenderers);
-	//void drawUI(const std::vector<Collider*>& colliders);
-};
-
-/////////////////////////////////////////
-
-class SceneHierarchy
-{
-private:
-	Scene* m_currentScene;
-	Editor* m_editorPtr;
-public:
-	SceneHierarchy(Editor* editorPtr);
-	void setScene(Scene* scene);
-	Scene* getScene() const;
-	void displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected);
-	void drawUI();
-};
 
 /////////////////////////////////////////
 
@@ -102,17 +61,22 @@ class Editor : public ISingleton<Editor>
 public:
 	SINGLETON_IMPL(Editor);
 
+	enum SelectionType{
+		RESOURCE,
+		ENTITY,
+	};
 private:
 	float m_menuTopOffset;
 
 	//current entity selected
-	std::vector<Entity*> m_currentSelected;
+	std::vector<Entity*> m_currentEntitiesSelected;
+	SelectionType m_currentSelectionType;
 	//current components selected, for multiple editing
-	std::vector<PointLight*> m_pointLights;
-	std::vector<DirectionalLight*> m_directionlLights;
-	std::vector<SpotLight*> m_spotLights;
-	std::vector<MeshRenderer*> m_meshRenderers;
-	std::vector<Collider*> m_colliders;
+	//std::vector<PointLight*> m_pointLights;
+	//std::vector<DirectionalLight*> m_directionlLights;
+	//std::vector<SpotLight*> m_spotLights;
+	//std::vector<MeshRenderer*> m_meshRenderers;
+	//std::vector<Collider*> m_colliders;
 
 	Gizmo* m_gizmo;
 
@@ -150,6 +114,8 @@ private:
 	std::shared_ptr<ResourceTree> m_resourceTree;
 	std::shared_ptr<Inspector> m_inspector;
 	std::shared_ptr<SceneHierarchy> m_sceneHierarchy;
+	std::shared_ptr<DebugDrawRenderer> m_debugDrawRenderer;
+	std::shared_ptr<Viewport> m_viewport;
 
 	//Windows and modals handling : 
 	EditorWindowManager m_windowManager;
@@ -167,6 +133,7 @@ private:
 public:
 	Editor();
 	const EditorStyleSheet& getStyleSheet() const;
+	DebugDrawRenderer& getDebugDrawRenderer() const;
 
 	float getMenuTopOffset() const;
 	void drawMenuEntry_windows();
@@ -183,7 +150,12 @@ public:
 	void toggleCurrentSelected(Entity* entity);
 	const std::vector<Entity*>& getCurrentSelection() const;
 
+	void getCurrentDrawableSelection(std::vector<IDrawableInInspector*>& drawableSelection) const;
+
 	void renderGizmo();
+
+	void onResourceSelected();
+	void onEntitySelected();
 
 	//void hideAllToolsUI();
 	//void displayTopLeftWindow(Project& project);

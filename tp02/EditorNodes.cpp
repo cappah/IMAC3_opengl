@@ -91,41 +91,12 @@ const ImVec2& EditorNode::getSize() const
 	return m_size;
 }
 
-//const ImVec2 & EditorNode::getSizeOffset() const
-//{
-//	return m_sizeOffset;
-//}
-//
-//const ImVec2 & EditorNode::getCorrectedSize() const
-//{
-//	return m_correctedSize;
-//}
-
 void EditorNode::setWidth(float newWidth)
 {
 
 	//Set size
 	const float lastWidth = getSize().x;
 	m_size.x = newWidth;
-
-	////Set corrected size
-	//float widthSizeOffset = 0;
-	//if (m_parent != nullptr)
-	//{
-	//	if (m_parent->getDisplayLogicType() == EditorNodeDisplayLogicType::HorizontalDisplay)
-	//		if(m_parent->getChildCount() == 1)
-	//			widthSizeOffset = 10.0f;
-	//		else
-	//			widthSizeOffset = 7.5f;
-	//	else if(m_parent->getDisplayLogicType() == EditorNodeDisplayLogicType::UniqueDisplay)
-	//		widthSizeOffset = 10.0f;
-
-	//	m_sizeOffset.x = m_parent->getSizeOffset().x + widthSizeOffset;
-	//}
-	//else
-	//	m_sizeOffset.x = 0.f;
-
-	//m_correctedSize.x = m_size.x - m_sizeOffset.x;
 
 	//Recursivity
 	for (auto& child : m_childNodes)
@@ -141,26 +112,6 @@ void EditorNode::setHeight(float newHeight)
 	//Set size
 	const float lastHeight = getSize().y;
 	m_size.y = newHeight;
-
-	////Set corrected height
-	//float heightSizeOffset = 0;
-	//if (m_parent != nullptr)
-	//{
-	//	if (m_parent->getDisplayLogicType() == EditorNodeDisplayLogicType::VerticalDisplay)
-	//		if(m_parent->getChildCount() == 1)
-	//			heightSizeOffset = 10.0f;
-	//		else
-	//			heightSizeOffset = 7.5f;
-	//	else if(m_parent->getDisplayLogicType() == EditorNodeDisplayLogicType::UniqueDisplay)
-	//		heightSizeOffset = 10.0f;
-
-	//	m_sizeOffset.y = m_parent->getSizeOffset().y + heightSizeOffset;
-	//}
-	//else
-	//	m_sizeOffset.y = 0.f;
-
-	//m_correctedSize.y = m_size.y - m_sizeOffset.y;
-
 
 	//Recursivity
 	for (auto& child : m_childNodes)
@@ -495,7 +446,7 @@ bool EditorNodeHorizontalDisplay::drawContent(EditorNode& node, Project& project
 
 		ImGui::SameLine();
 		ImGui::PushID("Child");
-		ImGui::BeginChild(i, ImVec2(currentChildNode.getSize().x - perChildSizeOffset.x, currentChildNode.getSize().y - perChildSizeOffset.y), true /*, ImGuiWindowFlags_NoScrollbar*/);
+		ImGui::BeginChild(i, ImVec2(currentChildNode.getSize().x - perChildSizeOffset.x, currentChildNode.getSize().y - perChildSizeOffset.y), true, ImGuiWindowFlags_NoScrollbar);
 
 		if (currentChildNode.drawContent(project, editor, removeNodeDatas, perChildSizeOffset))
 			removeNodeDatas->nodeToRemove = node.m_childNodes[i];
@@ -639,7 +590,7 @@ bool EditorNodeVerticalDisplay::drawContent(EditorNode& node, Project& project, 
 		ImGui::PushID(i);
 
 		ImGui::PushID("Child");
-		ImGui::BeginChild(i, ImVec2(currentChildNode.getSize().x - perChildSizeOffset.x, currentChildNode.getSize().y - perChildSizeOffset.y), true/*, ImGuiWindowFlags_NoScrollbar*/);
+		ImGui::BeginChild(i, ImVec2(currentChildNode.getSize().x - perChildSizeOffset.x, currentChildNode.getSize().y - perChildSizeOffset.y), true, ImGuiWindowFlags_NoScrollbar);
 
 		if (currentChildNode.drawContent(project, editor, removeNodeDatas, perChildSizeOffset))
 			removeNodeDatas->nodeToRemove = node.m_childNodes[i];
@@ -838,7 +789,7 @@ bool EditorNodeUniqueDisplay::drawContent(EditorNode& node, Project& project, Ed
 	}
 
 	ImGui::SameLine();
-	ImGui::BeginChild("##child", ImVec2(childWidth, childHeight), true/*, ImGuiWindowFlags_NoScrollbar*/);
+	ImGui::BeginChild("##child", ImVec2(childWidth, childHeight), true, ImGuiWindowFlags_NoScrollbar);
 	node.m_childNodes[0]->drawContent(project, editor, removeNodeDatas, currentSizeOffset);
 	ImGui::EndChild();
 
@@ -907,16 +858,19 @@ bool EditorNodeEmptyDisplay::drawContent(EditorNode& node, Project& project, Edi
 bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, Editor& editor, RemovedNodeDatas* removeNodeDatas, const ImVec2& parentSizeOffset)
 {
 	bool needRemove = false;
+	const float headerHeight = 20.f;
+	float posOffsetY = 0.f;
 
-	editor.getStyleSheet().pushFramePadding();
 	ImGui::PushID(this);
 
 	ImVec2 windowSize(node.getSize().x - parentSizeOffset.x, node.getSize().y - parentSizeOffset.y);
-	ImGui::BeginChild("##child", windowSize, true, ImGuiWindowFlags_HorizontalScrollbar /*, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar*/);
+	ImGui::BeginChild("##child", windowSize, true, ImGuiWindowFlags_NoScrollbar /* ImGuiWindowFlags_HorizontalScrollbar , ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar*/);
 
+	////// Draw header
 	if (node.getParentNode()->getDisplayLogicType() != EditorNodeDisplayLogicType::UniqueDisplay)
 	{
-		ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetWindowPos(), ImVec2(ImGui::GetWindowPos().x + windowSize.x, ImGui::GetWindowPos().y + 20.f), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_TitleBg]));
+		posOffsetY += headerHeight;
+		ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetWindowPos(), ImVec2(ImGui::GetWindowPos().x + windowSize.x, ImGui::GetWindowPos().y + headerHeight), ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_TitleBg]));
 		if (ImGui::Ext::ButtonWithTriangleToLeft("##detach", ImVec2(ImGui::GetWindowPos().x + 8.f, ImGui::GetWindowPos().y + 10.f ), ImVec2(20, 20), editor.getStyleSheet().getMainColor()))
 		{
 			needRemove = true;
@@ -928,12 +882,25 @@ bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, E
 	}
 	ImGui::Separator();
 
+	////// Update wize and position
+	ImVec2 windowPos = ImGui::GetWindowPos();
+	windowPos.y += posOffsetY;
+	if (std::abs(windowPos.x - node.getFrame()->getPosition().x) > 0.1f || std::abs(windowPos.y - node.getFrame()->getPosition().y) > 0.1f)
+	{
+		node.getFrame()->setPosition(windowPos.x, windowPos.y);
+	}
+	if (std::abs(windowSize.x - node.getFrame()->getSize().x) > 0.1f || std::abs(windowSize.y - node.getFrame()->getSize().y) > 0.1f)
+	{
+		node.getFrame()->setSize(windowSize.x, windowSize.y);
+	}
+
+	///// Draw content
+	editor.getStyleSheet().pushFramePadding();
 	node.getFrame()->drawContent(project, nullptr);
+	editor.getStyleSheet().popFramePadding();
 	ImGui::EndChild();
 
 	ImGui::PopID();
-
-	editor.getStyleSheet().popFramePadding();
 
 	return needRemove;
 }

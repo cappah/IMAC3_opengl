@@ -14,6 +14,7 @@
 
 #include "Utils.h"
 #include "ISerializable.h"
+#include "IDrawableInInspector.h"
 
 class Entity; //forward
 
@@ -84,7 +85,7 @@ public:
 	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) = 0;
 
 	void drawUI(bool local = false);
-	static void drawInInspector(bool local, const std::vector<Entity*>& selection);
+	void drawInInspector(bool local, const std::vector<IDrawableInInspector*>& selection);
 
 	virtual void save(Json::Value& entityRoot) const override;
 	virtual void load(const Json::Value& entityRoot) override;

@@ -33,6 +33,7 @@
 
 #include "TransformNode.h"
 #include "Coroutine.h"
+#include "IDrawableInInspector.h"
 
 //forward
 class Component;
@@ -73,7 +74,7 @@ public :
 
 };*/
 
-class Entity : public TransformNode
+class Entity : public TransformNode, public IDrawableInInspector
 {
 public:
 	enum CollisionState { BEGIN, STAY, END, NONE };
@@ -119,7 +120,7 @@ public:
 
 	//draw the entity UI
 	void drawInInspector(Scene& scene);
-	void drawInInspector(Scene& scene, const std::vector<Entity*>& selection);
+	void drawInInspector(Scene& scene, const std::vector<IDrawableInInspector*>& selection);
 
 	//return the value of m_isSelected
 	bool getIsSelected() const ;

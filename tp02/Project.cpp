@@ -294,7 +294,8 @@ void Project::edit()
 		}
 
 		//Update behaviours :
-		if (editor.getIsPlaying()) {
+		if (editor.getIsPlaying())
+		{
 			scene->updateControllers(Application::get().getFixedDeltaTime());
 			scene->updateAnimations(Application::get().getTime());
 			scene->updateBehaviours();
@@ -312,19 +313,28 @@ void Project::edit()
 		///////////////////////////////////////////////
 		//BEGIN RENDERING THE SCENE
 		//renderer.render(camera, entities);
-		scene->render(currentCamera);
-		scene->renderPaths(currentCamera);
-		scene->renderColliders(currentCamera);
-		scene->renderDebugDeferred();
-		scene->renderDebugLights(currentCamera);
-		scene->renderDebugOctrees(currentCamera);
-		scene->renderDebugPhysic(currentCamera);
+		if (editor.getIsPlaying())
+		{
+			scene->render(currentCamera);
+		}
+		else
+		{
+			scene->render(currentCamera, editor.getDebugDrawRenderer());
 
-		DebugDrawer::render(currentCamera.getProjectionMatrix(), currentCamera.getViewMatrix());
-		DebugDrawer::clear();
+			scene->renderPaths(currentCamera);
+			scene->renderColliders(currentCamera);
+			scene->renderDebugLights(currentCamera);
+			scene->renderDebugOctrees(currentCamera);
+			scene->renderDebugPhysic(currentCamera);
 
-		glDisable(GL_DEPTH_TEST);
-		editor.renderGizmo();
+			DebugDrawer::render(currentCamera.getProjectionMatrix(), currentCamera.getViewMatrix());
+			DebugDrawer::clear();
+
+			glDisable(GL_DEPTH_TEST);
+			editor.renderGizmo();
+		}
+
+
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO : movethis ?
 		//END RENDERING THE SCENE

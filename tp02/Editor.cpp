@@ -9,417 +9,7 @@
 #include "Project.h"
 #include "EditorGUI.h"
 #include "EditorFrames.h"
-
-///////////////////////////////// INSPECTOR
-
-Inspector::Inspector(Editor* editorPtr)
-	: m_editorPtr(editorPtr)
-{
-
-}
-
-Inspector::~Inspector()
-{
-
-}
-
-void Inspector::setScene(Scene * currentScene)
-{
-	m_currentScene = currentScene;
-}
-
-void Inspector::drawUI()
-{
-	int entityId = 0;
-
-	auto& selection = m_editorPtr->getCurrentSelection();
-
-	if (!selection.empty())
-	{
-		//can't add or remove components in multiple editing, only change components parameters
-		if (selection.size() == 1)
-		{
-			if(m_multipleEditing)
-				m_multipleEditing = false;
-		}
-		else if (ImGui::RadioButton("multiple editing", m_multipleEditing))
-		{
-			m_multipleEditing = !m_multipleEditing;
-
-			//if (m_multipleEditing)
-			//{
-			//	refreshSelectedComponents(true);
-			//}
-		}
-
-		if (m_multipleEditing)
-		{
-			assert(selection.size() > 0);
-			selection[0]->drawInInspector(*m_currentScene, selection);
-		}
-		else
-		{
-			for (auto& selected : selection)
-			{
-				ImGui::PushID(entityId);
-				if (ImGui::CollapsingHeader(("entity " + patch::to_string(entityId)).c_str())) {
-					selected->drawInInspector(*m_currentScene);
-				}
-				ImGui::PopID();
-
-				entityId++;
-			}
-		}
-	}
-}
-//
-//
-//void Inspector::drawUI(const std::vector<Entity*>& entities)
-//{
-//	if (entities.size() == 0)
-//		return;
-//
-//	std::string tmpName = entities[0]->getName();
-//	tmpName.copy(textValue, tmpName.size(), 0);
-//	textValue[tmpName.size()] = '\0';
-//
-//	if (ImGui::InputText("name", textValue, 20))
-//	{
-//		for (auto& entity : entities)
-//		{
-//			entity->setName(textValue);
-//		}
-//	}
-//
-//	vector3Value = entities[0]->getEulerRotation();
-//	if (ImGui::SliderFloat3("rotation", &vector3Value[0], 0, 2 * glm::pi<float>()))
-//	{
-//		for (auto& entity : entities)
-//		{
-//			entity->setEulerRotation(vector3Value);
-//			//entity->setRotation(glm::quat(vector3Value));
-//			//entity->applyTransform();
-//		}
-//	}
-//
-//	vector3Value = entities[0]->getScale();
-//	if (ImGui::InputFloat3("scale", &vector3Value[0]))
-//	{
-//		for (auto& entity : entities)
-//		{
-//			entity->setScale(vector3Value);
-//			//entity->applyTransform();
-//		}
-//	}
-//}
-
-
-//
-//void Inspector::drawUI(const std::vector<PointLight*>& pointLights)
-//{
-//	if (pointLights.size() == 0)
-//		return;
-//
-//	if (ImGui::CollapsingHeader("point light"))
-//	{
-//		floatValue = pointLights[0]->getIntensity();
-//		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
-//		{
-//			for (auto& light : pointLights)
-//			{
-//				light->setIntensity( floatValue );
-//			}
-//		}
-//		vector3Value = pointLights[0]->getColor();
-//		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
-//		{
-//			for (auto& light : pointLights)
-//			{
-//				light->setColor( vector3Value );
-//			}
-//		}
-//	}
-//}
-//
-//void Inspector::drawUI(const std::vector<DirectionalLight*>& directionalLights)
-//{
-//	if (directionalLights.size() == 0)
-//		return;
-//
-//	if (ImGui::CollapsingHeader("directional light"))
-//	{
-//		floatValue = directionalLights[0]->getIntensity();
-//		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 10.f))
-//		{
-//			for (auto& light : directionalLights)
-//			{
-//				light->setIntensity( floatValue );
-//			}
-//		}
-//		vector3Value = directionalLights[0]->getColor();
-//		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
-//		{
-//			for (auto& light : directionalLights)
-//			{
-//				light->setColor( vector3Value );
-//			}
-//		}
-//	}
-//}
-//
-//void Inspector::drawUI(const std::vector<SpotLight*>& spotLights)
-//{
-//	if (spotLights.size() == 0)
-//		return;
-//
-//	if (ImGui::CollapsingHeader("spot light"))
-//	{
-//		floatValue = spotLights[0]->getIntensity();
-//		if (ImGui::SliderFloat("light intensity", &floatValue, 0.f, 50.f))
-//		{
-//			for (auto& light : spotLights)
-//			{
-//				light->setIntensity( floatValue );
-//			}
-//		}
-//		vector3Value = spotLights[0]->getColor();
-//		if (ImGui::ColorEdit3("light color", &vector3Value[0]))
-//		{
-//			for (auto& light : spotLights)
-//			{
-//				light->setColor( vector3Value );
-//			}
-//		}
-//		floatValue = spotLights[0]->angle;
-//		if (ImGui::SliderFloat("light angles", &floatValue, 0.f, glm::pi<float>()))
-//		{
-//			for (auto& light : spotLights)
-//			{
-//				light->angle = floatValue;
-//			}
-//		}
-//	}
-//}
-//
-//void Inspector::drawUI(const std::vector<MeshRenderer*>& meshRenderers)
-//{
-//	if (meshRenderers.size() == 0)
-//		return;
-//
-//	//std::string tmpName = meshRenderers[0]->getMaterialName(0);
-//	//tmpName.copy(textValue, tmpName.size(), 0);
-//	//textValue[tmpName.size()] = '\0';
-//
-//	//%NOCOMMIT%
-//	//if (ImGui::InputText("materialName", textValue, 20))
-//	//{
-//	//	if (getMaterialFactory().contains<Material3DObject>(textValue))
-//	//	{
-//	//		for (auto& meshRenderer : meshRenderers)
-//	//		{
-//	//			meshRenderer->setMaterial( getMaterialFactory().get<Material3DObject>(textValue), 0);
-//	//		}
-//	//	}
-//	//}
-//	ResourcePtr<Material> materialPtrQuery;
-//	//EditorGUI::ResourceField<Material>(materialPtrQuery, "materialName", textValue, 100);
-//	EditorGUI::ResourceField<Material>("materialName", materialPtrQuery);
-//
-//	if (materialPtrQuery.isValid())
-//	{
-//		for (auto& meshRenderer : meshRenderers)
-//		{
-//			meshRenderer->setMaterial(materialPtrQuery, 0);
-//		}
-//	}
-//
-//	//meshRenderers[0]->getMaterial()->drawUI();
-//
-//	//tmpName = meshRenderers[0]->getMeshName();
-//	//tmpName.copy(textValue, tmpName.size(), 0);
-//	//textValue[tmpName.size()] = '\0';
-//
-//	//if (ImGui::InputText("meshName", textValue, 20))
-//	//{
-//	//	if (getMeshFactory().contains(textValue))
-//	//	{
-//	//		for (auto& meshRenderer : meshRenderers)
-//	//		{
-//	//			meshRenderer->setMesh( getMeshFactory().get(textValue) );
-//	//		}
-//	//	}
-//	//}
-//	ResourcePtr<Mesh> meshPtrQuery;
-//	//EditorGUI::ResourceField<Mesh>(meshPtrQuery, "meshName", textValue, 100);
-//	EditorGUI::ResourceField<Mesh>("meshName", meshPtrQuery);
-//
-//	if (meshPtrQuery.isValid())
-//	{
-//		for (auto& meshRenderer : meshRenderers)
-//		{
-//			meshRenderer->setMesh(meshPtrQuery);
-//		}
-//	}
-//}
-//
-//void Inspector::drawUI(const std::vector<Collider*>& colliders)
-//{
-//	if (colliders.size() == 0)
-//		return;
-//
-//	vector3Value = colliders[0]->offsetPosition;
-//	if (ImGui::InputFloat3("offset position", &vector3Value[0]))
-//	{
-//		for (auto& collider : colliders)
-//		{
-//			collider->setOffsetPosition(vector3Value);
-//		}
-//	}
-//	vector3Value = colliders[0]->offsetScale;
-//	if (ImGui::InputFloat3("offset scale", &vector3Value[0]))
-//	{
-//		for (auto& collider : colliders)
-//		{
-//			collider->setOffsetScale(vector3Value);
-//		}
-//	}
-//}
-
-////////////////////////////////////////// EDITOR HIERARCHY
-
-SceneHierarchy::SceneHierarchy(Editor * editorPtr)
-	: m_editorPtr(editorPtr)
-{
-
-}
-
-void SceneHierarchy::setScene(Scene* scene)
-{
-	m_currentScene = scene;
-}
-
-Scene* SceneHierarchy::getScene() const
-{
-	return m_currentScene;
-}
-
-
-void SceneHierarchy::displayTreeEntityNode(Entity* entity, int &entityId, bool &setParenting, Entity*& parentToAttachSelected)
-{
-	ImGui::PushID(entityId);
-	bool nodeOpen = false;
-
-	bool isSelected = entity->getIsSelected();
-	if (isSelected)
-	{
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		//ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1, 1, 0, 1));
-		//ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0, 0, 1));
-		//ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0.8, 0.8, 1));
-	}
-
-	ImVec2 itemPos;
-	ImVec2 itemSize;
-	if (ImGui::MyTreeNode(std::to_string(entityId).c_str(), itemPos, itemSize))
-		nodeOpen = true;
-	ImGui::SameLine();
-
-
-	if (ImGui::Button(entity->getName().c_str(), ImVec2(itemSize.x /*m_bottomLeftPanelRect.z*/ - 36.f, itemSize.y /*16.f*/)))
-	{
-		if (isSelected)
-		{
-			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_editorPtr->getCamera().getCameraForward()*3.f;
-			m_editorPtr->getCamera().setTranslation(cameraFinalPosition);
-		}
-		else
-			m_editorPtr->changeCurrentSelected(entity);
-	}
-
-	ImGui::SameLine();
-
-	if (ImGui::Button("<"))
-	{
-		setParenting = true;
-		parentToAttachSelected = entity;
-	}
-
-	if (nodeOpen)
-	{
-		if (isSelected)
-		{
-			//ImGui::PopStyleColor();
-			//ImGui::PopStyleColor();
-			//ImGui::PopStyleColor();
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
-			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
-			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
-		}
-
-		for (int c = 0; c < entity->getChildCount(); c++)
-		{
-			entityId++;
-			displayTreeEntityNode(entity->getChild(c), entityId, setParenting, parentToAttachSelected);
-		}
-	}
-
-	if (nodeOpen)
-		ImGui::TreePop();
-
-	if (isSelected && !nodeOpen)
-	{
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
-		//ImGui::PopStyleColor();
-		//ImGui::PopStyleColor();
-		//ImGui::PopStyleColor();
-	}
-
-	ImGui::PopID();
-	entityId++;
-}
-
-
-void SceneHierarchy::drawUI()
-{
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8, 0.8, 0.8, 0.2));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2, 0.2, 0.2, 0.2));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8, 0.8, 0.8, 0.2));
-
-	auto entities = m_currentScene->getEntities();
-
-	int entityId = 0;
-	bool setParenting = false;
-	Entity* parentToAttachSelected = nullptr;
-	for (auto& entity : entities)
-	{
-		if (!entity->hasParent())
-		{
-			displayTreeEntityNode(entity, entityId, setParenting, parentToAttachSelected);
-		}
-	}
-
-	if (setParenting)
-	{
-		if (parentToAttachSelected->getIsSelected())
-			parentToAttachSelected->setParent(nullptr);
-		else
-		{
-			const std::vector<Entity*>& currentSelection = m_editorPtr->getCurrentSelection();
-			for (int i = 0; i < currentSelection.size(); i++)
-			{
-				currentSelection[i]->setParent(parentToAttachSelected);
-			}
-		}
-	}
-
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
-}
+#include "FrameBuffer.h"
 
 ////////////////////////////////////////// GUI STATES
 
@@ -447,6 +37,7 @@ void init_gui_states(GUIStates & guiStates)
 Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false)
 , m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f)
 , m_isPlaying(false), m_isOwningPlayer(true)
+, m_currentSelectionType(SelectionType::ENTITY)
 {
 	m_savePath[0] = '\0';
 	m_loadPath[0] = '\0';
@@ -463,10 +54,12 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	m_resourceTree = std::make_shared<ResourceTree>(Project::getAssetsFolderPath());
 	m_inspector = std::make_shared<Inspector>(this);
 	m_sceneHierarchy = std::make_shared<SceneHierarchy>(this);
+	m_debugDrawRenderer = std::make_shared<DebugDrawRenderer>();
+	m_viewport = std::make_shared<Viewport>();
 
 	//Main window : 
 	//m_windowManager.getBackgroundWindow()->setNode(std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), std::make_shared<EditorNode>(std::make_shared<ViewportEditorFrame>("Viewport")))); //Viewport
-	m_windowManager.setBackgroundWindow(std::make_shared<EditorBackgroundWindow>(std::make_shared<ViewportEditorFrame>("Viewport")));
+	m_windowManager.setBackgroundWindow(std::make_shared<EditorBackgroundWindow>(std::make_shared<ViewportEditorFrame>("Viewport", m_viewport)));
 
 	//Create the style sheet
 	m_styleSheet = std::make_shared<EditorStyleSheet>();
@@ -479,6 +72,11 @@ const EditorStyleSheet & Editor::getStyleSheet() const
 	return *m_styleSheet;
 }
 
+DebugDrawRenderer& Editor::getDebugDrawRenderer() const
+{
+	return *m_debugDrawRenderer;
+}
+
 float Editor::getMenuTopOffset() const
 {
 	return m_menuTopOffset;
@@ -489,7 +87,7 @@ void Editor::changeCurrentSelected(Entity* entity)
 	//clearSelectedComponents();
 
 	m_gizmo->setTarget(nullptr);
-	m_currentSelected.clear();
+	m_currentEntitiesSelected.clear();
 	addCurrentSelected(entity);
 }
 
@@ -498,7 +96,7 @@ void Editor::changeCurrentSelected(std::vector<Entity*> entities)
 	//clearSelectedComponents();
 
 	m_gizmo->setTarget(nullptr);
-	m_currentSelected.clear();
+	m_currentEntitiesSelected.clear();
 	for (auto& e : entities)
 	{
 		addCurrentSelected(e);
@@ -510,16 +108,17 @@ void Editor::addCurrentSelected(Entity * entity)
 	if (entity == nullptr)
 		return;
 
-	m_currentSelected.push_back(entity);
+	m_currentEntitiesSelected.push_back(entity);
 
 	if (m_gizmo != nullptr)
 	{
-		if(m_currentSelected.size() == 1)
-			m_gizmo->setTarget(m_currentSelected.front()); // set a unique target
+		if(m_currentEntitiesSelected.size() == 1)
+			m_gizmo->setTarget(m_currentEntitiesSelected.front()); // set a unique target
 		else
-			m_gizmo->setTargets(m_currentSelected); //set multiple targets
+			m_gizmo->setTargets(m_currentEntitiesSelected); //set multiple targets
 	}
 
+	m_currentSelectionType = SelectionType::ENTITY;
 	//refreshSelectedComponents(false);
 }
 
@@ -528,21 +127,22 @@ void Editor::removeCurrentSelected(Entity * entity)
 	if (entity == nullptr)
 		return;
 
-	auto findIt = std::find(m_currentSelected.begin(), m_currentSelected.end(), entity);
+	auto findIt = std::find(m_currentEntitiesSelected.begin(), m_currentEntitiesSelected.end(), entity);
 
-	if (findIt != m_currentSelected.end())
+	if (findIt != m_currentEntitiesSelected.end())
 	{
-		m_currentSelected.erase(findIt);
+		m_currentEntitiesSelected.erase(findIt);
 	}
 
 	if (m_gizmo != nullptr)
 	{
-		if (m_currentSelected.size() == 1)
-			m_gizmo->setTarget(m_currentSelected.front()); // set a unique target
+		if (m_currentEntitiesSelected.size() == 1)
+			m_gizmo->setTarget(m_currentEntitiesSelected.front()); // set a unique target
 		else
-			m_gizmo->setTargets(m_currentSelected); //set multiple targets
+			m_gizmo->setTargets(m_currentEntitiesSelected); //set multiple targets
 	}
 
+	m_currentSelectionType = SelectionType::ENTITY;
 	//refreshSelectedComponents(true);
 }
 
@@ -551,9 +151,9 @@ void Editor::toggleCurrentSelected(Entity* entity)
 	if (entity == nullptr)
 		return;
 
-	auto findIt = std::find(m_currentSelected.begin(), m_currentSelected.end(), entity);
+	auto findIt = std::find(m_currentEntitiesSelected.begin(), m_currentEntitiesSelected.end(), entity);
 
-	if (findIt != m_currentSelected.end())
+	if (findIt != m_currentEntitiesSelected.end())
 		removeCurrentSelected(entity);
 	else
 		addCurrentSelected(entity);
@@ -561,7 +161,20 @@ void Editor::toggleCurrentSelected(Entity* entity)
 
 const std::vector<Entity*>& Editor::getCurrentSelection() const
 {
-	return m_currentSelected;
+	return m_currentEntitiesSelected;
+}
+
+void Editor::getCurrentDrawableSelection(std::vector<IDrawableInInspector*>& drawableSelection) const
+{
+	if (m_currentSelectionType == SelectionType::ENTITY)
+	{
+		for (auto& entity : m_currentEntitiesSelected)
+			drawableSelection.push_back(entity);
+	}
+	else if (m_currentSelectionType == SelectionType::RESOURCE)
+	{
+		drawableSelection.push_back(m_resourceTree->getSelectedResource());
+	}
 }
 
 void Editor::renderGizmo()
@@ -574,6 +187,16 @@ void Editor::renderGizmo()
 	glm::mat4 viewMatrix = m_camera->getViewMatrix(); // glm::lookAt(m_camera->eye, m_camera->o, m_camera->up);
 
 	m_gizmo->render(projectionMatrix, viewMatrix);
+}
+
+void Editor::onResourceSelected()
+{
+	m_currentSelectionType = SelectionType::RESOURCE;
+}
+
+void Editor::onEntitySelected()
+{
+	m_currentSelectionType = SelectionType::ENTITY;
 }
 
 //void Editor::clearSelectedComponents()
@@ -949,7 +572,7 @@ void Editor::drawMenuEntry_windows()
 
 		if (!m_windowManager.isFrameOpen("Viewport") && ImGui::Button("Viewport"))
 		{
-			m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>("Viewport"));
+			m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>("Viewport", m_viewport));
 		}
 		if (!m_windowManager.isFrameOpen("SceneHierarchy") && ImGui::Button("SceneHierarchy"))
 		{
@@ -961,7 +584,7 @@ void Editor::drawMenuEntry_windows()
 		}
 		if (!m_windowManager.isFrameOpen("Resource tree") && ImGui::Button("Resource tree"))
 		{
-			m_windowManager.addWindow(std::make_shared<ResourceTreeView>("Resource tree", m_resourceTree.get()));
+			m_windowManager.addWindow(std::make_shared<ResourceTreeView>("Resource tree", m_resourceTree.get(), this));
 		}
 		if (!m_windowManager.isFrameOpen("Terrain tool") && ImGui::Button("Terrain tool"))
 		{
@@ -974,6 +597,10 @@ void Editor::drawMenuEntry_windows()
 		if (!m_windowManager.isFrameOpen("Scene manager") && ImGui::Button("Scene manager"))
 		{
 			m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>("Scene manager"));
+		}
+		if (!m_windowManager.isFrameOpen("Debug renderer") && ImGui::Button("Debug renderer"))
+		{
+			m_windowManager.addWindow(std::make_shared<DebugRenderEditorFrame>("Debug renderer", m_debugDrawRenderer));
 		}
 		if (!m_windowManager.isFrameOpen("Factories debuger") && ImGui::Button("Factories debuger"))
 		{
@@ -1635,12 +1262,12 @@ void Editor::moveGizmo(const Ray & ray)
 
 Entity* Editor::duplicateSelected()
 {
-	if (m_currentSelected.empty())
+	if (m_currentEntitiesSelected.empty())
 		return nullptr;
 
 	std::vector<Entity*> newEntities;
 
-	for(auto selected : m_currentSelected)
+	for(auto selected : m_currentEntitiesSelected)
 		newEntities.push_back( new Entity(*selected) ); //copy the entity
 
 	changeCurrentSelected(newEntities); //change selection, to select the copy
@@ -1650,11 +1277,11 @@ Entity* Editor::duplicateSelected()
 
 void Editor::deleteSelected(Scene& scene)
 {
-	if (m_currentSelected.empty())
+	if (m_currentEntitiesSelected.empty())
 		return;
 
-	for (int i = 0; i < m_currentSelected.size(); i++)
-		scene.erase( m_currentSelected[i] );
+	for (int i = 0; i < m_currentEntitiesSelected.size(); i++)
+		scene.erase(m_currentEntitiesSelected[i] );
 
 	changeCurrentSelected(nullptr);
 
@@ -1874,18 +1501,32 @@ void Editor::ejectPlayerFromPawn()
 
 void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 {
-	float screenWidth = Application::get().getWindowWidth();
-	float screenHeight = Application::get().getWindowHeight();
+	//We synchronize the render size of the editor viewport
+	m_viewport->setRenderSize(scene.getRenderer().getViewportRenderSize());
+
+	const float viewportRenderWidth = m_viewport->getRenderSize().x;
+	const float viewportRenderHeight = m_viewport->getRenderSize().y;
+	const float viewportWidth = m_viewport->getSize().x;
+	const float viewportHeight = m_viewport->getSize().y;
+	const float viewportPosX= m_viewport->getPosition().x;
+	const float viewportPosY = m_viewport->getPosition().y;
+	const bool isViewportHovered = m_viewport->getIsHovered();
 
 	//Terrain tool
 	if (m_windowManager.isFrameOpen("Terrain tool"))
 	{
-		if (InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_1, InputHandler::FOCUSING_EDITOR) && !m_guiStates.mouseOverUI && !m_guiStates.altPressed && !m_guiStates.ctrlPressed && !m_guiStates.shiftPressed)
+		if (isViewportHovered 
+			&& InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_1, InputHandler::FOCUSING_EDITOR)
+			&& !m_guiStates.altPressed 
+			&& !m_guiStates.ctrlPressed
+			&& !m_guiStates.shiftPressed)
 		{
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
-			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
+			mouseX = ((mouseX - viewportPosX) * viewportRenderWidth) / viewportWidth;
+			mouseY = ((mouseY - viewportPosY) * viewportRenderHeight) / viewportHeight;
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportRenderWidth, viewportRenderHeight, *m_camera);
 
 			Ray ray(origin, direction, 1000.f);
 			CollisionInfo collisionInfo;
@@ -1936,17 +1577,20 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 
 	}
 
-	if (!m_guiStates.mouseOverUI)
+	if (isViewportHovered)
 	{
 		//object picking : 
-		if (!m_guiStates.altPressed && !m_guiStates.ctrlPressed
+		if (!m_guiStates.altPressed 
+			&& !m_guiStates.ctrlPressed
 			&& InputHandler::getMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT, InputHandler::FOCUSING_EDITOR))
 		{
 
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
-			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
+			mouseX = ((mouseX - viewportPosX) * viewportRenderWidth) / viewportWidth;
+			mouseY = ((mouseY - viewportPosY) * viewportRenderHeight) / viewportHeight;
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportRenderWidth, viewportRenderHeight, *m_camera);
 			//direction = direction - origin;
 			//direction = glm::normalize(direction);
 
@@ -2006,13 +1650,12 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 	{
 		if (this->isMovingGizmo())
 		{
-			float screenWidth = Application::get().getWindowWidth();
-			float screenHeight = Application::get().getWindowHeight();
-
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
-			glm::vec3 direction = screenToWorld(mouseX, mouseY, screenWidth, screenHeight, *m_camera);
+			mouseX = ((mouseX - viewportPosX) * viewportRenderWidth) / viewportWidth;
+			mouseY = ((mouseY - viewportPosY) * viewportRenderHeight) / viewportHeight;
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportRenderWidth, viewportRenderHeight, *m_camera);
 			Ray ray(origin, direction, 1000.f);
 
 			this->moveGizmo(ray);

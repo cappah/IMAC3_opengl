@@ -18,7 +18,7 @@
 #include "Texture.h"
 
 #include "ISerializable.h"
-#include "ResourcePointer.h"
+//#include "ResourcePointer.h"
 #include "ShaderParameters.h"
 #include "ShaderProgram.h"
 #include "FileHandler.h"
@@ -57,6 +57,7 @@ public:
 	//init internal params. Should be called in constructor, or just after construction.
 	void initInternalParameters();
 	virtual void init(const FileHandler::CompletePath& path) override;
+	void init(const ShaderProgram& shaderProgram);
 	void drawUI();
 	void pushInternalsToGPU(int& boundTextureCount);
 	virtual void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
@@ -139,6 +140,9 @@ public:
 		uniform_ScreenToWorld = MaterialHelper::getUniform(m_glProgramId, "ScreenToWorld");
 		uniform_CameraPosition = MaterialHelper::getUniform(m_glProgramId, "CameraPosition");
 		uniform_ShadowTexture = MaterialHelper::getUniform(m_glProgramId, "Shadow");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformColorTexture(int texUnitId)
@@ -201,6 +205,9 @@ public:
 		uniform_lightPosition = MaterialHelper::getUniform(m_glProgramId, "pointLight.position");
 		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "pointLight.color");
 		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "pointLight.intensity");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformFarPlane(int texUnitId)
@@ -257,6 +264,9 @@ public:
 		uniform_lightDirection = MaterialHelper::getUniform(m_glProgramId, "directionalLight.direction");
 		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "directionalLight.color");
 		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "directionalLight.intensity");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformWorldToLight(const glm::mat4& worldToLightMat)
@@ -317,6 +327,9 @@ public:
 		uniform_lightPosition = MaterialHelper::getUniform(m_glProgramId, "spotLight.position");
 		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "spotLight.color");
 		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "spotLight.intensity");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformWorldToLight(const glm::mat4& worldToLightMat)
@@ -376,6 +389,9 @@ public:
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformMVP(const glm::mat4& mvp)
@@ -421,6 +437,9 @@ public:
 			uniform_VPLight[i] = MaterialHelper::getUniform(m_glProgramId, "VPLight[" + std::to_string(i) + "]");
 		uniform_LightPos = MaterialHelper::getUniform(m_glProgramId, "LightPos");
 		uniform_FarPlane = MaterialHelper::getUniform(m_glProgramId, "FarPlane");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformModelMatrix(const glm::mat4& modelMatrix)
@@ -477,6 +496,9 @@ public:
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_TextureBlit = MaterialHelper::getUniform(m_glProgramId, "Texture");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformBlitTexture(int texUnitId)
@@ -523,6 +545,9 @@ public:
 		uniform_normalMatrix = MaterialHelper::getUniform(m_glProgramId, "NormalMatrix");
 		uniform_bonesTransform = MaterialHelper::getUniforms(m_glProgramId, "BonesTransform", MAX_BONE_COUNT);
 		uniform_useSkeleton = MaterialHelper::getUniform(m_glProgramId, "UseSkeleton");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniform_MVP(glm::mat4& mvp)
@@ -596,6 +621,9 @@ public:
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_color = MaterialHelper::getUniform(m_glProgramId, "Color");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniform_color(glm::vec3 color)
@@ -631,6 +659,9 @@ public:
 	{
 		uniform_VP = MaterialHelper::getUniform(m_glProgramId, "VP");
 		uniform_color = MaterialHelper::getUniform(m_glProgramId, "color");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniform_color(const glm::vec3& color) const
@@ -669,6 +700,9 @@ public:
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniform_MVP(const glm::mat4& MVP)
@@ -703,6 +737,9 @@ public:
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_VP = MaterialHelper::getUniform(m_glProgramId, "VP");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniform_VP(const glm::mat4& VP)
@@ -755,6 +792,9 @@ public:
 		uniform_CameraRight = MaterialHelper::getUniform(m_glProgramId, "CameraRight");
 		uniform_CameraUp = MaterialHelper::getUniform(m_glProgramId, "CameraUp");
 		uniform_Color = MaterialHelper::getUniform(m_glProgramId, "Color");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformMVP(const glm::mat4& VP)
@@ -826,6 +866,9 @@ public:
 		uniform_FilterTexture = MaterialHelper::getUniform(m_glProgramId, "FilterTexture");
 		uniform_TextureRepetition = MaterialHelper::getUniform(m_glProgramId, "TextureRepetition");
 		uniform_SpecularPower = MaterialHelper::getUniform(m_glProgramId, "SpecularPower");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 
 		//uniform_DiffuseTexture = MaterialHelper::getUniform(m_glProgramId, "DiffuseTexture");
 		//uniform_BumpTexture = MaterialHelper::getUniform(m_glProgramId, "BumpTexture");
@@ -902,6 +945,9 @@ public:
 		uniform_textureDiffuse = MaterialHelper::getUniform(m_glProgramId, "Diffuse");
 		uniform_textureSpecular = MaterialHelper::getUniform(m_glProgramId, "Specular");
 		uniform_textureBump = MaterialHelper::getUniform(m_glProgramId, "Bump");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformLayoutOffset(const glm::vec2& layoutOffset)
@@ -962,6 +1008,9 @@ public:
 		uniform_colorToDraw = MaterialHelper::getUniform(m_glProgramId, "DrawColor");
 		uniform_drawRadius = MaterialHelper::getUniform(m_glProgramId, "DrawRadius");
 		uniform_textureToDrawOn = MaterialHelper::getUniform(m_glProgramId, "Texture");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformDrawPosition(const glm::vec2& position)
@@ -1011,6 +1060,9 @@ public:
 		uniform_time = MaterialHelper::getUniform(m_glProgramId, "Time");
 		uniform_Texture = MaterialHelper::getUniform(m_glProgramId, "Texture");
 		uniform_VP = MaterialHelper::getUniform(m_glProgramId, "VP");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void setUniformTime(float time)
@@ -1058,6 +1110,9 @@ public:
 		m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
 		m_uniformCameraRight = MaterialHelper::getUniform(m_glProgramId, "CameraRight");
 		m_uniformCameraUp = MaterialHelper::getUniform(m_glProgramId, "CameraUp");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void glUniform_VP(const glm::mat4& VP)
@@ -1110,6 +1165,9 @@ public:
 		m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
 		m_uniformCameraRight = MaterialHelper::getUniform(m_glProgramId, "CameraRight");
 		m_uniformCameraUp = MaterialHelper::getUniform(m_glProgramId, "CameraUp");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void glUniform_VP(const glm::mat4& VP)
@@ -1155,6 +1213,9 @@ public:
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		m_uniformDeltaTime = MaterialHelper::getUniform(m_glProgramId, "DeltaTime");
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 
 	void glUniform_deltaTime(float deltaTime)

@@ -39,6 +39,9 @@ public:
 template<typename T>
 class ResourcePtr : public ISerializable
 {
+	template<typename U>
+	friend class ResourcePtr;
+
 private:
 	T* m_rawPtr;
 	unsigned int m_resourceHashKey;
@@ -57,6 +60,14 @@ public:
 		, m_resourceHashKey(hashKey)
 		, m_rawPtr(ptr)
 	{
+	}
+
+	template<typename U>
+	ResourcePtr(const ResourcePtr<U>& other)
+	{
+		m_rawPtr = static_cast<T*>(other.m_rawPtr);
+		m_resourceHashKey = other.m_resourceHashKey;
+		m_isDefaultResource = other.m_isDefaultResource;
 	}
 
 	T* operator->() const

@@ -192,7 +192,7 @@ void Texture::freeGL()
 //////////////////////////////////////////
 
 CubeTexture::CubeTexture()
-	:CubeTexture(0, 0, 0)
+	: CubeTexture(0, 0, 0)
 {
 
 }
@@ -202,8 +202,13 @@ CubeTexture::CubeTexture(char r, char g, char b)
 	, internalFormat(GL_RGB)
 	, format(GL_RGB)
 	, type(GL_UNSIGNED_BYTE)
-	, generateMipMap(true)
+	, generateMipMap(false)
 	, m_textureUseCounts(0)
+	, magFilter(GL_LINEAR)
+	, minFilter(GL_LINEAR)
+	, textureWrapping_s(GL_CLAMP_TO_EDGE)
+	, textureWrapping_t(GL_CLAMP_TO_EDGE)
+	, textureWrapping_r(GL_CLAMP_TO_EDGE)
 {
 	comp = 3;
 	w = 1;
@@ -297,6 +302,9 @@ void CubeTexture::initGL()
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		if (!checkError("Uniforms"))
+			PRINT_ERROR("error in texture initialization.")
 	}
 }
 

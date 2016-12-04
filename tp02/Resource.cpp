@@ -1,5 +1,6 @@
 #include "Resource.h"
 #include "Project.h"
+#include "Scene.h"
 
 Resource::Resource()
 {}
@@ -25,4 +26,14 @@ const FileHandler::CompletePath& Resource::getCompletePath() const
 const std::string& Resource::getName() const
 {
 	return m_completePath.getFilename();
+}
+
+void Resource::drawInInspector(Scene & scene, const std::vector<IDrawableInInspector*>& selection)
+{
+	assert(false && "multiple edition of resource isn't implemented.");
+}
+
+void Resource::drawInInspector(Scene & scene)
+{
+	ImGui::Text(getName().c_str());
 }

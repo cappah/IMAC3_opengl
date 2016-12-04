@@ -5,6 +5,7 @@
 
 #include "GUI.h"
 #include "imgui/imgui.h"
+#include "glm/glm.hpp"
 
 class Project;
 class Editor;
@@ -154,13 +155,20 @@ public:
 
 class EditorFrame
 {
-private:
+protected:
 	std::string m_frameName;
+	glm::vec2 m_position;
+	glm::vec2 m_size;
 
 public:
 	EditorFrame(const std::string& name) : m_frameName(name)
 	{}
 	virtual void drawContent(Project& project, EditorModal* parentModale = nullptr) = 0;
 	const std::string& getName() { return m_frameName; }
-
+	void setSize(float w, float h) { m_size.x = w; m_size.y = h; onFrameResized(); }
+	const glm::vec2& getSize() const { return m_size; }
+	void setPosition(float x, float y) { m_position.x = x; m_position.y = y; onFrameMoved(); }
+	const glm::vec2& getPosition() const { return m_position; }
+	virtual void onFrameMoved(){}
+	virtual void onFrameResized(){}
 };

@@ -4,16 +4,16 @@
 #include "Project.h" //forward
 #include "Scene.h" //forward
 #include "EditorWindows.h" //forward
+#include "EditorTools.h" //forward
 
 //DroppedFileEditorWindow* DroppedFileEditorWindow::modalRef = nullptr;
 
 DroppedFileEditorFrame::DroppedFileEditorFrame(Editor* editorRef)
 	: EditorFrame("DroppedFileWindow")
-	, m_treeView("DroppedFileWindow")
+	, m_treeView("DroppedFileWindow", editorRef->getResourceTree(), editorRef)
 	, m_editorRef(editorRef)
 {
 	assert(editorRef != nullptr);
-	m_treeView.setModel(m_editorRef->getResourceTree());
 }
 //
 //void DroppedFileEditorWindow::openPopUp(Editor& editor)
@@ -68,15 +68,30 @@ void DroppedFileEditorFrame::drawContent(Project& project, EditorModal* parentWi
 
 ///////////////////////////////
 
-ViewportEditorFrame::ViewportEditorFrame(const std::string& name)
+ViewportEditorFrame::ViewportEditorFrame(const std::string& name, std::shared_ptr<Viewport> model)
 	: EditorFrame(name)
+	, m_viewport(model)
 {
 }
 
 void ViewportEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
 {
 	Texture* finalFrame = project.getActiveScene()->getRenderer().getFinalFrame();
-	ImGui::Image((void*)(finalFrame->glId), ImVec2(finalFrame->w, finalFrame->h), ImVec2(0, 1), ImVec2(1,0) );
+	ImGui::Image((void*)(finalFrame->glId), ImVec2(m_size.x, m_size.y)/*ImVec2(finalFrame->w, finalFrame->h)*/, ImVec2(0, 1), ImVec2(1,0) );
+	if (ImGui::IsItemHovered())
+		m_viewport.lock()->setIsHovered(true);
+	else
+		m_viewport.lock()->setIsHovered(false);
+}
+
+void ViewportEditorFrame::onFrameMoved()
+{
+	m_viewport.lock()->setPosition(m_position);
+}
+
+void ViewportEditorFrame::onFrameResized()
+{
+	m_viewport.lock()->setSize(m_size);
 }
 
 ///////////////////////////////
@@ -226,6 +241,23 @@ void InspectorEditorFrame::drawContent(Project & project, EditorModal * parentWi
 	if (!m_inspector.expired())
 	{
 		m_inspector.lock()->drawUI();
+	}
+}
+
+//////////////////////////////
+
+DebugRenderEditorFrame::DebugRenderEditorFrame(const std::string& name, std::shared_ptr<DebugDrawRenderer> model)
+	: EditorFrame(name)
+	, m_debugDrawRenderer(model)
+{
+
+}
+
+void DebugRenderEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
+{
+	if (!m_debugDrawRenderer.expired())
+	{
+		m_debugDrawRenderer.lock()->drawUI();
 	}
 }
 
