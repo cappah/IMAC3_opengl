@@ -287,9 +287,11 @@ void Project::edit()
 		//check if window has been resized by user
 		if (Application::get().getWindowResize())
 		{
-			scene->getRenderer().onResizeWindow();
-			editor.onResizeWindow();
+			//TODO : resize only if full screen
+			//if (editor.getIsPlaying())
+			//	scene->getRenderer().onResizeViewport( glm::vec2(Application::get().getWindowWidth(), Application::get().getWindowHeight()) );
 
+			editor.onResizeWindow();
 			Application::get().setWindowResize(false);
 		}
 
@@ -320,18 +322,26 @@ void Project::edit()
 		else
 		{
 			scene->render(currentCamera, editor.getDebugDrawRenderer());
-
+			CHECK_GL_ERROR("gl error in renderer.");
 			scene->renderPaths(currentCamera);
+			CHECK_GL_ERROR("");
 			scene->renderColliders(currentCamera);
+			CHECK_GL_ERROR("");
 			scene->renderDebugLights(currentCamera);
+			CHECK_GL_ERROR("");
 			scene->renderDebugOctrees(currentCamera);
+			CHECK_GL_ERROR("");
 			scene->renderDebugPhysic(currentCamera);
+			CHECK_GL_ERROR("");
 
 			DebugDrawer::render(currentCamera.getProjectionMatrix(), currentCamera.getViewMatrix());
+			CHECK_GL_ERROR("");
 			DebugDrawer::clear();
 
 			glDisable(GL_DEPTH_TEST);
 			editor.renderGizmo();
+			if (!checkError("Uniforms"))
+				PRINT_ERROR("error in texture initialization.")
 		}
 
 
@@ -1023,7 +1033,10 @@ void Project::initDefaultAssets()
 	// materials : 
 	//MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, getTextureFactory().get("default"), getTextureFactory().get("default"), getTextureFactory().get("default"), 50);
 	MaterialLit* brickMaterial = new MaterialLit(*getProgramFactory().get("lit"));//new MaterialLit(getProgramFactory().getDefault("defaultLit")->id /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
-	//MaterialUnlit* wireframeMaterial = new MaterialUnlit(programObject_wireframe);
+	brickMaterial->setInternalData<ResourcePtr<Texture>>("Diffuse", &getTextureFactory().getDefault("brickDiffuse"));
+	brickMaterial->setInternalData<ResourcePtr<Texture>>("Bump", &getTextureFactory().getDefault("brickBump"));
+	brickMaterial->setInternalData<ResourcePtr<Texture>>("Specular", &getTextureFactory().getDefault("brickSpecular"));
+																				  //MaterialUnlit* wireframeMaterial = new MaterialUnlit(programObject_wireframe);
 	//MaterialGrassField* grassFieldMaterial = new MaterialGrassField(programObject_grassField);
 
 	////////// INITIALYZE DEFAULT MATERIALS IN FACTORY : 

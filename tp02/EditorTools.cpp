@@ -445,6 +445,7 @@ DebugDrawRenderer::DebugDrawRenderer()
 	m_framebuffer.bind();
 	m_framebuffer.setDrawBuffer(GL_COLOR_ATTACHMENT0);
 	m_framebuffer.attachTexture(m_texture.get(), GlHelper::Framebuffer::AttachmentTypes::COLOR);
+	m_framebuffer.checkIntegrity();
 	m_framebuffer.unbind();
 }
 

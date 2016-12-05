@@ -876,9 +876,10 @@ bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, E
 			needRemove = true;
 		}
 		ImGui::SameLine();
-		ImGui::Dummy(ImVec2(10, 0));
+		ImGui::Dummy(ImVec2(25, 0));
 		ImGui::SameLine();
 		ImGui::Text(node.getFrameName().c_str());
+		ImGui::Dummy(ImVec2(0, 10.f));
 	}
 	ImGui::Separator();
 
@@ -889,7 +890,7 @@ bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, E
 	{
 		node.getFrame()->setPosition(windowPos.x, windowPos.y);
 	}
-	if (std::abs(windowSize.x - node.getFrame()->getSize().x) > 0.1f || std::abs(windowSize.y - node.getFrame()->getSize().y) > 0.1f)
+	if (!ImGui::IsMouseDown(0) && (std::abs(windowSize.x - node.getFrame()->getSize().x) > 0.1f || std::abs(windowSize.y - node.getFrame()->getSize().y) > 0.1f))
 	{
 		node.getFrame()->setSize(windowSize.x, windowSize.y);
 	}

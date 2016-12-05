@@ -38,6 +38,7 @@ public:
 		assert(0 && "error, invalid getter function.");
 	}
 
+	virtual std::shared_ptr<InternalShaderParameterBase> clone() = 0;
 };
 
 //The ShaderParameter interface. 
@@ -222,6 +223,11 @@ public:
 	{
 		outData = (void*)(&m_data);
 	}
+
+	virtual std::shared_ptr<InternalShaderParameterBase> clone()
+	{
+		return std::make_shared<InternalShaderParameter<T, ShaderParameter::IsNotArray>>(*this);
+	}
 };
 
 //array version isn't editable for now
@@ -281,6 +287,11 @@ public:
 	{
 		outData = (void*)(&m_data);
 	}
+
+	virtual std::shared_ptr<InternalShaderParameterBase> clone()
+	{
+		return std::make_shared<InternalShaderParameter<T, ShaderParameter::IsArray>>(*this);
+	}
 };
 
 //Array version not allowed for now
@@ -303,25 +314,11 @@ public:
 	void load(const Json::Value & entityRoot) override;
 	void setData(const void* data) override;
 	void getData(void* outData) override;
+	virtual std::shared_ptr<InternalShaderParameterBase> clone()
+	{
+		return std::make_shared<InternalShaderParameter<Texture, ShaderParameter::IsNotArray>>(*this);
+	}
 };
-//
-//template<>
-//InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name);
-//template<>
-//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::init(GLuint glProgramId);
-//template<>
-//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::drawUI() override;
-//template<>
-//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount) override;
-//template<>
-//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::save(Json::Value & entityRoot) const override;
-//template<>
-//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::load(const Json::Value & entityRoot) override;
-//template<>
-//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::setData(const void* data) override;
-//template<>
-//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::getData(void* outData) override;
-//
 
 //Array version not allowed for now
 template<>
@@ -341,10 +338,33 @@ public:
 	void load(const Json::Value & entityRoot) override;
 	void setData(const void* data) override;
 	void getData(void* outData) override;
+	virtual std::shared_ptr<InternalShaderParameterBase> clone()
+	{
+		return std::make_shared<InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>>(*this);
+	}
 };
 
 //utility function to make a shader from its type
 std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(const Json::Value& parameterAsJsonValue);
+
+//
+//template<>
+//InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name);
+//template<>
+//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::init(GLuint glProgramId);
+//template<>
+//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::drawUI() override;
+//template<>
+//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount) override;
+//template<>
+//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::save(Json::Value & entityRoot) const override;
+//template<>
+//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::load(const Json::Value & entityRoot) override;
+//template<>
+//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::setData(const void* data) override;
+//template<>
+//void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::getData(void* outData) override;
+//
 
 ////////// END : internal parameters
 //////////////////////////////////////////////////////////////////////////////////////////

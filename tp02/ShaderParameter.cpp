@@ -132,7 +132,7 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 			defaultValue.x = arrayValue[0].asFloat();
 			defaultValue.y = arrayValue[1].asFloat();
 		}
-		return std::make_shared<InternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<glm::vec2, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::FLOAT3:
@@ -145,7 +145,7 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 			defaultValue.y = arrayValue[1].asFloat();
 			defaultValue.z = arrayValue[2].asFloat();
 		}
-		return std::make_shared<InternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<glm::vec3, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::TEXTURE:
@@ -231,7 +231,7 @@ std::shared_ptr<ExternalShaderParameterBase> MakeNewExternalShaderParameter(cons
 
 InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<Texture> defaultValue)
 	: InternalShaderParameterBase(name)
-	, m_uniformId(0)
+	, m_uniformId(-1)
 	, m_isEditable(isEditable)
 	, m_data(defaultValue)
 {}
@@ -240,7 +240,6 @@ InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderPar
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::init(GLuint glProgramId)
 {
 	m_uniformId = glGetUniformLocation(glProgramId, m_name.data());
-	m_data = getTextureFactory().getDefault("default");
 }
 
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::drawUI()
@@ -284,7 +283,7 @@ void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::getData(void
 
 InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<CubeTexture> defaultValue)
 	: InternalShaderParameterBase(name)
-	, m_uniformId(0)
+	, m_uniformId(-1)
 	, m_isEditable(isEditable)
 	, m_data(defaultValue)
 {}

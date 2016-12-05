@@ -62,6 +62,13 @@ public:
 	{
 	}
 
+	ResourcePtr(const ResourcePtr<T>& other)
+	{
+		m_rawPtr = other.m_rawPtr;
+		m_resourceHashKey = other.m_resourceHashKey;
+		m_isDefaultResource = other.m_isDefaultResource;
+	}
+
 	template<typename U>
 	ResourcePtr(const ResourcePtr<U>& other)
 	{

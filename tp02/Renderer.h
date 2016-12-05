@@ -13,6 +13,7 @@
 #include "Flag.h"
 #include "ParticleEmitter.h"
 #include "FrameBuffer.h"
+#include "ErrorHandler.h"
 
 class DebugDrawRenderer;
 
@@ -85,7 +86,7 @@ public:
 	const glm::vec2& getViewportRenderSize() const;
 
 	//update deferred textures used by the FBO when we resize the screen.
-	void onResizeWindow();
+	void onResizeViewport(const glm::vec2& newViewportSize);
 
 	//initialyze buffers for blit quad.
 	void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);

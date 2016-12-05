@@ -308,7 +308,7 @@ namespace Ext {
 
 	}
 
-	bool SquaredCloseButton(const char* str_id, const ImVec2& pos, float width)
+	bool SquaredCloseButton(const char* str_id, const ImVec2& pos, float width, bool* isHovered)
 	{
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -330,6 +330,8 @@ namespace Ext {
 			window->DrawList->AddLine(pos + ImVec2(+cross_extent, -cross_extent), pos + ImVec2(-cross_extent, +cross_extent), ImGui::GetColorU32(ImGuiCol_Text));
 		}
 
+		if (isHovered != nullptr)
+			*isHovered = hovered;
 		return pressed;
 	}
 

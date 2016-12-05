@@ -64,26 +64,35 @@ Material::Material()
 
 }
 
-Material::Material(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters)
-	: m_glProgramId(glProgramId)
-	, m_internalParameters(internalParameters)
-	, m_glProgramName(glProgramName)
+Material::Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters)
+	: Resource(glProgramPath)
+	, m_glProgramId(glProgramId)
+	, m_glProgramName(glProgramPath.getFilename())
 {
+	for (auto shaderParameter : internalParameters)
+	{
+		m_internalParameters.push_back(shaderParameter->clone());
+	}
+
 	initInternalParameters();
 	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 }
 
-Material::Material(const std::string& glProgramName, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-	: Material(glProgramName, glProgramId, internalParameters)
+Material::Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	: Material(glProgramPath, glProgramId, internalParameters)
 {
 
 }
 
 Material::Material(const ShaderProgram& shaderProgram)
 	: m_glProgramId(shaderProgram.id)
-	, m_internalParameters(shaderProgram.getInternalParameters())
 	, m_glProgramName(shaderProgram.getName())
 {
+	for (auto shaderParameter : shaderProgram.getInternalParameters())
+	{
+		m_internalParameters.push_back(shaderParameter->clone());
+	}
+
 	initInternalParameters();
 	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 	setExternalParameters(shaderProgram.getExternalParameters());
@@ -124,7 +133,11 @@ void Material::init(const FileHandler::CompletePath& path)
 void Material::init(const ShaderProgram & shaderProgram)
 {
 	m_glProgramId = shaderProgram.id;
-	m_internalParameters = shaderProgram.getInternalParameters();
+	m_internalParameters.clear();
+	for (auto shaderParameter : shaderProgram.getInternalParameters())
+	{
+		m_internalParameters.push_back(shaderParameter->clone());
+	}
 	m_glProgramName = shaderProgram.getName();
 
 	initInternalParameters();
@@ -167,7 +180,10 @@ void Material::loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::s
 	m_externalParameters.clear();
 
 	m_glProgramId = glProgramId;
-	m_internalParameters = internalParameters;
+	for (auto shaderParameter : internalParameters)
+	{
+		m_internalParameters.push_back(shaderParameter->clone());
+	}
 
 	setExternalParameters(externalParameters);
 }
@@ -176,7 +192,7 @@ void Material::save(Json::Value & entityRoot) const
 {
 	entityRoot["shaderProgramName"] = m_glProgramName;
 	assert(getProgramFactory().contains(m_glProgramName));
-	entityRoot["programType"] = getProgramFactory().get(m_glProgramName)->getType();
+	entityRoot["programType"] = ShaderProgramTypes[getProgramFactory().get(m_glProgramName)->getType()];
 
 	int parameterIdx = 0;
 	for (auto& parameter : m_internalParameters)
@@ -200,6 +216,7 @@ void Material::load(const Json::Value & entityRoot)
 		parameterIdx++;
 	}
 
+	initInternalParameters();
 	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 }
 
@@ -219,6 +236,16 @@ void Material::save(const FileHandler::CompletePath& path) const
 	save(root);
 
 	stream << root;
+}
+
+void Material::drawInInspector(Scene & scene)
+{
+	Resource::drawInInspector(scene);
+
+	for (auto& parameter : m_internalParameters)
+	{
+		parameter->drawUI();
+	}
 }
 
 /////END : Material

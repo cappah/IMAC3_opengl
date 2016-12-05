@@ -464,9 +464,11 @@ typename std::map<std::string, T*>::iterator ResourceFactory<T>::defaultResource
 }
 
 //Specialisations : 
-//
-//template<>
-//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path);
+
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path);
 //
 //template<>
 //void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);

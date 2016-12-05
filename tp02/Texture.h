@@ -10,7 +10,7 @@
 #include "FileHandler.h"
 #include "Resource.h"
 
-struct Texture : public Resource
+struct Texture final : public Resource
 {
 	int w;
 	int h;
@@ -48,9 +48,11 @@ struct Texture : public Resource
 	void freeGL();
 
 	void init(const FileHandler::CompletePath& path) override;
+
+	void drawInInspector(Scene & scene) override;
 };
 
-struct CubeTexture : public Resource
+struct CubeTexture final : public Resource
 {
 	std::string name;
 

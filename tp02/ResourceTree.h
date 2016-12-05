@@ -181,17 +181,17 @@ public:
 		m_filesContainer.push_back(ResourceFile(resourcePath));
 	}
 
-	void addFile(const ResourceFile& file) 
+	void addFile(const FileHandler::CompletePath& filePath) 
 	{ 
-		addResourceToFactory(file.getPath());
-		m_filesContainer.push_back(ResourceFile(file));
+		addResourceToFactory(filePath);
+		m_filesContainer.push_back(ResourceFile(filePath));
 	}
 
 	template<typename U>
-	void addFile(const ResourceFile& file, U* resource)
+	void addFile(const FileHandler::CompletePath& filePath, U* resource)
 	{
-		getResourceFactory<U>().add(file.getPath(), resource);
-		m_filesContainer.push_back(ResourceFile(file));
+		getResourceFactory<U>().add(filePath, resource);
+		m_filesContainer.push_back(ResourceFile(filePath));
 	}
 
 	void moveFileFrom(const FileHandler::CompletePath& oldPath, const FileHandler::CompletePath& newPath, ResourceFolder& folderFrom)

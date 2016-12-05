@@ -225,9 +225,9 @@ const glm::vec2 & Renderer::getViewportRenderSize() const
 }
 
 
-void Renderer::onResizeWindow()
+void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 {
-	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
+	const int width = newViewportSize.x, height = newViewportSize.y;
 
 	if (width < 1 || height < 1)
 		return;
@@ -255,6 +255,9 @@ void Renderer::onResizeWindow()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	if (!checkError("Uniforms"))
+		PRINT_ERROR("error in texture initialization.")
+
 	// Create normal texture
 	glBindTexture(GL_TEXTURE_2D, gbufferTextures[1]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, width, height, 0, GL_RGBA, GL_FLOAT, 0);
@@ -263,6 +266,9 @@ void Renderer::onResizeWindow()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	if (!checkError("Uniforms"))
+		PRINT_ERROR("error in texture initialization.")
+
 	// Create depth texture
 	glBindTexture(GL_TEXTURE_2D, gbufferTextures[2]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
@@ -270,6 +276,11 @@ void Renderer::onResizeWindow()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	if (!checkError("Uniforms"))
+		PRINT_ERROR("error in texture initialization.")
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Update Framebuffer Object with new textures
 	glBindFramebuffer(GL_FRAMEBUFFER, gbufferFbo);
@@ -405,7 +416,9 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 
 void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer)
 {
-	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
+	//int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
+	const int width = m_viewportRenderSize.x;
+	const int height = m_viewportRenderSize.y;
 	glm::vec3 cameraPosition = camera.getCameraPosition();
 	glm::vec3 cameraForward = camera.getCameraForward();
 
@@ -500,6 +513,7 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 		}
 	}
 	
+	CHECK_GL_ERROR("error in shadow pass");
 	//////// end shadow pass
 
 
@@ -547,21 +561,26 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 		//meshRenderers[i]->getMesh()->draw();
 		meshRenderers[i]->render(projection, worldToView);
 	}
+	CHECK_GL_ERROR("error when rendering meshes");
 
 	//render physic flags : 
 	for (int i = 0; i < flags.size(); i++)
 	{
 		flags[i]->render(projection, worldToView);
 	}
+	CHECK_GL_ERROR("error when rendering flags");
 
 	//render terrain :
 	terrain.render(projection, worldToView);
+	CHECK_GL_ERROR("error when rendering terrain");
 
 	terrain.renderGrassField(projection, worldToView);
+	CHECK_GL_ERROR("error when rendering grass");
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	CHECK_GL_ERROR("error in G pass");
 	////// end G pass
 
 
@@ -759,6 +778,7 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	glDisable(GL_BLEND);	
 	glEnable(GL_DEPTH_TEST);
 
+	CHECK_GL_ERROR("error in light pass");
 	///// end light pass
 
 	m_mainBuffer.unbind();
@@ -798,6 +818,8 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
 
+	CHECK_GL_ERROR("error in forward pass");
+
 	///////////////////////////////////////////////
 	///// Debug draw : 
 	if (debugDrawer != nullptr)
@@ -805,6 +827,8 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 		debugDrawer->drawOutputIfNeeded("gBuffer_color", gbufferTextures[0]);
 		debugDrawer->drawOutputIfNeeded("gBuffer_normal", gbufferTextures[1]);
 		debugDrawer->drawOutputIfNeeded("gBuffer_depth", gbufferTextures[2]);
+		CHECK_GL_ERROR("error in render debug pass");
+		glViewport(0, 0, m_viewportRenderSize.x, m_viewportRenderSize.y);
 		m_mainBuffer.bind();
 	}
 
@@ -812,7 +836,8 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)
 {
-	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
+	const int width = m_viewportRenderSize.x;
+	const int height = m_viewportRenderSize.y;
 
 	glm::mat4 projection = camera.getProjectionMatrix();//glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = camera.getViewMatrix();// glm::lookAt(camera.eye, camera.o, camera.up);
@@ -878,8 +903,8 @@ void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<En
 
 void Renderer::debugDrawLights(const BaseCamera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
 {
-	int width = Application::get().getWindowWidth();
-	int height = Application::get().getWindowHeight();
+	int width = m_viewportRenderSize.x;
+	int height = m_viewportRenderSize.y;
 
 	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);
@@ -1043,8 +1068,8 @@ void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>&
 	pointLightCount = 0;
 	spotLightCount = 0;
 
-	int width = Application::get().getWindowWidth();
-	int height = Application::get().getWindowHeight();
+	int width = m_viewportRenderSize.x;
+	int height = m_viewportRenderSize.y;
 
 	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);

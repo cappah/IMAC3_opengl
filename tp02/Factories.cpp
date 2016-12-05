@@ -7,18 +7,29 @@
 
 
 //addings : 
-//template<>
-//void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
-//{
-//	Material* newResource = getProgramFactory()(path);
-//	newResource->init(path);
-//
-//	m_resources[path] = newResource;
-//	m_resourceMapping[path] = hashKey;
-//	m_resourcesFromHashKey[hashKey] = newResource;
-//}
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
+{
+	Material* newResource = makeNewMaterialInstance(path);
+	newResource->init(path);
 
-// Creation : 
+	m_resources[path] = newResource;
+	m_resourceMapping[path] = hashKey;
+	m_resourcesFromHashKey[hashKey] = newResource;
+}
+
+template<>
+void ResourceFactory<Material>::add(const FileHandler::CompletePath& path)
+{
+	Material* newResource = makeNewMaterialInstance(path);
+	newResource->init(path);
+
+	m_resources[path] = newResource;
+	m_resourceMapping[path] = ++s_resourceCount;
+	m_resourcesFromHashKey[s_resourceCount] = newResource;
+}
+
+//Creation : 
 //template<>
 //Material* ResourceFactory<Material>::createNewResource(const FileHandler::CompletePath& path, void* data)
 //{
@@ -127,6 +138,12 @@ void ResourceFactory<Texture>::initDefaults()
 	newTex->initGL();
 	//newTex->name = "defaultNormal";
 	addDefault("defaultNormal", newTex);
+
+	//default normal
+	newTex = new Texture(glm::vec3(10, 10, 10));
+	newTex->initGL();
+	//newTex->name = "defaultNormal";
+	addDefault("defaultSpecular", newTex);
 }
 
 
@@ -330,14 +347,16 @@ void ResourceFactory<Mesh>::initDefaults()
 
 void initAllResourceFactories()
 {
-	//Shader Programes
-	getResourceFactory<ShaderProgram>().initDefaults();
+	// /!\ Keep this order. /!\
 
 	//Cube Texture
 	getResourceFactory<CubeTexture>().initDefaults();
 
 	//Textures
 	getResourceFactory<Texture>().initDefaults();
+
+	//Shader Programes
+	getResourceFactory<ShaderProgram>().initDefaults();
 
 	//Materials
 	getResourceFactory<Material>().initDefaults();
@@ -511,7 +530,7 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 
 void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, const FileHandler::CompletePath& newResourcePath)
 {
-	assert(oldResourcePath.getFileType() != newResourcePath.getFileType());
+	assert(oldResourcePath.getFileType() == newResourcePath.getFileType());
 
 	ResourceType resourceType = getResourceTypeFromFileType(oldResourcePath.getFileType());
 

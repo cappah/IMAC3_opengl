@@ -1051,6 +1051,16 @@ void Editor::renderUI(Project& project)
 	//asynchonous commands : 
 	m_windowManager.update();
 
+	//We synchronize the render size of the editor viewport
+	Scene* activeScene = project.getActiveScene();
+	const glm::vec2 viewportDelta(m_viewport->getSize() - activeScene->getRenderer().getViewportRenderSize());
+	const bool isDraggingFrame = (DragAndDropManager::isDragAndDropping() && DragAndDropManager::getOperationType() == EditorDragAndDropType::EditorFrameDragAndDrop);
+	if ((std::abs(viewportDelta.x) > 2.f || std::abs(viewportDelta.y) > 2.f)
+		&& !isDraggingFrame)
+	{
+		activeScene->getRenderer().onResizeViewport(m_viewport->getSize());
+	}
+
 }
 
 void Editor::displayFloatingWindows(Project& project)
@@ -1501,11 +1511,9 @@ void Editor::ejectPlayerFromPawn()
 
 void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 {
-	//We synchronize the render size of the editor viewport
-	m_viewport->setRenderSize(scene.getRenderer().getViewportRenderSize());
 
-	const float viewportRenderWidth = m_viewport->getRenderSize().x;
-	const float viewportRenderHeight = m_viewport->getRenderSize().y;
+	//const float viewportRenderWidth = m_viewport->getRenderSize().x;
+	//const float viewportRenderHeight = m_viewport->getRenderSize().y;
 	const float viewportWidth = m_viewport->getSize().x;
 	const float viewportHeight = m_viewport->getSize().y;
 	const float viewportPosX= m_viewport->getPosition().x;
@@ -1524,9 +1532,9 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
-			mouseX = ((mouseX - viewportPosX) * viewportRenderWidth) / viewportWidth;
-			mouseY = ((mouseY - viewportPosY) * viewportRenderHeight) / viewportHeight;
-			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportRenderWidth, viewportRenderHeight, *m_camera);
+			mouseX = (mouseX - viewportPosX);
+			mouseY = (mouseY - viewportPosY);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportWidth, viewportHeight, *m_camera);
 
 			Ray ray(origin, direction, 1000.f);
 			CollisionInfo collisionInfo;
@@ -1588,9 +1596,9 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
-			mouseX = ((mouseX - viewportPosX) * viewportRenderWidth) / viewportWidth;
-			mouseY = ((mouseY - viewportPosY) * viewportRenderHeight) / viewportHeight;
-			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportRenderWidth, viewportRenderHeight, *m_camera);
+			mouseX = (mouseX - viewportPosX);
+			mouseY = (mouseY - viewportPosY);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportWidth, viewportHeight, *m_camera);
 			//direction = direction - origin;
 			//direction = glm::normalize(direction);
 
@@ -1653,9 +1661,9 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 			glm::vec3 origin = m_camera->getCameraPosition();
 			double mouseX, mouseY;
 			glfwGetCursorPos(window, &mouseX, &mouseY);
-			mouseX = ((mouseX - viewportPosX) * viewportRenderWidth) / viewportWidth;
-			mouseY = ((mouseY - viewportPosY) * viewportRenderHeight) / viewportHeight;
-			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportRenderWidth, viewportRenderHeight, *m_camera);
+			mouseX = (mouseX - viewportPosX);
+			mouseY = (mouseY - viewportPosY);
+			glm::vec3 direction = screenToWorld(mouseX, mouseY, viewportWidth, viewportHeight, *m_camera);
 			Ray ray(origin, direction, 1000.f);
 
 			this->moveGizmo(ray);

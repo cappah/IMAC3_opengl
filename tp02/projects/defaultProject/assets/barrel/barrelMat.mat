@@ -3,15 +3,15 @@
 	[
 		{
 			"isDefaultResource" : true,
-			"resourceHashKey" : 21
+			"resourceHashKey" : 2
 		},
 		{
 			"isDefaultResource" : true,
-			"resourceHashKey" : 21
+			"resourceHashKey" : 2
 		},
 		{
 			"isDefaultResource" : true,
-			"resourceHashKey" : 21
+			"resourceHashKey" : 2
 		},
 		{
 			"data" : 0
@@ -19,11 +19,11 @@
 		{
 			"data" : 
 			[
-				1,
-				1
+				10,
+				10
 			]
 		}
 	],
-	"programType" : 2,
+	"programType" : "lit",
 	"shaderProgramName" : "lit"
 }

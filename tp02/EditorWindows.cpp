@@ -205,9 +205,10 @@ void EditorWindow::drawHeader(const std::string& title, bool& shouldClose, bool&
 	ImGui::GetWindowDrawList()->AddText(textPos, ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_Text]), title.c_str());
 
 	ImVec2 buttonPos = ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - 15.f, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()*0.5);
-	shouldClose = ImGui::Ext::SquaredCloseButton("><##Header", buttonPos, 16.f);
+	bool isCloseButtonHovered = false;
+	shouldClose = ImGui::Ext::SquaredCloseButton("><##Header", buttonPos, 16.f, &isCloseButtonHovered);
 
-	shouldMove = ImGui::IsMouseHoveringWindow() && ImGui::IsWindowFocused() && ImGui::IsMouseDragging();
+	shouldMove = ImGui::IsMouseHoveringWindow() && ImGui::IsWindowFocused() && ImGui::IsMouseDown(0) && !isCloseButtonHovered;
 
 	ImGui::EndChild();
 	ImGui::PopID();

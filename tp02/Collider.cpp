@@ -178,8 +178,11 @@ void Collider::eraseFromScene(Scene & scene)
 
 void Collider::render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color)
 {
-	if (visualMesh.isValid() || visualMaterial.isValid())
+	if (!visualMesh.isValid() || !visualMaterial.isValid())
+	{
+		PRINT_ERROR("visual mesh or visual material not valid when rendering collider.");
 		return;
+	}
 
 	glm::mat4 mvp = projection * view * modelMatrix;
 

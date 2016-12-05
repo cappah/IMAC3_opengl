@@ -52,7 +52,8 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 	load(path, vertexShaderName, fragmentShaderName, geometryShaderName);
 
 	//Program type
-	auto foundItProgramType = std::find(ShaderProgramTypes.begin(), ShaderProgramTypes.end(), root.get("programType", "lit").asString());
+	auto foundItProgramType = std::find(ShaderProgramTypes.begin(), ShaderProgramTypes.end(), root.get("programType", "").asString());
+	assert(foundItProgramType != ShaderProgramTypes.end());
 	int foundIdxProgramType = foundItProgramType - ShaderProgramTypes.begin();
 	m_programType = (ShaderProgramType)foundIdxProgramType;
 
@@ -65,7 +66,9 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 	{
 		assert(internalShaderParameters.isValidIndex(i));
 
-		m_internalShaderParameters.push_back(MakeNewInternalShaderParameter(internalShaderParameters[i]));
+		auto newParameter = MakeNewInternalShaderParameter(internalShaderParameters[i]);
+		newParameter->init(id); //don't forget to init the parameter to get the uniforms
+		m_internalShaderParameters.push_back(newParameter);
 	}
 
 	//external parameters
@@ -199,9 +202,9 @@ Material* ShaderProgram::makeNewMaterialInstance()
 	switch (m_programType)
 	{
 	case LIT:
-		return new MaterialLit(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+		return new MaterialLit(m_completePath, id, m_internalShaderParameters, m_externalShaderParameters);
 	case UNLIT:
-		return new MaterialUnlit(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+		return new MaterialUnlit(m_completePath, id, m_internalShaderParameters, m_externalShaderParameters);
 	default:
 		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;
@@ -213,9 +216,9 @@ std::shared_ptr<Material> ShaderProgram::makeSharedMaterialInstance()
 	switch (m_programType)
 	{
 	case LIT:
-		return std::make_shared<MaterialLit>(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+		return std::make_shared<MaterialLit>(m_completePath, id, m_internalShaderParameters, m_externalShaderParameters);
 	case UNLIT:
-		return std::make_shared<MaterialUnlit>(m_completePath.getFilename(), id, m_internalShaderParameters, m_externalShaderParameters);
+		return std::make_shared<MaterialUnlit>(m_completePath, id, m_internalShaderParameters, m_externalShaderParameters);
 	default:
 		return nullptr;
 	}
@@ -223,11 +226,14 @@ std::shared_ptr<Material> ShaderProgram::makeSharedMaterialInstance()
 
 Material* makeNewMaterialInstance(const FileHandler::CompletePath& path)
 {
+	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
+
 	std::ifstream stream;
-	stream.open(path.toString());
+	stream.open(absolutePath.toString());
 	if (!stream.is_open())
 	{
-		std::cout << "error, can't load material at path : " << path.toString() << std::endl;
+		std::cout << "error, can't load material at path : " << absolutePath.toString() << std::endl;
 		return nullptr;
 	}
 	Json::Value root;
@@ -240,9 +246,17 @@ Material* makeNewMaterialInstance(const FileHandler::CompletePath& path)
 	switch (programType)
 	{
 	case LIT:
-		return new MaterialLit();
+	{
+		Material* newMaterial = new MaterialLit();
+		newMaterial->load(root);
+		return newMaterial;
+	}
 	case UNLIT:
-		return new MaterialUnlit();
+	{
+		Material* newMaterial = new MaterialUnlit();
+		newMaterial->load(root);
+		return newMaterial;
+	}
 	default:
 		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;

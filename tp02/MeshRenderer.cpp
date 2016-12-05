@@ -64,11 +64,12 @@ void MeshRenderer::drawInInspector(Scene& scene)
 
 	ResourcePtr<Material> materialQuery;
 	//EditorGUI::ResourceField<Material>(materialQuery, "materialName", tmpMaterialName, 20);
-	EditorGUI::ResourceField<Material>("materialName", materialQuery);
-
-	if (materialQuery.isValid())
+	if (EditorGUI::ResourceField<Material>("materialName", materialQuery))
 	{
-		material.push_back(materialQuery);
+		if (materialQuery.isValid())
+		{
+			material.push_back(materialQuery);
+		}
 	}
 
 	for (int i = 0; i < material.size(); i++)

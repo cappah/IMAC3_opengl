@@ -48,7 +48,7 @@ void main()
 
 	vec3 pos = Position;
 
-        Out.TexCoord = TexCoord;// * TextureRepetition;
+        Out.TexCoord = TexCoord * TextureRepetition;
 	Out.Position = vec3(boneTransform * vec4(pos, 1));
 	//Out.Normal =  normalize( vec3(NormalMatrix * vec4(Normal, 0)) );
 

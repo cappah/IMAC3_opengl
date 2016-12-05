@@ -7,7 +7,7 @@
         {"type" : "texture", "name" : "Diffuse", "default" : "default" },
         {"type" : "texture", "name" : "Specular", "default" : "defaultSpecular"},
         {"type" : "texture", "name" : "Bump", "default" : "defaultNormal"},
-        {"type" : "float", "name" : "specularPower", "default" : 0.4},
-        {"type" : "float2", "name" : "TextureRepetition", "default" : [1, 1]}
+        {"type" : "float", "name" : "SpecularPower", "default" : 0.4},
+        {"type" : "float2", "name" : "TextureRepetition", "default" : [10, 10]}
     ]
 }

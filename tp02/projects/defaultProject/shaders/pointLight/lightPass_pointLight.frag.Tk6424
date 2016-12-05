@@ -77,14 +77,13 @@ float computeShadow(vec3 p)
 
    for(int i=0; i<20; i++)
    {
-                lightToFrag = normalize((p - pointLight.position) + kernelSoft[i]*0.05);
+                lightToFrag = normalize(p - pointLight.position) + kernelSoft[i]*0.05f;
                 clothestDepth = texture(Shadow, lightToFrag).r;
                 clothestDepth *= FarPlane;
 
                 shadow += (clothestDepth + shadowBias > currentDepth) ? 0.0 : 1.0;
    }
    shadow /= 20.0;
-
 
 	return shadow;
 }

@@ -122,7 +122,16 @@ void Texture::init(const FileHandler::CompletePath& path)
 	internalFormat = GL_RGB;
 	format = GL_RGB;
 	type = GL_UNSIGNED_BYTE;
-	pixels = stbi_load(path.c_str(), &w, &h, &comp, 3);
+	pixels = stbi_load(absolutePath.c_str(), &w, &h, &comp, 3);
+
+	initGL();
+}
+
+void Texture::drawInInspector(Scene & scene)
+{
+	Resource::drawInInspector(scene);
+
+	ImGui::Image((void*)glId, ImVec2(w, h), ImVec2(0, 1), ImVec2(1, 0));
 }
 
 Texture::~Texture()
@@ -323,12 +332,12 @@ void CubeTexture::init(const FileHandler::CompletePath & path)
 	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
 
 	load(absolutePath);
+
+	initGL();
 }
 
 void CubeTexture::load(const FileHandler::CompletePath & path)
 {
-	Resource::init(path);
-
 	std::ifstream stream;
 	stream.open(path.toString());
 	if (!stream.is_open())
@@ -343,6 +352,7 @@ void CubeTexture::load(const FileHandler::CompletePath & path)
 	{
 		const std::string strPath = root[i]["path"].asString();
 		paths[i] = FileHandler::CompletePath(strPath);
+		pixels[i] = stbi_load(paths[i].c_str(), &w, &h, &comp, 3);
 	}
 
 	internalFormat = root["internalFormat"].asInt();

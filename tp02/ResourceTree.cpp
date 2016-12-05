@@ -88,7 +88,7 @@ bool ResourceFolder::copyTo(ResourceFolder& newLocation)
 	//transfers folder's files in the new empty folder
 	for (auto& file : getFiles())
 	{
-		newFolder->addFile(file);
+		newFolder->addFile(file.getPath());
 	}
 
 	//transfers sub folders (use same finction recursivly)
@@ -215,7 +215,7 @@ void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, Resour
 	const FileHandler::CompletePath from_(Project::getPath().toString() + "/" + resourceFileToMove.getPath().toString());
 	const FileHandler::Path to_(Project::getPath().toString() + "/" + newResourcePath.getPath().toString());
 
-	folderTo.addFile(ResourceFile(newResourcePath));
+	folderTo.addFile(newResourcePath);
 
 	FileHandler::copyPastFile(from_, to_); //NOT_SAFE
 }
@@ -234,7 +234,7 @@ void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::
 	Material* newMaterial = getProgramFactory().get(materialModelName)->makeNewMaterialInstance();
 	newMaterial->save(resourceFilePath);
 
-	folderTo.addFile<Material>(ResourceFile(resourceCompletePath), newMaterial);
+	folderTo.addFile<Material>(resourceCompletePath, newMaterial);
 }
 
 void ResourceTree::addNewCubeTextureTo(const std::string& textureName, ResourceFolder& folderTo)
@@ -247,7 +247,7 @@ void ResourceTree::addNewCubeTextureTo(const std::string& textureName, ResourceF
 	CubeTexture* newCubeTexture = new CubeTexture();
 	newCubeTexture->save(resourceFilePath);
 
-	folderTo.addFile<CubeTexture>(ResourceFile(resourceCompletePath), newCubeTexture);
+	folderTo.addFile<CubeTexture>(resourceCompletePath, newCubeTexture);
 }
 
 void ResourceTree::addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo)

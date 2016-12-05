@@ -52,9 +52,9 @@ DragAndDropOperation& DragAndDropManager::updateDragAndDrop()
 		{
 			This.cancelDragAndDrop();
 		}
-		else if (ImGui::IsMouseClicked(0))
+		else if (!This.m_currentDragAndDropOperation->dragNeedsToHoldMouse() && ImGui::IsMouseClicked(0))
 		{
-			This.m_currentDragAndDropOperation->cancelOperation();
+			This.cancelDragAndDrop();
 		}
 		else
 		{

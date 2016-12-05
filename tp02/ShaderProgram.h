@@ -20,8 +20,9 @@ enum ShaderProgramType {
 };
 
 static std::vector<std::string> ShaderProgramTypes = { 
-	"Lit",
-	"Unlit",
+	"custom",
+	"lit",
+	"unlit",
 };
 
 

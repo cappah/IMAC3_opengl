@@ -97,6 +97,8 @@ void Mesh::init(const FileHandler::CompletePath & path)
 	else {
 		std::cout << "Error parsing " << path.toString() << " : " << importer->GetErrorString() << std::endl;
 	}
+
+	initGl();
 }
 
 Mesh::~Mesh()
