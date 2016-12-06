@@ -323,7 +323,7 @@ namespace Physic {
 		draw();
 	}
 
-	void ParticleEmitter::draw()
+	void ParticleEmitter::draw() const
 	{
 		glBindVertexArray(m_vao);
 
@@ -870,6 +870,27 @@ namespace Physic {
 		}
 		swapParticles(i, end);
 		return i;
+	}
+
+	const AABB & ParticleEmitter::getVisualBoundingBox() const
+	{
+		assert(false && "TODO : implement this one ! ");
+		return AABB(glm::vec3(0), glm::vec3(0));
+	}
+
+	const IDrawable & ParticleEmitter::getDrawable(int drawableIndex) const
+	{
+		return *this;
+	}
+
+	const Material & ParticleEmitter::getDrawableMaterial(int drawableIndex) const
+	{
+		return *m_materialParticules.get();
+	}
+
+	const int ParticleEmitter::getDrawableCount() const
+	{
+		return 1;
 	}
 
 }

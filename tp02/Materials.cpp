@@ -174,6 +174,11 @@ void Material::use()
 	glUseProgram(m_glProgramId);
 }
 
+GLuint Material::getGLId() const
+{
+	return m_glProgramId;
+}
+
 void Material::loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 {
 	m_internalParameters.clear();

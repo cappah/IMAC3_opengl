@@ -8,26 +8,23 @@
 
 #include "Component.h"
 #include "ResourcePointer.h"
+#include "IRenderableComponent.h"
 
 //forward
 class Entity;
 
-class MeshRenderer : public Component
+class MeshRenderer : public Component, public IRenderableComponent
 {
 private:
 	//%NOCOMMIT%
 	//Mesh* mesh;
 	//std::vector<Material3DObject*> material;
-	ResourcePtr<Mesh> mesh;
-	std::vector<ResourcePtr<Material>> material;
-
-	//Only for UI : TODO : essayer de trouver un autre endroit pour ranger ça
-	std::string meshName;
-	std::string materialName;
+	ResourcePtr<Mesh> m_mesh;
+	std::vector<ResourcePtr<Material>> m_materials;
 
 public:
 	MeshRenderer();
-	MeshRenderer(ResourcePtr<Mesh> _mesh, ResourcePtr<Material> _material);
+	MeshRenderer(ResourcePtr<Mesh> mesh, ResourcePtr<Material> material);
 	virtual ~MeshRenderer();
 
 	virtual void drawInInspector(Scene& scene) override;
@@ -56,5 +53,9 @@ public:
 
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
+
+	virtual const IDrawable& getDrawable(int drawableIndex) const override;
+	virtual const Material& getDrawableMaterial(int drawableIndex) const override;
+	virtual const int getDrawableCount() const override;
 };
 

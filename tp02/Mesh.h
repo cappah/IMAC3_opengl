@@ -13,10 +13,14 @@
 #include <assimp/scene.h>
 
 #include "Resource.h"
+#include "IDrawable.h"
+
 
 //forwards : 
 class Ray;
 class CollisionInfo;
+class SubMesh;
+class AABB;
 
 //struct SubMesh {
 //
@@ -45,6 +49,7 @@ struct Mesh : public Resource
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
 	glm::vec3 origin;
+	AABB m_aabb;
 
 	enum Vbo_usage { USE_INDEX = 1 << 0, USE_VERTICES = 1 << 1, USE_UVS = 1 << 2, USE_NORMALS = 1 << 3, USE_TANGENTS = 1 << 4 , USE_BONES = 1 << 5/* , USE_INSTANTIATION = 1 << 5 */};
 	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, BONE_IDS, BONE_WEIGHTS /* INSTANCE_TRANSFORM */, INDEX };
@@ -101,6 +106,10 @@ struct Mesh : public Resource
 	//draw a specific sub mesh.
 	void draw(int idx) const;
 
+	int getSubMeshCount() const;
+	const SubMesh* getSubMesh(int subMeshIndex) const;
+	const AABB& getAABB() const;
+
 	void computeBoundingBox();
 
 	bool isIntersectedByRay(const Ray& ray, CollisionInfo& collisionInfo) const;
@@ -114,4 +123,18 @@ private:
 	//Check if the mesh has bones. If true, create the appropriate skeleton :  
 	void loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode * rootNode, unsigned int firstVertexId);
 	void loadAnimations(const FileHandler::CompletePath& scenePath, const aiScene* scene);
+};
+
+class SubMesh final : public IDrawable
+{
+private:
+	const Mesh* m_meshPtr;
+	const int m_subMeshId;
+public:
+	SubMesh(const Mesh* mesh, int id) : m_meshPtr(mesh), m_subMeshId(id)
+	{}
+
+	const AABB & getVisualBoundingBox() const override;
+	void draw() const override;
+
 };

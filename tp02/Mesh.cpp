@@ -7,6 +7,10 @@
 #include "Utils.h"
 #include "Factories.h"
 #include "Skeleton.h"
+#include "BasicColliders.h"
+
+//////////////////////////////////////////////////////
+//// BEGIN : Mesh
 
 Mesh::Mesh(GLenum _primitiveType , unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage) 
 	: primitiveType(_primitiveType)
@@ -357,6 +361,22 @@ void Mesh::draw(int idx) const
 	glBindVertexArray(0);
 }
 
+int Mesh::getSubMeshCount() const
+{
+	return subMeshCount;
+}
+
+const SubMesh* Mesh::getSubMesh(int subMeshIndex) const
+{
+	assert(subMeshCount >= 0 && subMeshIndex < subMeshCount);
+	return new SubMesh(this, subMeshIndex);
+}
+
+const AABB& Mesh::getAABB() const
+{
+	return m_aabb;
+}
+
 void Mesh::computeBoundingBox()
 {
 	//initialization : 
@@ -389,6 +409,11 @@ void Mesh::computeBoundingBox()
 	}
 
 	origin = bottomLeft + (topRight - bottomLeft) * 0.5f;
+
+	// Compute aligned axis bounding box : 
+	const glm::vec3 center = (topRight - bottomLeft) * 0.5f;
+	const glm::vec3 halfSizes = (topRight - bottomLeft) * 0.5f;
+	m_aabb = AABB(center, halfSizes);
 }
 
 bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) const
@@ -555,3 +580,22 @@ void Mesh::loadAnimations(const FileHandler::CompletePath& scenePath, const aiSc
 		animNames.push_back(subFileName);
 	}
 }
+
+//// END : Mesh
+//////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////
+//// BEGIN : SubMesh
+
+const AABB & SubMesh::getVisualBoundingBox() const
+{
+	return m_meshPtr->getAABB();
+}
+
+void SubMesh::draw() const
+{
+	m_meshPtr->draw(m_subMeshId);
+}
+
+//// END : SubMesh
+//////////////////////////////////////////////////////

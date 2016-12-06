@@ -16,13 +16,14 @@
 #include "Utils.h"
 #include "Mesh.h"
 #include "Materials.h"
-#include "Component.h"
-
 #include "Octree.h"
+#include "Component.h"
+#include "IDrawable.h"
+#include "IRenderableComponent.h"
 
 namespace Physic {
 
-	class Flag : public Component
+	class Flag : public Component, public IDrawable, public IRenderableComponent
 	{
 		glm::vec3 origin;
 		glm::vec3 translation;
@@ -132,6 +133,17 @@ namespace Physic {
 
 		void computeAutoCollision();
 
-	};
+
+		// Herited from IRenderableComponent
+		virtual const IDrawable & getDrawable(int drawableIndex) const override;
+		virtual const Material & getDrawableMaterial(int drawableIndex) const override;
+		virtual const int getDrawableCount() const override;
+
+
+		// Herited from IDrawable
+		virtual const AABB & getVisualBoundingBox() const override;
+		virtual void draw() const override;
+
+};
 
 }

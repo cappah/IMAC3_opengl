@@ -14,11 +14,12 @@
 #include "jsoncpp/json/json.h"
 #include "SerializeUtils.h"
 #include "ResourcePointer.h"
+#include "IRenderableComponent.h"
 
 namespace Physic{
 
 
-	class ParticleEmitter : public Component
+	class ParticleEmitter : public Component, public IRenderableComponent, public IDrawable
 	{
 	public :
 		enum VBO_TYPES { VERTICES = 0, NORMALS, UVS,  POSITIONS, COLORS, SIZES};
@@ -93,7 +94,6 @@ namespace Physic{
 		void update(float deltaTime, const glm::vec3& cameraPosition);
 		void sortParticles();
 		void render(const glm::mat4& projection, const glm::mat4& view);
-		void draw();
 		void updateVbos();
 		void onChangeMaxParticleCount();
 
@@ -114,10 +114,19 @@ namespace Physic{
 		virtual void save(Json::Value& rootComponent) const override;
 		virtual void load(const Json::Value& rootComponent) override;
 
+		//herited from IRenderableComponent
+		virtual const IDrawable & getDrawable(int drawableIndex) const override;
+		virtual const Material & getDrawableMaterial(int drawableIndex) const override;
+		virtual const int getDrawableCount() const override;
+
+		// Herited from IDrawable
+		virtual const AABB & getVisualBoundingBox() const override;
+		virtual void draw() const override;
+
 	private:
 		void sorting_quickSort(int begin, int end);
 		int sorting_partition(int begin, int end);
-	};
+};
 
 }
 

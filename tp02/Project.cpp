@@ -277,9 +277,10 @@ void Project::edit()
 
 		//get main camera : 
 		BaseCamera& currentCamera = editor.getCamera();
-		//get active camera before render scene : 
-		//currentCamera.updateScreenSize(width, height);
-		//scene.culling(currentCamera);
+		scene->computeCulling();
+		//add culling for editor camera if we use it
+		if(editor.getIsPlaying())
+			scene->computeCullingForSingleCamera(currentCamera);
 
 		//Physics : 
 		scene->updatePhysic(Application::get().getFixedDeltaTime(), currentCamera, editor.getIsPlaying());

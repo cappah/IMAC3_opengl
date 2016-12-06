@@ -272,6 +272,7 @@
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="RenderBatch.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourcePointer.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Animator.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="BasicColliders.h" />
     <ClInclude Include="BehaviorFactory.h" />
     <ClInclude Include="Behavior.h" />
     <ClInclude Include="BehaviorManager.h" />
@@ -345,9 +347,11 @@
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="IDrawable.h" />
     <ClInclude Include="IDrawableInInspector.h" />
     <ClInclude Include="imgui_extension.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="IRenderableComponent.h" />
     <ClInclude Include="ISerializable.h" />
     <ClInclude Include="ISingleton.h" />
     <ClInclude Include="LightManager.h" />
@@ -368,6 +372,7 @@
     <ClInclude Include="Point.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="RenderBatch.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourcePointer.h" />

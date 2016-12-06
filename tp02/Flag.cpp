@@ -666,7 +666,7 @@ namespace Physic {
 		glm::vec3 topRight = m_mesh.topRight;
 		glm::vec3 center = bottomLeft + (topRight - bottomLeft)*0.5f;
 		float halfSize = std::max(topRight.x - bottomLeft.x, std::max(topRight.y - bottomLeft.y, topRight.z - bottomLeft.z) )*0.5f;
-		Octree<Point> octree(center, halfSize, 2);
+		Octree<Point, glm::vec3> octree(center, halfSize, 2);
 		for (int i = 0; i < pointContainer.size(); i++)
 			octree.add(&pointContainer[i], pointContainer[i].position);
 
@@ -682,7 +682,7 @@ namespace Physic {
 		std::vector<Point*> neighborPoints;
 		for (int i = 0; i < pointContainer.size(); i++)
 		{
-			octree.findNeighbors(pointContainer[i].position, maxRadius, neighborPoints);
+			octree.findNeighborsContained(pointContainer[i].position, maxRadius, neighborPoints);
 			for (int j = 0; j < neighborPoints.size(); j++)
 			{
 				glm::vec3 pointToNeightbor = neighborPoints[j]->position - pointContainer[i].position;
@@ -700,6 +700,31 @@ namespace Physic {
 			neighborPoints.clear();
 			octree.remove(&pointContainer[i], pointContainer[i].position);
 		}
+	}
+
+	const IDrawable & Flag::getDrawable(int drawableIndex) const
+	{
+		return *this;
+	}
+
+	const Material & Flag::getDrawableMaterial(int drawableIndex) const
+	{
+		return *m_material.get();
+	}
+
+	const int Flag::getDrawableCount() const
+	{
+		return 1;
+	}
+
+	const AABB & Flag::getVisualBoundingBox() const
+	{
+		return m_mesh.getAABB();
+	}
+
+	void Flag::draw() const
+	{
+		m_mesh.draw();
 	}
 
 	void Physic::Flag::computeGlobalBreak(float deltaTime, Point* point)

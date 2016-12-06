@@ -62,6 +62,7 @@ public:
 	void pushInternalsToGPU(int& boundTextureCount);
 	virtual void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 	void use();
+	GLuint getGLId() const;
 	template<typename T>
 	T* getInternalData(const std::string& parameterName) const
 	{
@@ -659,7 +660,7 @@ public:
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
 		uniform_VP = MaterialHelper::getUniform(m_glProgramId, "VP");
-		uniform_color = MaterialHelper::getUniform(m_glProgramId, "color");
+		uniform_color = MaterialHelper::getUniform(m_glProgramId, "Color");
 
 		if (!checkError("Uniforms"))
 			PRINT_ERROR("error in texture initialization.")

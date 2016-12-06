@@ -46,6 +46,7 @@ public:
 protected:
 	Entity* m_entity;
 	ComponentType m_type;
+	bool m_isActive;
 
 public:
 	Component(ComponentType type);
@@ -62,6 +63,7 @@ public:
 	
 	Entity* entity();
 	ComponentType type() const;
+	bool getIsActive() const;
 
 	virtual void drawInInspector(Scene& scene) = 0;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) = 0;

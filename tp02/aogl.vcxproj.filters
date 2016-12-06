@@ -110,8 +110,6 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Project.cpp" />
-    <ClCompile Include="Octree.cpp" />
-    <ClCompile Include="OctreeDrawer.cpp" />
     <ClCompile Include="Billboard.cpp">
       <Filter>Components</Filter>
     </ClCompile>
@@ -195,6 +193,13 @@
     <ClCompile Include="EditorTools.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Octree.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="OctreeDrawer.cpp">
+      <Filter>Physic</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderBatch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -308,8 +313,6 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Project.h" />
-    <ClInclude Include="Octree.h" />
-    <ClInclude Include="OctreeDrawer.h" />
     <ClInclude Include="Billboard.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -406,6 +409,22 @@
     <ClInclude Include="EditorTools.h">
       <Filter>Editor</Filter>
     </ClInclude>
+    <ClInclude Include="IDrawable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IRenderableComponent.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Octree.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="OctreeDrawer.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicColliders.h">
+      <Filter>Physic</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderBatch.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

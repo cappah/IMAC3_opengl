@@ -6,7 +6,13 @@
 #include "PhysicManager.h"
 
 
-Scene::Scene(Renderer* renderer, const std::string& sceneName) : m_renderer(renderer), m_name(sceneName), m_areCollidersVisible(true), m_isDebugDeferredVisible(true), m_isDebugPhysicVisible(true)
+Scene::Scene(Renderer* renderer, const std::string& sceneName) 
+	: m_renderer(renderer)
+	, m_name(sceneName)
+	, m_areCollidersVisible(true)
+	, m_isDebugDeferredVisible(true)
+	, m_isDebugPhysicVisible(true)
+	, m_renderables(glm::vec3(0, 0, 0), 500, 3) //TODO RENDERING : put a flexible size
 {
 	m_physicManager = new Physic::PhysicManager();
 	m_terrain.initPhysics(m_physicManager->getBulletDynamicSimulation());
@@ -128,18 +134,36 @@ Scene& Scene::add(Collider * collider)
 Scene& Scene::add(MeshRenderer * meshRenderer)
 {
 	m_meshRenderers.push_back(meshRenderer);
+
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(meshRenderer);
+	if(asRenderable->getDrawableCount() > 0)
+		m_renderables.add(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
+
 	return *this;
 }
 
 Scene& Scene::add(Physic::Flag * flag)
 {
 	m_flags.push_back(flag);
+
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(flag);
+	if (asRenderable->getDrawableCount() > 0)
+		m_renderables.add(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
+
 	return *this;
 }
 
 Scene & Scene::add(Physic::ParticleEmitter * particleEmitter)
 {
 	m_particleEmitters.push_back(particleEmitter);
+
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(particleEmitter);
+	if (asRenderable->getDrawableCount() > 0)
+		m_renderables.add(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
+
 	return *this;
 }
 
@@ -152,6 +176,12 @@ Scene & Scene::add(PathPoint * pathPoint)
 Scene & Scene::add(Billboard * billboard)
 {
 	m_billboards.push_back(billboard);
+
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(billboard);
+	if (asRenderable->getDrawableCount() > 0)
+		m_renderables.add(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
+
 	return *this;
 }
 
@@ -259,6 +289,11 @@ Scene & Scene::erase(Collider * collider)
 
 Scene & Scene::erase(MeshRenderer * meshRenderer)
 {
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(meshRenderer);
+	if (asRenderable->getDrawableCount() > 0)
+		m_renderables.remove(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
+
 	auto findIt = std::find(m_meshRenderers.begin(), m_meshRenderers.end(), meshRenderer);
 
 	if (findIt != m_meshRenderers.end())
@@ -272,6 +307,11 @@ Scene & Scene::erase(MeshRenderer * meshRenderer)
 
 Scene & Scene::erase(Physic::Flag * flag)
 {
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(flag);
+	if (asRenderable->getDrawableCount() > 0)
+		m_renderables.remove(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
+
 	auto findIt = std::find(m_flags.begin(), m_flags.end(), flag);
 
 	if (findIt != m_flags.end())
@@ -285,6 +325,11 @@ Scene & Scene::erase(Physic::Flag * flag)
 
 Scene & Scene::erase(Physic::ParticleEmitter * particleEmitter)
 {
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(particleEmitter);
+	if (asRenderable->getDrawableCount() > 0)
+		m_renderables.remove(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
+
 	auto findIt = std::find(m_particleEmitters.begin(), m_particleEmitters.end(), particleEmitter);
 
 	if (findIt != m_particleEmitters.end())
@@ -304,6 +349,11 @@ Scene & Scene::erase(PathPoint * pathPoint)
 
 Scene & Scene::erase(Billboard * billboard)
 {
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(billboard);
+	if (asRenderable->getDrawableCount() > 0)
+		m_renderables.remove(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
+
 	auto findIt = std::find(m_billboards.begin(), m_billboards.end(), billboard);
 
 	if (findIt != m_billboards.end())
@@ -381,7 +431,7 @@ Scene & Scene::erase(CharacterController * characterController)
 	return *this;
 }
 
-Scene & Scene::erase(Behavior * behavior)
+Scene& Scene::erase(Behavior* behavior)
 {
 	auto findIt = std::find(m_behaviors.begin(), m_behaviors.end(), behavior);
 
@@ -394,6 +444,20 @@ Scene & Scene::erase(Behavior * behavior)
 	return *this;
 }
 
+void Scene::computeCulling()
+{
+	for (auto& camera : m_cameras)
+	{
+		if(camera->getIsActive())
+			camera->computeCulling(m_renderables);
+	}
+}
+
+void Scene::computeCullingForSingleCamera(BaseCamera& camera)
+{
+	camera.computeCulling(m_renderables);
+}
+
 void Scene::render(const BaseCamera& camera)
 {
 	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, nullptr);
@@ -401,7 +465,9 @@ void Scene::render(const BaseCamera& camera)
 
 void Scene::render(const BaseCamera& camera, DebugDrawRenderer& debugDrawer)
 {
+	//[DEPRECATED]
 	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, &debugDrawer);
+	//m_renderer->render(camera, &debugDrawer);
 }
 
 void Scene::renderColliders(const BaseCamera & camera)
@@ -547,11 +613,6 @@ void Scene::setAreOctreesVisible(bool value)
 void Scene::setIsDebugPhysicVisible(bool value)
 {
 	m_isDebugPhysicVisible = value;
-}
-
-void Scene::culling(const BaseCamera & camera)
-{
-	//m_renderer->updateCulling(camera, m_pointLights, m_spotLights);
 }
 
 Terrain& Scene::getTerrain()

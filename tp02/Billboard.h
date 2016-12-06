@@ -4,8 +4,10 @@
 #include "Mesh.h"
 #include "Materials.h"
 #include "Texture.h"
+#include "IDrawable.h"
+#include "IRenderableComponent.h"
 
-class Billboard : public Component
+class Billboard : public Component, public IRenderableComponent, public IDrawable
 {
 private:
 	glm::vec3 m_translation;
@@ -43,5 +45,13 @@ public:
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
 
+	// Herited from IRenderableComponent
+	virtual const IDrawable & getDrawable(int drawableIndex) const override;
+	virtual const Material & getDrawableMaterial(int drawableIndex) const override;
+	virtual const int getDrawableCount() const override;
+
+	// Herited from IDrawable
+	virtual const AABB & getVisualBoundingBox() const override;
+	virtual void draw() const override;
 };
 

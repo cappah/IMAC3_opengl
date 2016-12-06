@@ -177,6 +177,31 @@ void Billboard::load(const Json::Value& rootComponent)
 	m_color = fromJsonValue<glm::vec4>(rootComponent["color"], glm::vec4(1, 1, 1, 1));
 }
 
+const IDrawable & Billboard::getDrawable(int drawableIndex) const
+{
+	return *this;
+}
+
+const Material & Billboard::getDrawableMaterial(int drawableIndex) const
+{
+	return *m_billboardMaterial.get();
+}
+
+const int Billboard::getDrawableCount() const
+{
+	return 1;
+}
+
+const AABB & Billboard::getVisualBoundingBox() const
+{
+	return m_quadMesh->getAABB();
+}
+
+void Billboard::draw() const
+{
+	m_quadMesh->draw();
+}
+
 void Billboard::addToScene(Scene& scene)
 {
 	scene.add(this);

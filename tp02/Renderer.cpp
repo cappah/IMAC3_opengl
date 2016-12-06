@@ -834,6 +834,10 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 
 }
 
+void Renderer::render(const BaseCamera & camera, DebugDrawRenderer * debugDrawer)
+{
+}
+
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)
 {
 	const int width = m_viewportRenderSize.x;

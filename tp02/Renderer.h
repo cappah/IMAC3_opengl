@@ -100,7 +100,9 @@ public:
 	void renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, MeshRenderer & meshRenderer);
 
 	//render all entities of the scene, using deferred shading.
+	//[DEPRECATED]
 	void render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer);
+	void render(const BaseCamera& camera, DebugDrawRenderer* debugDrawer);
 
 	//draw colliders on scene.
 	void debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities);

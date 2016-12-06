@@ -20,6 +20,20 @@ Camera::Camera() : Component(ComponentType::CAMERA),
 	m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
 }
 
+void Camera::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
+{
+	m_renderBatches.clear();
+	std::vector<IRenderableComponent*> visibleComponents;
+	octree.findVisibleElements(m_viewMatrix, m_projectionMatrix, m_position, m_forward, visibleComponents);
+
+	for (auto& visibleComponent : visibleComponents)
+	{
+		const int drawableCount = visibleComponent->getDrawableCount();
+		for(int i = 0; i < drawableCount; i++)
+			m_renderBatches[visibleComponent->getDrawableMaterial(i).getGLId()]->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+	}
+}
+
 void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 {
 
@@ -304,6 +318,20 @@ CameraEditor::CameraEditor() : BaseCamera(), isFPSMode(false), radius(3.f), thet
 {
 	updateProjection();
 	updateTransform();
+}
+
+void CameraEditor::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
+{
+	m_renderBatches.clear();
+	std::vector<IRenderableComponent*> visibleComponents;
+	octree.findVisibleElements(m_viewMatrix, m_projectionMatrix, eye, forward, visibleComponents);
+
+	for (auto& visibleComponent : visibleComponents)
+	{
+		const int drawableCount = visibleComponent->getDrawableCount();
+		for (int i = 0; i < drawableCount; i++)
+			m_renderBatches[visibleComponent->getDrawableMaterial(i).getGLId()]->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+	}
 }
 
 void CameraEditor::setTranslationLocal(glm::vec3 pos)

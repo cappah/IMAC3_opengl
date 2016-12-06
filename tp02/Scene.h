@@ -22,6 +22,9 @@
 #include "Skybox.h"
 #include "BehaviorManager.h"
 
+#include "BasicColliders.h"
+#include "IRenderableComponent.h"
+
 #include "jsoncpp/json/json.h"
 #include <iostream>
 #include <fstream>
@@ -85,6 +88,8 @@ private:
 	//skybox : 
 	Skybox m_skybox;
 
+	//Renderables :
+	Octree<IRenderableComponent, AABB> m_renderables;
 
 	//systems : 
 	Renderer* m_renderer;
@@ -144,6 +149,9 @@ public:
 	Scene& erase(CharacterController* characterController);
 	Scene& erase(Behavior* behavior);
 
+	void computeCulling();
+	void computeCullingForSingleCamera(BaseCamera& camera);
+
 	void render(const BaseCamera& camera);
 	void render(const BaseCamera& camera, DebugDrawRenderer& debugDrawer);
 	void renderColliders(const BaseCamera& camera);
@@ -174,8 +182,6 @@ public:
 	void setAreLightsBoundingBoxVisible(bool value);
 	void setAreOctreesVisible(bool value);
 	void setIsDebugPhysicVisible(bool value);
-
-	void culling(const BaseCamera& camera);
 
 	Terrain& getTerrain();
 	Skybox& getSkybox();

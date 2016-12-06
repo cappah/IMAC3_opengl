@@ -7,105 +7,49 @@
 
 #include "EditorGUI.h"
 
-MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), mesh(getMeshFactory().getDefault("default")), meshName("default"), materialName("default")
+MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), m_mesh(getMeshFactory().getDefault("default"))
 {
-	materialName = '\0';
-
-	material.push_back(getMaterialFactory().getDefault("defaultLit"));
+	m_materials.push_back(getMaterialFactory().getDefault("defaultLit"));
 }
 
-MeshRenderer::MeshRenderer(ResourcePtr<Mesh> _mesh, ResourcePtr<Material> _material) : Component(MESH_RENDERER), mesh(_mesh), meshName("default"), materialName("default")
+MeshRenderer::MeshRenderer(ResourcePtr<Mesh> mesh, ResourcePtr<Material> material) : Component(MESH_RENDERER), m_mesh(mesh)
 {
-	materialName = '\0';
-
-	material.push_back(_material);
+	m_materials.push_back(material);
 }
 
 MeshRenderer::~MeshRenderer()
 {
-	mesh.reset();
-	material.clear();
+	m_mesh.reset();
+	m_materials.clear();
 }
 
 void MeshRenderer::drawInInspector(Scene& scene)
 {
-	//char tmpMaterialName[20];
-	//materialName.copy(tmpMaterialName, materialName.size());
-	//tmpMaterialName[materialName.size()] = '\0';
-
-	//if (ImGui::InputText("materialName", tmpMaterialName, 20))
-	//{
-	//	materialName = tmpMaterialName;
-
-	//	if (getMaterialFactory().contains<Material3DObject>(materialName))
-	//	{
-	//		Material3DObject* tmpMat = getMaterialFactory().get<Material3DObject>(materialName);
-	//		if (tmpMat != nullptr)
-	//			material = tmpMat;
-	//	}
-	//}
-
-	//char tmpMaterialName[20];
-	//materialName.copy(tmpMaterialName, materialName.size());
-	//tmpMaterialName[materialName.size()] = '\0';
-
-	//%NOCOMMIT%
-	/*if(ImGui::InputText("materialName", tmpMaterialName, 20))
-		materialName = tmpMaterialName;
-	ImGui::SameLine();
-	if (ImGui::Button("add"))
-	{
-		if (getMaterialFactory().contains<Material3DObject>(materialName)) {
-			Material3DObject* tmpMat = getMaterialFactory().get<Material3DObject>(materialName);
-			if (tmpMat != nullptr)
-				material.push_back(tmpMat);
-		}
-	}*/
-
 	ResourcePtr<Material> materialQuery;
-	//EditorGUI::ResourceField<Material>(materialQuery, "materialName", tmpMaterialName, 20);
 	if (EditorGUI::ResourceField<Material>("materialName", materialQuery))
 	{
 		if (materialQuery.isValid())
 		{
-			material.push_back(materialQuery);
+			m_materials.push_back(materialQuery);
 		}
 	}
 
-	for (int i = 0; i < material.size(); i++)
+	for (int i = 0; i < m_materials.size(); i++)
 	{
 		ImGui::PushID(i);
-		ImGui::Text(material[i]->getName().c_str());
-		if (material.size() > 1)
+		ImGui::Text(m_materials[i]->getName().c_str());
+		if (m_materials.size() > 1)
 		{
 			ImGui::SameLine();
 			if (ImGui::Button("remove"))
 			{
-				material.erase(material.begin() + i);
+				m_materials.erase(m_materials.begin() + i);
 			}
 		}
 		ImGui::PopID();
 	}
 
-	//material->drawUI();
-
-	//char tmpMeshName[20];
-	//meshName.copy(tmpMeshName, meshName.size());
-	//tmpMeshName[meshName.size()] = '\0';
-	
-	// TODO
-	//if (ImGui::InputText("meshName", tmpMeshName, 20))
-	//{
-	//	meshName = tmpMeshName;
-
-	//	if (MeshFactory().contains(tmpMeshName))
-	//	{
-	//		setMesh(MeshFactory().get(tmpMeshName));
-	//	}
-	//}
-
 	ResourcePtr<Mesh> meshQuery;
-	//EditorGUI::ResourceField<Mesh>(meshQuery, "meshName", tmpMeshName, 20);
 	EditorGUI::ResourceField<Mesh>("meshName", meshQuery);
 
 	if (meshQuery.isValid())
@@ -123,15 +67,15 @@ void MeshRenderer::drawInInspector(Scene& scene, const std::vector<Component*>& 
 		for (auto component : components)
 		{
 			MeshRenderer* castedComponent = static_cast<MeshRenderer*>(component);
-			castedComponent->material.push_back(materialQuery);
+			castedComponent->m_materials.push_back(materialQuery);
 		}
 	}
 
-	for (int i = 0; i < material.size(); i++)
+	for (int i = 0; i < m_materials.size(); i++)
 	{
 		ImGui::PushID(i);
-		ImGui::Text(material[i]->getName().c_str());
-		if (material.size() > 1) 
+		ImGui::Text(m_materials[i]->getName().c_str());
+		if (m_materials.size() > 1) 
 		{
 			ImGui::SameLine();
 			if (ImGui::Button("remove")) 
@@ -139,7 +83,7 @@ void MeshRenderer::drawInInspector(Scene& scene, const std::vector<Component*>& 
 				for (auto component : components)
 				{
 					MeshRenderer* castedComponent = static_cast<MeshRenderer*>(component);
-					castedComponent->material.erase(material.begin() + i);
+					castedComponent->m_materials.erase(m_materials.begin() + i);
 				}
 			}
 		}
@@ -189,33 +133,33 @@ void MeshRenderer::eraseFromEntity(Entity& entity)
 
 void MeshRenderer::setMesh(ResourcePtr<Mesh> _mesh)
 {
-	mesh = _mesh;
+	m_mesh = _mesh;
 
 	if (m_entity != nullptr)
 	{
 		auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
 		if (collider != nullptr)
-			collider->coverMesh(*mesh);
+			collider->coverMesh(*m_mesh);
 	}
 }
 
 void MeshRenderer::addMaterial(ResourcePtr<Material> _material)
 {
-	material.push_back(_material);
+	m_materials.push_back(_material);
 }
 
 void MeshRenderer::removeMaterial(int idx)
 {
-	assert(idx >= 0 && idx < material.size());
+	assert(idx >= 0 && idx < m_materials.size());
 
-	material.erase(material.begin() + idx);
+	m_materials.erase(m_materials.begin() + idx);
 }
 
 void MeshRenderer::setMaterial(ResourcePtr<Material> _material, int idx)
 {
-	assert(idx >= 0 && idx < material.size());
+	assert(idx >= 0 && idx < m_materials.size());
 
-	material[idx] = _material;
+	m_materials[idx] = _material;
 }
 
 //void MeshRenderer::setMaterial(Material3DObject * _material)
@@ -223,34 +167,34 @@ void MeshRenderer::setMaterial(ResourcePtr<Material> _material, int idx)
 //	if (_material != nullptr)
 //		materialName = _material->name;
 //
-//	material = _material;
+//	m_materials = _material;
 //}
 
 const Material* MeshRenderer::getMaterial(int idx) const
 {
-	return material[idx].get();
+	return m_materials[idx].get();
 }
 
 const Mesh* MeshRenderer::getMesh() const
 {
-	return mesh.get();
+	return m_mesh.get();
 }
 
 std::string MeshRenderer::getMaterialName(int idx) const
 {
-	assert(idx >= 0 && idx < material.size());
+	assert(idx >= 0 && idx < m_materials.size());
 
-	return material[idx]->getCompletePath().getFilename();
+	return m_materials[idx]->getCompletePath().getFilename();
 }
 
 std::string MeshRenderer::getMeshName() const
 {
-	return mesh->getCompletePath().getFilename();
+	return m_mesh->getCompletePath().getFilename();
 }
 
 glm::vec3 MeshRenderer::getOrigin() const
 {
-	return mesh->origin;
+	return m_mesh->origin;
 }
 
 void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
@@ -259,10 +203,10 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 	glm::mat4 mvp = projection * view * modelMatrix;
 
-	int minMatMeshCount = std::min((int)material.size(), mesh->subMeshCount);
+	int minMatMeshCount = std::min((int)m_materials.size(), m_mesh->subMeshCount);
 	for (int i = 0; i < minMatMeshCount; i++)
 	{
-		Material3DObject* castedMaterial = static_cast<Material3DObject*>(material[i].get()); //TODO : a enlever lors de l'upgrade du pipeline graphique.
+		Material3DObject* castedMaterial = static_cast<Material3DObject*>(m_materials[i].get()); //TODO : a enlever lors de l'upgrade du pipeline graphique.
 
 		int texCount = 0;
 		castedMaterial->use();
@@ -270,18 +214,18 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 
 		castedMaterial->setUniform_MVP(mvp);
 		castedMaterial->setUniform_normalMatrix(normalMatrix);
-		if (mesh->getIsSkeletalMesh()) {
-			for (int boneIdx = 0; boneIdx < mesh->getSkeleton()->getBoneCount(); boneIdx++)
-				castedMaterial->setUniformBonesTransform(boneIdx, mesh->getSkeleton()->getBoneTransform(boneIdx));
+		if (m_mesh->getIsSkeletalMesh()) {
+			for (int boneIdx = 0; boneIdx < m_mesh->getSkeleton()->getBoneCount(); boneIdx++)
+				castedMaterial->setUniformBonesTransform(boneIdx, m_mesh->getSkeleton()->getBoneTransform(boneIdx));
 		}
-		castedMaterial->setUniformUseSkeleton(mesh->getIsSkeletalMesh());
+		castedMaterial->setUniformUseSkeleton(m_mesh->getIsSkeletalMesh());
 
-		mesh->draw(i);	
+		m_mesh->draw(i);	
 	}
 	//if there are more sub mesh than materials draw them with the last material
-	for (int i = minMatMeshCount; i < mesh->subMeshCount; i++)
+	for (int i = minMatMeshCount; i < m_mesh->subMeshCount; i++)
 	{
-		Material3DObject* castedMaterial = static_cast<Material3DObject*>(material.back().get()); //TODO : a enlever lors de l'upgrade du pipeline graphique.
+		Material3DObject* castedMaterial = static_cast<Material3DObject*>(m_materials.back().get()); //TODO : a enlever lors de l'upgrade du pipeline graphique.
 
 		int texCount = 0;
 		castedMaterial->use();
@@ -289,12 +233,12 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 
 		castedMaterial->setUniform_MVP(mvp);
 		castedMaterial->setUniform_normalMatrix(normalMatrix);
-		if (mesh->getIsSkeletalMesh())
-			for (int boneIdx = 0; boneIdx < mesh->getSkeleton()->getBoneCount(); boneIdx++)
-				castedMaterial->setUniformBonesTransform(boneIdx, mesh->getSkeleton()->getBoneTransform(boneIdx));
-		castedMaterial->setUniformUseSkeleton(mesh->getIsSkeletalMesh());
+		if (m_mesh->getIsSkeletalMesh())
+			for (int boneIdx = 0; boneIdx < m_mesh->getSkeleton()->getBoneCount(); boneIdx++)
+				castedMaterial->setUniformBonesTransform(boneIdx, m_mesh->getSkeleton()->getBoneTransform(boneIdx));
+		castedMaterial->setUniformUseSkeleton(m_mesh->getIsSkeletalMesh());
 
-		mesh->draw(i);
+		m_mesh->draw(i);
 	}
 }
 
@@ -302,29 +246,43 @@ void MeshRenderer::save(Json::Value & rootComponent) const
 {
 	Component::save(rootComponent);
 
-	mesh.save(rootComponent["mesh"]);
+	m_mesh.save(rootComponent["mesh"]);
 
 	//rootComponent["meshKey"] = mesh->name;
 
-	rootComponent["materialCount"] = material.size();
-	for (int i = 0; i < material.size(); i++)
-		material[i].save(rootComponent["material"][i]);
+	rootComponent["materialCount"] = m_materials.size();
+	for (int i = 0; i < m_materials.size(); i++)
+		m_materials[i].save(rootComponent["material"][i]);
 }
 
 void MeshRenderer::load(const Json::Value & rootComponent)
 {
 	Component::load(rootComponent);
 
-	mesh.load(rootComponent["mesh"]);
+	m_mesh.load(rootComponent["mesh"]);
 
 	int materialCount = rootComponent.get("materialCount", 0).asInt();
-	material.clear();
+	m_materials.clear();
 	for (int i = 0; i < materialCount; i++)
 	{
 		ResourcePtr<Material> newMaterial(rootComponent["material"][i]);
-		material.push_back(newMaterial);
-		//material.back()->initGL(); //TODO 10
+		m_materials.push_back(newMaterial);
+		//material.back()->initGL(); //TODO INITGL
 	}
-	materialName = '\0'; //rootComponent.get("materialName", "").asString();
-
 }
+
+const IDrawable & MeshRenderer::getDrawable(int drawableIndex) const
+{
+	return *getMesh()->getSubMesh(drawableIndex);
+}
+
+const Material & MeshRenderer::getDrawableMaterial(int drawableIndex) const
+{
+	return (drawableIndex >= m_materials.size()) ? *getMaterial(m_materials.size() - 1) : *getMaterial(drawableIndex);
+}
+
+const int MeshRenderer::getDrawableCount() const
+{
+	return getMesh()->getSubMeshCount();
+}
+

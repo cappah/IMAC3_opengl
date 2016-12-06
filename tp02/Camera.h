@@ -13,12 +13,17 @@
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "Component.h"
+#include "Octree.h"
+#include "IRenderableComponent.h"
+#include "RenderBatch.h"
 
 struct BaseCamera
 {
 	enum CameraMode { PERSPECTIVE, ORTHOGRAPHIC };
 
 	BaseCamera();
+
+	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) = 0;
 
 	//virtual void setTranslationLocal(glm::vec3 pos) = 0;
 	//virtual void translateLocal(glm::vec3 pos) = 0;
@@ -74,9 +79,13 @@ private :
 	float m_right;
 	float m_bottom;
 
+	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches;
+
 public:
 
 	Camera();
+
+	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 
@@ -115,7 +124,7 @@ public:
 };
 
 
-class CameraEditor : public BaseCamera
+class CameraEditor final : public BaseCamera
 {
 private:
 	float radius;
@@ -138,8 +147,12 @@ private:
 	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
 
+	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches;
+
 public:
 	CameraEditor();
+
+	void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
 
 	void setTranslationLocal(glm::vec3 pos);
 	void translateLocal(glm::vec3 pos);
