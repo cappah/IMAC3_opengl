@@ -137,6 +137,7 @@ void Texture::drawInInspector(Scene & scene)
 Texture::~Texture()
 {
 	delete[] pixels;
+	freeGL();
 }
 
 void Texture::setTextureParameters(GLint _internalFormat, GLenum _format, GLenum _type, bool _generateMipMap)
@@ -157,6 +158,46 @@ void Texture::setTextureWrapping(GLint _uWrapping, GLint _vWrapping)
 {
 	textureWrapping_u = _uWrapping;
 	textureWrapping_v = _vWrapping;
+}
+
+void Texture::resizePixelArray(int width, int height, const glm::vec4& color)
+{
+	comp = 4;
+	w = width;
+	h = height;
+	delete[] pixels;
+	pixels = new unsigned char[comp * width*height];
+
+	for (int i = 0; i < width * height * comp; i += comp)
+	{
+		for (int k = 0; k < comp; k++)
+		{
+			pixels[i + k] = color[k];
+		}
+	}
+}
+
+void Texture::resizePixelArray(int width, int height, const glm::vec3& color)
+{
+	comp = 4;
+	w = width;
+	h = height;
+	delete[] pixels;
+	pixels = new unsigned char[comp * width*height];
+
+	for (int i = 0; i < width * height * comp; i += comp)
+	{
+		for (int k = 0; k < comp; k++)
+		{
+			pixels[i + k] = color[k];
+		}
+	}
+}
+
+void Texture::resizeTexture(int width, int height)
+{
+	w = width;
+	h = height;
 }
 
 void Texture::initGL()
@@ -193,8 +234,10 @@ void Texture::freeGL()
 	//m_textureUseCounts--;
 
 	//if (m_textureUseCounts <= 0)
-	if(glId > 0){
+	if(glId > 0)
+	{
 		glDeleteTextures(1, &glId);
+		glId = 0;
 	}
 }
 
@@ -260,6 +303,7 @@ CubeTexture::~CubeTexture()
 	{
 		delete[] pixels[i];
 	}
+	freeGL();
 }
 
 void CubeTexture::setTextureParameters(GLint _internalFormat, GLenum _format, GLenum _type, bool _generateMipMap)
@@ -281,6 +325,55 @@ void CubeTexture::setTextureWrapping(GLint _sWrapping, GLint _tWrapping, GLint _
 	textureWrapping_s = _sWrapping;
 	textureWrapping_t = _tWrapping;
 	textureWrapping_r = _rWrapping;
+}
+
+void CubeTexture::resizePixelArrays(int width, int height, const glm::vec4& color)
+{
+	comp = 4;
+	w = width;
+	h = height;
+	delete[] pixels;
+
+	for (int j = 0; j < 6; j++)
+	{
+		delete[] pixels[j];
+		pixels[j] = new unsigned char[comp*width*height];
+
+		for (int i = 0; i < width * height * comp; i += comp)
+		{
+			pixels[j][i] = color.r;
+			pixels[j][i + 1] = color.g;
+			pixels[j][i + 2] = color.b;
+			pixels[j][i + 3] = color.a;
+		}
+	}
+}
+
+void CubeTexture::resizePixelArrays(int width, int height, const glm::vec3& color)
+{
+	comp = 3;
+	w = width;
+	h = height;
+	delete[] pixels;
+
+	for (int j = 0; j < 6; j++)
+	{
+		delete[] pixels[j];
+		pixels[j] = new unsigned char[comp*width*height];
+
+		for (int i = 0; i < width * height * comp; i += comp)
+		{
+			pixels[j][i] = color.r;
+			pixels[j][i + 1] = color.g;
+			pixels[j][i + 2] = color.b;
+		}
+	}
+}
+
+void CubeTexture::resizeTexture(int width, int height)
+{
+	w = width;
+	h = height;
 }
 
 void CubeTexture::initGL()
@@ -319,8 +412,10 @@ void CubeTexture::initGL()
 
 void CubeTexture::freeGL()
 {
-	if (glId > 0){
-			glDeleteTextures(1, &glId);
+	if (glId > 0)
+	{
+		glDeleteTextures(1, &glId);
+		glId = 0;
 	}
 }
 
@@ -423,6 +518,30 @@ namespace GlHelper {
 		newTexture->setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
 		return newTexture;
+	}
+
+	void makeColorTexture(Texture& texture, float width, float height)
+	{
+		texture.resizeTexture(width, height);
+		texture.setTextureParameters(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, true);
+		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	}
+
+	void makeNormalTexture(Texture& texture, float width, float height)
+	{
+		texture.resizeTexture(width, height);
+		texture.setTextureParameters(GL_RGBA16, GL_RGBA, GL_FLOAT, true);
+		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	}
+
+	void makeDepthTexture(Texture& texture, float width, float height)
+	{
+		texture.resizeTexture(width, height);
+		texture.setTextureParameters(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT, true);
+		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	}
 }
 

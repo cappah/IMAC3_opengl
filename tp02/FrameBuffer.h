@@ -114,6 +114,34 @@ public:
 		m_attachedRenderbuffers[attachmentType] = renderBufferToAttach;
 	}
 
+	void attachTexture(const Texture* textureToAttach, GLenum attachmentType, int mipMapLevel = 0, int colorAttachmentOffset = 0)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_2D, textureToAttach->glId, mipMapLevel);
+
+		m_attachedTextures[attachmentType] = textureToAttach;
+	}
+
+	void detachTexture(GLenum attachmentType, int mipMapLevel = 0, int colorAttachmentOffset = 0)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_2D, 0, mipMapLevel);
+
+		m_attachedTextures[attachmentType] = nullptr;
+	}
+
+	void attachRenderBuffer(const Renderbuffer* renderBufferToAttach, GLenum attachmentType)
+	{
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachmentType, GL_RENDERBUFFER, renderBufferToAttach->getId());
+
+		m_attachedRenderbuffers[attachmentType] = renderBufferToAttach;
+	}
+
+	void detachRenderBuffer(GLenum attachmentType)
+	{
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachmentType, GL_RENDERBUFFER, 0);
+
+		m_attachedRenderbuffers[attachmentType] = nullptr;
+	}
+
 	const Texture* getAttachedTexture(GLenum attachmentType) const
 	{
 		auto& found = m_attachedTextures.find(attachmentType);

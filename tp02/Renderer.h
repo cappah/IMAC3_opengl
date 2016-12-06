@@ -58,8 +58,12 @@ private:
 	LightManager* lightManager;
 
 	//frame buffer for deferred lighting
-	GLuint gbufferFbo;
-	GLuint gbufferTextures[3];
+	//GLuint gbufferFbo;
+	//GLuint gbufferTextures[3];
+	GlHelper::Framebuffer gBufferFBO;
+	Texture gPassColorTexture;
+	Texture gPassNormalTexture;
+	Texture gPassDepthTexture;
 
 	//for blit pass 
 	std::shared_ptr<MaterialBlit> glProgram_blit;
@@ -101,8 +105,14 @@ public:
 
 	//render all entities of the scene, using deferred shading.
 	//[DEPRECATED]
+	//void render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer);
 	void render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer);
 	void render(const BaseCamera& camera, DebugDrawRenderer* debugDrawer);
+	void shadowPass(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
+	void gPass(const glm::mat4& projection, const glm::mat4& worldToView);
+	void lightPass(const glm::mat4& screenToWorld, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
+	void deferredPipeline(const glm::mat4& projection, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& worldToView, const glm::mat4& screenToWorld, const glm::mat4& camera_mvp, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
+	void forwardPipeline(int width, int height, const glm::mat4& projection, const glm::mat4& worldToView);
 
 	//draw colliders on scene.
 	void debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities);

@@ -34,6 +34,11 @@ void Camera::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
 	}
 }
 
+const std::map<GLuint, std::shared_ptr<IRenderBatch>>& Camera::getRenderBatches() const
+{
+	return m_renderBatches;
+}
+
 void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
 {
 
@@ -332,6 +337,11 @@ void CameraEditor::computeCulling(const Octree<IRenderableComponent, AABB>& octr
 		for (int i = 0; i < drawableCount; i++)
 			m_renderBatches[visibleComponent->getDrawableMaterial(i).getGLId()]->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
 	}
+}
+
+const std::map<GLuint, std::shared_ptr<IRenderBatch>>& CameraEditor::getRenderBatches() const
+{
+	return m_renderBatches;
 }
 
 void CameraEditor::setTranslationLocal(glm::vec3 pos)

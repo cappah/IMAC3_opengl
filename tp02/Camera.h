@@ -24,6 +24,7 @@ struct BaseCamera
 	BaseCamera();
 
 	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) = 0;
+	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches() const = 0;
 
 	//virtual void setTranslationLocal(glm::vec3 pos) = 0;
 	//virtual void translateLocal(glm::vec3 pos) = 0;
@@ -86,6 +87,7 @@ public:
 	Camera();
 
 	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
+	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches() const override;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 
@@ -153,6 +155,7 @@ public:
 	CameraEditor();
 
 	void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches() const override;
 
 	void setTranslationLocal(glm::vec3 pos);
 	void translateLocal(glm::vec3 pos);

@@ -16,7 +16,7 @@ struct Texture final : public Resource
 	int h;
 	int comp;
 
-	unsigned char * pixels;
+	unsigned char* pixels;
 
 	GLuint glId;
 
@@ -43,6 +43,10 @@ struct Texture final : public Resource
 	void setTextureParameters(GLint _internalFormat = GL_RGB, GLenum _format = GL_RGB, GLenum _type = GL_UNSIGNED_BYTE, bool _generateMipMap = true);
 	void setTextureMinMaxFilters(GLint _maxFilter = GL_NEAREST, GLint _format = GL_NEAREST);
 	void setTextureWrapping(GLint _uWrapping = GL_CLAMP_TO_EDGE, GLint _vWrapping = GL_CLAMP_TO_EDGE);
+	void resizePixelArray(int width, int height, const glm::vec4& color);
+	void resizePixelArray(int width, int height, const glm::vec3& color);
+	// This fonction only change width and height without touching pixels
+	void resizeTexture(int width, int height);
 
 	void initGL();
 	void freeGL();
@@ -86,6 +90,10 @@ struct CubeTexture final : public Resource
 	void setTextureParameters(GLint _internalFormat = GL_RGB, GLenum _format = GL_RGB, GLenum _type = GL_UNSIGNED_BYTE, bool _generateMipMap = false);
 	void setTextureMinMaxFilters(GLint _maxFilter = GL_LINEAR, GLint _format = GL_LINEAR);
 	void setTextureWrapping(GLint _sWrapping = GL_CLAMP_TO_EDGE, GLint _tWrapping = GL_CLAMP_TO_EDGE, GLint _rWrapping = GL_CLAMP_TO_EDGE);
+	void resizePixelArrays(int width, int height, const glm::vec4& color);
+	void resizePixelArrays(int width, int height, const glm::vec3& color);
+	// This fonction only change width and height without touching pixels
+	void resizeTexture(int width, int height);
 
 	void initGL();
 	void freeGL();
@@ -104,4 +112,11 @@ namespace GlHelper{
 	Texture* makeNewNormalTexture(float width, float height);
 	//make a basic depth texture with GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT
 	Texture* makeNewDepthTexture(float width, float height);
+
+	//make a basic color texture with GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE
+	void makeColorTexture(Texture& texture, float width, float height);
+	//make a basic normal texture with GL_RGBA16, GL_RGBA, GL_FLOAT
+	void makeNormalTexture(Texture& texture, float width, float height);
+	//make a basic depth texture with GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT
+	void makeDepthTexture(Texture& texture, float width, float height);
 }
