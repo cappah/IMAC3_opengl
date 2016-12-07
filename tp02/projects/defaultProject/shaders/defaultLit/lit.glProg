@@ -3,6 +3,7 @@
     "fragment" : "aogl_gPass.frag",
     "geometry" : "",
     "programType" : "lit",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : [
         {"type" : "texture", "name" : "Diffuse", "default" : "default" },
         {"type" : "texture", "name" : "Specular", "default" : "defaultSpecular"},

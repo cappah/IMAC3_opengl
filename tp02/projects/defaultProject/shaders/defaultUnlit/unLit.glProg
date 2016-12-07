@@ -3,5 +3,6 @@
     "fragment" : "wireframe.frag",
     "geometry" : "",
     "programType" : "unlit",
+    "pipelineType" : "transparent",
     "internalShaderParameters" : []
 }

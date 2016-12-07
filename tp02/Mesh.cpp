@@ -366,15 +366,15 @@ int Mesh::getSubMeshCount() const
 	return subMeshCount;
 }
 
-const SubMesh* Mesh::getSubMesh(int subMeshIndex) const
+std::shared_ptr<SubMesh> Mesh::makeSharedSubMesh(int subMeshIndex) const
 {
 	assert(subMeshCount >= 0 && subMeshIndex < subMeshCount);
-	return new SubMesh(this, subMeshIndex);
+	return std::make_shared<SubMesh>(this, subMeshIndex);
 }
 
-const AABB& Mesh::getAABB() const
+const AABB& Mesh::getLocalAABB() const
 {
-	return m_aabb;
+	return m_localAABB;
 }
 
 void Mesh::computeBoundingBox()
@@ -413,7 +413,7 @@ void Mesh::computeBoundingBox()
 	// Compute aligned axis bounding box : 
 	const glm::vec3 center = (topRight - bottomLeft) * 0.5f;
 	const glm::vec3 halfSizes = (topRight - bottomLeft) * 0.5f;
-	m_aabb = AABB(center, halfSizes);
+	m_localAABB = AABB(center, halfSizes);
 }
 
 bool Mesh::isIntersectedByRay(const Ray & ray, CollisionInfo & collisionInfo) const
@@ -587,14 +587,59 @@ void Mesh::loadAnimations(const FileHandler::CompletePath& scenePath, const aiSc
 //////////////////////////////////////////////////////
 //// BEGIN : SubMesh
 
+void SubMesh::setModelMatrix(const glm::mat4 & modelMatrix)
+{
+	m_modelMatrix = modelMatrix;
+}
+
+void SubMesh::setAABB(const AABB & aabb)
+{
+	m_aabb = aabb;
+}
+
 const AABB & SubMesh::getVisualBoundingBox() const
 {
-	return m_meshPtr->getAABB();
+	return m_aabb;
 }
 
 void SubMesh::draw() const
 {
 	m_meshPtr->draw(m_subMeshId);
+}
+
+const glm::mat4 & SubMesh::getModelMatrix() const
+{
+	return m_modelMatrix;
+}
+
+bool SubMesh::castShadows() const
+{
+	return m_castShadow;
+}
+
+const Mesh * SubMesh::getMeshPtr() const
+{
+	return m_meshPtr;
+}
+
+void SubMesh::setExternalsOf(const MaterialLit& material, const glm::mat4& projection, const glm::mat4& view) const
+{
+	glm::mat4 modelMatrix = getModelMatrix();
+	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
+	glm::mat4 mvp = projection * view * modelMatrix;
+
+	// Uniform MVP :
+	material.setUniform_MVP(mvp);
+	// Uniform NormalMatrix
+	material.setUniform_normalMatrix(normalMatrix);
+	// Uniform BonesTransform
+	if (getMeshPtr()->getIsSkeletalMesh())
+	{
+		for (int boneIdx = 0; boneIdx < getMeshPtr()->getSkeleton()->getBoneCount(); boneIdx++)
+			material.setUniformBonesTransform(boneIdx, getMeshPtr()->getSkeleton()->getBoneTransform(boneIdx));
+	}
+	// Uniform UseSkeleton
+	material.setUniformUseSkeleton(getMeshPtr()->getIsSkeletalMesh());
 }
 
 //// END : SubMesh

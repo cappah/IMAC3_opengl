@@ -3,5 +3,6 @@
     "fragment" : "debugDrawer.frag",
     "geometry" : "",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

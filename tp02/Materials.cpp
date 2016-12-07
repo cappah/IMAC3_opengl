@@ -60,33 +60,36 @@ namespace MaterialHelper {
 
 Material::Material()
 	: m_glProgramId(0)
+	, m_pipelineType(PipelineTypes::OPAQUE_PIPILINE)
 {
 
 }
-
-Material::Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters)
-	: Resource(glProgramPath)
-	, m_glProgramId(glProgramId)
-	, m_glProgramName(glProgramPath.getFilename())
-{
-	for (auto shaderParameter : internalParameters)
-	{
-		m_internalParameters.push_back(shaderParameter->clone());
-	}
-
-	initInternalParameters();
-	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
-}
-
-Material::Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-	: Material(glProgramPath, glProgramId, internalParameters)
-{
-
-}
+//
+//Material::Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters)
+//	: Resource(glProgramPath)
+//	, m_glProgramId(glProgramId)
+//	, m_glProgramName(glProgramPath.getFilename())
+//	, m_pipelineType(pipelineType)
+//{
+//	for (auto shaderParameter : internalParameters)
+//	{
+//		m_internalParameters.push_back(shaderParameter->clone());
+//	}
+//
+//	initInternalParameters();
+//	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+//}
+//
+//Material::Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+//	: Material(glProgramPath, glProgramId, pipelineType, internalParameters)
+//{
+//
+//}
 
 Material::Material(const ShaderProgram& shaderProgram)
 	: m_glProgramId(shaderProgram.id)
 	, m_glProgramName(shaderProgram.getName())
+	, m_pipelineType(shaderProgram.getPipelineType())
 {
 	for (auto shaderParameter : shaderProgram.getInternalParameters())
 	{
@@ -132,6 +135,7 @@ void Material::init(const FileHandler::CompletePath& path)
 
 void Material::init(const ShaderProgram & shaderProgram)
 {
+	m_pipelineType = shaderProgram.getPipelineType();
 	m_glProgramId = shaderProgram.id;
 	m_internalParameters.clear();
 	for (auto shaderParameter : shaderProgram.getInternalParameters())
@@ -153,7 +157,7 @@ void Material::drawUI()
 	}
 }
 
-void Material::pushInternalsToGPU(int& boundTextureCount)
+void Material::pushInternalsToGPU(int& boundTextureCount) const 
 {
 	for (auto& parameter : m_internalParameters)
 	{
@@ -169,6 +173,11 @@ void Material::setExternalParameters(const std::vector<std::shared_ptr<ExternalS
 	}
 }
 
+void Material::use() const
+{
+	glUseProgram(m_glProgramId);
+}
+
 void Material::use()
 {
 	glUseProgram(m_glProgramId);
@@ -179,8 +188,15 @@ GLuint Material::getGLId() const
 	return m_glProgramId;
 }
 
-void Material::loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+PipelineTypes Material::getRenderPipelineType() const
 {
+	return m_pipelineType;
+}
+
+void Material::loadFromShaderProgramDatas(GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+{
+	m_pipelineType = pipelineType;
+
 	m_internalParameters.clear();
 	m_externalParameters.clear();
 
@@ -195,10 +211,15 @@ void Material::loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::s
 
 void Material::save(Json::Value & entityRoot) const
 {
+	// Pipeline type : 
+	entityRoot["pipelineType"] = PipelineTypesToString[m_pipelineType];
+
+	// Program name :
 	entityRoot["shaderProgramName"] = m_glProgramName;
 	assert(getProgramFactory().contains(m_glProgramName));
 	entityRoot["programType"] = ShaderProgramTypes[getProgramFactory().get(m_glProgramName)->getType()];
 
+	// Internal parameters :
 	int parameterIdx = 0;
 	for (auto& parameter : m_internalParameters)
 	{
@@ -209,19 +230,29 @@ void Material::save(Json::Value & entityRoot) const
 
 void Material::load(const Json::Value & entityRoot)
 {
+	// Pipeline type : 
+	auto foundItPipelineType = std::find(PipelineTypesToString.begin(), PipelineTypesToString.end(), entityRoot.get("pipelineType", "").asString());
+	assert(foundItPipelineType != PipelineTypesToString.end());
+	int foundIdxPipelineType = foundItPipelineType - PipelineTypesToString.begin();
+	m_pipelineType = (PipelineTypes)foundIdxPipelineType;
+
+	// Program name : 
 	m_glProgramName = entityRoot.get("shaderProgramName", "").asString();
 	assert(m_glProgramName != "");
 
+	// Init from shader program : 
 	getProgramFactory().get(m_glProgramName)->LoadMaterialInstance(this);
 
+	// Internal parameters : 
 	int parameterIdx = 0;
 	for (auto& parameter : m_internalParameters)
 	{
 		parameter->load(entityRoot["internalParameters"][parameterIdx]);
 		parameterIdx++;
 	}
-
 	initInternalParameters();
+
+	// Add ref to shader program :
 	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 }
 

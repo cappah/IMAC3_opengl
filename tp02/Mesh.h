@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <memory>
 
 #include "glew/glew.h"
 
@@ -14,6 +15,8 @@
 
 #include "Resource.h"
 #include "IDrawable.h"
+
+#include "BatchableWith.h"
 
 
 //forwards : 
@@ -49,7 +52,7 @@ struct Mesh : public Resource
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
 	glm::vec3 origin;
-	AABB m_aabb;
+	AABB m_localAABB;
 
 	enum Vbo_usage { USE_INDEX = 1 << 0, USE_VERTICES = 1 << 1, USE_UVS = 1 << 2, USE_NORMALS = 1 << 3, USE_TANGENTS = 1 << 4 , USE_BONES = 1 << 5/* , USE_INSTANTIATION = 1 << 5 */};
 	enum Vbo_types { VERTICES = 0, NORMALS, UVS, TANGENTS, BONE_IDS, BONE_WEIGHTS /* INSTANCE_TRANSFORM */, INDEX };
@@ -107,8 +110,8 @@ struct Mesh : public Resource
 	void draw(int idx) const;
 
 	int getSubMeshCount() const;
-	const SubMesh* getSubMesh(int subMeshIndex) const;
-	const AABB& getAABB() const;
+	std::shared_ptr<SubMesh> makeSharedSubMesh(int subMeshIndex) const;
+	const AABB& getLocalAABB() const;
 
 	void computeBoundingBox();
 
@@ -125,16 +128,34 @@ private:
 	void loadAnimations(const FileHandler::CompletePath& scenePath, const aiScene* scene);
 };
 
-class SubMesh final : public IDrawable
+class MaterialLit;
+
+// Represent an instance of a subpart of the mesh in the world.
+class SubMesh final : public IBatchableWith<MaterialLit>
 {
 private:
 	const Mesh* m_meshPtr;
 	const int m_subMeshId;
-public:
-	SubMesh(const Mesh* mesh, int id) : m_meshPtr(mesh), m_subMeshId(id)
-	{}
+	glm::mat4 m_modelMatrix;
+	AABB m_aabb;
+	bool m_castShadow;
 
+public:
+	SubMesh(const Mesh* mesh, int id) 
+		: m_meshPtr(mesh)
+		, m_subMeshId(id)
+		, m_castShadow(true)
+	{}
+	void setModelMatrix(const glm::mat4& modelMatrix);
+	void setAABB(const AABB& aabb);
+
+	// Herited from IDrawable
 	const AABB & getVisualBoundingBox() const override;
 	void draw() const override;
+	virtual const glm::mat4& getModelMatrix() const override;
+	virtual bool castShadows() const override;
+	const Mesh* getMeshPtr() const;
+
+	void setExternalsOf(const MaterialLit& material, const glm::mat4& projection, const glm::mat4& view) const override;
 
 };

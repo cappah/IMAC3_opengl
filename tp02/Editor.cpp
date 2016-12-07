@@ -432,6 +432,12 @@ void Editor::drawMenuEntry_camera()
 
 void Editor::drawMenuEntry_addEntity(Scene& scene)
 {
+	const glm::vec3& cameraPosition = m_camera->getCameraPosition();
+	const glm::vec3& cameraForward = m_camera->getCameraForward();
+	glm::vec3 newEntityPosition = cameraForward;
+	newEntityPosition *= 3.f;
+	newEntityPosition += cameraPosition;
+
 	if (ImGui::BeginMenu("Add default entities"))
 	{
 		if (ImGui::Button("add empty entity"))
@@ -440,7 +446,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			auto newCollider = new BoxCollider(getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"));
 			newEntity->add(newCollider);
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 		ImGui::SameLine();
@@ -453,7 +459,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			newEntity->add(newCollider).add(light);
 			newEntity->setName("point light");
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 		ImGui::SameLine();
@@ -465,7 +471,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			newEntity->add(newCollider).add(light);
 			newEntity->setName("directional light");
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 		ImGui::SameLine();
@@ -478,7 +484,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			newEntity->add(newCollider).add(light);
 			newEntity->setName("spot light");
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 
@@ -490,7 +496,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			newEntity->add(newCollider).add(meshRenderer);
 			newEntity->setName("cube");
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 
@@ -502,7 +508,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			newEntity->add(newCollider).add(camera);
 			newEntity->setName("camera");
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 
@@ -514,7 +520,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			newEntity->add(newCollider).add(flag);
 			newEntity->setName("flag");
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 
@@ -526,7 +532,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			newEntity->add(newCollider).add(pathPoint);
 			newEntity->setName("path point");
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 
@@ -538,7 +544,7 @@ void Editor::drawMenuEntry_addEntity(Scene& scene)
 			newEntity->add(newCollider).add(windZone);
 			newEntity->setName("wind zone");
 
-			newEntity->setTranslation(m_camera->getCameraPosition() + m_camera->getCameraForward()*3.f);
+			newEntity->setTranslation(newEntityPosition);
 			changeCurrentSelected(newEntity);
 		}
 

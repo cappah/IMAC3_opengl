@@ -1,5 +1,6 @@
 #include "Project.h"
 #include "Materials.h"
+#include "RenderBatch.h"
 #include "ShaderParameters.h"
 #include "ShaderProgram.h"
 
@@ -51,13 +52,19 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 
 	load(path, vertexShaderName, fragmentShaderName, geometryShaderName);
 
-	//Program type
+	// Pipeline type
+	auto foundItPipelineType = std::find(PipelineTypesToString.begin(), PipelineTypesToString.end(), root.get("pipelineType", "").asString());
+	assert(foundItPipelineType != PipelineTypesToString.end());
+	int foundIdxPipelineType = foundItPipelineType - PipelineTypesToString.begin();
+	m_pipelineType = (PipelineTypes)foundIdxPipelineType;
+
+	// Program type
 	auto foundItProgramType = std::find(ShaderProgramTypes.begin(), ShaderProgramTypes.end(), root.get("programType", "").asString());
 	assert(foundItProgramType != ShaderProgramTypes.end());
 	int foundIdxProgramType = foundItProgramType - ShaderProgramTypes.begin();
 	m_programType = (ShaderProgramType)foundIdxProgramType;
 
-	//Internal parameters
+	// Internal parameters
 	Json::Value internalShaderParameters = root["internalShaderParameters"];
 	int inernalShaderParameterCount = internalShaderParameters.size();
 	
@@ -71,7 +78,7 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 		m_internalShaderParameters.push_back(newParameter);
 	}
 
-	//external parameters
+	// External parameters
 	Json::Value externalShaderParameters = root["externalShaderParameters"];
 	int externalShaderParameterCount = externalShaderParameters.size();
 
@@ -168,7 +175,7 @@ void ShaderProgram::load(const FileHandler::CompletePath& shaderFolderPath, cons
 
 void ShaderProgram::LoadMaterialInstance(Material* material)
 {
-	material->loadFromShaderProgramDatas(id, m_internalShaderParameters, m_externalShaderParameters);
+	material->loadFromShaderProgramDatas(id,m_pipelineType, m_internalShaderParameters, m_externalShaderParameters);
 }
 
 void ShaderProgram::addMaterialRef(Material* ref)
@@ -197,14 +204,19 @@ ShaderProgramType ShaderProgram::getType() const
 	return m_programType;
 }
 
+PipelineTypes ShaderProgram::getPipelineType() const
+{
+	return m_pipelineType;
+}
+
 Material* ShaderProgram::makeNewMaterialInstance()
 {
 	switch (m_programType)
 	{
 	case LIT:
-		return new MaterialLit(m_completePath, id, m_internalShaderParameters, m_externalShaderParameters);
+		return new MaterialLit(*this);
 	case UNLIT:
-		return new MaterialUnlit(m_completePath, id, m_internalShaderParameters, m_externalShaderParameters);
+		return new MaterialUnlit(*this);
 	default:
 		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;
@@ -216,9 +228,9 @@ std::shared_ptr<Material> ShaderProgram::makeSharedMaterialInstance()
 	switch (m_programType)
 	{
 	case LIT:
-		return std::make_shared<MaterialLit>(m_completePath, id, m_internalShaderParameters, m_externalShaderParameters);
+		return std::make_shared<MaterialLit>(*this);
 	case UNLIT:
-		return std::make_shared<MaterialUnlit>(m_completePath, id, m_internalShaderParameters, m_externalShaderParameters);
+		return std::make_shared<MaterialUnlit>(*this);
 	default:
 		return nullptr;
 	}

@@ -4,10 +4,10 @@
 #include "Mesh.h"
 #include "Materials.h"
 #include "Texture.h"
-#include "IDrawable.h"
+#include "BatchableWith.h"
 #include "IRenderableComponent.h"
 
-class Billboard : public Component, public IRenderableComponent, public IDrawable
+class Billboard : public Component, public IRenderableComponent, public IBatchableWith<MaterialBillboard>
 {
 private:
 	glm::vec3 m_translation;
@@ -30,6 +30,7 @@ public:
 	glm::vec3 getTranslation() const;
 	glm::vec2 getScale() const;
 	glm::vec4 getColor() const;
+	const Texture& getTexture() const;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 	
@@ -53,5 +54,9 @@ public:
 	// Herited from IDrawable
 	virtual const AABB & getVisualBoundingBox() const override;
 	virtual void draw() const override;
+	virtual const glm::mat4& getModelMatrix() const override;
+	virtual bool castShadows() const override;
+
+	virtual void setExternalsOf(const MaterialBillboard& material, const glm::mat4& projection, const glm::mat4& view) const;
 };
 

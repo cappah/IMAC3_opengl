@@ -3,5 +3,6 @@
     "fragment" : "grassField.frag",
     "geometry" : "",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

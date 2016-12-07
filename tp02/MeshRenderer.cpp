@@ -7,14 +7,28 @@
 
 #include "EditorGUI.h"
 
-MeshRenderer::MeshRenderer() : Component(MESH_RENDERER), m_mesh(getMeshFactory().getDefault("default"))
+MeshRenderer::MeshRenderer() 
+	: Component(MESH_RENDERER)
+	, m_mesh(getMeshFactory().getDefault("default"))
 {
+	updateLocalMeshDatas();
 	m_materials.push_back(getMaterialFactory().getDefault("defaultLit"));
 }
 
-MeshRenderer::MeshRenderer(ResourcePtr<Mesh> mesh, ResourcePtr<Material> material) : Component(MESH_RENDERER), m_mesh(mesh)
+MeshRenderer::MeshRenderer(ResourcePtr<Mesh> mesh, ResourcePtr<Material> material) 
+	: Component(MESH_RENDERER)
+	, m_mesh(mesh)
 {
+	updateLocalMeshDatas();
 	m_materials.push_back(material);
+}
+
+MeshRenderer::MeshRenderer(const MeshRenderer & other)
+	: Component(MESH_RENDERER)
+{
+	m_mesh = other.m_mesh;
+	m_materials = other.m_materials;
+	updateLocalMeshDatas();
 }
 
 MeshRenderer::~MeshRenderer()
@@ -102,6 +116,27 @@ void MeshRenderer::drawInInspector(Scene& scene, const std::vector<Component*>& 
 	}
 }
 
+void MeshRenderer::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
+{
+	if (m_mesh.isValid())
+	{
+		for (auto& subMesh : m_subMeshes)
+		{
+			subMesh->setModelMatrix(m_entity->getModelMatrix());
+			subMesh->setAABB( AABB(m_mesh->getLocalAABB().center + translation, m_mesh->getLocalAABB().halfSizes * scale) );
+		}
+	}
+}
+
+void MeshRenderer::applyTransformFromPhysicSimulation(const glm::vec3 & translation, const glm::quat & rotation)
+{
+	if (m_mesh.isValid())
+	{
+		for (auto& subMesh : m_subMeshes)
+			subMesh->setModelMatrix(m_entity->getModelMatrix());
+	}
+}
+
 void MeshRenderer::eraseFromScene(Scene & scene)
 {
 	scene.erase(this);
@@ -134,13 +169,7 @@ void MeshRenderer::eraseFromEntity(Entity& entity)
 void MeshRenderer::setMesh(ResourcePtr<Mesh> _mesh)
 {
 	m_mesh = _mesh;
-
-	if (m_entity != nullptr)
-	{
-		auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
-		if (collider != nullptr)
-			collider->coverMesh(*m_mesh);
-	}
+	updateLocalMeshDatas();
 }
 
 void MeshRenderer::addMaterial(ResourcePtr<Material> _material)
@@ -242,6 +271,25 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 	}
 }
 
+void MeshRenderer::updateLocalMeshDatas()
+{
+	m_subMeshes.clear();
+	if (!m_mesh.isValid())
+		return;
+
+	for (int i = 0; i < m_mesh->getSubMeshCount(); i++)
+	{
+		m_subMeshes.push_back(m_mesh->makeSharedSubMesh(i));
+	}
+
+	if (m_entity != nullptr)
+	{
+		auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+		if (collider != nullptr)
+			collider->coverMesh(*m_mesh);
+	}
+}
+
 void MeshRenderer::save(Json::Value & rootComponent) const
 {
 	Component::save(rootComponent);
@@ -260,6 +308,7 @@ void MeshRenderer::load(const Json::Value & rootComponent)
 	Component::load(rootComponent);
 
 	m_mesh.load(rootComponent["mesh"]);
+	updateLocalMeshDatas();
 
 	int materialCount = rootComponent.get("materialCount", 0).asInt();
 	m_materials.clear();
@@ -273,7 +322,8 @@ void MeshRenderer::load(const Json::Value & rootComponent)
 
 const IDrawable & MeshRenderer::getDrawable(int drawableIndex) const
 {
-	return *getMesh()->getSubMesh(drawableIndex);
+	assert(drawableIndex >= 0 && drawableIndex < m_subMeshes.size());
+	return *m_subMeshes[drawableIndex];
 }
 
 const Material & MeshRenderer::getDrawableMaterial(int drawableIndex) const

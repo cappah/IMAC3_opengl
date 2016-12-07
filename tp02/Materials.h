@@ -24,6 +24,8 @@
 #include "FileHandler.h"
 #include "Resource.h"
 
+class IRenderBatch;
+
 //Statics :
 
 static const unsigned int MAX_BONE_COUNT = 100;
@@ -43,6 +45,7 @@ class Material : public Resource, public ISerializable
 {
 protected:
 	GLuint m_glProgramId;
+	PipelineTypes m_pipelineType;
 	std::vector<std::shared_ptr<InternalShaderParameterBase>> m_internalParameters;
 	std::map<std::string, std::shared_ptr<ExternalShaderParameterBase>> m_externalParameters;
 
@@ -50,8 +53,8 @@ protected:
 
 public:
 	Material();
-	Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters);
-	Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
+	//Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters);
+	//Material(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 	Material(const ShaderProgram& shaderProgram);
 	virtual ~Material();
 	//init internal params. Should be called in constructor, or just after construction.
@@ -59,10 +62,12 @@ public:
 	virtual void init(const FileHandler::CompletePath& path) override;
 	void init(const ShaderProgram& shaderProgram);
 	void drawUI();
-	void pushInternalsToGPU(int& boundTextureCount);
+	void pushInternalsToGPU(int& boundTextureCount) const;
 	virtual void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
+	void use() const;
 	void use();
 	GLuint getGLId() const;
+	PipelineTypes getRenderPipelineType() const;
 	template<typename T>
 	T* getInternalData(const std::string& parameterName) const
 	{
@@ -90,7 +95,7 @@ public:
 	//	}
 	//}
 
-	void loadFromShaderProgramDatas(GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
+	void loadFromShaderProgramDatas(GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
 	// Save and load internal parameters 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(const Json::Value & entityRoot) override;
@@ -98,6 +103,27 @@ public:
 	void save(const FileHandler::CompletePath& path) const;
 
 	virtual void drawInInspector(Scene & scene) override;
+
+	virtual std::shared_ptr<IRenderBatch> MakeSharedRenderBatch() const
+	{
+		assert(false && "You can't use this material in RenderBatch !");
+		return nullptr;
+	}
+};
+
+template<typename BatchMaterialType, typename ParentMaterialType>
+class BatchableMaterial : public ParentMaterialType
+{
+public:
+	BatchableMaterial() 
+		: ParentMaterialType()
+	{}
+
+	BatchableMaterial(const ShaderProgram& shaderProgram) 
+		: ParentMaterialType(shaderProgram)
+	{}
+
+	std::shared_ptr<IRenderBatch> MakeSharedRenderBatch() const override;
 };
 
 //engine materials : 
@@ -128,11 +154,11 @@ public:
 	virtual ~MaterialLight()
 	{}
 
-	MaterialLight(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialLight(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, pipelineType, internalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	virtual void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -195,11 +221,11 @@ public:
 	virtual ~MaterialPointLight()
 	{}
 
-	MaterialPointLight(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: MaterialLight(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialPointLight(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: MaterialLight(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -254,11 +280,11 @@ public:
 	virtual ~MaterialDirectionalLight()
 	{}
 
-	MaterialDirectionalLight(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: MaterialLight(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialDirectionalLight(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: MaterialLight(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -315,11 +341,11 @@ public:
 	virtual ~MaterialSpotLight()
 	{}
 
-	MaterialSpotLight(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: MaterialLight(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialSpotLight(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: MaterialLight(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -382,11 +408,11 @@ public:
 	virtual ~MaterialShadowPass()
 	{}
 
-	MaterialShadowPass(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialShadowPass(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -426,11 +452,11 @@ public:
 	virtual ~MaterialShadowPassOmni()
 	{}
 
-	MaterialShadowPassOmni(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialShadowPassOmni(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -489,11 +515,11 @@ public:
 	virtual ~MaterialBlit()
 	{}
 
-	MaterialBlit(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialBlit(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -513,7 +539,7 @@ public:
 
 
 //Default materials :
-class Material3DObject : public Material
+class Material3DObject : public BatchableMaterial<Material3DObject, Material> //public Material
 {
 private:
 	GLuint uniform_MVP;
@@ -523,11 +549,11 @@ private:
 
 public:
 	Material3DObject()
-		: Material()
+		: BatchableMaterial<Material3DObject, Material>()
 	{}
 
 	Material3DObject(const ShaderProgram& shaderProgram)
-		: Material(shaderProgram)
+		: BatchableMaterial<Material3DObject, Material>(shaderProgram)
 	{
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
@@ -535,11 +561,11 @@ public:
 	virtual ~Material3DObject()
 	{}
 
-	Material3DObject(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//Material3DObject(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -552,25 +578,25 @@ public:
 			PRINT_ERROR("error in texture initialization.")
 	}
 
-	void setUniform_MVP(glm::mat4& mvp)
+	void setUniform_MVP(const glm::mat4& mvp) const
 	{
 		GlHelper::pushParameterToGPU(uniform_MVP, mvp);
 	}
-	void setUniform_normalMatrix(glm::mat4& normalMatrix)
+	void setUniform_normalMatrix(const glm::mat4& normalMatrix) const
 	{
 		GlHelper::pushParameterToGPU(uniform_normalMatrix, normalMatrix);
 	}
-	void setUniformBonesTransform(unsigned int idx, const glm::mat4& boneTransform)
+	void setUniformBonesTransform(unsigned int idx, const glm::mat4& boneTransform) const
 	{
 		GlHelper::pushParameterToGPU(uniform_bonesTransform[idx], boneTransform);
 	}
-	void setUniformUseSkeleton(bool useSkeleton)
+	void setUniformUseSkeleton(bool useSkeleton) const
 	{
 		GlHelper::pushParameterToGPU(uniform_useSkeleton, useSkeleton);
 	}
 };
 
-class MaterialLit final : public Material3DObject
+class MaterialLit final : public BatchableMaterial<MaterialLit, Material3DObject>
 {
 private:
 
@@ -583,42 +609,42 @@ private:
 
 public:
 	MaterialLit()
-		: Material3DObject()
+		: BatchableMaterial<MaterialLit, Material3DObject>()
 	{}
 
 	MaterialLit(const ShaderProgram& shaderProgram)
-		: Material3DObject(shaderProgram)
+		: BatchableMaterial<MaterialLit, Material3DObject>(shaderProgram)
 	{
 
 	}
 
-	MaterialLit(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material3DObject(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
+	//MaterialLit(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material3DObject(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
 
-	}
+	//}
 };
 
-class MaterialUnlit final : public Material3DObject
+class MaterialUnlit final : public BatchableMaterial<MaterialUnlit, Material3DObject>
 {
 	GLuint uniform_color;
 
 public:
 	MaterialUnlit()
-		: Material3DObject()
+		: BatchableMaterial<MaterialUnlit, Material3DObject>()
 	{}
 
 	MaterialUnlit(const ShaderProgram& shaderProgram)
-		: Material3DObject(shaderProgram)
+		: BatchableMaterial<MaterialUnlit, Material3DObject>(shaderProgram)
 	{
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialUnlit(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material3DObject(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialUnlit(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material3DObject(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -651,11 +677,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialInstancedUnlit(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialInstancedUnlit(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -693,11 +719,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialDebugDrawer(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialDebugDrawer(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -707,7 +733,7 @@ public:
 			PRINT_ERROR("error in texture initialization.")
 	}
 
-	void setUniform_MVP(const glm::mat4& MVP)
+	void setUniform_MVP(const glm::mat4& MVP) const
 	{
 		GlHelper::pushParameterToGPU<glm::mat4>(uniform_MVP, MVP);
 	}
@@ -730,11 +756,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialSkybox(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialSkybox(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -757,7 +783,7 @@ class MaterialShadow : public Material
 };
 
 
-class MaterialBillboard final : public Material
+class MaterialBillboard final : public BatchableMaterial<MaterialBillboard, Material>
 {
 private:
 	GLuint uniform_MVP;
@@ -770,20 +796,20 @@ private:
 
 public:
 	MaterialBillboard()
-		: Material()
+		: BatchableMaterial<MaterialBillboard, Material>()
 	{}
 
 	MaterialBillboard(const ShaderProgram& shaderProgram)
-		: Material(shaderProgram)
+		: BatchableMaterial<MaterialBillboard, Material>(shaderProgram)
 	{
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialBillboard(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialBillboard(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, PipelineTypes pipelineType, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -799,31 +825,31 @@ public:
 			PRINT_ERROR("error in texture initialization.")
 	}
 
-	void setUniformMVP(const glm::mat4& VP)
+	void setUniformMVP(const glm::mat4& VP) const
 	{
 		GlHelper::pushParameterToGPU<glm::mat4>(uniform_MVP, VP);
 	}
-	void setUniformScale(const glm::vec2& scale)
+	void setUniformScale(const glm::vec2& scale) const
 	{
 		GlHelper::pushParameterToGPU(uniform_MVP, scale);
 	}
-	void setUniformTranslation(const glm::vec3& translation)
+	void setUniformTranslation(const glm::vec3& translation) const
 	{
 		GlHelper::pushParameterToGPU(uniform_MVP, translation);
 	}
-	void setUniformTexture(int texId)
+	void setUniformTexture(int texId) const
 	{
 		GlHelper::pushParameterToGPU(uniform_MVP, texId);
 	}
-	void setUniformCameraRight(const glm::vec3& camRight)
+	void setUniformCameraRight(const glm::vec3& camRight) const
 	{
 		GlHelper::pushParameterToGPU(uniform_MVP, camRight);
 	}
-	void setUniformCameraUp(const glm::vec3& camUp)
+	void setUniformCameraUp(const glm::vec3& camUp) const
 	{
 		GlHelper::pushParameterToGPU(uniform_MVP, camUp);
 	}
-	void setUniformColor(const glm::vec4& color)
+	void setUniformColor(const glm::vec4& color) const
 	{
 		GlHelper::pushParameterToGPU(uniform_MVP, color);
 	}
@@ -856,11 +882,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialTerrain(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material3DObject(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialTerrain(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material3DObject(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -932,11 +958,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialTerrainEdition(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialTerrainEdition(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -998,11 +1024,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialDrawOnTexture(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialDrawOnTexture(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -1051,11 +1077,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialGrassField(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialGrassField(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -1081,7 +1107,7 @@ public:
 	}
 };
 
-class MaterialParticlesCPU final : public Material
+class MaterialParticlesCPU final : public BatchableMaterial<MaterialParticlesCPU, Material>
 {
 private:
 	GLuint m_uniformVP;
@@ -1091,20 +1117,20 @@ private:
 
 public:
 	MaterialParticlesCPU()
-		: Material()
+		: BatchableMaterial<MaterialParticlesCPU, Material>()
 	{}
 
 	MaterialParticlesCPU(const ShaderProgram& shaderProgram)
-		: Material(shaderProgram)
+		: BatchableMaterial<MaterialParticlesCPU, Material>(shaderProgram)
 	{
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialParticlesCPU(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialParticlesCPU(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -1117,19 +1143,19 @@ public:
 			PRINT_ERROR("error in texture initialization.")
 	}
 
-	void glUniform_VP(const glm::mat4& VP)
+	void glUniform_VP(const glm::mat4& VP) const
 	{
 		GlHelper::pushParameterToGPU(m_uniformVP, VP);
 	}
-	void setUniformTexture(int texId)
+	void setUniformTexture(int texId) const
 	{
 		GlHelper::pushParameterToGPU(m_uniformTexture, texId);
 	}
-	void setUniformCameraRight(const glm::vec3& camRight)
+	void setUniformCameraRight(const glm::vec3& camRight) const
 	{
 		GlHelper::pushParameterToGPU(m_uniformCameraRight, camRight);
 	}
-	void setUniformCameraUp(const glm::vec3& camUp)
+	void setUniformCameraUp(const glm::vec3& camUp) const
 	{
 		GlHelper::pushParameterToGPU(m_uniformCameraUp, camUp);
 	}
@@ -1155,11 +1181,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialParticles(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialParticles(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
@@ -1206,11 +1232,11 @@ public:
 		setExternalParameters(shaderProgram.getExternalParameters());
 	}
 
-	MaterialParticleSimulation(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-		: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
-	{
-		setExternalParameters(externalParameters);
-	}
+	//MaterialParticleSimulation(const FileHandler::CompletePath& glProgramPath, GLuint glProgramId, std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+	//	: Material(glProgramPath, glProgramId, internalParameters, externalParameters)
+	//{
+	//	setExternalParameters(externalParameters);
+	//}
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{

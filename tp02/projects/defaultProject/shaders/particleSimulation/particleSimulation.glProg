@@ -3,5 +3,6 @@
     "fragment" : "",
     "geometry" : "particleSimulation.geom",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

@@ -247,7 +247,7 @@ void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::drawUI()
 	EditorGUI::ResourceField<Texture>(m_name, m_data); //TODO 10
 }
 
-void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount)
+void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount) const
 {
 	if (!m_data.isValid())
 		return;
@@ -300,7 +300,7 @@ void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::drawUI()
 	EditorGUI::ResourceField<CubeTexture>(m_name, m_data); //TODO 10
 }
 
-void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount)
+void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount) const
 {
 	glActiveTexture(GL_TEXTURE0 + boundTextureCount);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_data->glId);

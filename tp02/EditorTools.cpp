@@ -338,7 +338,7 @@ void SceneHierarchy::displayTreeEntityNode(Entity* entity, int &entityId, bool &
 	{
 		if (isSelected)
 		{
-			glm::vec3 cameraFinalPosition = entity->getTranslation() - m_editorPtr->getCamera().getCameraForward()*3.f;
+			glm::vec3 cameraFinalPosition = entity->getTranslation() - glm::vec3(m_editorPtr->getCamera().getCameraForward())*3.f;
 			m_editorPtr->getCamera().setTranslation(cameraFinalPosition);
 		}
 		else
@@ -444,7 +444,7 @@ DebugDrawRenderer::DebugDrawRenderer()
 
 	m_framebuffer.bind();
 	m_framebuffer.setDrawBuffer(GL_COLOR_ATTACHMENT0);
-	m_framebuffer.attachTexture(m_texture.get(), GlHelper::Framebuffer::AttachmentTypes::COLOR);
+	m_framebuffer.attachTexture(m_texture.get(), GL_COLOR_ATTACHMENT0);
 	m_framebuffer.checkIntegrity();
 	m_framebuffer.unbind();
 }
@@ -456,6 +456,7 @@ void DebugDrawRenderer::drawTexture(GLuint textureId)
 	glDisable(GL_DEPTH_TEST);
 
 	m_framebuffer.bind();
+	glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
 	m_material->use();
 

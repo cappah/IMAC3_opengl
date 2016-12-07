@@ -23,7 +23,7 @@ public:
 	virtual ~InternalShaderParameterBase() {}
 	virtual void init(GLuint glProgramId) = 0;
 	virtual void drawUI() = 0;
-	virtual void pushToGPU(int& boundTextureCount) = 0;
+	virtual void pushToGPU(int& boundTextureCount) const = 0;
 	const std::string& getName() const
 	{
 		return m_name;
@@ -201,7 +201,7 @@ public:
 		EditorGUI::ValueField<T>(m_name, m_data); //TODO 10
 	}
 
-	void pushToGPU(int& boundTextureCount) override
+	void pushToGPU(int& boundTextureCount) const override
 	{
 		GlHelper::pushParameterToGPU<T>(m_uniformId, m_data);
 	}
@@ -257,7 +257,7 @@ public:
 		//EditorGUI::ValueField<T>(m_name, m_data);
 	}
 
-	void pushToGPU(int& boundTextureCount) override
+	void pushToGPU(int& boundTextureCount) const override
 	{
 		for (int i = 0; i < m_datas.size(); i++)
 		{
@@ -309,7 +309,7 @@ public:
 	//init unifom id
 	void init(GLuint glProgramId);
 	void drawUI() override;
-	void pushToGPU(int& boundTextureCount) override;
+	void pushToGPU(int& boundTextureCount) const override;
 	void save(Json::Value & entityRoot) const override;
 	void load(const Json::Value & entityRoot) override;
 	void setData(const void* data) override;
@@ -333,7 +333,7 @@ public:
 	InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<CubeTexture> defaultValue);
 	void init(GLuint glProgramId);
 	void drawUI() override;
-	void pushToGPU(int& boundTextureCount) override;
+	void pushToGPU(int& boundTextureCount) const override;
 	void save(Json::Value & entityRoot) const override;
 	void load(const Json::Value & entityRoot) override;
 	void setData(const void* data) override;
@@ -401,7 +401,7 @@ public:
 		m_uniformId = glGetUniformLocation(glProgramId, m_name.data());
 	}
 
-	void pushToGPU(T& externalData)
+	void pushToGPU(T& externalData) const
 	{
 		GlHelper::pushParameterToGPU<T>(m_uniformId, externalData);
 	}
@@ -438,7 +438,7 @@ public:
 			m_uniformIds[i] = glGetUniformLocation(glProgram, (m_name + "[" + std::to_string(i) + "]").c_str());
 	}
 
-	void pushToGPU(std::vector<T&>& externalDatas) override
+	void pushToGPU(std::vector<T&>& externalDatas) const override
 	{
 		for (int i = 0; i < m_datas.size(); i++)
 		{
@@ -446,7 +446,7 @@ public:
 		}
 	}
 
-	void pushToGPU(T& externalData, int uniformIdx) override
+	void pushToGPU(T& externalData, int uniformIdx) const override
 	{
 		assert(uniformIdx < m_uniformIds.size());
 		GlHelper::pushParameterToGPU<T>(m_uniformIds[uniformIdx], externalData[uniformIdx]);
@@ -478,7 +478,7 @@ public:
 		m_uniformId = glGetUniformLocation(glProgramId, m_name.data());
 	}
 
-	void pushToGPU(GLint textureUnit)
+	void pushToGPU(GLint textureUnit) const
 	{
 		glUniform1i(m_uniformId, textureUnit);
 	}
@@ -508,7 +508,7 @@ public:
 		m_uniformId = glGetUniformLocation(glProgramId, m_name.data());
 	}
 
-	void pushToGPU(GLint textureUnit)
+	void pushToGPU(GLint textureUnit) const
 	{
 		glUniform1i(m_uniformId, textureUnit);
 	}

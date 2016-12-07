@@ -5,6 +5,8 @@
 //forwards :
 #include "Factories.h"
 #include "EditorTools.h" 
+#include "RenderBatch.h"
+#include "BatchableWith.h"
 
 Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight)  
 	: quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
@@ -207,9 +209,9 @@ void Renderer::initialyzeShadowMapping(std::string progamShadowPass_vert_path, s
 
 }
 
-void Renderer::renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, MeshRenderer& meshRenderer)
+void Renderer::renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, const IDrawable& drawable)
 {
-	glm::mat4 modelMatrix = meshRenderer.entity()->getModelMatrix(); //get modelMatrix
+	glm::mat4 modelMatrix = drawable.getModelMatrix(); //get modelMatrix
 
 	// From object to light (MV for light)
 	glm::mat4 objectToLight = lightView * modelMatrix;
@@ -222,14 +224,14 @@ void Renderer::renderShadows(const glm::mat4& lightProjection, const glm::mat4& 
 	shadowPassMaterial->setUniformMVP(objectToLightScreen);
 
 	//draw mesh : 
-	meshRenderer.getMesh()->draw();
+	drawable.draw();
 
 }
 
-void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, MeshRenderer & meshRenderer)
+void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, const IDrawable& drawable)
 {
 	//get modelMatrix
-	glm::mat4 modelMatrix = meshRenderer.entity()->getModelMatrix();
+	glm::mat4 modelMatrix = drawable.getModelMatrix();
 
 	for (int i = 0; i < 6; i++)
 	{
@@ -246,9 +248,9 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 	shadowPassOmniMaterial->setUniformFarPlane(farPlane);
 
 	//draw mesh : 
-	meshRenderer.getMesh()->draw();
+	drawable.draw();
 }
-//
+
 //
 //void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer)
 //{
@@ -638,25 +640,33 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 //	}
 //
 //}
+//
 
-
-void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer)
+void Renderer::render(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
 {
-	// Update matrices : 
+	////////////////////////////////////////////////////////////////////////
+	///////// BEGIN : Update matrices
 	const int width = m_viewportRenderSize.x;
 	const int height = m_viewportRenderSize.y;
-	glm::vec3 cameraPosition = camera.getCameraPosition();
-	glm::vec3 cameraForward = camera.getCameraForward();
-	glm::mat4 projection = camera.getProjectionMatrix();
-	glm::mat4 worldToView = camera.getViewMatrix();
-	glm::mat4 camera_mvp = projection * worldToView;
-	glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
-	glm::vec3 cameraPosition = camera.getCameraPosition();
-	glm::vec3 cameraForward = camera.getCameraForward();
+	const glm::vec3& cameraPosition = camera.getCameraPosition();
+	const glm::vec3& cameraForward = camera.getCameraForward();
+	const glm::mat4& projection = camera.getProjectionMatrix();
+	const glm::mat4& view = camera.getViewMatrix();
+	const glm::mat4 camera_mvp = projection * view;
+	const glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
+	///////// END : Update matrices
+	////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////
+	///////// BEGIN : Get render batches
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches = camera.getRenderBatches(PipelineTypes::OPAQUE_PIPILINE);
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches= camera.getRenderBatches(PipelineTypes::TRANSPARENT_PIPELINE);
+	///////// END : Get render batches
+	////////////////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : ShadowPass
-	shadowPass(camera, pointLights, directionalLights, spotLights);
+	shadowPass(camera, opaqueRenderBatches, transparentRenderBatches, pointLights, directionalLights, spotLights);
 	///////// END :  ShadowPass
 	////////////////////////////////////////////////////////////////////////
 
@@ -669,43 +679,36 @@ void Renderer::render(const BaseCamera& camera, std::vector<MeshRenderer*>& mesh
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN :  Deferred
-	deferredPipeline(projection, cameraPosition, cameraForward, worldToView, screenToWorld, camera_mvp, pointLights, directionalLights, spotLights);
+	deferredPipeline(opaqueRenderBatches, projection, view, cameraPosition, cameraForward, screenToWorld, camera_mvp, pointLights, directionalLights, spotLights);
 	///////// END :  Deferred
 	////////////////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN :  Forward 
-	forwardPipeline(width, height, projection, worldToView);
+	forwardPipeline(transparentRenderBatches, width, height, projection, view);
 	///////// END :  Forward
 	////////////////////////////////////////////////////////////////////////
 	
 	///////////// end draw world
 
-	///////////////////////////////////////////////////////////////////////
-	///// BEGIN : Debug draw
+	/////////////////////////////////////////////////////////////////////////
+	/////// BEGIN : Debug draw
 	if (debugDrawer != nullptr)
 	{
-		debugDrawer->drawOutputIfNeeded("gBuffer_color", gPassColorTexture.glId);
-		debugDrawer->drawOutputIfNeeded("gBuffer_normal", gPassNormalTexture.glId);
-		debugDrawer->drawOutputIfNeeded("gBuffer_depth", gPassDepthTexture.glId);
-		CHECK_GL_ERROR("error in render debug pass");
-		glViewport(0, 0, m_viewportRenderSize.x, m_viewportRenderSize.y);
-		m_mainBuffer.bind();
+		debugDrawRenderer(*debugDrawer);
 	}
-	///// END : Debug draw
-	///////////////////////////////////////////////////////////////////////
+	/////// END : Debug draw
+	/////////////////////////////////////////////////////////////////////////
 
+	// Prepare futur calls
+	glViewport(0, 0, width, height);
+	m_mainBuffer.bind();
 }
 
-void Renderer::render(const BaseCamera & camera, DebugDrawRenderer * debugDrawer)
+void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
 {
-	// TODO RENDERING
-}
-
-void Renderer::shadowPass(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
-{
-	glm::vec3 cameraForward = camera.getCameraForward(); //TODO RENDERING glm::vec3 -> glm::vec3&
-	glm::vec3 cameraPosition = camera.getCameraPosition(); //TODO RENDERING glm::vec3 -> glm::vec3&
+	const glm::vec3& cameraForward = camera.getCameraForward();
+	const glm::vec3& cameraPosition = camera.getCameraPosition();
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -728,10 +731,21 @@ void Renderer::shadowPass(const BaseCamera& camera, std::vector<PointLight*>& po
 			glm::mat4 lightProjection = glm::perspective(spotLights[lightIdx]->angle*2.f, 1.f, 0.1f, 100.f);
 			glm::mat4 lightView = glm::lookAt(spotLights[lightIdx]->position, spotLights[lightIdx]->position + spotLights[lightIdx]->direction, spotLights[lightIdx]->up);
 
-			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
+			for (auto& renderBatchPair : opaqueRenderBatches)
 			{
-				renderShadows(lightProjection, lightView, *meshRenderers[meshIdx]);
+				const IRenderBatch& renderBatch = *renderBatchPair.second;
+				for (auto& drawable : renderBatch.getDrawables())
+				{
+					if(drawable->castShadows())
+						renderShadows(lightProjection, lightView, *drawable);
+				}
 			}
+
+			//for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
+			//{
+			//	renderShadows(lightProjection, lightView, *meshRenderers[meshIdx]);
+			//}
+
 			lightManager->unbindShadowMapFBO(LightManager::SPOT);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
@@ -755,10 +769,20 @@ void Renderer::shadowPass(const BaseCamera& camera, std::vector<PointLight*>& po
 			glm::mat4 lightProjection = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
 			glm::mat4 lightView = glm::lookAt(eye, orig, directionalLights[lightIdx]->up);
 
-			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
+			for (auto& renderBatchPair : opaqueRenderBatches)
 			{
-				renderShadows(lightProjection, lightView, *meshRenderers[meshIdx]);
+				const IRenderBatch& renderBatch = *renderBatchPair.second;
+				for (auto& drawable : renderBatch.getDrawables())
+				{
+					if (drawable->castShadows())
+						renderShadows(lightProjection, lightView, *drawable);
+				}
 			}
+
+			//for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
+			//{
+			//	renderShadows(lightProjection, lightView, *meshRenderers[meshIdx]);
+			//}
 			lightManager->unbindShadowMapFBO(LightManager::DIRECTIONAL);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
@@ -785,10 +809,20 @@ void Renderer::shadowPass(const BaseCamera& camera, std::vector<PointLight*>& po
 			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
 			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)));
 
-			for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
+			for (auto& renderBatchPair : opaqueRenderBatches)
 			{
-				renderShadows(100.f, pointLights[lightIdx]->position, lightVPs, *meshRenderers[meshIdx]); // draw shadow for the first spot light
+				const IRenderBatch& renderBatch = *renderBatchPair.second;
+				for (auto& drawable : renderBatch.getDrawables())
+				{
+					if (drawable->castShadows())
+						renderShadows(100.f, pointLights[lightIdx]->position, lightVPs, *drawable);
+				}
 			}
+
+			//for (int meshIdx = 0; meshIdx < meshRenderers.size(); meshIdx++)
+			//{
+			//	renderShadows(100.f, pointLights[lightIdx]->position, lightVPs, *meshRenderers[meshIdx]); // draw shadow for the first spot light
+			//}
 			lightManager->unbindShadowMapFBO(LightManager::POINT);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
@@ -797,39 +831,23 @@ void Renderer::shadowPass(const BaseCamera& camera, std::vector<PointLight*>& po
 	CHECK_GL_ERROR("error in shadow pass");
 }
 
-void Renderer::gPass(const glm::mat4& projection, const glm::mat4& worldToView)
+void Renderer::gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view)
 {
-	gBufferFBO.bind();
-
-	// Default states
 	glEnable(GL_DEPTH_TEST);
 
-	// Clear the front buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//render meshes
-	for (int i = 0; i < meshRenderers.size(); i++)
+	// Render batches (meshes and flags for now)
+	for (auto& renderBatch : opaqueRenderBatches)
 	{
-		meshRenderers[i]->render(projection, worldToView);
+		renderBatch.second->render(projection, view);
 	}
-	CHECK_GL_ERROR("error when rendering meshes");
+	
+	// TODO RENDERING
+	////render terrain :
+	//terrain.render(projection, worldToView);
+	//CHECK_GL_ERROR("error when rendering terrain");
 
-	//render physic flags : 
-	for (int i = 0; i < flags.size(); i++)
-	{
-		flags[i]->render(projection, worldToView);
-	}
-	CHECK_GL_ERROR("error when rendering flags");
-
-	//render terrain :
-	terrain.render(projection, worldToView);
-	CHECK_GL_ERROR("error when rendering terrain");
-
-	terrain.renderGrassField(projection, worldToView);
-	CHECK_GL_ERROR("error when rendering grass");
-
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//terrain.renderGrassField(projection, worldToView);
+	//CHECK_GL_ERROR("error when rendering grass");
 
 	CHECK_GL_ERROR("error in G pass");
 }
@@ -1004,22 +1022,24 @@ void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& camera
 	CHECK_GL_ERROR("error in light pass");
 }
 
-void Renderer::deferredPipeline(const glm::mat4& projection, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& worldToView, const glm::mat4& screenToWorld, const glm::mat4& camera_mvp, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
+void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& screenToWorld, const glm::mat4& camera_mvp, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
 {
 	////// begin G pass 
-	gPass(projection, worldToView);
-	////// end G pass
-	m_mainBuffer.bind();
+	gBufferFBO.bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	gPass(opaqueRenderBatches, projection, view);
+	gBufferFBO.unbind();
+	////// end G pass
 
 	///// begin light pass
+	m_mainBuffer.bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	lightPass(screenToWorld, cameraPosition, cameraForward, pointLights, directionalLights, spotLights);
-	///// end light pass
-
 	m_mainBuffer.unbind();
+	///// end light pass
 }
 
-void Renderer::forwardPipeline(int width, int height, const glm::mat4& projection, const glm::mat4& worldToView)
+void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, int width, int height, const glm::mat4& projection, const glm::mat4& view)
 {
 	// Transfert depth to main buffer : 
 	gBufferFBO.bind(GL_READ_FRAMEBUFFER);
@@ -1028,21 +1048,33 @@ void Renderer::forwardPipeline(int width, int height, const glm::mat4& projectio
 	// Rebind main buffer as usual : 
 	m_mainBuffer.bind();
 
-	//render skybox : 
-	skybox.render(projection, worldToView);
+		//render skybox : 
+		//skybox.render(projection, worldToView); // TODO RENDERING
 
-	glEnable(GL_BLEND);
-	glDepthMask(GL_FALSE);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	for (int i = 0; i < billboards.size(); i++)
-		billboards[i]->render(projection, worldToView);
+		glEnable(GL_BLEND);
+		glDepthMask(GL_FALSE);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	for (int i = 0; i < particleEmitters.size(); i++)
-		particleEmitters[i]->render(projection, worldToView);
-	glDepthMask(GL_TRUE);
-	glDisable(GL_BLEND);
+		// Render batches (particles and billboards for now)
+		for (auto& renderBatch : transparentRenderBatches)
+		{
+			renderBatch.second->render(projection, view);
+		}
 
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
+
+	m_mainBuffer.unbind();
 	CHECK_GL_ERROR("error in forward pass");
+}
+
+void Renderer::debugDrawRenderer(DebugDrawRenderer& debugDrawer) const
+{
+	debugDrawer.drawOutputIfNeeded("final_frame", m_finalFrameColor->glId);
+	debugDrawer.drawOutputIfNeeded("gBuffer_color", gPassColorTexture.glId);
+	debugDrawer.drawOutputIfNeeded("gBuffer_normal", gPassNormalTexture.glId);
+	debugDrawer.drawOutputIfNeeded("gBuffer_depth", gPassDepthTexture.glId);
+	CHECK_GL_ERROR("error in render debug pass");
 }
 
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)

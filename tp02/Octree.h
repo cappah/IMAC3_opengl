@@ -116,6 +116,7 @@ void OctreeNode<ItemType, spatialKeyType>::findVisibleElements(const glm::mat4& 
 				results.push_back(elements[index]);
 			index++;
 		}
+		return;
 	}
 
 	//max depth not reached, we test childs :
@@ -123,7 +124,8 @@ void OctreeNode<ItemType, spatialKeyType>::findVisibleElements(const glm::mat4& 
 	{
 		if (childBounds[i]->containedInFrustum(view, projection, cameraPosition, cameraForward))
 		{
-			return childs[i]->findVisibleElements(view, projection, cameraPosition, cameraForward, results, (currentDepth+1), maxDepth);
+			if (childs[i] != nullptr)
+				return childs[i]->findVisibleElements(view, projection, cameraPosition, cameraForward, results, (currentDepth+1), maxDepth);
 		}
 	}
 

@@ -200,6 +200,7 @@
       <Filter>Physic</Filter>
     </ClCompile>
     <ClCompile Include="RenderBatch.cpp" />
+    <ClCompile Include="BatchableWith.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -425,6 +426,7 @@
       <Filter>Physic</Filter>
     </ClInclude>
     <ClInclude Include="RenderBatch.h" />
+    <ClInclude Include="BatchableWith.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

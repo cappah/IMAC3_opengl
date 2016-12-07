@@ -3,5 +3,6 @@
     "fragment" : "lightPass_directionalLight.frag",
     "geometry" : "",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

@@ -303,6 +303,8 @@ namespace Physic {
 
 	void ParticleEmitter::render(const glm::mat4 & projection, const glm::mat4 & view)
 	{
+		PRINT_WARNING("DEPRECATED[ParticleEmitter::render]");
+
 		glm::mat4 VP = projection * view;
 		glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
 		glm::vec3 CameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
@@ -339,6 +341,33 @@ namespace Physic {
 
 		glBindVertexArray(0);
 
+	}
+
+	const glm::mat4 & ParticleEmitter::getModelMatrix() const
+	{
+		assert(false && "A particle emitter doesn't have a model matrix, and can't cast shadow for now.");
+		return glm::mat4();
+	}
+
+	bool ParticleEmitter::castShadows() const
+	{
+		return false; // Can't cast shadow for now.
+	}
+
+	void ParticleEmitter::setExternalsOf(const MaterialParticlesCPU & material, const glm::mat4 & projection, const glm::mat4 & view) const
+	{
+		glm::mat4 VP = projection * view;
+		glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
+		glm::vec3 CameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
+		glm::vec3 CameraPos = glm::vec3(view[0][3], view[1][3], view[2][3]);
+		
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, getParticleTexture().glId);
+		
+		material.glUniform_VP(VP);
+		material.setUniformCameraRight(CameraRight);
+		material.setUniformCameraUp(CameraUp);
+		material.setUniformTexture(0);
 	}
 
 	void ParticleEmitter::updateVbos()
@@ -389,6 +418,11 @@ namespace Physic {
 		glEnableVertexAttribArray(SIZES);
 		glBufferData(GL_ARRAY_BUFFER, m_sizes.size()*sizeof(glm::vec2), &m_sizes[0], GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	const Texture & ParticleEmitter::getParticleTexture() const
+	{
+		return *m_particleTexture.get();
 	}
 
 	void ParticleEmitter::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)

@@ -3,5 +3,6 @@
     "fragment" : "lightPass_spotLight.frag",
     "geometry" : "",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

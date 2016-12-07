@@ -3,5 +3,6 @@
     "fragment" : "shadowPass.frag",
     "geometry" : "",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

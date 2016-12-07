@@ -22,21 +22,39 @@ Camera::Camera() : Component(ComponentType::CAMERA),
 
 void Camera::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
 {
-	m_renderBatches.clear();
+	for(int i = 0; i < PipelineTypes::COUNT; i++)
+		m_renderBatches[i].clear();
+
 	std::vector<IRenderableComponent*> visibleComponents;
 	octree.findVisibleElements(m_viewMatrix, m_projectionMatrix, m_position, m_forward, visibleComponents);
 
 	for (auto& visibleComponent : visibleComponents)
 	{
 		const int drawableCount = visibleComponent->getDrawableCount();
-		for(int i = 0; i < drawableCount; i++)
-			m_renderBatches[visibleComponent->getDrawableMaterial(i).getGLId()]->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+		for (int i = 0; i < drawableCount; i++)
+		{
+			PipelineTypes renderPipelineType = visibleComponent->getDrawableMaterial(i).getRenderPipelineType();
+			assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
+
+			auto foundRenderBatch = m_renderBatches[renderPipelineType].find(visibleComponent->getDrawableMaterial(i).getGLId());
+			if (foundRenderBatch != m_renderBatches[renderPipelineType].end())
+			{
+				foundRenderBatch->second->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+			}
+			else
+			{
+				auto newRenderBatch = visibleComponent->getDrawableMaterial(i).MakeSharedRenderBatch();
+				newRenderBatch->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+				m_renderBatches[renderPipelineType][visibleComponent->getDrawableMaterial(i).getGLId()] = newRenderBatch;
+			}
+		}
 	}
 }
 
-const std::map<GLuint, std::shared_ptr<IRenderBatch>>& Camera::getRenderBatches() const
+const std::map<GLuint, std::shared_ptr<IRenderBatch>>& Camera::getRenderBatches(PipelineTypes renderPipelineType) const
 {
-	return m_renderBatches;
+	assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
+	return m_renderBatches[renderPipelineType];
 }
 
 void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -203,22 +221,22 @@ void Camera::setCameraMode(CameraMode cameraMode)
 	updateProjection();
 }
 
-glm::mat4 Camera::getViewMatrix() const
+const glm::mat4& Camera::getViewMatrix() const
 {
 	return m_viewMatrix;
 }
 
-glm::mat4 Camera::getProjectionMatrix() const
+const glm::mat4& Camera::getProjectionMatrix() const
 {
 	return m_projectionMatrix;
 }
 
-glm::vec3 Camera::getCameraPosition() const
+const glm::vec3& Camera::getCameraPosition() const
 {
 	return m_position;
 }
 
-glm::vec3 Camera::getCameraForward() const
+const glm::vec3& Camera::getCameraForward() const
 {
 	return m_forward;
 }
@@ -327,7 +345,9 @@ CameraEditor::CameraEditor() : BaseCamera(), isFPSMode(false), radius(3.f), thet
 
 void CameraEditor::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
 {
-	m_renderBatches.clear();
+	for (int i = 0; i < PipelineTypes::COUNT; i++)
+		m_renderBatches[i].clear();
+
 	std::vector<IRenderableComponent*> visibleComponents;
 	octree.findVisibleElements(m_viewMatrix, m_projectionMatrix, eye, forward, visibleComponents);
 
@@ -335,13 +355,29 @@ void CameraEditor::computeCulling(const Octree<IRenderableComponent, AABB>& octr
 	{
 		const int drawableCount = visibleComponent->getDrawableCount();
 		for (int i = 0; i < drawableCount; i++)
-			m_renderBatches[visibleComponent->getDrawableMaterial(i).getGLId()]->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+		{
+			PipelineTypes renderPipelineType = visibleComponent->getDrawableMaterial(i).getRenderPipelineType();
+			assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
+
+			auto foundRenderBatch = m_renderBatches[renderPipelineType].find(visibleComponent->getDrawableMaterial(i).getGLId());
+			if (foundRenderBatch != m_renderBatches[renderPipelineType].end())
+			{
+				foundRenderBatch->second->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+			}
+			else
+			{
+				auto newRenderBatch = visibleComponent->getDrawableMaterial(i).MakeSharedRenderBatch();
+				newRenderBatch->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+				m_renderBatches[renderPipelineType][visibleComponent->getDrawableMaterial(i).getGLId()] = newRenderBatch;
+			}
+		}
 	}
 }
 
-const std::map<GLuint, std::shared_ptr<IRenderBatch>>& CameraEditor::getRenderBatches() const
+const std::map<GLuint, std::shared_ptr<IRenderBatch>>& CameraEditor::getRenderBatches(PipelineTypes renderPipelineType) const
 {
-	return m_renderBatches;
+	assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
+	return m_renderBatches[renderPipelineType];
 }
 
 void CameraEditor::setTranslationLocal(glm::vec3 pos)
@@ -501,22 +537,22 @@ void CameraEditor::setCameraMode(CameraMode cameraMode)
 	//nothing
 }
 
-glm::mat4 CameraEditor::getViewMatrix() const
+const glm::mat4& CameraEditor::getViewMatrix() const
 {
 	return m_viewMatrix;
 }
 
-glm::mat4 CameraEditor::getProjectionMatrix() const
+const glm::mat4& CameraEditor::getProjectionMatrix() const
 {
 	return m_projectionMatrix;
 }
 
-glm::vec3 CameraEditor::getCameraPosition() const
+const glm::vec3& CameraEditor::getCameraPosition() const
 {
 	return eye;
 }
 
-glm::vec3 CameraEditor::getCameraForward() const
+const glm::vec3& CameraEditor::getCameraForward() const
 {
 	return forward;
 }

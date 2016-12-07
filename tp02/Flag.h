@@ -18,12 +18,12 @@
 #include "Materials.h"
 #include "Octree.h"
 #include "Component.h"
-#include "IDrawable.h"
+#include "BatchableWith.h"
 #include "IRenderableComponent.h"
 
 namespace Physic {
 
-	class Flag : public Component, public IDrawable, public IRenderableComponent
+	class Flag : public Component, public IBatchableWith<MaterialLit>, public IRenderableComponent
 	{
 		glm::vec3 origin;
 		glm::vec3 translation;
@@ -41,6 +41,8 @@ namespace Physic {
 
 		std::string m_materialName;
 		ResourcePtr<Material> m_material;
+
+		bool m_castShadows;
 
 		float m_width;
 		float m_height;
@@ -112,6 +114,19 @@ namespace Physic {
 		virtual void save(Json::Value& rootComponent) const override;
 		virtual void load(const Json::Value& rootComponent) override;
 
+		// Herited from IRenderableComponent
+		virtual const IDrawable & getDrawable(int drawableIndex) const override;
+		virtual const Material & getDrawableMaterial(int drawableIndex) const override;
+		virtual const int getDrawableCount() const override;
+
+		// Herited from IDrawable
+		virtual const AABB & getVisualBoundingBox() const override;
+		virtual void draw() const override;
+		virtual const glm::mat4& getModelMatrix() const override;
+		virtual bool castShadows() const override;
+
+		virtual void setExternalsOf(const MaterialLit& material, const glm::mat4& projection, const glm::mat4& view) const override;
+
 	private : 
 		//completly free memory allocate for the flag and then reconstruct the flag
 		void regenerateFlag();
@@ -132,18 +147,6 @@ namespace Physic {
 		void computeGlobalBreak(float deltaTime, Point* point);
 
 		void computeAutoCollision();
-
-
-		// Herited from IRenderableComponent
-		virtual const IDrawable & getDrawable(int drawableIndex) const override;
-		virtual const Material & getDrawableMaterial(int drawableIndex) const override;
-		virtual const int getDrawableCount() const override;
-
-
-		// Herited from IDrawable
-		virtual const AABB & getVisualBoundingBox() const override;
-		virtual void draw() const override;
-
 };
 
 }

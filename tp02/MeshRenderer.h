@@ -20,15 +20,20 @@ private:
 	//Mesh* mesh;
 	//std::vector<Material3DObject*> material;
 	ResourcePtr<Mesh> m_mesh;
+	std::vector<std::shared_ptr<SubMesh>> m_subMeshes;
 	std::vector<ResourcePtr<Material>> m_materials;
 
 public:
 	MeshRenderer();
 	MeshRenderer(ResourcePtr<Mesh> mesh, ResourcePtr<Material> material);
+	MeshRenderer(const MeshRenderer& other);
 	virtual ~MeshRenderer();
 
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
+
+	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
+	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) override;
 
 	virtual void eraseFromScene(Scene& scene) override;
 	virtual Component* clone(Entity* entity) override;
@@ -50,6 +55,8 @@ public:
 	glm::vec3 getOrigin() const;
 
 	void render(const glm::mat4& projection, const glm::mat4& view);
+
+	void updateLocalMeshDatas();
 
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;

@@ -3,5 +3,6 @@
     "fragment" : "lightPass_pointLight.frag",
     "geometry" : "",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

@@ -460,14 +460,16 @@ void Scene::computeCullingForSingleCamera(BaseCamera& camera)
 
 void Scene::render(const BaseCamera& camera)
 {
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, nullptr);
+	//[DEPRECATED]
+	//m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, nullptr);
+	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights);
 }
 
 void Scene::render(const BaseCamera& camera, DebugDrawRenderer& debugDrawer)
 {
 	//[DEPRECATED]
-	m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, &debugDrawer);
-	//m_renderer->render(camera, &debugDrawer);
+	//m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, &debugDrawer);
+	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer);
 }
 
 void Scene::renderColliders(const BaseCamera & camera)

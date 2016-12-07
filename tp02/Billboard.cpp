@@ -24,6 +24,8 @@ Billboard::~Billboard()
 
 void Billboard::render(const glm::mat4 & projection, const glm::mat4 & view)
 {
+	PRINT_WARNING("DEPRECATED[Billboard::render]");
+
 	glm::mat4 MVP = projection * view;
 	//glm::mat4 NormalMatrix = glm::transpose(glm::inverse(glm::mat4(1)));
 	glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
@@ -75,6 +77,11 @@ glm::vec2 Billboard::getScale() const
 glm::vec4 Billboard::getColor() const
 {
 	return m_color;
+}
+
+const Texture & Billboard::getTexture() const
+{
+	return *m_texture.get();
 }
 
 void Billboard::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -194,12 +201,42 @@ const int Billboard::getDrawableCount() const
 
 const AABB & Billboard::getVisualBoundingBox() const
 {
-	return m_quadMesh->getAABB();
+	assert(false && "To implement...");
+	return AABB();
 }
 
 void Billboard::draw() const
 {
 	m_quadMesh->draw();
+}
+
+const glm::mat4 & Billboard::getModelMatrix() const
+{
+	assert(false && "billboards doesn't have model matrices and couldn't cast shadows.");
+	return glm::mat4();
+}
+
+bool Billboard::castShadows() const
+{
+	return false; // For now, a billboard can't cast shadows.
+}
+
+void Billboard::setExternalsOf(const MaterialBillboard & material, const glm::mat4 & projection, const glm::mat4 & view) const
+{
+	glm::mat4 MVP = projection * view;
+	glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
+	glm::vec3 CameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, getTexture().glId);
+	
+	material.setUniformMVP(MVP);
+	material.setUniformCameraRight(CameraRight);
+	material.setUniformCameraUp(CameraUp);
+	material.setUniformScale(getScale());
+	material.setUniformTexture(0);
+	material.setUniformTranslation(getTranslation());
+	material.setUniformColor(getColor());
 }
 
 void Billboard::addToScene(Scene& scene)

@@ -3,5 +3,6 @@
     "fragment" : "particle.frag",
     "geometry" : "particle.geom",
     "programType" : "custom",
+    "pipelineType" : "transparent",
     "internalShaderParameters" : []
 }

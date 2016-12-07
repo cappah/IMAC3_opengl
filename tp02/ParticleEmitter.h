@@ -19,7 +19,7 @@
 namespace Physic{
 
 
-	class ParticleEmitter : public Component, public IRenderableComponent, public IDrawable
+	class ParticleEmitter : public Component, public IRenderableComponent, public IBatchableWith<MaterialParticlesCPU>
 	{
 	public :
 		enum VBO_TYPES { VERTICES = 0, NORMALS, UVS,  POSITIONS, COLORS, SIZES};
@@ -96,6 +96,7 @@ namespace Physic{
 		void render(const glm::mat4& projection, const glm::mat4& view);
 		void updateVbos();
 		void onChangeMaxParticleCount();
+		const Texture& getParticleTexture() const;
 
 		//TODO
 
@@ -122,6 +123,10 @@ namespace Physic{
 		// Herited from IDrawable
 		virtual const AABB & getVisualBoundingBox() const override;
 		virtual void draw() const override;
+		virtual const glm::mat4& getModelMatrix() const override;
+		virtual bool castShadows() const override;
+
+		virtual void setExternalsOf(const MaterialParticlesCPU& material, const glm::mat4& projection, const glm::mat4& view) const override;
 
 	private:
 		void sorting_quickSort(int begin, int end);

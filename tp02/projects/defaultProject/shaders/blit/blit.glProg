@@ -3,5 +3,6 @@
     "fragment" : "blit.frag",
     "geometry" : "",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

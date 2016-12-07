@@ -3,5 +3,6 @@
     "fragment" : "shadowPassOmni.frag",
     "geometry" : "shadowPassOmni.geom",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

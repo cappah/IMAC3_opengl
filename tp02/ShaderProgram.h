@@ -13,6 +13,22 @@ class ExternalShaderParameterBase;
 class Material;
 
 
+enum PipelineTypes
+{
+	OPAQUE_PIPILINE,
+	TRANSPARENT_PIPELINE,
+	REFLEXIVE_PIPELINE,
+	WATER_PIPELINE,
+	COUNT
+};
+
+static std::vector<std::string> PipelineTypesToString = {
+	"opaque",
+	"transparent",
+	"reflexive",
+	"water",
+};
+
 enum ShaderProgramType {
 	CUSTOM = 0,
 	LIT,
@@ -32,6 +48,7 @@ struct ShaderProgram : public Resource
 
 private:
 	ShaderProgramType m_programType;
+	PipelineTypes m_pipelineType;
 
 	std::vector<std::shared_ptr<InternalShaderParameterBase>> m_internalShaderParameters;
 	std::vector<std::shared_ptr<ExternalShaderParameterBase>> m_externalShaderParameters;
@@ -66,6 +83,7 @@ public:
 	const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& getExternalParameters() const;
 
 	ShaderProgramType getType() const;
+	PipelineTypes getPipelineType() const;
 
 	//Not copyable
 	ShaderProgram(const ShaderProgram& other) = delete;

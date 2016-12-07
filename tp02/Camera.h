@@ -24,7 +24,7 @@ struct BaseCamera
 	BaseCamera();
 
 	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) = 0;
-	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches() const = 0;
+	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const = 0;
 
 	//virtual void setTranslationLocal(glm::vec3 pos) = 0;
 	//virtual void translateLocal(glm::vec3 pos) = 0;
@@ -40,10 +40,10 @@ struct BaseCamera
 	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) = 0;
 	virtual void setCameraMode(CameraMode cameraMode) = 0;
 
-	virtual glm::mat4 getViewMatrix() const = 0;
-	virtual glm::mat4 getProjectionMatrix() const = 0;
-	virtual glm::vec3 getCameraPosition() const = 0;
-	virtual glm::vec3 getCameraForward() const = 0;
+	virtual const glm::mat4& getViewMatrix() const = 0;
+	virtual const glm::mat4& getProjectionMatrix() const = 0;
+	virtual const glm::vec3& getCameraPosition() const = 0;
+	virtual const glm::vec3& getCameraForward() const = 0;
 
 	virtual void setFOV(float fov) = 0;
 	virtual void setNear(float camNear) = 0;
@@ -80,14 +80,14 @@ private :
 	float m_right;
 	float m_bottom;
 
-	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches;
+	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[PipelineTypes::COUNT];
 
 public:
 
 	Camera();
 
 	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
-	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches() const override;
+	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 
@@ -105,10 +105,10 @@ public:
 	virtual void setPerspectiveInfos(float fovy, float aspect, float zNear = 0.1f, float zFar = 100.f) override;
 	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) override;
 	virtual void setCameraMode(CameraMode cameraMode) override;
-	virtual glm::mat4 getViewMatrix() const override;
-	virtual glm::mat4 getProjectionMatrix() const override;
-	virtual glm::vec3 getCameraPosition() const override;
-	virtual glm::vec3 getCameraForward() const override;
+	virtual const glm::mat4& getViewMatrix() const override;
+	virtual const glm::mat4& getProjectionMatrix() const override;
+	virtual const glm::vec3& getCameraPosition() const override;
+	virtual const glm::vec3& getCameraForward() const override;
 
 	virtual void setFOV(float fov) override;
 	virtual void setNear(float camNear) override;
@@ -149,13 +149,13 @@ private:
 	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
 
-	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches;
+	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[PipelineTypes::COUNT];
 
 public:
 	CameraEditor();
 
 	void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
-	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches() const override;
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
 
 	void setTranslationLocal(glm::vec3 pos);
 	void translateLocal(glm::vec3 pos);
@@ -173,10 +173,10 @@ public:
 	virtual void setPerspectiveInfos(float fovy, float aspect, float near = 0.1f, float = 100.f) override;
 	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) override;
 	virtual void setCameraMode(CameraMode cameraMode) override;
-	virtual glm::mat4 getViewMatrix() const override;
-	virtual glm::mat4 getProjectionMatrix() const override;
-	virtual glm::vec3 getCameraPosition() const override;
-	virtual glm::vec3 getCameraForward() const override;
+	virtual const glm::mat4& getViewMatrix() const override;
+	virtual const glm::mat4& getProjectionMatrix() const override;
+	virtual const glm::vec3& getCameraPosition() const override;
+	virtual const glm::vec3& getCameraForward() const override;
 
 	// Hérité via BaseCamera
 	virtual void setFOV(float fov) override;

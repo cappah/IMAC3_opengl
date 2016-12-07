@@ -32,6 +32,7 @@ namespace Physic {
 		, m_autoCollisionViscosity(0.001f)
 		, m_materialName("default")
 		, m_computeAutoCollision(false)
+		, m_castShadows(true)
 	{
 		modelMatrix = glm::mat4(1);
 
@@ -76,7 +77,9 @@ namespace Physic {
 
 	}
 
-	Flag::Flag(const Flag& other) : Component(FLAG), m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW)
+	Flag::Flag(const Flag& other) 
+		: Component(FLAG)
+		, m_mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES | Mesh::USE_UVS | Mesh::USE_NORMALS | Mesh::USE_TANGENTS), 3, GL_STREAM_DRAW)
 	{
 		m_material = other.m_material;
 		m_subdivision = other.m_subdivision;
@@ -92,6 +95,7 @@ namespace Physic {
 		m_computeAutoCollision = other.m_computeAutoCollision;
 		m_autoCollisionRigidity = other.m_autoCollisionRigidity;
 		m_autoCollisionViscosity = other.m_autoCollisionViscosity;
+		m_castShadows = other.m_castShadows;
 
 
 		modelMatrix = other.modelMatrix;
@@ -159,6 +163,7 @@ namespace Physic {
 		m_computeAutoCollision = other.m_computeAutoCollision;
 		m_autoCollisionRigidity = other.m_autoCollisionRigidity;
 		m_autoCollisionViscosity = other.m_autoCollisionViscosity;
+		m_castShadows = other.m_castShadows;
 
 		modelMatrix = other.modelMatrix;
 
@@ -719,7 +724,7 @@ namespace Physic {
 
 	const AABB & Flag::getVisualBoundingBox() const
 	{
-		return m_mesh.getAABB();
+		return m_mesh.getLocalAABB();
 	}
 
 	void Flag::draw() const
@@ -851,6 +856,8 @@ namespace Physic {
 
 	void Physic::Flag::render(const glm::mat4& projection, const glm::mat4& view)
 	{
+		PRINT_WARNING("DEPRECATED[Physic::Flag::render]");
+
 		glm::mat4 mvp = projection * view * modelMatrix;
 		glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
 
@@ -1085,6 +1092,27 @@ namespace Physic {
 	glm::vec3 Flag::getOrigin() const
 	{
 		return origin;
+	}
+
+	const glm::mat4 & Flag::getModelMatrix() const
+	{
+		return modelMatrix;
+	}
+
+	bool Flag::castShadows() const
+	{
+		return m_castShadows;
+	}
+
+	void Flag::setExternalsOf(const MaterialLit & material, const glm::mat4 & projection, const glm::mat4 & view) const
+	{
+		const glm::mat4& modelMatrix = getModelMatrix();
+		const glm::mat4 mvp = projection * view * modelMatrix;
+		const glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
+		
+		material.setUniform_MVP(mvp);
+		material.setUniform_normalMatrix(normalMatrix);
+		material.setUniformUseSkeleton(false);
 	}
 
 	float Flag::getMass() const

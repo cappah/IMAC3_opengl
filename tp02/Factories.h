@@ -6,6 +6,7 @@
 
 #include "Mesh.h"
 #include "Materials.h"
+#include "RenderBatch.h"
 #include "Texture.h"
 #include "SkeletalAnimation.h"
 #include "ShaderProgram.h"

@@ -3,5 +3,6 @@
     "fragment" : "wireframeInstanced.frag",
     "geometry" : "",
     "programType" : "custom",
+    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }
