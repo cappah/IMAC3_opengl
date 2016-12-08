@@ -201,6 +201,10 @@
     </ClCompile>
     <ClCompile Include="RenderBatch.cpp" />
     <ClCompile Include="BatchableWith.cpp" />
+    <ClCompile Include="Reflexion.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TestMetaData02.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -427,6 +431,14 @@
     </ClInclude>
     <ClInclude Include="RenderBatch.h" />
     <ClInclude Include="BatchableWith.h" />
+    <ClInclude Include="Reflexion.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TestMetaData01.h" />
+    <ClInclude Include="TestMetaData02.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

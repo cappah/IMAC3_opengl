@@ -86,9 +86,15 @@ extern const unsigned int DroidSans_ttf_len;
 //}
 
 
+#include "TestMetaData02.h"
 
 int main(int argc, char** argv)
 {
+
+	//Begin Test
+	testMetaData();
+	//End Test
+
 	//init project : 
 	Project project;
 	project.init();

@@ -272,6 +272,7 @@
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="Reflexion.cpp" />
     <ClCompile Include="RenderBatch.cpp" />
     <ClCompile Include="BatchableWith.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -290,6 +291,7 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TestBehavior.cpp" />
+    <ClCompile Include="TestMetaData02.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TransformNode.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -362,6 +364,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="MotionState.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="Octree.h" />
     <ClInclude Include="OctreeDrawer.h" />
     <ClInclude Include="ParticleEmitter.h" />
@@ -373,6 +376,7 @@
     <ClInclude Include="Point.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Reflexion.h" />
     <ClInclude Include="RenderBatch.h" />
     <ClInclude Include="BatchableWith.h" />
     <ClInclude Include="Renderer.h" />
@@ -391,6 +395,8 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="TestBehavior.h" />
+    <ClInclude Include="TestMetaData01.h" />
+    <ClInclude Include="TestMetaData02.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TransformNode.h" />
     <ClInclude Include="Utils.h" />
