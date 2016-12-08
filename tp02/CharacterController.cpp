@@ -3,8 +3,11 @@
 #include "CharacterController.h"
 //forwards :
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "PhysicManager.h"
+
+COMPONENT_IMPLEMENTATION_CPP(CharacterController)
 
 CharacterController::CharacterController(): Component(ComponentType::CHARACTER_CONTROLLER),
 m_translation(0, 0, 0), m_scale(1, 1, 1), m_height(2.f), m_radius(0.5f), m_jumpFactor(1.f), m_gravityFactor(1.f),
@@ -408,35 +411,6 @@ void CharacterController::drawInInspector(Scene & scene, const std::vector<Compo
 			castedComponent->setRadius(tmpFloat);
 		}
 	}
-}
-
-void CharacterController::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-Component* CharacterController::clone(Entity* entity)
-{
-	CharacterController* newCharacterController = new CharacterController(*this);
-
-	newCharacterController->attachToEntity(entity);
-
-	return newCharacterController;
-}
-
-void CharacterController::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-void CharacterController::addToEntity(Entity & entity)
-{
-	entity.add(this);
-}
-
-void CharacterController::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
 }
 
 void CharacterController::save(Json::Value & componentRoot) const

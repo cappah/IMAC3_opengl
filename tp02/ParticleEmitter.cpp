@@ -2,11 +2,13 @@
 
 #include "ParticleEmitter.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
 
 namespace Physic {
 
+	COMPONENT_IMPLEMENTATION_CPP(ParticleEmitter)
 
 	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), 
 	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), m_emitInShape(false), m_sortParticles(false),
@@ -800,35 +802,6 @@ namespace Physic {
 				castedComponent->m_sortParticles = m_sortParticles;
 			}
 		}
-	}
-
-	void ParticleEmitter::eraseFromScene(Scene& scene)
-	{
-		scene.erase(this);
-	}
-
-	void ParticleEmitter::addToScene(Scene& scene)
-	{
-		scene.add(this);
-	}
-
-	Component * ParticleEmitter::clone(Entity* entity)
-	{
-		ParticleEmitter* newParticleEmitter = new ParticleEmitter(*this);
-
-		newParticleEmitter->attachToEntity(entity);
-
-		return newParticleEmitter;
-	}
-
-	void ParticleEmitter::addToEntity(Entity& entity)
-	{
-		entity.add(this);
-	}
-
-	void ParticleEmitter::eraseFromEntity(Entity& entity)
-	{
-		entity.erase(this);
 	}
 
 	void ParticleEmitter::save(Json::Value & rootComponent) const

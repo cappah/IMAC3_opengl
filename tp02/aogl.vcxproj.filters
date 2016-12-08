@@ -204,7 +204,12 @@
     <ClCompile Include="Reflexion.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="TestMetaData02.cpp" />
+    <ClCompile Include="TestMetaData02.cpp">
+      <Filter>TestMetaData</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneAccessor.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -437,8 +442,15 @@
     <ClInclude Include="Object.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="TestMetaData01.h" />
-    <ClInclude Include="TestMetaData02.h" />
+    <ClInclude Include="TestMetaData02.h">
+      <Filter>TestMetaData</Filter>
+    </ClInclude>
+    <ClInclude Include="TestMetaData01.h">
+      <Filter>TestMetaData</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneAccessor.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -482,6 +494,9 @@
     </Filter>
     <Filter Include="Utils\Rendering">
       <UniqueIdentifier>{cb08f07d-dee0-414e-81f1-e5d87947b315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestMetaData">
+      <UniqueIdentifier>{8231cab2-f15b-4fe5-be59-f60d78771738}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

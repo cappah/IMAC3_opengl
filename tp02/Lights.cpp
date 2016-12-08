@@ -2,6 +2,8 @@
 
 #include "Lights.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
+
 
 Light::Light(float _intensity, glm::vec3 _color) : Component(LIGHT), intensity(_intensity), color(_color)
 {
@@ -60,6 +62,8 @@ void Light::load(const Json::Value & rootComponent)
 }
 
 ///////////////////////////////
+
+COMPONENT_IMPLEMENTATION_CPP(PointLight)
 
 PointLight::PointLight(float _intensity, glm::vec3 _color, glm::vec3 _position) : Light(_intensity, _color), position(_position)
 {
@@ -121,36 +125,6 @@ void PointLight::applyTransform(const glm::vec3 & translation, const glm::vec3 &
 	updateBoundingBox();
 }
 
-void PointLight::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-
-Component* PointLight::clone(Entity* entity)
-{
-	PointLight* newPointLight = new PointLight(*this);
-
-	newPointLight->attachToEntity(entity);
-
-	return newPointLight;
-}
-
-void PointLight::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-void PointLight::addToEntity(Entity& entity)
-{
-	entity.add(this);
-}
-
-void PointLight::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
-}
-
 void PointLight::setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<Material> visualMaterial)
 {
 	boundingBox.setVisual(visualMesh, visualMaterial);
@@ -177,8 +151,9 @@ void PointLight::load(const Json::Value & rootComponent)
 	boundingBox = fromJsonValue<BoxCollider>(rootComponent["boundingBox"], BoxCollider());
 }
 
-
 ////////////////////////////////
+
+COMPONENT_IMPLEMENTATION_CPP(DirectionalLight)
 
 DirectionalLight::DirectionalLight(float _intensity, glm::vec3 _color, glm::vec3 _direction) :
 	Light(_intensity, _color), direction(_direction), up(1,0,0)
@@ -226,35 +201,6 @@ void DirectionalLight::applyTransform(const glm::vec3 & translation, const glm::
 	position = translation;
 }
 
-void DirectionalLight::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-Component* DirectionalLight::clone(Entity* entity)
-{
-	DirectionalLight* newDirectionalLight = new DirectionalLight(intensity, color, direction);
-
-	newDirectionalLight->attachToEntity(entity);
-
-	return newDirectionalLight;
-}
-
-void DirectionalLight::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-void DirectionalLight::addToEntity(Entity& entity)
-{
-	entity.add(this);
-}
-
-void DirectionalLight::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
-}
-
 void DirectionalLight::save(Json::Value & rootComponent) const
 {
 	Light::save(rootComponent);
@@ -272,6 +218,8 @@ void DirectionalLight::load(const Json::Value & rootComponent)
 }
 
 ////////////////////////////////////
+
+COMPONENT_IMPLEMENTATION_CPP(SpotLight)
 
 SpotLight::SpotLight(float _intensity, glm::vec3 _color, glm::vec3 _position, glm::vec3 _direction, float _angle) :
 	Light(_intensity, _color), position(_position), direction(_direction), angle(_angle), up(1,0,0)
@@ -345,35 +293,6 @@ void SpotLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & 
 	direction = glm::normalize(rotMat * glm::vec3(0, -1, 0));
 
 	updateBoundingBox();
-}
-
-void SpotLight::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-Component* SpotLight::clone(Entity* entity)
-{
-	SpotLight* newSpotLight = new SpotLight(intensity, color, position, direction, angle);
-
-	newSpotLight->attachToEntity(entity);
-
-	return newSpotLight;
-}
-
-void SpotLight::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-void SpotLight::addToEntity(Entity& entity)
-{
-	entity.add(this);
-}
-
-void SpotLight::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
 }
 
 void SpotLight::setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<Material> visualMaterial)

@@ -36,6 +36,8 @@ struct CollisionInfo {
 
 struct Collider : public Component
 {
+public:
+
 	ResourcePtr<Material> visualMaterial;
 	ResourcePtr<Mesh> visualMesh;
 
@@ -124,8 +126,6 @@ struct Collider : public Component
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
-	virtual void eraseFromScene(Scene& scene) override;
-
 	//Cover a mesh, based on the mesh bottomLeft and topRight points and the mesh origin
 	virtual void coverMesh(const Mesh& mesh) = 0;
 	//Cover something which have a bottomLeft/min and topRight/max points and an origin
@@ -138,6 +138,10 @@ struct Collider : public Component
 
 struct BoxCollider : public Collider
 {
+	COMPONENT_IMPLEMENTATION_HEADER(BoxCollider)
+
+public:
+
 	glm::vec3 localTopRight;
 	glm::vec3 localBottomLeft;
 
@@ -154,10 +158,6 @@ struct BoxCollider : public Collider
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 	virtual void coverMesh(const Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
 	virtual btCollisionShape* makeShape() override;
@@ -169,6 +169,10 @@ struct BoxCollider : public Collider
 
 struct CapsuleCollider : public Collider
 {
+	COMPONENT_IMPLEMENTATION_HEADER(CapsuleCollider)
+
+public:
+
 	float height;
 	float radius;
 
@@ -181,10 +185,6 @@ struct CapsuleCollider : public Collider
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 	virtual void coverMesh(const Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
 	virtual btCollisionShape* makeShape() override;

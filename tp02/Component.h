@@ -18,6 +18,31 @@ class Entity;
 class Scene;
 
 
+//Should be called inside all classes which inherite from Component (and are not abstract !), in header file, in class definition.
+#define COMPONENT_IMPLEMENTATION_HEADER(ComponentType)\
+public:\
+virtual void addToScene(Scene& scene) override;\
+virtual void eraseFromScene(Scene& scene) override;\
+virtual Component* clone(Entity* entity) override;\
+private:
+
+//Should be called inside all classes which inherite from Component (and are not abstract !), in .cpp file.
+#define COMPONENT_IMPLEMENTATION_CPP(ComponentType)\
+void ComponentType::addToScene(Scene& scene)\
+{\
+	scene.getAccessor().addToScene<ComponentType>(this);\
+}\
+void ComponentType::eraseFromScene(Scene& scene)\
+{\
+	scene.getAccessor().eraseFromScene<ComponentType>(this);\
+}\
+Component* ComponentType::clone(Entity* entity)\
+{\
+	ComponentType* newTypedComponent = new ComponentType(*this);\
+	newTypedComponent->attachToEntity(entity);\
+	return newTypedComponent;\
+}
+
 class Component : public ISerializable
 {
 public:
@@ -87,8 +112,16 @@ public:
 	//to add a component to the scene, call entity.add(component).
 	virtual void addToScene(Scene& scene) = 0;
 
-	virtual void eraseFromEntity(Entity& entity) = 0;
-	virtual void addToEntity(Entity& entity) = 0;
+	// Simply call entity.erase(*this). All the logic is done in entity::erase()
+	virtual void eraseFromEntity(Entity& entity);
+	// Simply call entity.erase(*this). All the logic is done in entity::add
+	virtual void addToEntity(Entity& entity);
+
+	// Callbacks for special management when components are created / destroyed
+	void onAfterComponentAddedToScene(Scene& scene) {}
+	void onAfterComponentAddedToEntity(Entity& entity) {}
+	void onBeforeComponentErasedFromEntity(Entity& entity) {}
+	void onBeforeComponentErasedFromScene(Scene& scene) {}
 
 	//clone a component, and attach it to the given entity
 	//This function is internally called by the copy contructor and operator=() of entity, to properly copy the entity.

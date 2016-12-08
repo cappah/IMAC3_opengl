@@ -58,6 +58,7 @@ struct BaseCamera
 
 class Camera : public Component, public BaseCamera
 {
+	COMPONENT_IMPLEMENTATION_HEADER(Camera)
 
 private :
 	CameraMode m_cameraMode;
@@ -93,13 +94,6 @@ public:
 
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
-
-
-	virtual void eraseFromScene(Scene & scene) override;
-	virtual void addToScene(Scene & scene) override;
-	virtual Component * clone(Entity * entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
-	virtual void addToEntity(Entity& entity) override;
 	
 	virtual void updateScreenSize(float screenWidth, float screenHeight) override;
 	virtual void setPerspectiveInfos(float fovy, float aspect, float zNear = 0.1f, float zFar = 100.f) override;

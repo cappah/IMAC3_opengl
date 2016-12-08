@@ -2,10 +2,13 @@
 
 #include "MeshRenderer.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
 
 #include "EditorGUI.h"
+
+COMPONENT_IMPLEMENTATION_CPP(MeshRenderer)
 
 MeshRenderer::MeshRenderer() 
 	: Component(MESH_RENDERER)
@@ -135,35 +138,6 @@ void MeshRenderer::applyTransformFromPhysicSimulation(const glm::vec3 & translat
 		for (auto& subMesh : m_subMeshes)
 			subMesh->setModelMatrix(m_entity->getModelMatrix());
 	}
-}
-
-void MeshRenderer::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-Component* MeshRenderer::clone(Entity* entity)
-{
-	MeshRenderer* newMeshRenderer = new MeshRenderer(*this);
-
-	newMeshRenderer->attachToEntity(entity);
-
-	return newMeshRenderer;
-}
-
-void MeshRenderer::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-void MeshRenderer::addToEntity(Entity& entity)
-{
-	entity.add(this);
-}
-
-void MeshRenderer::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
 }
 
 void MeshRenderer::setMesh(ResourcePtr<Mesh> _mesh)

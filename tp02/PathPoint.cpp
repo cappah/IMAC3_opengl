@@ -3,9 +3,12 @@
 #include "PathPoint.h"
 //forwards : 
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
 #include "PathManager.h"
+
+COMPONENT_IMPLEMENTATION_CPP(PathPoint)
 
 PathPoint::PathPoint(): Component(ComponentType::PATH_POINT), m_pathId(0), m_pointIdx(0)
 {
@@ -78,35 +81,6 @@ void PathPoint::drawInInspector(Scene& scene, const std::vector<Component*>& com
 			scene.getPathManager().updateVisual(castedComponent->m_pathId);
 		}
 	}
-}
-
-void PathPoint::eraseFromScene(Scene& scene)
-{
-	scene.erase(this);
-}
-
-void PathPoint::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-Component* PathPoint::clone(Entity* entity)
-{
-	PathPoint* pathPoint = new PathPoint(*this);
-
-	pathPoint->attachToEntity(entity);
-
-	return pathPoint;
-}
-
-void PathPoint::addToEntity(Entity& entity)
-{
-	entity.add(this);
-}
-
-void PathPoint::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
 }
 
 void PathPoint::save(Json::Value & rootComponent) const

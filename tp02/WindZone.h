@@ -10,6 +10,8 @@ namespace Physic {
 
 	class WindZone : public Component
 	{
+		COMPONENT_IMPLEMENTATION_HEADER(WindZone)
+
 	public:
 		enum EmissionType {DIRECTIONNAL = 0, RADIAL = 1};
 	private:
@@ -51,13 +53,6 @@ namespace Physic {
 		
 		virtual void drawInInspector(Scene & scene) override;
 		virtual void drawInInspector(Scene & scene, const std::vector<Component*>& components) override;
-
-
-		virtual void eraseFromScene(Scene & scene) override;
-		virtual void addToScene(Scene & scene) override;
-		virtual Component * clone(Entity * entity) override;
-		virtual void eraseFromEntity(Entity& entity) override;
-		virtual void addToEntity(Entity& entity) override;
 
 		virtual void save(Json::Value& componentRoot) const override;
 		virtual void load(const Json::Value& componentRoot) override;

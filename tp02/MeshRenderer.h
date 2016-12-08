@@ -15,6 +15,8 @@ class Entity;
 
 class MeshRenderer : public Component, public IRenderableComponent
 {
+	COMPONENT_IMPLEMENTATION_HEADER(MeshRenderer)
+
 private:
 	//%NOCOMMIT%
 	//Mesh* mesh;
@@ -34,12 +36,6 @@ public:
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) override;
-
-	virtual void eraseFromScene(Scene& scene) override;
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 
 	void setMesh(ResourcePtr<Mesh> _mesh);
 	void addMaterial(ResourcePtr<Material> _material);

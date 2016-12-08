@@ -109,4 +109,4 @@ public:
 	bool Reflexion<Type>::initialized = Reflexion<Type>::instance().initClassName(#Type) && Reflexion<Type>::instance().initClassId()
 
 #define REFLEXION_InheritFrom(Type, ParentType)\
-	int ReflexionCounters<Type, ParentType>::count = Reflexion<Type>::instance().addInheritFrom<ParentType>();\
+	int ReflexionCounters<Type, ParentType>::count = Reflexion<Type>::instance().addInheritFrom<ParentType>();

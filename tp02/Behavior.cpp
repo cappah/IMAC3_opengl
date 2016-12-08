@@ -14,11 +14,9 @@ Behavior::Behavior(/*const std::type_index& type*/) : Component(ComponentType::B
 	//}
 }
 
-
 Behavior::~Behavior()
 {
 }
-
 
 void Behavior::start(Scene& scene)
 {
@@ -55,30 +53,10 @@ void Behavior::drawInInspector(Scene & scene, const std::vector<Component*>& com
 	//to override
 }
 
-void Behavior::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-void Behavior::addToScene(Scene & scene)
-{
-	scene.add(this);
-}
-
-void Behavior::eraseFromEntity(Entity & entity)
-{
-	entity.erase(this);
-}
-
-void Behavior::addToEntity(Entity & entity)
-{
-	entity.add(this);
-}
-
 void Behavior::save(Json::Value & entityRoot) const
 {
 	Component::save(entityRoot);
-	entityRoot["typeIndexName"] = getTypeIndex().name();
+	//entityRoot["typeIndexName"] = getTypeIndex().name(); //TODO CORE
 }
 
 void Behavior::load(const Json::Value & entityRoot)

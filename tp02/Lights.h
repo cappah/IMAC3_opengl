@@ -22,6 +22,8 @@ class Entity;
 
 struct Light : public Component
 {
+public:
+
 	float intensity;
 	glm::vec3 color;
 
@@ -43,6 +45,10 @@ struct Light : public Component
 
 struct PointLight : public Light
 {
+	COMPONENT_IMPLEMENTATION_HEADER(PointLight)
+
+public:
+
 	glm::vec3 position;
 	BoxCollider boundingBox;
 
@@ -55,11 +61,6 @@ struct PointLight : public Light
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation  = glm::quat()) override;
-	virtual void eraseFromScene(Scene& scene) override;
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 
 	void setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<Material> visualMaterial);
 	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);
@@ -71,6 +72,10 @@ struct PointLight : public Light
 
 struct DirectionalLight : public Light
 {
+	COMPONENT_IMPLEMENTATION_HEADER(DirectionalLight)
+
+public:
+
 	glm::vec3 up;
 
 	glm::vec3 direction;
@@ -82,13 +87,7 @@ struct DirectionalLight : public Light
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
-
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
-	virtual void eraseFromScene(Scene& scene) override;
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
@@ -96,6 +95,9 @@ struct DirectionalLight : public Light
 
 struct SpotLight : public Light
 {
+	COMPONENT_IMPLEMENTATION_HEADER(SpotLight)
+
+public:
 	glm::vec3 up;
 
 	glm::vec3 position;
@@ -113,11 +115,6 @@ struct SpotLight : public Light
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
-	virtual void eraseFromScene(Scene& scene) override;
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 
 	void setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<Material> visualMaterial);
 	void renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color);

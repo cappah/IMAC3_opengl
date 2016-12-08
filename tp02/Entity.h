@@ -139,66 +139,69 @@ public:
 	//deselect this entity, set m_isSelected to false
 	void deselect();
 	
-	// function to add a component. 
-	Entity& add(PointLight* pointLight);
-	// function to add a component. 
-	Entity& add(DirectionalLight* directionalLight);
-	// function to add a component. 
-	Entity& add(SpotLight* spotLight);
-	// function to add a component. 
-	Entity& add(Collider* collider);
-	// function to add a component. 
-	Entity& add(MeshRenderer* meshRenderer);
-	// function to add a component. 
-	Entity& add(Physic::Flag* flag);
-	// function to add a component. 
-	Entity& add(Physic::ParticleEmitter* particleEmitter);
-	// function to add a component. 
-	Entity& add(PathPoint* pathPoint);
-	// function to add a component. 
-	Entity& add(Billboard* billboard);
-	Entity& add(Camera* camera);
-	// function to add a component. 
-	Entity& add(Physic::WindZone* windZone);
-	// function to add a component. 
-	Entity& add(Rigidbody* rigidbody);
-	// function to add a component. 
-	Entity& add(Animator* animator);
-	// function to add a component. 
-	Entity& add(CharacterController* characterController);
-	// function to add a component. 
-	Entity& add(Behavior* behavior);
+	Entity& add(Component* component);
+	Entity& erase(Component* component);
 
-	// function to erase a component.
-	Entity& erase(PointLight* pointLight);
-	// function to erase a component.
-	Entity& erase(DirectionalLight* directionalLight);
-	// function to erase a component.
-	Entity& erase(SpotLight* spotLight);
-	// function to erase a component.
-	Entity& erase(Collider* collider);
-	// function to erase a component.
-	Entity& erase(MeshRenderer* meshRenderer);
-	// function to erase a component.
-	Entity& erase(Physic::Flag* flag);
-	// function to erase a component.
-	Entity& erase(Physic::ParticleEmitter* particleEmitter);
-	// function to erase a component.
-	Entity& erase(PathPoint* pathPoint);
-	// function to erase a component.
-	Entity& erase(Billboard* billboard);
-	// function to erase a component.
-	Entity& erase(Camera* camera);
-	// function to erase a component.
-	Entity& erase(Physic::WindZone* windZone);
-	// function to erase a component.
-	Entity& erase(Rigidbody* rigidbody);
-	// function to erase a component.
-	Entity& erase(Animator* animator);
-	// function to erase a component.
-	Entity& erase(CharacterController* characterController);
-	// function to erase a component.
-	Entity& erase(Behavior* behavior);
+	//// function to add a component. 
+	//Entity& add(PointLight* pointLight);
+	//// function to add a component. 
+	//Entity& add(DirectionalLight* directionalLight);
+	//// function to add a component. 
+	//Entity& add(SpotLight* spotLight);
+	//// function to add a component. 
+	//Entity& add(Collider* collider);
+	//// function to add a component. 
+	//Entity& add(MeshRenderer* meshRenderer);
+	//// function to add a component. 
+	//Entity& add(Physic::Flag* flag);
+	//// function to add a component. 
+	//Entity& add(Physic::ParticleEmitter* particleEmitter);
+	//// function to add a component. 
+	//Entity& add(PathPoint* pathPoint);
+	//// function to add a component. 
+	//Entity& add(Billboard* billboard);
+	//Entity& add(Camera* camera);
+	//// function to add a component. 
+	//Entity& add(Physic::WindZone* windZone);
+	//// function to add a component. 
+	//Entity& add(Rigidbody* rigidbody);
+	//// function to add a component. 
+	//Entity& add(Animator* animator);
+	//// function to add a component. 
+	//Entity& add(CharacterController* characterController);
+	//// function to add a component. 
+	//Entity& add(Behavior* behavior);
+
+	//// function to erase a component.
+	//Entity& erase(PointLight* pointLight);
+	//// function to erase a component.
+	//Entity& erase(DirectionalLight* directionalLight);
+	//// function to erase a component.
+	//Entity& erase(SpotLight* spotLight);
+	//// function to erase a component.
+	//Entity& erase(Collider* collider);
+	//// function to erase a component.
+	//Entity& erase(MeshRenderer* meshRenderer);
+	//// function to erase a component.
+	//Entity& erase(Physic::Flag* flag);
+	//// function to erase a component.
+	//Entity& erase(Physic::ParticleEmitter* particleEmitter);
+	//// function to erase a component.
+	//Entity& erase(PathPoint* pathPoint);
+	//// function to erase a component.
+	//Entity& erase(Billboard* billboard);
+	//// function to erase a component.
+	//Entity& erase(Camera* camera);
+	//// function to erase a component.
+	//Entity& erase(Physic::WindZone* windZone);
+	//// function to erase a component.
+	//Entity& erase(Rigidbody* rigidbody);
+	//// function to erase a component.
+	//Entity& erase(Animator* animator);
+	//// function to erase a component.
+	//Entity& erase(CharacterController* characterController);
+	//// function to erase a component.
+	//Entity& erase(Behavior* behavior);
 
 
 

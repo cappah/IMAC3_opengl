@@ -2,6 +2,7 @@
 
 #include "Camera.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
 
@@ -154,34 +155,7 @@ void Camera::drawInInspector(Scene& scene, const std::vector<Component*>& compon
 	}
 }
 
-void Camera::eraseFromScene(Scene& scene)
-{
-	scene.erase(this);
-}
-
-void Camera::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-Component * Camera::clone(Entity* entity)
-{
-	Camera* camera = new Camera(*this);
-
-	camera->attachToEntity(entity);
-
-	return camera;
-}
-
-void Camera::eraseFromEntity(Entity & entity)
-{
-	entity.erase(this);
-}
-
-void Camera::addToEntity(Entity & entity)
-{
-	entity.add(this);
-}
+COMPONENT_IMPLEMENTATION_CPP(Camera)
 
 void Camera::updateScreenSize(float screenWidth, float screenHeight)
 {

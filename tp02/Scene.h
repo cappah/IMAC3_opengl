@@ -1,19 +1,24 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 
-#include "Entity.h"
-#include "Lights.h"
-#include "Collider.h"
-#include "Flag.h"
-#include "ParticleEmitter.h"
-#include "Billboard.h"
-#include "Rigidbody.h"
-#include "Camera.h"
-#include "Behavior.h"
-#include "Animator.h"
-#include "CharacterController.h"
-#include "FileHandler.h"
+class Entity;
+class DirectionalLight;
+class PointLight;
+class SpotLight;
+class Collider;
+class Billboard;
+class Rigidbody;
+class Camera;
+class Behavior;
+class Animator;
+class CharacterController;
+namespace Physic {
+	class Flag;
+	class ParticleEmitter;
+	class WindZone;
+}
 
 #include "PathManager.h"
 #include "LightManager.h"
@@ -21,20 +26,25 @@
 #include "Terrain.h"
 #include "Skybox.h"
 #include "BehaviorManager.h"
+namespace Physic {
+	class PhysicManager;
+}
+class DebugDrawRenderer;
 
+#include "FileHandler.h"
 #include "BasicColliders.h"
 #include "IRenderableComponent.h"
+class SceneAccessor;
 
 #include "jsoncpp/json/json.h"
 #include <iostream>
 #include <fstream>
 
-namespace Physic{
-	class PhysicManager;
-}
 
 class Scene
 {
+	friend SceneAccessor;
+
 private:
 	//scene name :
 	std::string m_name;
@@ -106,6 +116,10 @@ private:
 	bool m_areOctreesVisible;
 	bool m_isDebugPhysicVisible;
 
+	// Mapping for components (component class id <-> void* representing the vector of components)
+	std::unordered_map<int, void*> m_componentMapping;
+
+	std::shared_ptr<SceneAccessor> m_accessor;
 
 public:
 	Scene(Renderer* renderer, const std::string& sceneName = "defaultScene");
@@ -115,39 +129,41 @@ public:
 
 	std::vector<Entity*>& getEntities();
 
-	Scene& add(Entity* entity);
-	Scene& add(PointLight* pointLight);
-	Scene& add(DirectionalLight* directionalLight);
-	Scene& add(SpotLight* spotLight);
-	Scene& add(Collider* collider);
-	Scene& add(MeshRenderer* meshRenderer);
-	Scene& add(Physic::Flag* flag);
-	Scene& add(Physic::ParticleEmitter* particleEmitter);
-	Scene& add(PathPoint* pathPoint);
-	Scene& add(Billboard* billboard);
-	Scene& add(Camera* camera);
-	Scene& add(Physic::WindZone* windZone);
-	Scene& add(Rigidbody* rigidbody);
-	Scene& add(Animator* animator);
-	Scene& add(CharacterController* characterController);
-	Scene& add(Behavior* behavior);
+	SceneAccessor& getAccessor() const;
 
-	Scene& erase(Entity* entity);
-	Scene& erase(PointLight* pointLight);
-	Scene& erase(DirectionalLight* directionalLight);
-	Scene& erase(SpotLight* spotLight);
-	Scene& erase(Collider* collider);
-	Scene& erase(MeshRenderer* meshRenderer);
-	Scene& erase(Physic::Flag* flag);
-	Scene& erase(Physic::ParticleEmitter* particleEmitter);
-	Scene& erase(PathPoint* pathPoint);
-	Scene& erase(Billboard* billboard);
-	Scene& erase(Camera* camera);
-	Scene& erase(Physic::WindZone* windZone);
-	Scene& erase(Rigidbody* rigidbody);
-	Scene& erase(Animator* animator);
-	Scene& erase(CharacterController* characterController);
-	Scene& erase(Behavior* behavior);
+	//Scene& add(Entity* entity);
+	//Scene& add(PointLight* pointLight);
+	//Scene& add(DirectionalLight* directionalLight);
+	//Scene& add(SpotLight* spotLight);
+	//Scene& add(Collider* collider);
+	//Scene& add(MeshRenderer* meshRenderer);
+	//Scene& add(Physic::Flag* flag);
+	//Scene& add(Physic::ParticleEmitter* particleEmitter);
+	//Scene& add(PathPoint* pathPoint);
+	//Scene& add(Billboard* billboard);
+	//Scene& add(Camera* camera);
+	//Scene& add(Physic::WindZone* windZone);
+	//Scene& add(Rigidbody* rigidbody);
+	//Scene& add(Animator* animator);
+	//Scene& add(CharacterController* characterController);
+	//Scene& add(Behavior* behavior);
+
+	//Scene& erase(Entity* entity);
+	//Scene& erase(PointLight* pointLight);
+	//Scene& erase(DirectionalLight* directionalLight);
+	//Scene& erase(SpotLight* spotLight);
+	//Scene& erase(Collider* collider);
+	//Scene& erase(MeshRenderer* meshRenderer);
+	//Scene& erase(Physic::Flag* flag);
+	//Scene& erase(Physic::ParticleEmitter* particleEmitter);
+	//Scene& erase(PathPoint* pathPoint);
+	//Scene& erase(Billboard* billboard);
+	//Scene& erase(Camera* camera);
+	//Scene& erase(Physic::WindZone* windZone);
+	//Scene& erase(Rigidbody* rigidbody);
+	//Scene& erase(Animator* animator);
+	//Scene& erase(CharacterController* characterController);
+	//Scene& erase(Behavior* behavior);
 
 	void computeCulling();
 	void computeCullingForSingleCamera(BaseCamera& camera);

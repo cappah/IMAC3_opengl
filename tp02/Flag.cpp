@@ -3,12 +3,15 @@
 #include "Flag.h"
 //forwards : 
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
 #include "OctreeDrawer.h"
 #include "EditorGUI.h"
 
 namespace Physic {
+
+	COMPONENT_IMPLEMENTATION_CPP(Flag)
 
 	Flag::Flag() : Flag(getMaterialFactory().getDefault("defaultLit"))
 	{
@@ -1027,35 +1030,6 @@ namespace Physic {
 	{
 		for (int i = 0; i < pointContainer.size(); i++)
 			pointContainer[i].force += (gravity * pointContainer[i].masse); // weight = m * g 
-	}
-
-	void Flag::eraseFromScene(Scene & scene)
-	{
-		scene.erase(this);
-	}
-
-	void Flag::addToScene(Scene & scene)
-	{
-		scene.add(this);
-	}
-
-	Component* Flag::clone(Entity* entity)
-	{
-		Flag* newFlag = new Flag(*this);
-
-		newFlag->attachToEntity(entity);
-
-		return newFlag;
-	}
-
-	void Flag::addToEntity(Entity& entity)
-	{
-		entity.add(this);
-	}
-
-	void Flag::eraseFromEntity(Entity& entity)
-	{
-		entity.erase(this);
 	}
 
 	Mesh & Flag::getMesh() 

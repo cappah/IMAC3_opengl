@@ -281,6 +281,7 @@
     <ClCompile Include="ResourceTree.cpp" />
     <ClCompile Include="Rigidbody.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneAccessor.cpp" />
     <ClCompile Include="SerializeUtils.cpp" />
     <ClCompile Include="ShaderParameter.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
@@ -385,6 +386,7 @@
     <ClInclude Include="ResourceTree.h" />
     <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneAccessor.h" />
     <ClInclude Include="SerializeUtils.h" />
     <ClInclude Include="ShaderParameters.h" />
     <ClInclude Include="ShaderProgram.h" />

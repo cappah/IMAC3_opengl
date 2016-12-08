@@ -64,6 +64,8 @@ protected:
 
 class CharacterController: public Component
 {
+	COMPONENT_IMPLEMENTATION_HEADER(CharacterController)
+
 	enum Direction {FORWARD = 0, RIGHT = 1, LEFT = 2, BACKWARD = 3};
 private:
 	glm::vec3 m_translation;
@@ -121,12 +123,6 @@ public:
 
 	virtual void drawInInspector(Scene & scene) override;
 	virtual void drawInInspector(Scene & scene, const std::vector<Component*>& components) override;
-
-	virtual void eraseFromScene(Scene & scene) override;
-	virtual void addToScene(Scene & scene) override;
-	virtual void eraseFromEntity(Entity & entity) override;
-	virtual void addToEntity(Entity & entity) override;
-	virtual Component * clone(Entity * entity) override;
 
 	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(const Json::Value& componentRoot) override;

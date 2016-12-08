@@ -5,6 +5,7 @@
 #include "Scene.h" //forward
 #include "EditorWindows.h" //forward
 #include "EditorTools.h" //forward
+#include "Renderer.h"
 
 //DroppedFileEditorWindow* DroppedFileEditorWindow::modalRef = nullptr;
 
