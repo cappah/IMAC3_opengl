@@ -8,10 +8,9 @@
 #include "Component.h"
 #include "Collider.h"
 
-
-
 class Rigidbody : public Component
 {
+	REFLEXION_HEADER(Rigidbody)
 	COMPONENT_IMPLEMENTATION_HEADER(Rigidbody)
 
 private:
@@ -92,5 +91,11 @@ public:
 
 	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(const Json::Value& componentRoot) override;
+
+	virtual void onAfterComponentAddedToScene(Scene& scene) override;
+	virtual void onAfterComponentAddedToEntity(Entity& entity) override;
 };
+
+REFLEXION_CPP(Rigidbody)
+REFLEXION_InheritFrom(Rigidbody, Component)
 

@@ -22,11 +22,12 @@ class Entity;
 
 struct Light : public Component
 {
+	REFLEXION_HEADER(Light)
+
 public:
 
 	float intensity;
 	glm::vec3 color;
-
 
 	Light(float _intensity, glm::vec3 _color);
 	virtual ~Light();
@@ -43,8 +44,12 @@ public:
 
 };
 
+REFLEXION_CPP(Light)
+REFLEXION_InheritFrom(Light, Component)
+
 struct PointLight : public Light
 {
+	REFLEXION_HEADER(PointLight)
 	COMPONENT_IMPLEMENTATION_HEADER(PointLight)
 
 public:
@@ -70,8 +75,12 @@ public:
 
 };
 
+REFLEXION_CPP(PointLight)
+REFLEXION_InheritFrom(PointLight, Light)
+
 struct DirectionalLight : public Light
 {
+	REFLEXION_HEADER(DirectionalLight)
 	COMPONENT_IMPLEMENTATION_HEADER(DirectionalLight)
 
 public:
@@ -93,8 +102,12 @@ public:
 	virtual void load(const Json::Value& rootComponent) override;
 };
 
+REFLEXION_CPP(DirectionalLight)
+REFLEXION_InheritFrom(DirectionalLight, Light)
+
 struct SpotLight : public Light
 {
+	REFLEXION_HEADER(SpotLight)
 	COMPONENT_IMPLEMENTATION_HEADER(SpotLight)
 
 public:
@@ -123,3 +136,5 @@ public:
 	virtual void load(const Json::Value& rootComponent) override;
 };
 
+REFLEXION_CPP(SpotLight)
+REFLEXION_InheritFrom(SpotLight, Light)

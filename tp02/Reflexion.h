@@ -43,7 +43,8 @@ public:
 	//inline bool addInheritedClassId(int id) { inheritedClassIds.push_back(id); std::cout << "inheritance detected : " << id << std::endl; return true; }
 	inline bool initClassId() 
 	{ 
-		classId = ReflexionBase::classCount; 
+		classId = ReflexionBase::classCount;
+		std::cout << "class Id = "<< classId << std::endl;
 		if (!initialized) 
 			ReflexionBase::classCount++; 
 		return true; 
@@ -51,6 +52,7 @@ public:
 	inline bool initClassName(std::string name) 
 	{ 
 		className = name;
+		std::cout << "class name = " << className << std::endl;
 		return true;
 	}
 
@@ -67,6 +69,10 @@ public:
 
 #define REFLEXION_HEADER(Type)\
 	public:\
+	inline static int staticClassId()\
+	{\
+		return Reflexion<Type>::instance().getClassId();\
+	}\
 	inline virtual int getClassId() const override\
 	{\
 		return Reflexion<Type>::instance().getClassId();\
@@ -106,7 +112,7 @@ public:
 	private:
 
 #define REFLEXION_CPP(Type)\
-	bool Reflexion<Type>::initialized = Reflexion<Type>::instance().initClassName(#Type) && Reflexion<Type>::instance().initClassId()
+	bool Reflexion<Type>::initialized = Reflexion<Type>::instance().initClassName(#Type) && Reflexion<Type>::instance().initClassId();
 
 #define REFLEXION_InheritFrom(Type, ParentType)\
 	int ReflexionCounters<Type, ParentType>::count = Reflexion<Type>::instance().addInheritFrom<ParentType>();

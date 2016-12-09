@@ -7,6 +7,7 @@
 
 class PathPoint : public Component
 {
+	REFLEXION_HEADER(PathPoint)
 	COMPONENT_IMPLEMENTATION_HEADER(PathPoint)
 
 private:
@@ -28,3 +29,6 @@ public:
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
 };
+
+REFLEXION_CPP(PathPoint)
+REFLEXION_InheritFrom(PathPoint, Component)

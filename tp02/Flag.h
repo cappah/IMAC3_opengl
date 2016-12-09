@@ -25,6 +25,7 @@ namespace Physic {
 
 	class Flag : public Component, public IBatchableWith<MaterialLit>, public IRenderableComponent
 	{
+		REFLEXION_HEADER(Flag)
 		COMPONENT_IMPLEMENTATION_HEADER(Flag)
 
 		glm::vec3 origin;
@@ -142,6 +143,13 @@ namespace Physic {
 		void computeGlobalBreak(float deltaTime, Point* point);
 
 		void computeAutoCollision();
+
+		virtual void onAfterComponentAddedToScene(Scene & scene) override;
+		virtual void onBeforeComponentErasedFromScene(Scene & scene) override;
 };
 
 }
+
+REFLEXION_CPP(Physic::Flag)
+REFLEXION_InheritFrom(Physic::Flag, Component)
+

@@ -900,6 +900,22 @@ namespace Physic {
 		return 1;
 	}
 
+	void ParticleEmitter::onAfterComponentAddedToScene(Scene & scene)
+	{
+		//Add this components to renderables :
+		IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(this);
+		if (asRenderable->getDrawableCount() > 0)
+			scene.addToRenderables(this);
+	}
+
+	void ParticleEmitter::onBeforeComponentErasedFromScene(Scene & scene)
+	{
+		//Remove this components from renderables :
+		IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(this);
+		if (asRenderable->getDrawableCount() > 0)
+			scene.removeFromRenderables(this);
+	}
+
 }
 
 ////positions : 

@@ -58,6 +58,7 @@ struct BaseCamera
 
 class Camera : public Component, public BaseCamera
 {
+	REFLEXION_HEADER(Camera)
 	COMPONENT_IMPLEMENTATION_HEADER(Camera)
 
 private :
@@ -119,6 +120,8 @@ public:
 	virtual void load(const Json::Value& rootComponent) override;
 };
 
+REFLEXION_CPP(Camera)
+REFLEXION_InheritFrom(Camera, Component)
 
 class CameraEditor final : public BaseCamera
 {

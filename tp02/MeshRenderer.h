@@ -15,6 +15,7 @@ class Entity;
 
 class MeshRenderer : public Component, public IRenderableComponent
 {
+	REFLEXION_HEADER(MeshRenderer)
 	COMPONENT_IMPLEMENTATION_HEADER(MeshRenderer)
 
 private:
@@ -60,5 +61,10 @@ public:
 	virtual const IDrawable& getDrawable(int drawableIndex) const override;
 	virtual const Material& getDrawableMaterial(int drawableIndex) const override;
 	virtual const int getDrawableCount() const override;
+
+	virtual void onAfterComponentAddedToScene(Scene& scene) override;
+	virtual void onBeforeComponentErasedFromScene(Scene& scene) override;
 };
 
+REFLEXION_CPP(MeshRenderer)
+REFLEXION_InheritFrom(MeshRenderer, Component)

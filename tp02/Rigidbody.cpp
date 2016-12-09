@@ -507,3 +507,14 @@ void Rigidbody::load(const Json::Value & componentRoot)
 
 }
 
+void Rigidbody::onAfterComponentAddedToScene(Scene & scene)
+{
+	makeShape(); //order the ridigbody to reupdate it collider shape
+	init(scene.getPhysicManager().getBulletDynamicSimulation()); //must be call after the rigidbody has been attached to an entity
+}
+
+void Rigidbody::onAfterComponentAddedToEntity(Entity & entity)
+{
+	entity.applyTransform();
+}
+

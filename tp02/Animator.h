@@ -7,6 +7,7 @@
 
 class Animator: public Component
 {
+	REFLEXION_HEADER(Animator)
 	COMPONENT_IMPLEMENTATION_HEADER(Animator)
 
 private:
@@ -40,3 +41,5 @@ public:
 	virtual void load(const Json::Value& componentRoot) override;
 };
 
+REFLEXION_CPP(Animator)
+REFLEXION_InheritFrom(Animator, Component)

@@ -64,6 +64,7 @@ protected:
 
 class CharacterController: public Component
 {
+	REFLEXION_HEADER(CharacterController)
 	COMPONENT_IMPLEMENTATION_HEADER(CharacterController)
 
 	enum Direction {FORWARD = 0, RIGHT = 1, LEFT = 2, BACKWARD = 3};
@@ -126,5 +127,10 @@ public:
 
 	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(const Json::Value& componentRoot) override;
+
+	virtual void onAfterComponentAddedToScene(Scene& scene) override;
+	virtual void onAfterComponentAddedToEntity(Entity& entity) override;
 };
 
+REFLEXION_CPP(CharacterController)
+REFLEXION_InheritFrom(CharacterController, Component)

@@ -36,6 +36,8 @@ struct CollisionInfo {
 
 struct Collider : public Component
 {
+	REFLEXION_HEADER(Collider)
+
 public:
 
 	ResourcePtr<Material> visualMaterial;
@@ -134,10 +136,17 @@ public:
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
 
+	void onAfterComponentAddedToEntity(Entity& entity) override;
+	void onBeforeComponentErasedFromEntity(Entity& entity) override;
+
 };
+
+REFLEXION_CPP(Collider)
+REFLEXION_InheritFrom(Collider, Component)
 
 struct BoxCollider : public Collider
 {
+	REFLEXION_HEADER(BoxCollider)
 	COMPONENT_IMPLEMENTATION_HEADER(BoxCollider)
 
 public:
@@ -166,9 +175,12 @@ public:
 	virtual void load(const Json::Value& rootComponent) override;
 };
 
+REFLEXION_CPP(BoxCollider)
+REFLEXION_InheritFrom(BoxCollider, Collider)
 
 struct CapsuleCollider : public Collider
 {
+	REFLEXION_HEADER(CapsuleCollider)
 	COMPONENT_IMPLEMENTATION_HEADER(CapsuleCollider)
 
 public:
@@ -192,3 +204,6 @@ public:
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
 };
+
+REFLEXION_CPP(CapsuleCollider)
+REFLEXION_InheritFrom(CapsuleCollider, Collider)

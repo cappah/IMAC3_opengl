@@ -128,42 +128,9 @@ public:
 	void clear();
 
 	std::vector<Entity*>& getEntities();
-
 	SceneAccessor& getAccessor() const;
-
-	//Scene& add(Entity* entity);
-	//Scene& add(PointLight* pointLight);
-	//Scene& add(DirectionalLight* directionalLight);
-	//Scene& add(SpotLight* spotLight);
-	//Scene& add(Collider* collider);
-	//Scene& add(MeshRenderer* meshRenderer);
-	//Scene& add(Physic::Flag* flag);
-	//Scene& add(Physic::ParticleEmitter* particleEmitter);
-	//Scene& add(PathPoint* pathPoint);
-	//Scene& add(Billboard* billboard);
-	//Scene& add(Camera* camera);
-	//Scene& add(Physic::WindZone* windZone);
-	//Scene& add(Rigidbody* rigidbody);
-	//Scene& add(Animator* animator);
-	//Scene& add(CharacterController* characterController);
-	//Scene& add(Behavior* behavior);
-
-	//Scene& erase(Entity* entity);
-	//Scene& erase(PointLight* pointLight);
-	//Scene& erase(DirectionalLight* directionalLight);
-	//Scene& erase(SpotLight* spotLight);
-	//Scene& erase(Collider* collider);
-	//Scene& erase(MeshRenderer* meshRenderer);
-	//Scene& erase(Physic::Flag* flag);
-	//Scene& erase(Physic::ParticleEmitter* particleEmitter);
-	//Scene& erase(PathPoint* pathPoint);
-	//Scene& erase(Billboard* billboard);
-	//Scene& erase(Camera* camera);
-	//Scene& erase(Physic::WindZone* windZone);
-	//Scene& erase(Rigidbody* rigidbody);
-	//Scene& erase(Animator* animator);
-	//Scene& erase(CharacterController* characterController);
-	//Scene& erase(Behavior* behavior);
+	void addToRenderables(IRenderableComponent* renderable);
+	void removeFromRenderables(IRenderableComponent* renderable);
 
 	void computeCulling();
 	void computeCullingForSingleCamera(BaseCamera& camera);

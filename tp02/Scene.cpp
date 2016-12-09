@@ -35,21 +35,26 @@ Scene::Scene(Renderer* renderer, const std::string& sceneName)
 	//////////////////////////////////////////////
 	//// BEGIN : Component container mapping
 
-	m_componentMapping[PointLight::getClassId()] = m_pointLights;
-	m_componentMapping[DirectionalLight::getClassId()] = m_directionalLights;
-	m_componentMapping[SpotLight::getClassId()] = m_spotLights;
-	m_componentMapping[Collider::getClassId()] = m_colliders;
-	m_componentMapping[MeshRenderer::getClassId()] = m_meshRenderers;
-	m_componentMapping[Physic::Flag::getClassId()] = m_flags;
-	m_componentMapping[Physic::ParticleEmitter::getClassId()] = m_particleEmitters;
+	// Lights :
+	m_componentMapping[PointLight::staticClassId()] = &m_pointLights;
+	m_componentMapping[DirectionalLight::staticClassId()] = &m_directionalLights;
+	m_componentMapping[SpotLight::staticClassId()] = &m_spotLights;
+	// Collider :
+	m_componentMapping[BoxCollider::staticClassId()] = &m_colliders;
+	m_componentMapping[CapsuleCollider::staticClassId()] = &m_colliders;
+	m_componentMapping[Collider::staticClassId()] = &m_colliders;
+	// Others :
+	m_componentMapping[MeshRenderer::staticClassId()] = &m_meshRenderers;
+	m_componentMapping[Physic::Flag::staticClassId()] = &m_flags;
+	m_componentMapping[Physic::ParticleEmitter::staticClassId()] = &m_particleEmitters;
 	//m_componentMapping[PathPoint::getClassId()] = m_pathManager; //TODO CORE
-	m_componentMapping[Billboard::getClassId()] = m_billboards;
-	m_componentMapping[Camera::getClassId()] = m_cameras;
-	m_componentMapping[Physic::WindZone::getClassId()] = m_windZones;
-	m_componentMapping[Rigidbody::getClassId()] = m_rigidbodies;
-	m_componentMapping[Animator::getClassId()] = m_animators;
-	m_componentMapping[CharacterController::getClassId()] = m_characterControllers;
-	m_componentMapping[Behavior::getClassId()] = m_behaviors;
+	m_componentMapping[Billboard::staticClassId()] = &m_billboards;
+	m_componentMapping[Camera::staticClassId()] = &m_cameras;
+	m_componentMapping[Physic::WindZone::staticClassId()] = &m_windZones;
+	m_componentMapping[Rigidbody::staticClassId()] = &m_rigidbodies;
+	m_componentMapping[Animator::staticClassId()] = &m_animators;
+	m_componentMapping[CharacterController::staticClassId()] = &m_characterControllers;
+	m_componentMapping[Behavior::staticClassId()] = &m_behaviors;
 
 	//// END : Component container mapping
 	//////////////////////////////////////////////
@@ -143,348 +148,15 @@ SceneAccessor& Scene::getAccessor() const
 	return *m_accessor;
 }
 
-//Scene& Scene::add(Entity * entity)
-//{
-//	m_entities.push_back(entity);
-//	return *this;
-//}
-//
-//Scene& Scene::add(PointLight * pointLight)
-//{
-//	m_pointLights.push_back(pointLight);
-//	return *this;
-//}
-//
-//Scene& Scene::add(DirectionalLight * directionalLight)
-//{
-//	m_directionalLights.push_back(directionalLight);
-//	return *this;
-//}
-//
-//Scene& Scene::add(SpotLight * spotLight)
-//{
-//	m_spotLights.push_back(spotLight);
-//	return *this;
-//}
-//
-//Scene& Scene::add(Collider * collider)
-//{
-//	m_colliders.push_back(collider);
-//	return *this;
-//}
-//
-//Scene& Scene::add(MeshRenderer * meshRenderer)
-//{
-//	m_meshRenderers.push_back(meshRenderer);
-//
-//	//Add this components to renderables :
-//	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(meshRenderer);
-//	if(asRenderable->getDrawableCount() > 0)
-//		m_renderables.add(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
-//
-//	return *this;
-//}
-//
-//Scene& Scene::add(Physic::Flag * flag)
-//{
-//	m_flags.push_back(flag);
-//
-//	//Add this components to renderables :
-//	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(flag);
-//	if (asRenderable->getDrawableCount() > 0)
-//		m_renderables.add(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
-//
-//	return *this;
-//}
-//
-//Scene & Scene::add(Physic::ParticleEmitter * particleEmitter)
-//{
-//	m_particleEmitters.push_back(particleEmitter);
-//
-//	//Add this components to renderables :
-//	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(particleEmitter);
-//	if (asRenderable->getDrawableCount() > 0)
-//		m_renderables.add(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
-//
-//	return *this;
-//}
-//
-//Scene & Scene::add(PathPoint * pathPoint)
-//{
-//	m_pathManager.add(pathPoint);
-//	return *this;
-//}
-//
-//Scene & Scene::add(Billboard * billboard)
-//{
-//	m_billboards.push_back(billboard);
-//
-//	//Add this components to renderables :
-//	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(billboard);
-//	if (asRenderable->getDrawableCount() > 0)
-//		m_renderables.add(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
-//
-//	return *this;
-//}
-//
-//Scene & Scene::add(Camera * camera)
-//{
-//	m_cameras.push_back(camera);
-//	return *this;
-//}
-//
-//Scene & Scene::add(Physic::WindZone* windZone)
-//{
-//	m_windZones.push_back(windZone);
-//	return *this;
-//}
-//
-//Scene & Scene::add(Rigidbody* rigidbody)
-//{
-//	m_rigidbodies.push_back(rigidbody);
-//	return *this;
-//}
-//
-//Scene & Scene::add(Animator * animator)
-//{
-//	m_animators.push_back(animator);
-//	return *this;
-//}
-//
-//Scene & Scene::add(CharacterController * characterController)
-//{
-//	m_characterControllers.push_back(characterController);
-//	return *this;
-//}
-//
-//Scene & Scene::add(Behavior * behavior)
-//{
-//	m_behaviors.push_back(behavior);
-//	return *this;
-//}
-//
-//
-//Scene& Scene::erase(Entity* entity)
-//{
-//	auto findIt = std::find(m_entities.begin(), m_entities.end(), entity);
-//
-//	if (findIt != m_entities.end())
-//	{
-//		m_entities.erase(findIt);
-//		delete entity;
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(PointLight * pointLight)
-//{
-//	auto findIt = std::find(m_pointLights.begin(), m_pointLights.end(), pointLight);
-//
-//	if (findIt != m_pointLights.end())
-//	{
-//		delete *findIt;
-//		m_pointLights.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(DirectionalLight * directionalLight)
-//{
-//	auto findIt = std::find(m_directionalLights.begin(), m_directionalLights.end(), directionalLight);
-//
-//	if (findIt != m_directionalLights.end())
-//	{
-//		delete *findIt;
-//		m_directionalLights.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(SpotLight * spotLight)
-//{
-//	auto findIt = std::find(m_spotLights.begin(), m_spotLights.end(), spotLight);
-//
-//	if (findIt != m_spotLights.end())
-//	{
-//		delete *findIt;
-//		m_spotLights.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(Collider * collider)
-//{
-//	auto findIt = std::find(m_colliders.begin(), m_colliders.end(), collider);
-//
-//	if (findIt != m_colliders.end())
-//	{
-//		delete *findIt;
-//		m_colliders.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(MeshRenderer * meshRenderer)
-//{
-//	//Add this components to renderables :
-//	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(meshRenderer);
-//	if (asRenderable->getDrawableCount() > 0)
-//		m_renderables.remove(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
-//
-//	auto findIt = std::find(m_meshRenderers.begin(), m_meshRenderers.end(), meshRenderer);
-//
-//	if (findIt != m_meshRenderers.end())
-//	{
-//		delete meshRenderer;
-//		m_meshRenderers.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(Physic::Flag * flag)
-//{
-//	//Add this components to renderables :
-//	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(flag);
-//	if (asRenderable->getDrawableCount() > 0)
-//		m_renderables.remove(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
-//
-//	auto findIt = std::find(m_flags.begin(), m_flags.end(), flag);
-//
-//	if (findIt != m_flags.end())
-//	{
-//		delete flag;
-//		m_flags.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(Physic::ParticleEmitter * particleEmitter)
-//{
-//	//Add this components to renderables :
-//	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(particleEmitter);
-//	if (asRenderable->getDrawableCount() > 0)
-//		m_renderables.remove(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
-//
-//	auto findIt = std::find(m_particleEmitters.begin(), m_particleEmitters.end(), particleEmitter);
-//
-//	if (findIt != m_particleEmitters.end())
-//	{
-//		delete particleEmitter;
-//		m_particleEmitters.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(PathPoint * pathPoint)
-//{
-//	m_pathManager.erase(pathPoint);
-//	return *this;
-//}
-//
-//Scene & Scene::erase(Billboard * billboard)
-//{
-//	//Add this components to renderables :
-//	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(billboard);
-//	if (asRenderable->getDrawableCount() > 0)
-//		m_renderables.remove(asRenderable, asRenderable->getDrawable(0).getVisualBoundingBox());
-//
-//	auto findIt = std::find(m_billboards.begin(), m_billboards.end(), billboard);
-//
-//	if (findIt != m_billboards.end())
-//	{
-//		delete billboard;
-//		m_billboards.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//
-//Scene & Scene::erase(Camera * camera)
-//{
-//	auto findIt = std::find(m_cameras.begin(), m_cameras.end(), camera);
-//
-//	if (findIt != m_cameras.end())
-//	{
-//		delete camera;
-//		m_cameras.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(Physic::WindZone * windZone)
-//{
-//	auto findIt = std::find(m_windZones.begin(), m_windZones.end(), windZone);
-//
-//	if (findIt != m_windZones.end())
-//	{
-//		delete windZone;
-//		m_windZones.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(Rigidbody* rigidbody)
-//{
-//	auto findIt = std::find(m_rigidbodies.begin(), m_rigidbodies.end(), rigidbody);
-//
-//	if (findIt != m_rigidbodies.end())
-//	{
-//		delete rigidbody;
-//		m_rigidbodies.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(Animator * animator)
-//{
-//	auto findIt = std::find(m_animators.begin(), m_animators.end(), animator);
-//
-//	if (findIt != m_animators.end())
-//	{
-//		delete animator;
-//		m_animators.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene & Scene::erase(CharacterController * characterController)
-//{
-//	auto findIt = std::find(m_characterControllers.begin(), m_characterControllers.end(), characterController);
-//
-//	if (findIt != m_characterControllers.end())
-//	{
-//		delete characterController;
-//		m_characterControllers.erase(findIt);
-//	}
-//
-//	return *this;
-//}
-//
-//Scene& Scene::erase(Behavior* behavior)
-//{
-//	auto findIt = std::find(m_behaviors.begin(), m_behaviors.end(), behavior);
-//
-//	if (findIt != m_behaviors.end())
-//	{
-//		delete behavior;
-//		m_behaviors.erase(findIt);
-//	}
-//
-//	return *this;
-//}
+void Scene::addToRenderables(IRenderableComponent* renderable)
+{
+	m_renderables.add(renderable, renderable->getDrawable(0).getVisualBoundingBox());
+}
+
+void Scene::removeFromRenderables(IRenderableComponent* renderable)
+{
+	m_renderables.remove(renderable, renderable->getDrawable(0).getVisualBoundingBox());
+}
 
 void Scene::computeCulling()
 {

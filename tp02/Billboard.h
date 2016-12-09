@@ -9,6 +9,7 @@
 
 class Billboard : public Component, public IRenderableComponent, public IBatchableWith<MaterialBillboard>
 {
+	REFLEXION_HEADER(Billboard)
 	COMPONENT_IMPLEMENTATION_HEADER(Billboard)
 
 private:
@@ -54,5 +55,10 @@ public:
 	virtual bool castShadows() const override;
 
 	virtual void setExternalsOf(const MaterialBillboard& material, const glm::mat4& projection, const glm::mat4& view) const;
+
+	virtual void onAfterComponentAddedToScene(Scene & scene) override;
+	virtual void onBeforeComponentErasedFromScene(Scene & scene) override;
 };
 
+REFLEXION_CPP(Billboard)
+REFLEXION_InheritFrom(Billboard, Component)

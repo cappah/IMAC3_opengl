@@ -12,6 +12,7 @@
 #include "jsoncpp/json/json.h"
 
 #include "ISerializable.h"
+#include "Object.h"
 
 //forward
 class Entity;
@@ -43,8 +44,10 @@ Component* ComponentType::clone(Entity* entity)\
 	return newTypedComponent;\
 }
 
-class Component : public ISerializable
+class Component : public ISerializable, public Object
 {
+	REFLEXION_HEADER(Component)
+
 public:
 	enum ComponentType {
 		BOX_COLLIDER = 1 << 0, CAPSULE_COLLIDER = 1 << 1, SPHERE_COLLIDER = 1 << 2, MESH_COLLIDER = 1 << 3,
@@ -118,10 +121,10 @@ public:
 	virtual void addToEntity(Entity& entity);
 
 	// Callbacks for special management when components are created / destroyed
-	void onAfterComponentAddedToScene(Scene& scene) {}
-	void onAfterComponentAddedToEntity(Entity& entity) {}
-	void onBeforeComponentErasedFromEntity(Entity& entity) {}
-	void onBeforeComponentErasedFromScene(Scene& scene) {}
+	virtual void onAfterComponentAddedToScene(Scene& scene) {}
+	virtual void onAfterComponentAddedToEntity(Entity& entity) {}
+	virtual void onBeforeComponentErasedFromEntity(Entity& entity) {}
+	virtual void onBeforeComponentErasedFromScene(Scene& scene) {}
 
 	//clone a component, and attach it to the given entity
 	//This function is internally called by the copy contructor and operator=() of entity, to properly copy the entity.
@@ -130,6 +133,9 @@ public:
 	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(const Json::Value& componentRoot) override;
 };
+
+REFLEXION_CPP(Component)
+REFLEXION_InheritFrom(Component, Object)
 
 template<typename T>
 T* Component::getComponent(Component::ComponentType type)

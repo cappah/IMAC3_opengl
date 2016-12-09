@@ -10,6 +10,7 @@ namespace Physic {
 
 	class WindZone : public Component
 	{
+		REFLEXION_HEADER(WindZone)
 		COMPONENT_IMPLEMENTATION_HEADER(WindZone)
 
 	public:
@@ -58,4 +59,7 @@ namespace Physic {
 		virtual void load(const Json::Value& componentRoot) override;
 	};
 }
+
+REFLEXION_CPP(Physic::WindZone)
+REFLEXION_InheritFrom(Physic::WindZone, Component)
 

@@ -20,6 +20,7 @@ namespace Physic{
 
 	class ParticleEmitter : public Component, public IRenderableComponent, public IBatchableWith<MaterialParticlesCPU>
 	{
+		REFLEXION_HEADER(ParticleEmitter)
 		COMPONENT_IMPLEMENTATION_HEADER(ParticleEmitter)
 
 	public :
@@ -124,10 +125,16 @@ namespace Physic{
 
 		virtual void setExternalsOf(const MaterialParticlesCPU& material, const glm::mat4& projection, const glm::mat4& view) const override;
 
+		virtual void onAfterComponentAddedToScene(Scene & scene) override;
+		virtual void onBeforeComponentErasedFromScene(Scene & scene) override;
+
 	private:
 		void sorting_quickSort(int begin, int end);
 		int sorting_partition(int begin, int end);
 };
 
 }
+
+REFLEXION_CPP(Physic::ParticleEmitter)
+REFLEXION_InheritFrom(Physic::ParticleEmitter, Component)
 

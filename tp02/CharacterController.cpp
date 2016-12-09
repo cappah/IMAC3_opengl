@@ -461,3 +461,14 @@ void CharacterController::load(const Json::Value & componentRoot)
 	m_shape = nullptr;
 	m_ptrToPhysicWorld = nullptr;
 }
+
+void CharacterController::onAfterComponentAddedToScene(Scene& scene)
+{
+	makeShape(); 
+	init(scene.getPhysicManager().getBulletDynamicSimulation());
+}
+
+void CharacterController::onAfterComponentAddedToEntity(Entity& entity)
+{
+	entity.applyTransform();
+}

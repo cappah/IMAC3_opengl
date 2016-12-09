@@ -30,7 +30,7 @@ public:
 	template<typename T>
 	SceneAccessor& addToScene(Component* component)
 	{
-		std::vector<T*>& vectorOfComponents = *static_cast<std::vector<T*>*>(getSceneComponentContainer(0/*component->getClassa()*/));
+		std::vector<T*>& vectorOfComponents = *static_cast<std::vector<T*>*>(getSceneComponentContainer(component->getClassId()));
 
 		auto findIt = std::find(vectorOfComponents.begin(), vectorOfComponents.end(), component);
 
@@ -45,7 +45,7 @@ public:
 	template<typename T>
 	SceneAccessor& eraseFromScene(Component* component)
 	{
-		std::vector<T*>& vectorOfComponents = *static_cast<std::vector<T*>*>(getSceneComponentContainer(0/*component->getClassa()*/));
+		std::vector<T*>& vectorOfComponents = *static_cast<std::vector<T*>*>(getSceneComponentContainer(component->getClassId()));
 
 		delete component;
 		vectorOfComponents.erase(std::remove(vectorOfComponents.begin(), vectorOfComponents.end(), component));
