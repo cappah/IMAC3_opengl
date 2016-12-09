@@ -491,7 +491,7 @@ namespace GlHelper {
 	{
 		// Create color texture
 		Texture* newTexture = new Texture(width, height, true);
-		newTexture->setTextureParameters(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, true);
+		newTexture->setTextureParameters(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, false);
 		newTexture->setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
 		newTexture->setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
@@ -502,7 +502,7 @@ namespace GlHelper {
 	{
 		// Create normal texture
 		Texture* newTexture = new Texture(width, height, true);
-		newTexture->setTextureParameters(GL_RGBA16, GL_RGBA, GL_FLOAT, true);
+		newTexture->setTextureParameters(GL_RGBA16, GL_RGBA, GL_FLOAT, false);
 		newTexture->setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
 		newTexture->setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
@@ -513,7 +513,7 @@ namespace GlHelper {
 	{
 		// Create depth texture
 		Texture* newTexture = new Texture(width, height, true);
-		newTexture->setTextureParameters(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT, true);
+		newTexture->setTextureParameters(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT, false);
 		newTexture->setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
 		newTexture->setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
@@ -523,7 +523,7 @@ namespace GlHelper {
 	void makeColorTexture(Texture& texture, float width, float height)
 	{
 		texture.resizeTexture(width, height);
-		texture.setTextureParameters(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, true);
+		texture.setTextureParameters(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, false);
 		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
 		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	}
@@ -531,7 +531,7 @@ namespace GlHelper {
 	void makeNormalTexture(Texture& texture, float width, float height)
 	{
 		texture.resizeTexture(width, height);
-		texture.setTextureParameters(GL_RGBA16, GL_RGBA, GL_FLOAT, true);
+		texture.setTextureParameters(GL_RGBA16, GL_RGBA, GL_FLOAT, false);
 		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
 		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	}
@@ -539,7 +539,7 @@ namespace GlHelper {
 	void makeDepthTexture(Texture& texture, float width, float height)
 	{
 		texture.resizeTexture(width, height);
-		texture.setTextureParameters(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT, true);
+		texture.setTextureParameters(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT, false);
 		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
 		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	}
