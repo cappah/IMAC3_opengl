@@ -16,15 +16,41 @@
 #include "Octree.h"
 #include "IRenderableComponent.h"
 #include "RenderBatch.h"
+#include "PostProcess.h"
 
 struct BaseCamera
 {
+protected:
+
+	glm::vec3 m_position;
+	glm::vec3 m_forward;
+
+	glm::mat4 m_viewMatrix;
+	glm::mat4 m_projectionMatrix;
+
+	float m_fovy;
+	float m_aspect;
+	float m_zNear;
+	float m_zFar;
+
+	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[PipelineTypes::COUNT];
+	PostProcessProxy m_postProcessProxy;
+	GlHelper::Framebuffer m_frameBuffer;
+	Texture m_texture;
+	MaterialBlit* m_material;
+	Mesh* m_quadMesh;
+
+public:
 	enum CameraMode { PERSPECTIVE, ORTHOGRAPHIC };
 
 	BaseCamera();
 
-	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) = 0;
-	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const = 0;
+	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree);
+	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const;
+	virtual const PostProcessProxy& getPostProcessProxy() const;
+	void onViewportResized(const glm::vec2& newSize);
+	void renderFrame(const Texture* texture);
+	const Texture* getFinalFrame() const;
 
 	//virtual void setTranslationLocal(glm::vec3 pos) = 0;
 	//virtual void translateLocal(glm::vec3 pos) = 0;
@@ -39,21 +65,22 @@ struct BaseCamera
 	virtual void setPerspectiveInfos(float fovy, float aspect, float camNear = 0.1f, float camFar = 100.f) = 0;
 	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) = 0;
 	virtual void setCameraMode(CameraMode cameraMode) = 0;
+	virtual void updateProjection() = 0;
 
-	virtual const glm::mat4& getViewMatrix() const = 0;
-	virtual const glm::mat4& getProjectionMatrix() const = 0;
-	virtual const glm::vec3& getCameraPosition() const = 0;
-	virtual const glm::vec3& getCameraForward() const = 0;
+	const glm::mat4& getViewMatrix() const;
+	const glm::mat4& getProjectionMatrix() const;
+	const glm::vec3& getCameraPosition() const;
+	const glm::vec3& getCameraForward() const;
 
-	virtual void setFOV(float fov) = 0;
-	virtual void setNear(float camNear) = 0;
-	virtual void setFar(float camFar) = 0;
-	virtual void setAspect(float aspect) = 0;
+	void setFOV(float fov);
+	void setNear(float camNear);
+	void setFar(float camFar);
+	void setAspect(float aspect);
 
-	virtual float getFOV() const = 0;
-	virtual float getNear() const = 0;
-	virtual float getFar() const = 0;
-	virtual float getAspect() const = 0;
+	float getFOV() const;
+	float getNear() const;
+	float getFar() const;
+	float getAspect() const;
 };
 
 class Camera : public Component, public BaseCamera
@@ -63,37 +90,46 @@ private :
 	CameraMode m_cameraMode;
 
 	glm::vec3 m_lookPosition;
-	glm::vec3 m_position;
-
 	glm::vec3 m_up;
-	glm::vec3 m_forward;
 
-	glm::mat4 m_viewMatrix;
-	glm::mat4 m_projectionMatrix;
+	//glm::vec3 m_position;
+	//glm::vec3 m_forward;
 
-	float m_fovy;
-	float m_aspect;
-	float m_zNear;
-	float m_zFar;
+	//glm::mat4 m_viewMatrix;
+	//glm::mat4 m_projectionMatrix;
+
+	//float m_fovy;
+	//float m_aspect;
+	//float m_zNear;
+	//float m_zFar;
+
 	float m_left;
 	float m_top;
 	float m_right;
 	float m_bottom;
 
-	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[PipelineTypes::COUNT];
+	//std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[PipelineTypes::COUNT];
+	//PostProcessProxy m_postProcessProxy;
+	//GlHelper::Framebuffer m_frameBuffer;
+	//Texture m_texture;
+	//MaterialBlit* m_material;
+	//Mesh* m_quadMesh;
 
 public:
 
 	Camera();
 
-	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
-	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
+	//virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
+	//virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
+	//virtual const PostProcessProxy& getPostProcessProxy() const override;
+
+	//void onViewportResized(float width, float height);
+	//void renderFrame(const Texture* texture);
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
-
 
 	virtual void eraseFromScene(Scene & scene) override;
 	virtual void addToScene(Scene & scene) override;
@@ -105,19 +141,20 @@ public:
 	virtual void setPerspectiveInfos(float fovy, float aspect, float zNear = 0.1f, float zFar = 100.f) override;
 	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) override;
 	virtual void setCameraMode(CameraMode cameraMode) override;
-	virtual const glm::mat4& getViewMatrix() const override;
-	virtual const glm::mat4& getProjectionMatrix() const override;
-	virtual const glm::vec3& getCameraPosition() const override;
-	virtual const glm::vec3& getCameraForward() const override;
 
-	virtual void setFOV(float fov) override;
-	virtual void setNear(float camNear) override;
-	virtual void setFar(float camFar) override;
-	virtual void setAspect(float aspect) override;
-	virtual float getFOV() const override;
-	virtual float getNear() const override;
-	virtual float getFar() const override;
-	virtual float getAspect() const override;
+	//virtual const glm::mat4& getViewMatrix() const override;
+	//virtual const glm::mat4& getProjectionMatrix() const override;
+	//virtual const glm::vec3& getCameraPosition() const override;
+	//virtual const glm::vec3& getCameraForward() const override;
+
+	//virtual void setFOV(float fov) override;
+	//virtual void setNear(float camNear) override;
+	//virtual void setFar(float camFar) override;
+	//virtual void setAspect(float aspect) override;
+	//virtual float getFOV() const override;
+	//virtual float getNear() const override;
+	//virtual float getFar() const override;
+	//virtual float getAspect() const override;
 
 	void updateProjection();
 
@@ -133,29 +170,41 @@ private:
 	float theta;
 	float phi;
 	glm::vec3 o;
-	glm::vec3 eye;
+
+	//glm::vec3 eye;
+	//glm::vec3 forward;
 
 	glm::vec3 up;
-	glm::vec3 forward;
 	glm::vec3 right;
 
-	bool isFPSMode;
+	bool m_isFPSMode;
 
-	float m_fovy;
-	float m_aspect;
-	float m_zNear;
-	float m_zFar;
+	//float m_fovy;
+	//float m_aspect;
+	//float m_zNear;
+	//float m_zFar;
 
-	glm::mat4 m_viewMatrix;
-	glm::mat4 m_projectionMatrix;
+	//glm::mat4 m_viewMatrix;
+	//glm::mat4 m_projectionMatrix;
 
-	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[PipelineTypes::COUNT];
+	//std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[PipelineTypes::COUNT];
+	//PostProcessProxy m_postProcessProxy;
+
+	float m_cameraBaseSpeed;
+	float m_cameraBoostSpeed;
+	bool m_hideCursorWhenMovingCamera;
 
 public:
 	CameraEditor();
 
-	void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
-	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
+	//void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
+	//const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
+	//virtual const PostProcessProxy& getPostProcessProxy() const override;
+
+	void drawUI();
+	float getCameraBaseSpeed() const;
+	float getCameraBoostSpeed() const;
+	bool getFPSMode() const;
 
 	void setTranslationLocal(glm::vec3 pos);
 	void translateLocal(glm::vec3 pos);
@@ -173,20 +222,21 @@ public:
 	virtual void setPerspectiveInfos(float fovy, float aspect, float near = 0.1f, float = 100.f) override;
 	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) override;
 	virtual void setCameraMode(CameraMode cameraMode) override;
-	virtual const glm::mat4& getViewMatrix() const override;
-	virtual const glm::mat4& getProjectionMatrix() const override;
-	virtual const glm::vec3& getCameraPosition() const override;
-	virtual const glm::vec3& getCameraForward() const override;
 
-	// Hérité via BaseCamera
-	virtual void setFOV(float fov) override;
-	virtual void setNear(float near) override;
-	virtual void setFar(float far) override;
-	virtual void setAspect(float aspect) override;
-	virtual float getFOV() const override;
-	virtual float getNear() const override;
-	virtual float getFar() const override;
-	virtual float getAspect() const override;
+	//virtual const glm::mat4& getViewMatrix() const override;
+	//virtual const glm::mat4& getProjectionMatrix() const override;
+	//virtual const glm::vec3& getCameraPosition() const override;
+	//virtual const glm::vec3& getCameraForward() const override;
+
+	//// Hérité via BaseCamera
+	//virtual void setFOV(float fov) override;
+	//virtual void setNear(float near) override;
+	//virtual void setFar(float far) override;
+	//virtual void setAspect(float aspect) override;
+	//virtual float getFOV() const override;
+	//virtual float getNear() const override;
+	//virtual float getFar() const override;
+	//virtual float getAspect() const override;
 
 };
 

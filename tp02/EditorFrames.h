@@ -12,6 +12,7 @@ class Inspector;
 class SceneHierarchy;
 class DebugDrawRenderer;
 class Viewport;
+class CameraEditor;
 
 class DroppedFileEditorFrame : public EditorFrame
 {
@@ -34,9 +35,10 @@ class ViewportEditorFrame : public EditorFrame
 {
 private:
 	std::weak_ptr<Viewport> m_viewport;
+	Editor* m_editorRef;
 
 public:
-	ViewportEditorFrame(const std::string& name, std::shared_ptr<Viewport> model);
+	ViewportEditorFrame(const std::string& name, std::shared_ptr<Viewport> model, Editor* editorRef);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
 	void onFrameMoved() override;
 	void onFrameResized() override;
@@ -123,3 +125,13 @@ public:
 };
 
 /////////////////////////////////////////
+
+class EditorCameraEditorFrame : public EditorFrame
+{
+private:
+	CameraEditor* m_editorCamera;
+
+public:
+	EditorCameraEditorFrame(const std::string& name, CameraEditor* camera);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};

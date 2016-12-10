@@ -59,19 +59,23 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 	////////////////////// SETUP MAIN FRAMEBUFFER /////////////////////////
 
-	m_finalFrameColor = GlHelper::makeNewColorTexture(width, height);
-	m_finalFrameColor->initGL();
+	m_lightPassHDRColor = GlHelper::makeNewFloatColorTexture(width, height);
+	m_lightPassHDRColor->initGL();
 
-	m_finalFrameDepth = GlHelper::makeNewDepthTexture(width, height);
-	m_finalFrameDepth->initGL();
+	m_lightPassDepth = GlHelper::makeNewDepthTexture(width, height);
+	m_lightPassDepth->initGL();
 
-	m_mainBuffer.bind();
-	m_mainBuffer.attachTexture(m_finalFrameColor, GlHelper::Framebuffer::AttachmentTypes::COLOR);
-	m_mainBuffer.attachTexture(m_finalFrameDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
-	GLuint drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-	m_mainBuffer.setDrawBuffers(1, drawBuffers);
-	m_mainBuffer.checkIntegrity();
-	m_mainBuffer.unbind();
+	m_lightPassHighValues = GlHelper::makeNewFloatColorTexture(width, height);
+	m_lightPassHighValues->initGL();
+
+	m_lightPassBuffer.bind();
+	m_lightPassBuffer.attachTexture(m_lightPassHDRColor, GL_COLOR_ATTACHMENT0);
+	m_lightPassBuffer.attachTexture(m_lightPassHighValues, GL_COLOR_ATTACHMENT1);
+	m_lightPassBuffer.attachTexture(m_lightPassDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
+	GLuint drawBuffers[] = { GL_COLOR_ATTACHMENT0 , GL_COLOR_ATTACHMENT1 };
+	m_lightPassBuffer.setDrawBuffers(2, drawBuffers);
+	m_lightPassBuffer.checkIntegrity();
+	m_lightPassBuffer.unbind();
 
 	////////////////////// FINALLY STORE THE VIEWPORT SIZE /////////////////////////
 	m_viewportRenderSize.x = width;
@@ -85,13 +89,14 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 Renderer::~Renderer()
 {
 	delete lightManager;
-	delete m_finalFrameColor;
-	delete m_finalFrameDepth;
+	delete m_lightPassHDRColor;
+	delete m_lightPassDepth;
+	delete m_lightPassHighValues;
 }
 
 Texture * Renderer::getFinalFrame() const
 {
-	return m_finalFrameColor;
+	return m_lightPassHDRColor;
 }
 
 const glm::vec2 & Renderer::getViewportRenderSize() const
@@ -139,23 +144,30 @@ void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 
 	////////////////////// RESIZE MAIN TEXTURE /////////////////////////
 
-	delete m_finalFrameColor;
-	delete m_finalFrameDepth;
+	delete m_lightPassHDRColor;
+	delete m_lightPassDepth;
+	delete m_lightPassHighValues;
 
-	m_finalFrameColor = GlHelper::makeNewColorTexture(width, height);
-	m_finalFrameColor->initGL();
-	m_finalFrameDepth = GlHelper::makeNewDepthTexture(width, height);
-	m_finalFrameDepth->initGL();
+	m_lightPassHDRColor = GlHelper::makeNewColorTexture(width, height);
+	m_lightPassHDRColor->initGL();
+	m_lightPassDepth = GlHelper::makeNewDepthTexture(width, height);
+	m_lightPassDepth->initGL();
+	m_lightPassHighValues = GlHelper::makeNewFloatColorTexture(width, height);
+	m_lightPassHighValues->initGL();
 
-	m_mainBuffer.bind();
-	m_mainBuffer.attachTexture(m_finalFrameColor, GlHelper::Framebuffer::AttachmentTypes::COLOR);
-	m_mainBuffer.attachTexture(m_finalFrameDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
-	m_mainBuffer.checkIntegrity();
-	m_mainBuffer.unbind();
+	m_lightPassBuffer.bind();
+	m_lightPassBuffer.attachTexture(m_lightPassHDRColor, GL_COLOR_ATTACHMENT0);
+	m_lightPassBuffer.attachTexture(m_lightPassHighValues, GL_COLOR_ATTACHMENT1);
+	m_lightPassBuffer.attachTexture(m_lightPassDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
+	m_lightPassBuffer.checkIntegrity();
+	m_lightPassBuffer.unbind();
 
 	////////////////////// FINALLY STORE THE VIEWPORT SIZE /////////////////////////
 	m_viewportRenderSize.x = width;
 	m_viewportRenderSize.y = height;
+
+	////////////////////// SETUP POST PROCESS MANAGER /////////////////////////
+	m_postProcessManager.onViewportResized(m_viewportRenderSize.x, m_viewportRenderSize.y);
 }
 
 
@@ -422,7 +434,7 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 //	////// end G pass
 //
 //
-//	m_mainBuffer.bind();
+//	m_lightPassBuffer.bind();
 //	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //
 //	///// begin light pass
@@ -592,7 +604,7 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 //	CHECK_GL_ERROR("error in light pass");
 //	///// end light pass
 //
-//	m_mainBuffer.unbind();
+//	m_lightPassBuffer.unbind();
 //
 //	///////// end deferred
 //
@@ -606,10 +618,10 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 //
 //	// Transfert depth to main buffer : 
 //	gBufferFBO.bind(GL_READ_FRAMEBUFFER);
-//	m_mainBuffer.bind(GL_DRAW_FRAMEBUFFER);
+//	m_lightPassBuffer.bind(GL_DRAW_FRAMEBUFFER);
 //	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 //	// Rebind main buffer as usual : 
-//	m_mainBuffer.bind();
+//	m_lightPassBuffer.bind();
 //
 //	//render skybox : 
 //	skybox.render(projection, worldToView);
@@ -636,13 +648,29 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 //		debugDrawer->drawOutputIfNeeded("gBuffer_depth", gPassDepthTexture.glId);
 //		CHECK_GL_ERROR("error in render debug pass");
 //		glViewport(0, 0, m_viewportRenderSize.x, m_viewportRenderSize.y);
-//		m_mainBuffer.bind();
+//		m_lightPassBuffer.bind();
 //	}
 //
 //}
 //
 
-void Renderer::render(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
+
+void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
+{
+	renderLightedScene(camera, pointLights, directionalLights, spotLights, debugDrawer);
+
+	if (camera.getPostProcessProxy().getOperationCount() > 0)
+	{
+		m_postProcessManager.render(camera, *m_lightPassHDRColor, *m_lightPassHighValues, *m_lightPassDepth, debugDrawer);
+		m_postProcessManager.renderResultOnCamera(camera);
+	}
+	else
+	{
+		camera.renderFrame(m_lightPassHDRColor);
+	}
+}
+
+void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
 {
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : Update matrices
@@ -702,7 +730,7 @@ void Renderer::render(const BaseCamera& camera, std::vector<PointLight*>& pointL
 
 	// Prepare futur calls
 	glViewport(0, 0, width, height);
-	m_mainBuffer.bind();
+	m_lightPassBuffer.bind();
 }
 
 void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
@@ -1032,10 +1060,10 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 	////// end G pass
 
 	///// begin light pass
-	m_mainBuffer.bind();
+	m_lightPassBuffer.bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	lightPass(screenToWorld, cameraPosition, cameraForward, pointLights, directionalLights, spotLights);
-	m_mainBuffer.unbind();
+	m_lightPassBuffer.unbind();
 	///// end light pass
 }
 
@@ -1043,10 +1071,10 @@ void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBat
 {
 	// Transfert depth to main buffer : 
 	gBufferFBO.bind(GL_READ_FRAMEBUFFER);
-	m_mainBuffer.bind(GL_DRAW_FRAMEBUFFER);
+	m_lightPassBuffer.bind(GL_DRAW_FRAMEBUFFER);
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	// Rebind main buffer as usual : 
-	m_mainBuffer.bind();
+	m_lightPassBuffer.bind();
 
 		//render skybox : 
 		//skybox.render(projection, worldToView); // TODO RENDERING
@@ -1064,16 +1092,20 @@ void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBat
 		glDepthMask(GL_TRUE);
 		glDisable(GL_BLEND);
 
-	m_mainBuffer.unbind();
+	m_lightPassBuffer.unbind();
 	CHECK_GL_ERROR("error in forward pass");
 }
 
 void Renderer::debugDrawRenderer(DebugDrawRenderer& debugDrawer) const
 {
-	debugDrawer.drawOutputIfNeeded("final_frame", m_finalFrameColor->glId);
+	debugDrawer.addSeparator();
 	debugDrawer.drawOutputIfNeeded("gBuffer_color", gPassColorTexture.glId);
 	debugDrawer.drawOutputIfNeeded("gBuffer_normal", gPassNormalTexture.glId);
 	debugDrawer.drawOutputIfNeeded("gBuffer_depth", gPassDepthTexture.glId);
+	debugDrawer.addSeparator();
+	debugDrawer.drawOutputIfNeeded("beauty_color", m_lightPassHDRColor->glId);
+	debugDrawer.drawOutputIfNeeded("beauty_depth", m_lightPassDepth->glId);
+	debugDrawer.drawOutputIfNeeded("beauty_highValues", m_lightPassHighValues->glId);
 	CHECK_GL_ERROR("error in render debug pass");
 }
 

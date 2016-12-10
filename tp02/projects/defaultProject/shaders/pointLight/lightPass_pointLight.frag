@@ -6,8 +6,8 @@ in block
     vec2 Texcoord;
 } In;
 
-out vec4 Color;
- 
+layout(location = 0)out vec4 Color;
+layout(location = 1)out vec4 HighValues;
 
 // Uniforms : 
 
@@ -115,4 +115,7 @@ void main(void)
 		Color = vec4(color, 1.0);
 	//else
 	//	Color = vec4(0.0, 0.0, 0.0, 1.0);
+
+        float brightness = dot(Color.rgb, vec3(0.2126, 0.7152, 0.0722));
+        HighValues = (brightness < 1.0) ? vec4(0.0, 0.0, 0.0, 0.0) : Color;
 }

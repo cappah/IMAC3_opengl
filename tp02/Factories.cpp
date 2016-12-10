@@ -130,20 +130,22 @@ void ResourceFactory<Texture>::initDefaults()
 	//default diffuse
 	auto newTex = new Texture(glm::vec3(255, 255, 255));
 	newTex->initGL();
-	//newTex->name = "default";
 	addDefault("default", newTex);
 
 	//default normal
 	newTex = new Texture(glm::vec3(0, 0, 125));
 	newTex->initGL();
-	//newTex->name = "defaultNormal";
 	addDefault("defaultNormal", newTex);
 
 	//default normal
 	newTex = new Texture(glm::vec3(10, 10, 10));
 	newTex->initGL();
-	//newTex->name = "defaultNormal";
 	addDefault("defaultSpecular", newTex);
+
+	//default emissive
+	newTex = new Texture(glm::vec3(255, 255, 255));
+	newTex->initGL();
+	addDefault("defaultEmissive", newTex);
 }
 
 
@@ -329,7 +331,7 @@ void ResourceFactory<Mesh>::initDefaults()
 	Mesh* quad = new Mesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_NORMALS | Mesh::USE_UVS | Mesh::USE_VERTICES), 2);
 	quad->triangleIndex = { 0, 1, 2, 0, 2, 3 };
 	quad->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
-	quad->vertices = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+	quad->vertices = { -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0 };
 	quad->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };
 	quad->initGl();
 	//quad->computeBoundingBox();

@@ -34,12 +34,12 @@ uniform sampler2D Specular;
 uniform sampler2D Bump;
 uniform sampler2D Emissive;
 uniform float SpecularPower;
-uniform float EmissiveMultiplier;
+uniform float EmissivePower;
 
 void main()
 {
 
-        outColor = vec4( texture(Diffuse, In.TexCoord).rgb * texture(Emissive, In.TexCoord).rgb * vec3(EmissiveMultiplier, EmissiveMultiplier, EmissiveMultiplier), texture(Specular, In.TexCoord).r );
+        outColor = vec4( texture(Diffuse, In.TexCoord).rgb * texture(Emissive, In.TexCoord).rgb * vec3(EmissivePower, EmissivePower, EmissivePower), texture(Specular, In.TexCoord).r );
 
 	vec3 bumpNormal = texture(Bump, In.TexCoord).rgb;
 	bumpNormal = normalize(bumpNormal * 2.0 - 1.0);

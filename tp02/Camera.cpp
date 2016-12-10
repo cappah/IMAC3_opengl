@@ -6,23 +6,30 @@
 #include "Factories.h"
 
 BaseCamera::BaseCamera()
+	: m_position(0, 0, -1)
+	, m_forward(0, 0, 1)
+	, m_fovy(45.0f)
+	, m_aspect(16.f / 9.f)
+	, m_zNear(0.1f)
+	, m_zFar(100.f)
 {
+
+	// Setup mesh and material
+	m_quadMesh = getMeshFactory().getDefault("quad").get();
+	m_material = static_cast<MaterialBlit*>(getMaterialFactory().getDefault("blit").get());
+	// Setup texture
+	GlHelper::makeColorTexture(m_texture, 400, 400);
+	m_texture.initGL();
+	// Setup framebuffer
+	m_frameBuffer.bind();
+	m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);
+	m_frameBuffer.checkIntegrity();
+	m_frameBuffer.unbind();
 }
 
-////////////////////////////
-
-
-Camera::Camera() : Component(ComponentType::CAMERA),
-	m_lookPosition(0,0,0), m_position(0,0,-1), m_up(0,1,0), m_forward(0,0,1),
-	m_cameraMode(CameraMode::PERSPECTIVE), m_fovy(45.0f), m_aspect(16.f / 9.f), m_zNear(0.1f), m_zFar(100.f), m_left(-10.f), m_top(10.f), m_right(10.f), m_bottom(-10.f)
-	
+void BaseCamera::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
 {
-	m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
-}
-
-void Camera::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
-{
-	for(int i = 0; i < PipelineTypes::COUNT; i++)
+	for (int i = 0; i < PipelineTypes::COUNT; i++)
 		m_renderBatches[i].clear();
 
 	std::vector<IRenderableComponent*> visibleComponents;
@@ -51,10 +58,135 @@ void Camera::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
 	}
 }
 
-const std::map<GLuint, std::shared_ptr<IRenderBatch>>& Camera::getRenderBatches(PipelineTypes renderPipelineType) const
+const std::map<GLuint, std::shared_ptr<IRenderBatch>>& BaseCamera::getRenderBatches(PipelineTypes renderPipelineType) const
 {
 	assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
 	return m_renderBatches[renderPipelineType];
+}
+
+const PostProcessProxy & BaseCamera::getPostProcessProxy() const
+{
+	return m_postProcessProxy;
+}
+
+void BaseCamera::onViewportResized(const glm::vec2& newSize)
+{
+	m_frameBuffer.bind();
+	m_frameBuffer.detachTexture(GL_COLOR_ATTACHMENT0);
+
+	m_texture.freeGL();
+	GlHelper::makeColorTexture(m_texture, newSize.x, newSize.y);
+	m_texture.initGL();
+
+	m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);
+	m_frameBuffer.checkIntegrity();
+	m_frameBuffer.unbind();
+}
+
+void BaseCamera::renderFrame(const Texture* texture)
+{
+	m_frameBuffer.bind();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture->glId);
+	m_material->use();
+	m_material->setUniformBlitTexture(0);
+	m_quadMesh->draw();
+	m_frameBuffer.unbind();
+}
+
+const Texture * BaseCamera::getFinalFrame() const
+{
+	return &m_texture;
+}
+
+
+const glm::mat4& BaseCamera::getViewMatrix() const
+{
+	return m_viewMatrix;
+}
+
+const glm::mat4& BaseCamera::getProjectionMatrix() const
+{
+	return m_projectionMatrix;
+}
+
+const glm::vec3& BaseCamera::getCameraPosition() const
+{
+	return m_position;
+}
+
+const glm::vec3& BaseCamera::getCameraForward() const
+{
+	return m_forward;
+}
+
+void BaseCamera::setFOV(float fov)
+{
+	m_fovy = fov;
+	updateProjection();
+}
+
+void BaseCamera::setNear(float camNear)
+{
+	m_zNear = camNear;
+	updateProjection();
+}
+
+void BaseCamera::setFar(float camFar)
+{
+	m_zFar = camFar;
+	updateProjection();
+}
+
+void BaseCamera::setAspect(float aspect)
+{
+	m_aspect = aspect;
+	updateProjection();
+}
+
+float BaseCamera::getFOV() const
+{
+	return m_fovy;
+}
+
+float BaseCamera::getNear() const
+{
+	return m_zNear;
+}
+
+float BaseCamera::getFar() const
+{
+	return m_zFar;
+}
+
+float BaseCamera::getAspect() const
+{
+	return m_aspect;
+}
+
+
+////////////////////////////
+
+
+Camera::Camera() 
+	: Component(ComponentType::CAMERA)
+	, m_lookPosition(0,0,0)
+	//, m_position(0,0,-1)
+	, m_up(0,1,0)
+	//, m_forward(0,0,1)
+	, m_cameraMode(CameraMode::PERSPECTIVE)
+	//, m_fovy(45.0f)
+	//, m_aspect(16.f / 9.f)
+	//, m_zNear(0.1f)
+	//, m_zFar(100.f)
+	, m_left(-10.f)
+	, m_top(10.f)
+	, m_right(10.f)
+	, m_bottom(-10.f)
+	
+{
+	m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
 }
 
 void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -96,6 +228,8 @@ void Camera::drawInInspector(Scene& scene)
 	{
 		updateProjection();
 	}
+
+	m_postProcessProxy.drawUI(); //TODO : multi editing
 }
 
 void Camera::drawInInspector(Scene& scene, const std::vector<Component*>& components)
@@ -220,66 +354,66 @@ void Camera::setCameraMode(CameraMode cameraMode)
 	m_cameraMode = cameraMode;
 	updateProjection();
 }
-
-const glm::mat4& Camera::getViewMatrix() const
-{
-	return m_viewMatrix;
-}
-
-const glm::mat4& Camera::getProjectionMatrix() const
-{
-	return m_projectionMatrix;
-}
-
-const glm::vec3& Camera::getCameraPosition() const
-{
-	return m_position;
-}
-
-const glm::vec3& Camera::getCameraForward() const
-{
-	return m_forward;
-}
-
-void Camera::setFOV(float fov)
-{
-	m_fovy = fov;
-}
-
-void Camera::setNear(float camNear)
-{
-	m_zNear = camNear;
-}
-
-void Camera::setFar(float camFar)
-{
-	m_zFar = camFar;
-}
-
-void Camera::setAspect(float aspect)
-{
-	m_aspect = aspect;
-}
-
-float Camera::getFOV() const
-{
-	return m_fovy;
-}
-
-float Camera::getNear() const
-{
-	return m_zNear;
-}
-
-float Camera::getFar() const
-{
-	return m_zNear;
-}
-
-float Camera::getAspect() const
-{
-	return m_aspect;
-}
+//
+//const glm::mat4& Camera::getViewMatrix() const
+//{
+//	return m_viewMatrix;
+//}
+//
+//const glm::mat4& Camera::getProjectionMatrix() const
+//{
+//	return m_projectionMatrix;
+//}
+//
+//const glm::vec3& Camera::getCameraPosition() const
+//{
+//	return m_position;
+//}
+//
+//const glm::vec3& Camera::getCameraForward() const
+//{
+//	return m_forward;
+//}
+//
+//void Camera::setFOV(float fov)
+//{
+//	m_fovy = fov;
+//}
+//
+//void Camera::setNear(float camNear)
+//{
+//	m_zNear = camNear;
+//}
+//
+//void Camera::setFar(float camFar)
+//{
+//	m_zFar = camFar;
+//}
+//
+//void Camera::setAspect(float aspect)
+//{
+//	m_aspect = aspect;
+//}
+//
+//float Camera::getFOV() const
+//{
+//	return m_fovy;
+//}
+//
+//float Camera::getNear() const
+//{
+//	return m_zNear;
+//}
+//
+//float Camera::getFar() const
+//{
+//	return m_zNear;
+//}
+//
+//float Camera::getAspect() const
+//{
+//	return m_aspect;
+//}
 
 void Camera::updateProjection()
 {
@@ -335,66 +469,144 @@ void Camera::load(const Json::Value& rootComponent)
 //////////////////////////////////
 
 
-CameraEditor::CameraEditor() : BaseCamera(), isFPSMode(false), radius(3.f), theta(0), phi(glm::pi<float>()*0.5f),
-	o(0, 0, 0), eye(0, 0, -1), up(0, 1, 0), forward(0, 0, 1), right(1, 0, 0),
-	m_fovy(45.0f), m_aspect(16.f / 9.f), m_zNear(0.1f), m_zFar(1000.f)
+CameraEditor::CameraEditor() 
+	: BaseCamera()
+	, m_isFPSMode(false)
+	, radius(3.f)
+	, theta(0)
+	, phi(glm::pi<float>()*0.5f)
+	, o(0, 0, 0)
+	//, eye(0, 0, -1)
+	, up(0, 1, 0)
+	//, m_forward(0, 0, 1)
+	, right(1, 0, 0)
+	//, m_fovy(45.0f)
+	//, m_aspect(16.f / 9.f)
+	//, m_zNear(0.1f)
+	//, m_zFar(1000.f)
+	, m_hideCursorWhenMovingCamera(true)
+	, m_cameraBaseSpeed(1.f)
+	, m_cameraBoostSpeed(1.f)
 {
 	updateProjection();
 	updateTransform();
 }
+//
+//void CameraEditor::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
+//{
+//	for (int i = 0; i < PipelineTypes::COUNT; i++)
+//		m_renderBatches[i].clear();
+//
+//	std::vector<IRenderableComponent*> visibleComponents;
+//	octree.findVisibleElements(m_viewMatrix, m_projectionMatrix, m_position, m_forward, visibleComponents);
+//
+//	for (auto& visibleComponent : visibleComponents)
+//	{
+//		const int drawableCount = visibleComponent->getDrawableCount();
+//		for (int i = 0; i < drawableCount; i++)
+//		{
+//			PipelineTypes renderPipelineType = visibleComponent->getDrawableMaterial(i).getRenderPipelineType();
+//			assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
+//
+//			auto foundRenderBatch = m_renderBatches[renderPipelineType].find(visibleComponent->getDrawableMaterial(i).getGLId());
+//			if (foundRenderBatch != m_renderBatches[renderPipelineType].end())
+//			{
+//				foundRenderBatch->second->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+//			}
+//			else
+//			{
+//				auto newRenderBatch = visibleComponent->getDrawableMaterial(i).MakeSharedRenderBatch();
+//				newRenderBatch->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
+//				m_renderBatches[renderPipelineType][visibleComponent->getDrawableMaterial(i).getGLId()] = newRenderBatch;
+//			}
+//		}
+//	}
+//}
+//
+//const std::map<GLuint, std::shared_ptr<IRenderBatch>>& CameraEditor::getRenderBatches(PipelineTypes renderPipelineType) const
+//{
+//	assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
+//	return m_renderBatches[renderPipelineType];
+//}
+//
+//const PostProcessProxy & CameraEditor::getPostProcessProxy() const
+//{
+//	return m_postProcessProxy;
+//}
 
-void CameraEditor::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
+void CameraEditor::drawUI()
 {
-	for (int i = 0; i < PipelineTypes::COUNT; i++)
-		m_renderBatches[i].clear();
-
-	std::vector<IRenderableComponent*> visibleComponents;
-	octree.findVisibleElements(m_viewMatrix, m_projectionMatrix, eye, forward, visibleComponents);
-
-	for (auto& visibleComponent : visibleComponents)
+	if (ImGui::RadioButton("editor camera", !m_isFPSMode))
 	{
-		const int drawableCount = visibleComponent->getDrawableCount();
-		for (int i = 0; i < drawableCount; i++)
+		if (m_isFPSMode)
 		{
-			PipelineTypes renderPipelineType = visibleComponent->getDrawableMaterial(i).getRenderPipelineType();
-			assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
-
-			auto foundRenderBatch = m_renderBatches[renderPipelineType].find(visibleComponent->getDrawableMaterial(i).getGLId());
-			if (foundRenderBatch != m_renderBatches[renderPipelineType].end())
-			{
-				foundRenderBatch->second->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
-			}
-			else
-			{
-				auto newRenderBatch = visibleComponent->getDrawableMaterial(i).MakeSharedRenderBatch();
-				newRenderBatch->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
-				m_renderBatches[renderPipelineType][visibleComponent->getDrawableMaterial(i).getGLId()] = newRenderBatch;
-			}
+			setFPSMode(false);
 		}
 	}
+	if (ImGui::RadioButton("FPS camera", m_isFPSMode))
+	{
+		if (!m_isFPSMode)
+		{
+			setFPSMode(true);
+		}
+	}
+	if (ImGui::RadioButton("hide cursor", m_hideCursorWhenMovingCamera))
+	{
+		m_hideCursorWhenMovingCamera = !m_hideCursorWhenMovingCamera;
+	}
+	ImGui::SliderFloat("camera base speed", &m_cameraBaseSpeed, 0.01f, 1.f);
+	ImGui::SliderFloat("camera boost speed", &m_cameraBoostSpeed, 0.01f, 1.f);
+	float tmpFloat = getFOV();
+	if (ImGui::SliderFloat("camera fov", &(tmpFloat), 0.f, glm::pi<float>()))
+		setFOV(tmpFloat);
+
+	tmpFloat = getNear();
+	if (ImGui::SliderFloat("camera near", &(tmpFloat), 0.001f, 5.f))
+		setNear(tmpFloat);
+
+	tmpFloat = getFar();
+	if (ImGui::SliderFloat("camera far", &(tmpFloat), 0.01f, 1000.f))
+		setFar(tmpFloat);
+
+	tmpFloat = getAspect();
+	if (ImGui::SliderFloat("camera aspect", &(tmpFloat), 0.01f, 10.f))
+		setAspect(tmpFloat);
+
+
+	// Draw post process datas : 
+	m_postProcessProxy.drawUI();
 }
 
-const std::map<GLuint, std::shared_ptr<IRenderBatch>>& CameraEditor::getRenderBatches(PipelineTypes renderPipelineType) const
+float CameraEditor::getCameraBaseSpeed() const
 {
-	assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
-	return m_renderBatches[renderPipelineType];
+	return m_cameraBaseSpeed;
+}
+
+float CameraEditor::getCameraBoostSpeed() const
+{
+	return m_cameraBoostSpeed;
+}
+
+bool CameraEditor::getFPSMode() const
+{
+	return m_isFPSMode;
 }
 
 void CameraEditor::setTranslationLocal(glm::vec3 pos)
 {
-	if (isFPSMode)
+	if (m_isFPSMode)
 	{
-		eye = glm::vec3(0, 0, 0);
-		eye += up * pos.y;
-		eye += right * pos.x;
-		eye += forward * pos.z;
+		m_position = glm::vec3(0, 0, 0);
+		m_position += up * pos.y;
+		m_position += right * pos.x;
+		m_position += m_forward * pos.z;
 	}
 	else
 	{
 		o = glm::vec3(0, 0, 0);
 		o = up * pos.y * radius * 2.f;
 		o = -right * pos.x * radius * 2.f;
-		o = forward * pos.z * radius * 2.f;
+		o = m_forward * pos.z * radius * 2.f;
 	}
 
 	updateTransform();
@@ -403,17 +615,17 @@ void CameraEditor::setTranslationLocal(glm::vec3 pos)
 void CameraEditor::translateLocal(glm::vec3 pos)
 {
 
-	if (isFPSMode)
+	if (m_isFPSMode)
 	{
-		eye += up * pos.y;
-		eye += right * pos.x;
-		eye += forward * pos.z;
+		m_position += up * pos.y;
+		m_position += right * pos.x;
+		m_position += m_forward * pos.z;
 	}
 	else
 	{
 		o += up * pos.y * radius * 2.f;
 		o += -right * pos.x * radius * 2.f;
-		o += forward * pos.z * radius * 2.f;
+		o += m_forward * pos.z * radius * 2.f;
 	}
 
 	updateTransform();
@@ -421,7 +633,7 @@ void CameraEditor::translateLocal(glm::vec3 pos)
 
 void CameraEditor::setDirection(glm::vec3 dir)
 {
-	forward = dir;
+	m_forward = dir;
 
 	updateTransform();
 }
@@ -436,17 +648,17 @@ void CameraEditor::setRotation(float _phi, float _theta)
 	else if (phi <= 0)
 		phi = 2 * glm::pi<float>() - 0.1;
 
-	forward.x = cos(theta) * sin(phi);
-	forward.y = cos(phi);
-	forward.z = sin(theta) * sin(phi);
+	m_forward.x = cos(theta) * sin(phi);
+	m_forward.y = cos(phi);
+	m_forward.z = sin(theta) * sin(phi);
 
 	updateTransform();
 }
 
 void CameraEditor::setTranslation(glm::vec3 pos)
 {
-	if (isFPSMode)
-		eye = pos;
+	if (m_isFPSMode)
+		m_position = pos;
 	else
 		o = pos;
 
@@ -455,8 +667,8 @@ void CameraEditor::setTranslation(glm::vec3 pos)
 
 void CameraEditor::translate(glm::vec3 pos)
 {
-	if (isFPSMode)
-		eye += pos;
+	if (m_isFPSMode)
+		m_position += pos;
 	else
 		o += pos;
 
@@ -473,36 +685,36 @@ void CameraEditor::rotate(float deltaX, float deltaY)
 		phi = 2 * glm::pi<float>() - 0.1;
 
 
-	forward.x = cos(theta) * sin(phi);
-	forward.y = cos(phi);
-	forward.z = sin(theta) * sin(phi);
+	m_forward.x = cos(theta) * sin(phi);
+	m_forward.y = cos(phi);
+	m_forward.z = sin(theta) * sin(phi);
 
 	updateTransform();
 }
 
 void CameraEditor::updateTransform()
 {
-	forward = glm::normalize(forward);
+	m_forward = glm::normalize(m_forward);
 
 	up = glm::vec3(0.f, phi < glm::pi<float>() ? 1.f : -1.f, 0.f);
-	right = glm::normalize(glm::cross(forward, up));
-	up = glm::normalize(glm::cross(right, forward));
+	right = glm::normalize(glm::cross(m_forward, up));
+	up = glm::normalize(glm::cross(right, m_forward));
 
-	if (isFPSMode)
-		o = eye + forward;
+	if (m_isFPSMode)
+		o = m_position + m_forward;
 	else
-		eye = o - forward*radius;
+		m_position = o - m_forward*radius;
 
-	m_viewMatrix = glm::lookAt(eye, o, up);
+	m_viewMatrix = glm::lookAt(m_position, o, up);
 }
 
 void CameraEditor::setFPSMode(bool fpsMode)
 {
-	isFPSMode = fpsMode;
-	if (isFPSMode)
-		o = eye + forward;
+	m_isFPSMode = fpsMode;
+	if (m_isFPSMode)
+		o = m_position + m_forward;
 	else
-		eye = o - forward*radius;
+		m_position = o - m_forward*radius;
 }
 
 void CameraEditor::updateProjection()
@@ -535,70 +747,6 @@ void CameraEditor::setOrthographicInfos(float left, float right, float bottom, f
 void CameraEditor::setCameraMode(CameraMode cameraMode)
 {
 	//nothing
-}
-
-const glm::mat4& CameraEditor::getViewMatrix() const
-{
-	return m_viewMatrix;
-}
-
-const glm::mat4& CameraEditor::getProjectionMatrix() const
-{
-	return m_projectionMatrix;
-}
-
-const glm::vec3& CameraEditor::getCameraPosition() const
-{
-	return eye;
-}
-
-const glm::vec3& CameraEditor::getCameraForward() const
-{
-	return forward;
-}
-
-void CameraEditor::setFOV(float fov)
-{
-	m_fovy = fov;
-	updateProjection();
-}
-
-void CameraEditor::setNear(float camNear)
-{
-	m_zNear = camNear;
-	updateProjection();
-}
-
-void CameraEditor::setFar(float camFar)
-{
-	m_zFar = camFar;
-	updateProjection();
-}
-
-void CameraEditor::setAspect(float aspect)
-{
-	m_aspect = aspect;
-	updateProjection();
-}
-
-float CameraEditor::getFOV() const
-{
-	return m_fovy;
-}
-
-float CameraEditor::getNear() const
-{
-	return m_zNear;
-}
-
-float CameraEditor::getFar() const
-{
-	return m_zFar;
-}
-
-float CameraEditor::getAspect() const
-{
-	return m_aspect;
 }
 
 //////////////////////////////////

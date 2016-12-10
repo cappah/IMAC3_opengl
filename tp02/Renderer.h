@@ -15,6 +15,8 @@
 #include "FrameBuffer.h"
 #include "ErrorHandler.h"
 
+#include "PostProcess.h"
+
 class DebugDrawRenderer;
 
 struct LightCullingInfo
@@ -30,9 +32,11 @@ class Renderer
 	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
 
 private:
-	Texture* m_finalFrameColor; //%NOCOMMIT% TODO
-	Texture* m_finalFrameDepth;
-	GlHelper::Framebuffer m_mainBuffer;
+	// Light pass FrameBuffer :
+	Texture* m_lightPassHDRColor;
+	Texture* m_lightPassDepth;
+	Texture* m_lightPassHighValues;
+	GlHelper::Framebuffer m_lightPassBuffer;
 	glm::vec2 m_viewportRenderSize;
 
 	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;
@@ -76,6 +80,9 @@ private:
 	std::vector<LightCullingInfo> pointLightCullingInfos;
 	std::vector<LightCullingInfo> spotLightCullingInfos;
 
+	//post process : 
+	PostProcessManager m_postProcessManager;
+
 	////shadows : 
 	//GLuint shadowFrameBuffer;
 	//GLuint shadowRenderBuffer;
@@ -106,7 +113,8 @@ public:
 	//render all entities of the scene, using deferred shading.
 	//[DEPRECATED]
 	//void render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer);
-	void render(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
+	void render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
+	void renderLightedScene(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
 	void shadowPass(const BaseCamera& camera, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
 	void gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view);
 	void lightPass(const glm::mat4& screenToWorld, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);

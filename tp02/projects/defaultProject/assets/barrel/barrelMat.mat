@@ -1,0 +1,37 @@
+{
+	"internalParameters" : 
+	[
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 2
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 4
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 3
+		},
+		{
+			"data" : 0
+		},
+		{
+			"data" : 
+			[
+				10,
+				10
+			]
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 5
+		},
+		{
+			"data" : 1
+		}
+	],
+	"pipelineType" : "opaque",
+	"programType" : "lit",
+	"shaderProgramName" : "lit"
+}

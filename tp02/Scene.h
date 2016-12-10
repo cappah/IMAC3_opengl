@@ -152,8 +152,8 @@ public:
 	void computeCulling();
 	void computeCullingForSingleCamera(BaseCamera& camera);
 
-	void render(const BaseCamera& camera);
-	void render(const BaseCamera& camera, DebugDrawRenderer& debugDrawer);
+	void render(BaseCamera& camera);
+	void render(BaseCamera& camera, DebugDrawRenderer& debugDrawer);
 	void renderColliders(const BaseCamera& camera);
 	void renderDebugLights(const BaseCamera& camera);
 	void renderPaths(const BaseCamera& camera);
@@ -199,6 +199,8 @@ public:
 	void load(const FileHandler::CompletePath& path);
 
 	BaseCamera* getMainCamera() const;
+
+	void onViewportResized(const glm::vec2& newSize);
 
 };
 

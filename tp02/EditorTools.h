@@ -115,28 +115,17 @@ private:
 	Mesh m_quadMesh;
 	ResourcePtr<MaterialBlit> m_material;
 	std::vector<std::string> m_outputNames;
+	std::vector<int> m_separatorIndex;
+	bool m_needSeparator;
 	std::string m_currentOutputName;
 
 public:
 	DebugDrawRenderer();
 	void drawTexture(GLuint textureId);
 	void drawUI();
-	void setCurrentOutputName(const std::string& outputName)
-	{
-		m_currentOutputName = outputName;
-	}
-	void drawOutputIfNeeded(const std::string& outputName, GLuint textureId)
-	{
-		if (std::find(m_outputNames.begin(), m_outputNames.end(), outputName) == m_outputNames.end())
-		{
-			m_outputNames.push_back(outputName);
-		}
-
-		if (m_currentOutputName == outputName)
-		{
-			drawTexture(textureId);
-		}
-	}
+	void addSeparator();
+	void setCurrentOutputName(const std::string& outputName);
+	void drawOutputIfNeeded(const std::string& outputName, GLuint textureId);
 };
 
 

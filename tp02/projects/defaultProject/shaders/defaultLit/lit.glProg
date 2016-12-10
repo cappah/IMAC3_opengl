@@ -9,6 +9,8 @@
         {"type" : "texture", "name" : "Specular", "default" : "defaultSpecular"},
         {"type" : "texture", "name" : "Bump", "default" : "defaultNormal"},
         {"type" : "float", "name" : "SpecularPower", "default" : 0.4},
-        {"type" : "float2", "name" : "TextureRepetition", "default" : [10, 10]}
+        {"type" : "float2", "name" : "TextureRepetition", "default" : [10, 10]},
+        {"type" : "texture", "name" : "Emissive", "default" : "defaultEmissive"},
+        {"type" : "float", "name" : "EmissiveMultiplier", "default" : 1.0}
     ]
 }

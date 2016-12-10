@@ -199,8 +199,18 @@
     <ClCompile Include="OctreeDrawer.cpp">
       <Filter>Physic</Filter>
     </ClCompile>
-    <ClCompile Include="RenderBatch.cpp" />
-    <ClCompile Include="BatchableWith.cpp" />
+    <ClCompile Include="PostProcess.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessMaterials.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderBatch.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="BatchableWith.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -425,8 +435,24 @@
     <ClInclude Include="BasicColliders.h">
       <Filter>Physic</Filter>
     </ClInclude>
-    <ClInclude Include="RenderBatch.h" />
-    <ClInclude Include="BatchableWith.h" />
+    <ClInclude Include="PostProcess.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessMaterials.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderBatch.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="BatchableWith.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="IClonable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ICloner.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -470,6 +496,9 @@
     </Filter>
     <Filter Include="Utils\Rendering">
       <UniqueIdentifier>{cb08f07d-dee0-414e-81f1-e5d87947b315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{f059d7da-31f4-444e-869a-4add8f21228d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

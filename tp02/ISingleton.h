@@ -16,8 +16,10 @@ public:
 };
 
 #define SINGLETON_IMPL(T) \
-	T(const T& other) = delete; \
-	const T operator=(const T& other) = delete; \
+	public:\
+	T(const T& other) = delete;\
+	const T operator=(const T& other) = delete;\
+	private:
 
 
 

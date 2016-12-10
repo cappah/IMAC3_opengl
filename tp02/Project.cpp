@@ -293,23 +293,9 @@ void Project::edit()
 			//	scene->getRenderer().onResizeViewport( glm::vec2(Application::get().getWindowWidth(), Application::get().getWindowHeight()) );
 
 			editor.onResizeWindow();
+
 			Application::get().setWindowResize(false);
 		}
-
-		//Update behaviours :
-		if (editor.getIsPlaying())
-		{
-			scene->updateControllers(Application::get().getFixedDeltaTime());
-			scene->updateAnimations(Application::get().getTime());
-			scene->updateBehaviours();
-		}
-
-
-		//update editor : 
-		editor.update(*scene, window);
-
-		//synchronize input handler : 
-		InputHandler::synchronize();
 
 		//rendering :
 		// TODO : Symplify this
@@ -345,11 +331,24 @@ void Project::edit()
 				PRINT_ERROR("error in texture initialization.")
 		}
 
-
-
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO : movethis ?
 		//END RENDERING THE SCENE
 		///////////////////////////////////////////////
+
+		//Update behaviours :
+		if (editor.getIsPlaying())
+		{
+			scene->updateControllers(Application::get().getFixedDeltaTime());
+			scene->updateAnimations(Application::get().getTime());
+			scene->updateBehaviours();
+		}
+
+
+		//update editor : 
+		editor.update(*scene, window);
+
+		//synchronize input handler : 
+		InputHandler::synchronize();
 
 #if 1
 		/*

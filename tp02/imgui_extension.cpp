@@ -241,6 +241,22 @@ namespace ImGui {
 
 namespace Ext {
 
+	bool collapsingLabelWithRemoveButton(const char* label, bool& shouldRemove)
+	{
+		const float btnWidth = 18.f;
+
+		ImGui::PushID(label);
+		ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() - btnWidth);
+		bool clicked = ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_AllowOverlapMode);
+		const float itemHeight = ImGui::GetItemRectSize().y;
+		const ImVec2 pos = ImGui::GetWindowPos() + ImGui::GetCursorPos() + ImVec2(ImGui::GetContentRegionAvailWidth() - 50, 0);
+		if (ImGui::CloseButton(ImGui::GetID("closeBtn"), pos + ImVec2(btnWidth * 0.5, - itemHeight*0.5f - ImGui::GetStyle().ItemSpacing.y), btnWidth*0.5))
+			shouldRemove = true;
+		ImGui::PopID();
+
+		return clicked;
+	}
+
 	ImGuiWindow* FindHoveredWindow(ImVec2 pos, bool excluding_childs, int offsetIndex)
 	{
 		ImGuiContext& g = *GImGui;
@@ -335,9 +351,103 @@ namespace Ext {
 		return pressed;
 	}
 
+	bool SquaredCloseButton(const char* str_id, bool* isHovered)
+	{
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		ImGuiStyle& style = ImGui::GetStyle();
+		const ImGuiID id = window->GetID(str_id);
+
+		const ImVec2 pos = ImGui::GetCursorPos();
+		const ImVec2 availableContentSize = ImGui::GetContentRegionAvail();
+		const ImRect bb(pos, pos + availableContentSize);//(pos - ImVec2(width*0.5f, width*0.5f), pos + ImVec2(width*0.5f, width*0.5f));
+
+		bool hovered, held;
+		bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
+
+		// Render background : 
+		const ImU32 bgCol = ImGui::GetColorU32((held && hovered) ? ImGuiCol_CloseButtonActive : hovered ? ImGuiCol_CloseButtonHovered : ImGuiCol_CloseButton);
+		window->DrawList->AddRectFilled(bb.Min, bb.Max, bgCol, style.FrameRounding);
+
+		// Render cross : 
+		const ImU32 crossCol = ImGui::GetColorU32((held && hovered) ? ImGuiCol_CloseButtonHovered : hovered ? ImGuiCol_CloseButton : ImGuiCol_CloseButtonActive);
+		const float cross_offset = 2.f;
+		if (hovered)
+		{
+			window->DrawList->AddLine(bb.Min + ImVec2(cross_offset, cross_offset), bb.Max + ImVec2(-cross_offset, cross_offset), crossCol);
+			window->DrawList->AddLine(bb.Min + ImVec2(cross_offset, -cross_offset), bb.Max + ImVec2(-cross_offset, -cross_offset), crossCol);
+		}
+
+		ImGui::ItemSize(bb);
+		ImGui::ItemAdd(bb, &id);
+
+		if (isHovered != nullptr)
+			*isHovered = hovered;
+		return pressed;
+	}
+
 	void openStackingPopUp(const char* str_id)
 	{
 		ImGui::OpenPopupEx(str_id, true);
+	}
+
+	bool removableTreeNode(const char* label, bool& shouldRemove)
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = g.CurrentWindow;
+		const ImGuiStyle& style = g.Style;
+
+		ImU32 id = window->GetID(label);
+		bool opened = ImGui::TreeNodeBehaviorIsOpen(id);
+
+		float arrow_offset = 8.f;
+
+		float removeBtnWidth = 20.f;
+		ImVec2 pos = window->DC.CursorPos;
+		ImRect bb(pos, ImVec2(pos.x + ImGui::GetContentRegionAvail().x - removeBtnWidth, pos.y + g.FontSize + g.Style.FramePadding.y * 2));
+		const ImVec2 padding = opened ? style.FramePadding : ImVec2(style.FramePadding.x, 0.0f);
+		const ImVec2 label_size = CalcTextSize(label, NULL, true);
+		const float collapser_width = style.FramePadding.x + g.FontSize*0.5f + arrow_offset;
+		const float text_width = g.FontSize + (label_size.x > 0.0f ? label_size.x + padding.x * 2 : 0.0f);   // Include collapser
+		const float total_width = collapser_width + text_width;
+
+		bb.Max = ImVec2(pos.x + total_width, bb.Max.y);
+
+		bool hovered, held;
+		if (ImGui::ButtonBehavior(bb, id, &hovered, &held))
+			window->DC.StateStorage->SetInt(id, opened ? 0 : 1);
+		if (hovered || held)
+			window->DrawList->AddRectFilled(bb.Min, bb.Max, GetColorU32(held ? ImGuiCol_HeaderActive : ImGuiCol_HeaderHovered) );
+
+		// Icon, text
+		float button_sz = g.FontSize + g.Style.FramePadding.y * 2;
+		window->DrawList->AddRectFilled(pos, ImVec2(pos.x + button_sz, pos.y + button_sz), opened ? ImColor(255, 0, 0) : ImColor(0, 255, 0));
+
+		ImGuiCol circle_enum_color = hovered ? ImGuiCol_ButtonHovered : (held ? ImGuiCol_ButtonActive : ImGuiCol_Button);
+
+		const float line_height = ImMax(ImMin(window->DC.CurrentLineHeight, g.FontSize + g.Style.FramePadding.y * 2), g.FontSize);
+		//window->DrawList->AddCircleFilled(pos + ImVec2(style.FramePadding.x + g.FontSize*0.5f, line_height*0.5f), circle_radius, GetColorU32(circle_enum_color));
+		RenderCollapseTriangle(pos + ImVec2(3.f, 0.f), opened, 1.0f);
+		ImGui::RenderText(ImVec2(pos.x + button_sz + g.Style.ItemInnerSpacing.x, pos.y + g.Style.FramePadding.y), label);
+
+		ImGui::ItemSize(bb, g.Style.FramePadding.y);
+		ImGui::ItemAdd(bb, &id);
+
+		if (opened)
+			ImGui::TreePush(label);
+
+
+		// Remove button : 
+		//window->DrawList->AddLine(ImVec2(bb.Max.x + 1.f, bb.Min.y), ImVec2(bb.Max.x + 1.f, bb.Max.y), GetColorU32(ImGuiCol_Border));
+		//pos = window->DC.CursorPos;
+		//ImRect bbBtn(ImVec2(pos.x + 2.f, pos.y), ImVec2(pos.x + removeBtnWidth, pos.y + removeBtnWidth));
+		//shouldRemove = ImGui::ButtonBehavior(bbBtn, id, &hovered, &held);
+
+		//ImGui::SameLine();
+		const float offsetBeforeCloseBtnCenter = 2.f + removeBtnWidth * 0.5f;
+		ImGui::PushID("removeBtn");
+		shouldRemove = ImGui::Ext::SquaredCloseButton(label, ImVec2(bb.Max.x + offsetBeforeCloseBtnCenter, bb.GetHeight()*0.5f), removeBtnWidth);
+		ImGui::PopID();
+		return opened;
 	}
 
 

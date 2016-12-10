@@ -5,6 +5,8 @@
 #include "Scene.h" //forward
 #include "EditorWindows.h" //forward
 #include "EditorTools.h" //forward
+#include "Camera.h"
+#include "PostProcess.h"
 
 //DroppedFileEditorWindow* DroppedFileEditorWindow::modalRef = nullptr;
 
@@ -68,15 +70,16 @@ void DroppedFileEditorFrame::drawContent(Project& project, EditorModal* parentWi
 
 ///////////////////////////////
 
-ViewportEditorFrame::ViewportEditorFrame(const std::string& name, std::shared_ptr<Viewport> model)
+ViewportEditorFrame::ViewportEditorFrame(const std::string& name, std::shared_ptr<Viewport> model, Editor* editorRef)
 	: EditorFrame(name)
 	, m_viewport(model)
+	, m_editorRef(editorRef)
 {
 }
 
 void ViewportEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
 {
-	Texture* finalFrame = project.getActiveScene()->getRenderer().getFinalFrame();
+	const Texture* finalFrame = m_editorRef->getCamera().getFinalFrame();// project.getActiveScene()->getRenderer().getFinalFrame();
 	ImGui::Image((void*)(finalFrame->glId), ImVec2(m_size.x, m_size.y)/*ImVec2(finalFrame->w, finalFrame->h)*/, ImVec2(0, 1), ImVec2(1,0) );
 	if (ImGui::IsItemHovered())
 		m_viewport.lock()->setIsHovered(true);
@@ -275,4 +278,17 @@ void SceneHierarchyEditorFrame::drawContent(Project& project, EditorModal* paren
 	{
 		m_sceneHierarchy.lock()->drawUI();
 	}
+}
+
+//////////////////////////////
+
+EditorCameraEditorFrame::EditorCameraEditorFrame(const std::string & name, CameraEditor * camera)
+	: EditorFrame(name)
+	, m_editorCamera(camera)
+{
+}
+
+void EditorCameraEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
+{
+	m_editorCamera->drawUI();
 }

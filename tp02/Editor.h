@@ -92,9 +92,6 @@ private:
 	GUIStates m_guiStates;
 
 	CameraEditor* m_camera;
-	bool m_cameraFPS;
-	float m_cameraBaseSpeed;
-	float m_cameraBoostSpeed;
 
 	bool m_hideCursorWhenMovingCamera;
 
@@ -138,7 +135,7 @@ public:
 	float getMenuTopOffset() const;
 	void drawMenuEntry_windows();
 	void drawMenuEntry_addEntity(Scene& scene);
-	void drawMenuEntry_camera();
+	//void drawMenuEntry_camera();
 	void drawMenuEntry_playModes(Project& project);
 	void drawMenuEntry_visibilities(Scene& scene);
 	void drawMenuEntry_options(Project& project);

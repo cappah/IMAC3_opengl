@@ -498,6 +498,18 @@ namespace GlHelper {
 		return newTexture;
 	}
 
+	
+	Texture* makeNewFloatColorTexture(float width, float height)
+	{
+		// Create color texture
+		Texture* newTexture = new Texture(width, height, true);
+		newTexture->setTextureParameters(GL_RGB16F, GL_RGB, GL_FLOAT, false);
+		newTexture->setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		newTexture->setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+		return newTexture;
+	}
+
 	Texture* makeNewNormalTexture(float width, float height)
 	{
 		// Create normal texture
@@ -524,6 +536,14 @@ namespace GlHelper {
 	{
 		texture.resizeTexture(width, height);
 		texture.setTextureParameters(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, false);
+		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	}
+
+	void makeFloatColorTexture(Texture& texture, float width, float height)
+	{
+		texture.resizeTexture(width, height);
+		texture.setTextureParameters(GL_RGB16F, GL_RGB, GL_FLOAT, false);
 		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
 		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	}

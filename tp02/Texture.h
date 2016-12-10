@@ -108,6 +108,8 @@ namespace GlHelper{
 
 	//make a basic color texture with GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE
 	Texture* makeNewColorTexture(float width, float height);
+	//make a basic color texture with GL_RGB16F, GL_RGB, GL_FLOAT
+	Texture* makeNewFloatColorTexture(float width, float height);
 	//make a basic normal texture with GL_RGBA16, GL_RGBA, GL_FLOAT
 	Texture* makeNewNormalTexture(float width, float height);
 	//make a basic depth texture with GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT
@@ -115,6 +117,8 @@ namespace GlHelper{
 
 	//make a basic color texture with GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE
 	void makeColorTexture(Texture& texture, float width, float height);
+	//make a basic color texture with GL_RGB16F, GL_RGB, GL_FLOAT
+	void makeFloatColorTexture(Texture& texture, float width, float height);
 	//make a basic normal texture with GL_RGBA16, GL_RGBA, GL_FLOAT
 	void makeNormalTexture(Texture& texture, float width, float height);
 	//make a basic depth texture with GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT

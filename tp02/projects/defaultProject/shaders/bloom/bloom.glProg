@@ -1,0 +1,8 @@
+{
+    "vertex" : "bloom.vert",
+    "fragment" : "bloom.frag",
+    "geometry" : "",
+    "programType" : "custom",
+    "pipelineType" : "opaque",
+    "internalShaderParameters" : []
+}

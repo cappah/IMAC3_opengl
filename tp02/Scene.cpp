@@ -458,18 +458,18 @@ void Scene::computeCullingForSingleCamera(BaseCamera& camera)
 	camera.computeCulling(m_renderables);
 }
 
-void Scene::render(const BaseCamera& camera)
+void Scene::render(BaseCamera& camera)
 {
 	//[DEPRECATED]
 	//m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, nullptr);
 	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights);
 }
 
-void Scene::render(const BaseCamera& camera, DebugDrawRenderer& debugDrawer)
+void Scene::render(BaseCamera& camera, DebugDrawRenderer& debugDrawer)
 {
 	//[DEPRECATED]
 	//m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, &debugDrawer);
-	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer);
+	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer); 
 }
 
 void Scene::renderColliders(const BaseCamera & camera)
@@ -749,4 +749,12 @@ void Scene::load(const FileHandler::CompletePath& path)
 BaseCamera* Scene::getMainCamera() const
 {
 	return m_cameras.size() > 0 ? m_cameras[0] : nullptr;
+}
+
+void Scene::onViewportResized(const glm::vec2 & newSize)
+{
+	for (auto& camera : m_cameras)
+	{
+		camera->onViewportResized(newSize);
+	}
 }

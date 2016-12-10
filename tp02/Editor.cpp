@@ -35,7 +35,6 @@ void init_gui_states(GUIStates & guiStates)
 /////////////////////////////////// EDITOR
 
 Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible(true), m_multipleEditing(false)
-, m_cameraFPS(true), m_cameraBaseSpeed(0.1f), m_cameraBoostSpeed(0.5f)
 , m_isPlaying(false), m_isOwningPlayer(true)
 , m_currentSelectionType(SelectionType::ENTITY)
 {
@@ -45,7 +44,7 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	m_gizmo = new Gizmo(getMaterialFactory().getDefault("wireframe"), this);
 
 	m_camera = new CameraEditor();
-	m_camera->setFPSMode(m_cameraFPS);
+	m_camera->setFPSMode(true);
 	//camera_defaults(*m_camera);
 
 	init_gui_states(m_guiStates);
@@ -59,7 +58,7 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 
 	//Main window : 
 	//m_windowManager.getBackgroundWindow()->setNode(std::make_shared<EditorNode>(std::make_shared<EditorNodeUniqueDisplay>(), std::make_shared<EditorNode>(std::make_shared<ViewportEditorFrame>("Viewport")))); //Viewport
-	m_windowManager.setBackgroundWindow(std::make_shared<EditorBackgroundWindow>(std::make_shared<ViewportEditorFrame>("Viewport", m_viewport)));
+	m_windowManager.setBackgroundWindow(std::make_shared<EditorBackgroundWindow>(std::make_shared<ViewportEditorFrame>("Viewport", m_viewport, this)));
 
 	//Create the style sheet
 	m_styleSheet = std::make_shared<EditorStyleSheet>();
@@ -265,7 +264,7 @@ void Editor::displayMenuBar(Project& project)
 		drawMenuEntry_visibilities(scene);
 		drawMenuEntry_windows();
 		drawMenuEntry_addEntity(scene);
-		drawMenuEntry_camera();
+		//drawMenuEntry_camera();
 		drawMenuEntry_playModes(project);
 
 		ImGui::SameLine();
@@ -373,62 +372,62 @@ void Editor::drawMenuEntry_playModes(Project& project)
 		}
 	}
 }
-
-void Editor::drawMenuEntry_camera()
-{
-	if (ImGui::BeginMenu("camera mode"))
-	{
-		if (ImGui::RadioButton("editor camera", !m_cameraFPS))
-		{
-			if (m_cameraFPS)
-			{
-				//CameraEditor* newCam = new CameraEditor();
-				////newCam->switchFromCameraFPS(*m_camera); //set up the camera
-				//delete m_camera;
-				//m_camera = newCam;
-				//toogleCamera(*m_camera);
-				m_camera->setFPSMode(false);
-				m_cameraFPS = false;
-			}
-		}
-		if (ImGui::RadioButton("FPS camera", m_cameraFPS))
-		{
-			if (!m_cameraFPS)
-			{
-				//CameraFPS* newCam = new CameraFPS();
-				////newCam->switchFromCameraEditor(*m_camera); //set up the camera
-				//delete m_camera;
-				//m_camera = newCam;
-				//toogleCamera(*m_camera);
-				m_camera->setFPSMode(true);
-				m_cameraFPS = true;
-			}
-		}
-		if (ImGui::RadioButton("hide cursor", m_hideCursorWhenMovingCamera))
-		{
-			m_hideCursorWhenMovingCamera = !m_hideCursorWhenMovingCamera;
-		}
-		ImGui::SliderFloat("camera base speed", &m_cameraBaseSpeed, 0.01f, 1.f);
-		ImGui::SliderFloat("camera boost speed", &m_cameraBoostSpeed, 0.01f, 1.f);
-		float tmpFloat = m_camera->getFOV();
-		if (ImGui::SliderFloat("camera fov", &(tmpFloat), 0.f, glm::pi<float>()))
-			m_camera->setFOV(tmpFloat);
-
-		tmpFloat = m_camera->getNear();
-		if (ImGui::SliderFloat("camera near", &(tmpFloat), 0.001f, 5.f))
-			m_camera->setNear(tmpFloat);
-
-		tmpFloat = m_camera->getFar();
-		if (ImGui::SliderFloat("camera far", &(tmpFloat), 0.01f, 1000.f))
-			m_camera->setFar(tmpFloat);
-
-		tmpFloat = m_camera->getAspect();
-		if (ImGui::SliderFloat("camera aspect", &(tmpFloat), 0.01f, 10.f))
-			m_camera->setAspect(tmpFloat);
-
-		ImGui::EndMenu();
-	}
-}
+//
+//void Editor::drawMenuEntry_camera()
+//{
+//	if (ImGui::BeginMenu("camera mode"))
+//	{
+//		if (ImGui::RadioButton("editor camera", !m_cameraFPS))
+//		{
+//			if (m_cameraFPS)
+//			{
+//				//CameraEditor* newCam = new CameraEditor();
+//				////newCam->switchFromCameraFPS(*m_camera); //set up the camera
+//				//delete m_camera;
+//				//m_camera = newCam;
+//				//toogleCamera(*m_camera);
+//				m_camera->setFPSMode(false);
+//				m_cameraFPS = false;
+//			}
+//		}
+//		if (ImGui::RadioButton("FPS camera", m_cameraFPS))
+//		{
+//			if (!m_cameraFPS)
+//			{
+//				//CameraFPS* newCam = new CameraFPS();
+//				////newCam->switchFromCameraEditor(*m_camera); //set up the camera
+//				//delete m_camera;
+//				//m_camera = newCam;
+//				//toogleCamera(*m_camera);
+//				m_camera->setFPSMode(true);
+//				m_cameraFPS = true;
+//			}
+//		}
+//		if (ImGui::RadioButton("hide cursor", m_hideCursorWhenMovingCamera))
+//		{
+//			m_hideCursorWhenMovingCamera = !m_hideCursorWhenMovingCamera;
+//		}
+//		ImGui::SliderFloat("camera base speed", &m_cameraBaseSpeed, 0.01f, 1.f);
+//		ImGui::SliderFloat("camera boost speed", &m_cameraBoostSpeed, 0.01f, 1.f);
+//		float tmpFloat = m_camera->getFOV();
+//		if (ImGui::SliderFloat("camera fov", &(tmpFloat), 0.f, glm::pi<float>()))
+//			m_camera->setFOV(tmpFloat);
+//
+//		tmpFloat = m_camera->getNear();
+//		if (ImGui::SliderFloat("camera near", &(tmpFloat), 0.001f, 5.f))
+//			m_camera->setNear(tmpFloat);
+//
+//		tmpFloat = m_camera->getFar();
+//		if (ImGui::SliderFloat("camera far", &(tmpFloat), 0.01f, 1000.f))
+//			m_camera->setFar(tmpFloat);
+//
+//		tmpFloat = m_camera->getAspect();
+//		if (ImGui::SliderFloat("camera aspect", &(tmpFloat), 0.01f, 10.f))
+//			m_camera->setAspect(tmpFloat);
+//
+//		ImGui::EndMenu();
+//	}
+//}
 
 void Editor::drawMenuEntry_addEntity(Scene& scene)
 {
@@ -578,7 +577,7 @@ void Editor::drawMenuEntry_windows()
 
 		if (!m_windowManager.isFrameOpen("Viewport") && ImGui::Button("Viewport"))
 		{
-			m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>("Viewport", m_viewport));
+			m_windowManager.addWindow(std::make_shared<ViewportEditorFrame>("Viewport", m_viewport, this));
 		}
 		if (!m_windowManager.isFrameOpen("SceneHierarchy") && ImGui::Button("SceneHierarchy"))
 		{
@@ -611,6 +610,10 @@ void Editor::drawMenuEntry_windows()
 		if (!m_windowManager.isFrameOpen("Factories debuger") && ImGui::Button("Factories debuger"))
 		{
 			m_windowManager.addWindow(std::make_shared<FactoriesDebugEditorFrame>("Factories debuger"));
+		}
+		if (!m_windowManager.isFrameOpen("Camera Editor") && ImGui::Button("Camera Editor"))
+		{
+			m_windowManager.addWindow(std::make_shared<EditorCameraEditorFrame>("Camera Editor", m_camera));
 		}
 		ImGui::EndMenu();
 	}
@@ -1052,7 +1055,7 @@ void Editor::renderUI(Project& project)
 	displayModals(project);
 
 	//%NOCOMMIT% test only
-	//ImGui::ShowTestWindow();
+	ImGui::ShowTestWindow();
 
 	//asynchonous commands : 
 	m_windowManager.update();
@@ -1064,7 +1067,10 @@ void Editor::renderUI(Project& project)
 	if ((std::abs(viewportDelta.x) > 2.f || std::abs(viewportDelta.y) > 2.f)
 		&& !isDraggingFrame)
 	{
+		// Resize render targets :
 		activeScene->getRenderer().onResizeViewport(m_viewport->getSize());
+		scene.onViewportResized(m_viewport->getSize());
+		m_camera->onViewportResized(m_viewport->getSize());
 	}
 
 }
@@ -1460,9 +1466,9 @@ void Editor::updateCameraMovement_fps(GLFWwindow* window)
 
 	if (!m_guiStates.UICaptureKeyboard)
 	{
-		float cameraSpeed = m_cameraBaseSpeed;
+		float cameraSpeed = m_camera->getCameraBaseSpeed();
 		if (m_guiStates.shiftPressed)
-			cameraSpeed = m_cameraBoostSpeed;
+			cameraSpeed = m_camera->getCameraBoostSpeed();
 
 		glm::vec3 translateDirection = glm::vec3(0,0,0);
 
@@ -1564,7 +1570,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 	//camera movements : 
 	
 
-		if (!m_cameraFPS)
+		if (!m_camera->getFPSMode())
 			updateCameraMovement_editor(window);
 		else
 			updateCameraMovement_fps(window);

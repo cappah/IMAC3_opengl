@@ -432,6 +432,7 @@ void SceneHierarchy::drawUI()
 
 DebugDrawRenderer::DebugDrawRenderer()
 	: m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
+	, m_needSeparator(false)
 {
 	m_material = getMaterialFactory().getDefault("blit");
 
@@ -480,8 +481,15 @@ void DebugDrawRenderer::drawUI()
 	{
 		if (ImGui::BeginMenu("choose output"))
 		{
+			auto& separatorIt = m_separatorIndex.begin();
 			for (int i = 0; i < m_outputNames.size(); i++)
 			{
+				if (separatorIt != m_separatorIndex.end() && *separatorIt == i)
+				{
+					separatorIt++;
+					ImGui::Separator();
+				}
+
 				ImGui::PushID(i);
 				if (ImGui::Selectable(m_outputNames[i].c_str()))
 				{
@@ -505,4 +513,32 @@ void DebugDrawRenderer::drawUI()
 	ImGui::EndChild();
 	ImGui::PopID();
 
+}
+
+void DebugDrawRenderer::addSeparator()
+{
+	m_needSeparator = true;
+}
+
+void DebugDrawRenderer::setCurrentOutputName(const std::string& outputName)
+{
+	m_currentOutputName = outputName;
+}
+
+void DebugDrawRenderer::drawOutputIfNeeded(const std::string& outputName, GLuint textureId)
+{
+	if (std::find(m_outputNames.begin(), m_outputNames.end(), outputName) == m_outputNames.end())
+	{
+		if (m_needSeparator)
+		{
+			m_separatorIndex.push_back(m_outputNames.size());
+			m_needSeparator = false;
+		}
+		m_outputNames.push_back(outputName);
+	}
+
+	if (m_currentOutputName == outputName)
+	{
+		drawTexture(textureId);
+	}
 }

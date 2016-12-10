@@ -270,6 +270,8 @@
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="PhysicManager.cpp" />
     <ClCompile Include="Point.cpp" />
+    <ClCompile Include="PostProcess.cpp" />
+    <ClCompile Include="PostProcessMaterials.cpp" />
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="RenderBatch.cpp" />
@@ -348,6 +350,8 @@
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="IClonable.h" />
+    <ClInclude Include="ICloner.h" />
     <ClInclude Include="IDrawable.h" />
     <ClInclude Include="IDrawableInInspector.h" />
     <ClInclude Include="imgui_extension.h" />
@@ -371,6 +375,8 @@
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="PhysicManager.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="PostProcess.h" />
+    <ClInclude Include="PostProcessMaterials.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderBatch.h" />
