@@ -123,6 +123,8 @@ public:
 
 	void debugDrawRenderer(DebugDrawRenderer& debugDrawer) const;
 
+	void transferDepthTo(const GlHelper::Framebuffer& to, const glm::vec2& depthTextureSize) const;
+
 	//draw colliders on scene.
 	void debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities);
 

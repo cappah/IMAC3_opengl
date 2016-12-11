@@ -9,6 +9,7 @@
 #include "glew/glew.h"
 #include "FileHandler.h"
 #include "Resource.h"
+#include "ResourcePointer.h"
 
 struct Texture final : public Resource
 {
@@ -54,13 +55,17 @@ struct Texture final : public Resource
 	void init(const FileHandler::CompletePath& path) override;
 
 	void drawInInspector(Scene & scene) override;
+	void drawIconeInResourceTree() override;
+	void drawUIOnHovered() override;
+	void drawIconeInResourceField() override;
 };
 
 struct CubeTexture final : public Resource
 {
 	std::string name;
 
-	FileHandler::CompletePath paths[6];
+	//FileHandler::CompletePath paths[6];
+	ResourcePtr<Texture> m_textures[6];
 
 	int w;
 	int h;
@@ -84,7 +89,7 @@ struct CubeTexture final : public Resource
 
 	CubeTexture();
 	CubeTexture(char r, char g, char b);
-	CubeTexture(const std::vector<FileHandler::CompletePath>& _paths);
+	CubeTexture(const std::vector<ResourcePtr<Texture>>& textures);
 	~CubeTexture();
 
 	void setTextureParameters(GLint _internalFormat = GL_RGB, GLenum _format = GL_RGB, GLenum _type = GL_UNSIGNED_BYTE, bool _generateMipMap = false);
@@ -94,6 +99,10 @@ struct CubeTexture final : public Resource
 	void resizePixelArrays(int width, int height, const glm::vec3& color);
 	// This fonction only change width and height without touching pixels
 	void resizeTexture(int width, int height);
+	void setTextureWithoutCheck(int index, ResourcePtr<Texture> texture);
+	bool setTexture(int index, ResourcePtr<Texture> texture);
+	bool initFromTextures(const std::vector<ResourcePtr<Texture>>& textures);
+	bool checkTextureCanBeAdded(const ResourcePtr<Texture>& textureToAdd) const;
 
 	void initGL();
 	void freeGL();
@@ -102,6 +111,8 @@ struct CubeTexture final : public Resource
 	void init(const FileHandler::CompletePath& path) override;
 	void load(const FileHandler::CompletePath& path);
 	void save(const FileHandler::CompletePath& path) const;
+
+	void drawInInspector(Scene & scene) override;
 };
 
 namespace GlHelper{

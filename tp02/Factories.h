@@ -17,9 +17,17 @@
 #include "ResourcePointer.h"
 #include "Project.h"
 
+class ResourceFactoryBase
+{
+protected:
+	void setResourceName(Resource* resource, const std::string& name)
+	{
+		resource->setName(name);
+	}
+};
 
 template<typename T>
-class ResourceFactory : public ISingleton<ResourceFactory<T>>, public ISerializable
+class ResourceFactory : public ISingleton<ResourceFactory<T>>, public ISerializable, public ResourceFactoryBase
 {
 private:
 	std::map<FileHandler::CompletePath, unsigned int> m_resourceMapping;
@@ -352,6 +360,9 @@ void ResourceFactory<T>::initDefaults()
 template<typename T>
 void ResourceFactory<T>::addDefault(const std::string& name, T* resource)
 {
+	//resource->setName(name);
+	setResourceName(resource, name);
+
 	m_defaultResources[name] = resource;
 	m_defaultResourceMapping[name] = ++s_resourceCount;
 	m_defaultResourcesFromHashKey[s_resourceCount] = resource;
@@ -589,7 +600,7 @@ template<typename T>
 bool ResourceField(const std::string& label, ResourcePtr<T>& resourcePtr)
 {
 	const int bufSize = 100;
-	std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getCompletePath().getFilename() : "INVALID");
+	std::string currentResourceName(resourcePtr.isValid() ? resourcePtr->getName() : "INVALID");
 	currentResourceName.reserve(bufSize);
 
 	ResourceType resourceType = getResourceType<T>();
@@ -604,6 +615,14 @@ bool ResourceField(const std::string& label, ResourcePtr<T>& resourcePtr)
 		colStyleCount++;
 	}
 
+	if (resourcePtr.isValid())
+	{
+		resourcePtr->drawIconeInResourceField();
+		const bool iconHovered = ImGui::IsItemHovered();
+		ImGui::SameLine();
+		if (iconHovered)
+			resourcePtr->drawUIOnHovered();
+	}
 	ImGui::InputText(label.c_str(), &currentResourceName[0], bufSize, ImGuiInputTextFlags_ReadOnly);
 	//isTextEdited = (enterPressed || ImGui::IsKeyPressed(GLFW_KEY_TAB) || (!ImGui::IsItemHovered() && ImGui::IsMouseClickedAnyButton()));
 	ImVec2 dropRectMin = ImGui::GetItemRectMin();

@@ -48,9 +48,10 @@ public:
 	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree);
 	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const;
 	virtual const PostProcessProxy& getPostProcessProxy() const;
-	void onViewportResized(const glm::vec2& newSize);
+	virtual void onViewportResized(const glm::vec2& newSize);
 	void renderFrame(const Texture* texture);
 	const Texture* getFinalFrame() const;
+	const GlHelper::Framebuffer& getFrameBuffer();
 
 	//virtual void setTranslationLocal(glm::vec3 pos) = 0;
 	//virtual void translateLocal(glm::vec3 pos) = 0;
@@ -194,12 +195,16 @@ private:
 	float m_cameraBoostSpeed;
 	bool m_hideCursorWhenMovingCamera;
 
+	GlHelper::Renderbuffer m_depthBuffer;
+
 public:
 	CameraEditor();
 
 	//void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
 	//const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
 	//virtual const PostProcessProxy& getPostProcessProxy() const override;
+
+	virtual void onViewportResized(const glm::vec2& newSize) override;
 
 	void drawUI();
 	float getCameraBaseSpeed() const;

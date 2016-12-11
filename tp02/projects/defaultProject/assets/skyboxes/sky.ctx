@@ -1,0 +1,33 @@
+{
+	"format" : 6407,
+	"generateMipMap" : false,
+	"internalFormat" : 6407,
+	"textures" : 
+	[
+		{
+			"isDefaultResource" : false,
+			"resourceHashKey" : 0
+		},
+		{
+			"isDefaultResource" : false,
+			"resourceHashKey" : 0
+		},
+		{
+			"isDefaultResource" : false,
+			"resourceHashKey" : 0
+		},
+		{
+			"isDefaultResource" : false,
+			"resourceHashKey" : 0
+		},
+		{
+			"isDefaultResource" : false,
+			"resourceHashKey" : 0
+		},
+		{
+			"isDefaultResource" : false,
+			"resourceHashKey" : 0
+		}
+	],
+	"type" : 5121
+}

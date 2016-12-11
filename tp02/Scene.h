@@ -153,12 +153,12 @@ public:
 	void computeCullingForSingleCamera(BaseCamera& camera);
 
 	void render(BaseCamera& camera);
-	void render(BaseCamera& camera, DebugDrawRenderer& debugDrawer);
-	void renderColliders(const BaseCamera& camera);
-	void renderDebugLights(const BaseCamera& camera);
-	void renderPaths(const BaseCamera& camera);
-	void renderDebugOctrees(const BaseCamera& camera);
-	void renderDebugPhysic(const BaseCamera& camera);
+	void renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer);
+	//void renderColliders(const BaseCamera& camera);
+	//void renderDebugLights(const BaseCamera& camera);
+	//void renderPaths(const BaseCamera& camera);
+	//void renderDebugOctrees(const BaseCamera& camera);
+	//void renderDebugPhysic(const BaseCamera& camera);
 
 	void updatePhysic(float deltaTime, const BaseCamera& camera);
 	void updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode);

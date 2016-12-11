@@ -465,44 +465,70 @@ void Scene::render(BaseCamera& camera)
 	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights);
 }
 
-void Scene::render(BaseCamera& camera, DebugDrawRenderer& debugDrawer)
+void Scene::renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer)
 {
 	//[DEPRECATED]
 	//m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, &debugDrawer);
+
 	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer); 
-}
+	m_renderer->transferDepthTo(camera.getFrameBuffer(), m_renderer->getViewportRenderSize());
 
-void Scene::renderColliders(const BaseCamera & camera)
-{
-	if(m_areCollidersVisible)
+	// Draw debug render :
+	camera.getFrameBuffer().bind();
+
+	if (m_areCollidersVisible)
 		m_renderer->debugDrawColliders(camera, m_entities);
-}
 
-void Scene::renderDebugLights(const BaseCamera & camera)
-{
-	if(m_areLightsBoundingBoxVisible)
+	if (m_areLightsBoundingBoxVisible)
 		m_renderer->debugDrawLights(camera, m_pointLights, m_spotLights);
-}
 
-void Scene::renderPaths(const BaseCamera& camera)
-{
 	m_pathManager.render(camera);
-}
+	CHECK_GL_ERROR("error when rendering paths");
 
-void Scene::renderDebugOctrees(const BaseCamera & camera)
-{
 	if (m_areOctreesVisible)
 	{
 		OctreeDrawer::get().render(camera.getProjectionMatrix(), camera.getViewMatrix());
 		OctreeDrawer::get().clear();
+		CHECK_GL_ERROR("error when rendering octrees");
 	}
-}
 
-void Scene::renderDebugPhysic(const BaseCamera & camera)
-{
 	if (m_isDebugPhysicVisible)
 		m_physicManager->debugDraw(camera.getProjectionMatrix(), camera.getViewMatrix());
+
+	camera.getFrameBuffer().unbind();
 }
+//
+//void Scene::renderColliders(const BaseCamera & camera)
+//{
+//	if(m_areCollidersVisible)
+//		m_renderer->debugDrawColliders(camera, m_entities);
+//}
+//
+//void Scene::renderDebugLights(const BaseCamera & camera)
+//{
+//	if(m_areLightsBoundingBoxVisible)
+//		m_renderer->debugDrawLights(camera, m_pointLights, m_spotLights);
+//}
+//
+//void Scene::renderPaths(const BaseCamera& camera)
+//{
+//	m_pathManager.render(camera);
+//}
+//
+//void Scene::renderDebugOctrees(const BaseCamera & camera)
+//{
+//	if (m_areOctreesVisible)
+//	{
+//		OctreeDrawer::get().render(camera.getProjectionMatrix(), camera.getViewMatrix());
+//		OctreeDrawer::get().clear();
+//	}
+//}
+//
+//void Scene::renderDebugPhysic(const BaseCamera & camera)
+//{
+//	if (m_isDebugPhysicVisible)
+//		m_physicManager->debugDraw(camera.getProjectionMatrix(), camera.getViewMatrix());
+//}
 
 void Scene::updatePhysic(float deltaTime, const BaseCamera& camera)
 {

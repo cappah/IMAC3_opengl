@@ -211,6 +211,9 @@
     <ClCompile Include="BatchableWith.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="GlHelper.cpp">
+      <Filter>Utils\Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -452,6 +455,9 @@
     </ClInclude>
     <ClInclude Include="ICloner.h">
       <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="GlHelper.h">
+      <Filter>Utils\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

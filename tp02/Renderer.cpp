@@ -23,13 +23,13 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 	m_pointLightMaterial = std::make_shared<MaterialPointLight>(*getProgramFactory().get("pointLight"));
 	if (!checkError("uniforms"))
-		PRINT_ERROR();
+		PRINT_ERROR("");
 	m_directionalLightMaterial = std::make_shared<MaterialDirectionalLight>(*getProgramFactory().get("directionalLight"));
 	if (!checkError("uniforms"))
-		PRINT_ERROR();
+		PRINT_ERROR("");
 	m_spotLightMaterial = std::make_shared<MaterialSpotLight>(*getProgramFactory().get("spotLight"));
 	if (!checkError("uniforms"))
-		PRINT_ERROR();
+		PRINT_ERROR("");
 
 	//////////////////// INITIALIZE G BUFFER ///////////////////
 
@@ -82,7 +82,7 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	m_viewportRenderSize.y = height;
 
 	if (!checkError("uniforms"))
-		PRINT_ERROR();
+		PRINT_ERROR("");
 
 }
 
@@ -1109,6 +1109,14 @@ void Renderer::debugDrawRenderer(DebugDrawRenderer& debugDrawer) const
 	CHECK_GL_ERROR("error in render debug pass");
 }
 
+void Renderer::transferDepthTo(const GlHelper::Framebuffer & to, const glm::vec2 & depthTextureSize) const
+{
+	m_lightPassBuffer.bind(GL_READ_FRAMEBUFFER);
+	to.bind(GL_DRAW_FRAMEBUFFER);
+	glBlitFramebuffer(0, 0, depthTextureSize.x, depthTextureSize.y, 0, 0, depthTextureSize.x, depthTextureSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)
 {
 	const int width = m_viewportRenderSize.x;
@@ -1132,6 +1140,8 @@ void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<En
 
 		collider->render(projection, view, colliderColor);
 	}
+
+	CHECK_GL_ERROR("error when rendering : debugDrawColliders");
 }
 //
 //void Renderer::debugDrawDeferred()
@@ -1193,6 +1203,8 @@ void Renderer::debugDrawLights(const BaseCamera& camera, const std::vector<Point
 	{
 		light->renderBoundingBox(projection, view, glm::vec3(0, 0, 1));
 	}
+
+	CHECK_GL_ERROR("error when rendering : debugDrawLights");
 }
 
 

@@ -22,7 +22,7 @@ private:
 
 public:
 	static void drawLine(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color = glm::vec3(1,0,0));
-	static void render(const glm::mat4& projection, const glm::mat4& view);
+	static void render(BaseCamera& camera);
 	static void clear();
 
 // singleton implementation :

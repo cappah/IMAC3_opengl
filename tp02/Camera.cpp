@@ -100,6 +100,11 @@ const Texture * BaseCamera::getFinalFrame() const
 	return &m_texture;
 }
 
+const GlHelper::Framebuffer & BaseCamera::getFrameBuffer()
+{
+	return m_frameBuffer;
+}
+
 
 const glm::mat4& BaseCamera::getViewMatrix() const
 {
@@ -487,9 +492,15 @@ CameraEditor::CameraEditor()
 	, m_hideCursorWhenMovingCamera(true)
 	, m_cameraBaseSpeed(1.f)
 	, m_cameraBoostSpeed(1.f)
+	, m_depthBuffer(400, 400, GL_DEPTH_COMPONENT24)
 {
 	updateProjection();
 	updateTransform();
+
+	m_frameBuffer.bind();
+	m_frameBuffer.attachRenderBuffer(&m_depthBuffer, GL_DEPTH_ATTACHMENT);
+	m_frameBuffer.checkIntegrity();
+	m_frameBuffer.unbind();
 }
 //
 //void CameraEditor::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
@@ -533,6 +544,18 @@ CameraEditor::CameraEditor()
 //{
 //	return m_postProcessProxy;
 //}
+
+void CameraEditor::onViewportResized(const glm::vec2 & newSize)
+{
+	BaseCamera::onViewportResized(newSize);
+
+	m_frameBuffer.bind();
+	m_frameBuffer.detachRenderBuffer(GL_DEPTH_ATTACHMENT);
+	m_depthBuffer.resize(newSize.x, newSize.y);
+	m_frameBuffer.attachRenderBuffer(&m_depthBuffer, GL_DEPTH_ATTACHMENT);
+	m_frameBuffer.checkIntegrity();
+	m_frameBuffer.unbind();
+}
 
 void CameraEditor::drawUI()
 {

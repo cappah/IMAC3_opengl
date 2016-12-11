@@ -11,19 +11,29 @@ class Renderbuffer
 
 private:
 	GLuint m_glId;
-	std::map<GLenum, const Texture*> m_attachedTextures;
+	GLenum m_internalFormat;
 
 public:
 
 	Renderbuffer(float width, float height, GLenum internalFormat)
+		: m_internalFormat(internalFormat)
 	{
 		glGenRenderbuffers(1, &m_glId);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_glId);
 		glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, width, height);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	}
 
 	~Renderbuffer()
 	{
 		glDeleteRenderbuffers(1, &m_glId);
+	}
+
+	void resize(float width, float height)
+	{
+		glBindRenderbuffer(GL_RENDERBUFFER, m_glId);
+		glRenderbufferStorage(GL_RENDERBUFFER, m_internalFormat, width, height);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	}
 
 	GLuint getId() const
@@ -89,12 +99,12 @@ public:
 		return m_glId;
 	}
 
-	void bind(GLenum bindingStatus = GL_FRAMEBUFFER)
+	void bind(GLenum bindingStatus = GL_FRAMEBUFFER) const
 	{
 		glBindFramebuffer(bindingStatus, m_glId);
 	}
 
-	void unbind(GLenum bindingStatus = GL_FRAMEBUFFER)
+	void unbind(GLenum bindingStatus = GL_FRAMEBUFFER) const
 	{
 		glBindFramebuffer(bindingStatus, 0);
 	}

@@ -4,6 +4,7 @@
 
 #include "jsoncpp/json/json.h"
 #include "ISingleton.h"
+#include "ISerializable.h"
 
 enum ResourceType
 {

@@ -176,8 +176,12 @@ void Editor::getCurrentDrawableSelection(std::vector<IDrawableInInspector*>& dra
 	}
 }
 
-void Editor::renderGizmo()
+void Editor::renderGizmo(BaseCamera& camera)
 {
+	glDisable(GL_DEPTH_TEST);
+
+	camera.getFrameBuffer().bind();
+
 	if (!m_isGizmoVisible)
 		return;
 
@@ -186,6 +190,12 @@ void Editor::renderGizmo()
 	glm::mat4 viewMatrix = m_camera->getViewMatrix(); // glm::lookAt(m_camera->eye, m_camera->o, m_camera->up);
 
 	m_gizmo->render(projectionMatrix, viewMatrix);
+
+	camera.getFrameBuffer().unbind();
+
+	glEnable(GL_DEPTH_TEST);
+
+	CHECK_GL_ERROR("Render error into Editor::renderGizmo().");
 }
 
 void Editor::onResourceSelected()

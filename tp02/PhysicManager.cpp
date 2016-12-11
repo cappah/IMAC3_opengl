@@ -350,6 +350,7 @@ namespace Physic {
 	{
 		if (m_debugDrawerPhysicWorld != nullptr) {
 			m_physicWorld->debugDrawWorld();
+			CHECK_GL_ERROR("error when rendering debug physic");
 		}
 	}
 

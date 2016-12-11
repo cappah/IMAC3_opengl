@@ -149,7 +149,7 @@ public:
 
 	void getCurrentDrawableSelection(std::vector<IDrawableInInspector*>& drawableSelection) const;
 
-	void renderGizmo();
+	void renderGizmo(BaseCamera& camera);
 
 	void onResourceSelected();
 	void onEntitySelected();

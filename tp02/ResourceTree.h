@@ -131,6 +131,9 @@ public:
 
 	void drawInInspector(Scene & scene, const std::vector<IDrawableInInspector*>& selection) override;
 	void drawInInspector(Scene & scene) override;
+
+	void drawIconeInResourceTree();
+	void drawUIOnHovered();
 };
 
 class ResourceFolder

@@ -548,7 +548,7 @@ void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, c
 		getResourceFactory<Texture>().changeResourceKey(oldResourcePath, newResourcePath);
 		break;
 	case CUBE_TEXTURE:
-		//getResourceFactory<CubeTexture>().changeResourceKey(oldResourcePath, newResourcePath); //TODO
+		getResourceFactory<CubeTexture>().changeResourceKey(oldResourcePath, newResourcePath);
 		break;
 	case MESH:
 		getResourceFactory<Mesh>().changeResourceKey(oldResourcePath, newResourcePath);
@@ -557,7 +557,7 @@ void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, c
 		//getResourceFactory<SkeletalAnimation>().changeResourceKey(oldResourcePath, newResourcePath); //TODO
 		break;
 	case MATERIAL:
-		//getResourceFactory<Material>().changeResourceKey(oldResourcePath, newResourcePath); //TODO
+		getResourceFactory<Material>().changeResourceKey(oldResourcePath, newResourcePath);
 		break;
 	default:
 		break;
@@ -580,7 +580,7 @@ void removeResourceFromFactory(const FileHandler::CompletePath& resourcePath)
 		getResourceFactory<Texture>().erase(resourcePath);
 		break;
 	case CUBE_TEXTURE:
-		//getResourceFactory<CubeTexture>().erase(resourcePath); //TODO
+		getResourceFactory<CubeTexture>().erase(resourcePath);
 		break;
 	case MESH:
 		getResourceFactory<Mesh>().erase(resourcePath);
@@ -589,7 +589,7 @@ void removeResourceFromFactory(const FileHandler::CompletePath& resourcePath)
 		//getResourceFactory<SkeletalAnimation>().erase(resourcePath); //TODO
 		break;
 	case MATERIAL:
-		//getResourceFactory<Material>().erase(resourcePath); //TODO
+		getResourceFactory<Material>().erase(resourcePath);
 		break;
 	default:
 		break;

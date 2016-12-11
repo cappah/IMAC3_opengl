@@ -495,6 +495,8 @@ void ResourceTreeView::displayFiles(ResourceFolder* parentFolder, ResourceFolder
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
+
+		bool isItemHovered = false;
 		if (!currentFile.isBeingRenamed())
 		{
 			
@@ -505,16 +507,26 @@ void ResourceTreeView::displayFiles(ResourceFolder* parentFolder, ResourceFolder
 				m_model->setSelectedFileKey(currentFile.getKey());
 				m_editorPtr->onResourceSelected();
 			}
+			isItemHovered = ImGui::IsItemHovered();
+			ImGui::SameLine();
+			currentFile.drawIconeInResourceTree();
 
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1))
+			if (isItemHovered)
 			{
-				if (outOpenModaleCallback != nullptr)
+				if (ImGui::IsMouseClicked(1))
 				{
-					outOpenModaleCallback->shouldOpen = true;
-					outOpenModaleCallback->modaleName = "resourceFileContextMenu";
+					if (outOpenModaleCallback != nullptr)
+					{
+						outOpenModaleCallback->shouldOpen = true;
+						outOpenModaleCallback->modaleName = "resourceFileContextMenu";
+					}
+					m_fileWeRightClicOn = &currentFile;
+					m_folderWeRightClicOn = &currentFolder;
 				}
-				m_fileWeRightClicOn = &currentFile;
-				m_folderWeRightClicOn = &currentFolder;
+				else
+				{
+					currentFile.drawUIOnHovered();
+				}
 			}
 		}
 		else
@@ -525,13 +537,13 @@ void ResourceTreeView::displayFiles(ResourceFolder* parentFolder, ResourceFolder
 		ImGui::PopStyleColor(4);
 
 		//rename
-		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+		if (isItemHovered && ImGui::IsMouseDoubleClicked(0))
 		{
 			currentFile.begingRenamingResource();
 		}
 
 		//files drag and drop
-		if (!currentFile.isBeingRenamed() && ImGui::IsItemHovered() && ImGui::IsMouseDragging(0) && ImGui::IsMouseDown(0))
+		if (!currentFile.isBeingRenamed() && isItemHovered && ImGui::IsMouseDragging(0) && ImGui::IsMouseDown(0))
 		{
 			DragAndDropManager::beginDragAndDrop(std::make_shared<ResourceDragAndDropOperation>(&currentFile, &currentFolder));
 		}
@@ -1206,4 +1218,16 @@ void ResourceFile::drawInInspector(Scene & scene)
 {
 	assert(m_pointedResource != nullptr);
 	m_pointedResource->drawInInspector(scene);
+}
+
+void ResourceFile::drawIconeInResourceTree()
+{
+	if (m_pointedResource != nullptr)
+		m_pointedResource->drawIconeInResourceTree();
+}
+
+void ResourceFile::drawUIOnHovered()
+{
+	if (m_pointedResource != nullptr)
+		m_pointedResource->drawUIOnHovered();
 }

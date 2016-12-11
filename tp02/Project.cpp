@@ -308,27 +308,23 @@ void Project::edit()
 		}
 		else
 		{
-			scene->render(currentCamera, editor.getDebugDrawRenderer());
+			scene->renderForEditor(editor.getCamera(), editor.getDebugDrawRenderer());
 			CHECK_GL_ERROR("gl error in renderer.");
-			scene->renderPaths(currentCamera);
-			CHECK_GL_ERROR("");
-			scene->renderColliders(currentCamera);
-			CHECK_GL_ERROR("");
-			scene->renderDebugLights(currentCamera);
-			CHECK_GL_ERROR("");
-			scene->renderDebugOctrees(currentCamera);
-			CHECK_GL_ERROR("");
-			scene->renderDebugPhysic(currentCamera);
-			CHECK_GL_ERROR("");
+			//scene->renderPaths(currentCamera);
+			//CHECK_GL_ERROR("");
+			//scene->renderColliders(currentCamera);
+			//CHECK_GL_ERROR("");
+			//scene->renderDebugLights(currentCamera);
+			//CHECK_GL_ERROR("");
+			//scene->renderDebugOctrees(currentCamera);
+			//CHECK_GL_ERROR("");
+			//scene->renderDebugPhysic(currentCamera);
+			//CHECK_GL_ERROR("");
 
-			DebugDrawer::render(currentCamera.getProjectionMatrix(), currentCamera.getViewMatrix());
-			CHECK_GL_ERROR("");
+			DebugDrawer::render(currentCamera);
 			DebugDrawer::clear();
 
-			glDisable(GL_DEPTH_TEST);
-			editor.renderGizmo();
-			if (!checkError("Uniforms"))
-				PRINT_ERROR("error in texture initialization.")
+			editor.renderGizmo(currentCamera);
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO : movethis ?
@@ -1006,13 +1002,35 @@ void Project::initDefaultAssets()
 	grassTextureDiffuse->textureWrapping_u = GL_CLAMP_TO_EDGE;
 	grassTextureDiffuse->textureWrapping_v = GL_CLAMP_TO_EDGE;
 
-	std::vector<FileHandler::CompletePath> skyboxTexturePaths = { 
-		FileHandler::CompletePath("textures/skyboxes/right.png"), FileHandler::CompletePath("textures/skyboxes/left.png"),
-		FileHandler::CompletePath("textures/skyboxes/top.png"), FileHandler::CompletePath("textures/skyboxes/top.png"),
-		FileHandler::CompletePath("textures/skyboxes/front.png"),FileHandler::CompletePath("textures/skyboxes/back.png") 
+	Texture* texSkyRight = new Texture(FileHandler::CompletePath("textures/skyboxes/right.png"));
+	Texture* texSkyLeft = new Texture(FileHandler::CompletePath("textures/skyboxes/left.png"));
+	Texture* texSkyTop = new Texture(FileHandler::CompletePath("textures/skyboxes/top.png"));
+	Texture* texSkyBottom = new Texture(FileHandler::CompletePath("textures/skyboxes/bottom.png"));
+	Texture* texSkyFront = new Texture(FileHandler::CompletePath("textures/skyboxes/front.png"));
+	Texture* texSkyBack = new Texture(FileHandler::CompletePath("textures/skyboxes/back.png"));
+
+	getTextureFactory().addDefault("skyRight", texSkyRight);
+	getTextureFactory().addDefault("skyLeft", texSkyLeft);
+	getTextureFactory().addDefault("skyTop", texSkyTop);
+	getTextureFactory().addDefault("skyBottom", texSkyBottom);
+	getTextureFactory().addDefault("skyFront", texSkyFront);
+	getTextureFactory().addDefault("skyBack", texSkyBack);
+
+	//std::vector<FileHandler::CompletePath> skyboxTexturePaths = { 
+	//	FileHandler::CompletePath("textures/skyboxes/right.png"), FileHandler::CompletePath("textures/skyboxes/left.png"),
+	//	FileHandler::CompletePath("textures/skyboxes/top.png"), FileHandler::CompletePath("textures/skyboxes/top.png"),
+	//	FileHandler::CompletePath("textures/skyboxes/front.png"),FileHandler::CompletePath("textures/skyboxes/back.png") 
+	//};
+	std::vector<ResourcePtr<Texture>> skyboxTextureBundle = {
+		getTextureFactory().getDefault("skyRight"),
+		getTextureFactory().getDefault("skyLeft"),
+		getTextureFactory().getDefault("skyTop"),
+		getTextureFactory().getDefault("skyBottom"),
+		getTextureFactory().getDefault("skyFront"),
+		getTextureFactory().getDefault("skyBack")
 	};
 
-	CubeTexture* defaultSkybox = new CubeTexture(skyboxTexturePaths);
+	CubeTexture* defaultSkybox = new CubeTexture(skyboxTextureBundle);
 
 	//force texture initialisation
 	diffuseTexture->initGL();

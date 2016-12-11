@@ -251,6 +251,7 @@
     <ClCompile Include="Flag.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="Gizmo.cpp" />
+    <ClCompile Include="GlHelper.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="imgui_extension.cpp" />
     <ClCompile Include="InputHandler.cpp" />
@@ -349,6 +350,7 @@
     <ClInclude Include="Flag.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="GlHelper.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="IClonable.h" />
     <ClInclude Include="ICloner.h" />

@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "ErrorHandler.h"
 #include "Project.h"
+#include "EditorGUI.h"
 
 #include "jsoncpp/json/json.h"
 
@@ -132,6 +133,24 @@ void Texture::drawInInspector(Scene & scene)
 	Resource::drawInInspector(scene);
 
 	ImGui::Image((void*)glId, ImVec2(w, h), ImVec2(0, 1), ImVec2(1, 0));
+}
+
+void Texture::drawIconeInResourceTree()
+{
+	ImGui::Image((void*)glId, ImVec2(30, 30), ImVec2(0, 1), ImVec2(1, 0));
+}
+
+void Texture::drawUIOnHovered()
+{
+	ImGui::BeginTooltip();
+	ImGui::Text("Texture : \n Size = %d, %d. \n Comp = %d. \n GLID = %u.", w, h, comp, glId);
+	ImGui::Image((void*)glId, ImVec2(100, 100), ImVec2(0, 1), ImVec2(1, 0));
+	ImGui::EndTooltip();
+}
+
+void Texture::drawIconeInResourceField()
+{
+	ImGui::Image((void*)glId, ImVec2(40, 40), ImVec2(0, 1), ImVec2(1, 0));
 }
 
 Texture::~Texture()
@@ -268,6 +287,11 @@ CubeTexture::CubeTexture(char r, char g, char b)
 
 	for (int i = 0; i < 6; i++)
 	{
+		m_textures[i] = ResourcePtr<Texture>();
+	}
+
+	for (int i = 0; i < 6; i++)
+	{
 		pixels[i] = new unsigned char[3];
 		pixels[i][0] = r;
 		pixels[i][1] = g;
@@ -275,7 +299,7 @@ CubeTexture::CubeTexture(char r, char g, char b)
 	}
 }
 
-CubeTexture::CubeTexture(const std::vector<FileHandler::CompletePath>& _paths) 
+CubeTexture::CubeTexture(const std::vector<ResourcePtr<Texture>>& textures) 
 	: glId(0)
 	, internalFormat(GL_RGB)
 	, format(GL_RGB)
@@ -289,11 +313,7 @@ CubeTexture::CubeTexture(const std::vector<FileHandler::CompletePath>& _paths)
 	, textureWrapping_r(GL_CLAMP_TO_EDGE)
 
 {
-	for (int i = 0; i < 6; i++)
-	{
-		paths[i] = _paths[i];
-		pixels[i] = stbi_load(paths[i].c_str(), &w, &h, &comp, 3);
-	}
+	initFromTextures(textures);
 }
 
 
@@ -376,6 +396,81 @@ void CubeTexture::resizeTexture(int width, int height)
 	h = height;
 }
 
+void CubeTexture::setTextureWithoutCheck(int index, ResourcePtr<Texture> texture)
+{
+	m_textures[index] = texture;
+	if (pixels[index] != nullptr)
+		delete[] pixels[index];
+	pixels[index] = new unsigned char[w * h * comp];
+	for (int j = 0; j < w*h*comp; j += comp)
+	{
+		for (int k = 0; k < comp; k++)
+			pixels[index][j + k] = m_textures[index]->pixels[j + k];
+	}
+}
+
+bool CubeTexture::setTexture(int index, ResourcePtr<Texture> texture)
+{
+	if (!checkTextureCanBeAdded(texture))
+	{
+		return false;
+	}
+	else
+	{
+		setTextureWithoutCheck(index, texture);
+		return true;
+	}
+}
+
+bool CubeTexture::initFromTextures(const std::vector<ResourcePtr<Texture>>& textures)
+{
+	assert(textures.size() > 0);
+
+	bool sameSize = true;
+	w = textures[0]->w;
+	h = textures[0]->h;
+	comp = textures[0]->comp;
+	for (int i = 1; i < 6; i++)
+	{
+		if (!checkTextureCanBeAdded(textures[i]))
+		{
+			w = 0;
+			h = 0;
+			comp = 0;
+			return false;
+		}
+	}
+
+	for (int i = 0; i < 6; i++)
+	{
+		setTextureWithoutCheck(i, textures[i]);
+	}
+
+	return true;
+}
+
+bool CubeTexture::checkTextureCanBeAdded(const ResourcePtr<Texture>& textureToAdd) const
+{
+	if (!textureToAdd.isValid())
+		return false;
+	if (textureToAdd->w != w || textureToAdd->h != h)
+	{
+		PRINT_ERROR("You are trying to create a cubeTexture with textures with different size.")
+			return false;
+	}
+	else if (textureToAdd->comp != comp)
+	{
+		PRINT_ERROR("You are trying to create a cubeTexture with textures with different format.")
+			return false;
+	}
+	else if (textureToAdd->w != textureToAdd->h)
+	{
+		PRINT_ERROR("You are trying to create a cubeTexture with a textures with width != height.")
+			return false;
+	}
+	return true;
+}
+
 void CubeTexture::initGL()
 {
 	if (glId <= 0){
@@ -443,11 +538,26 @@ void CubeTexture::load(const FileHandler::CompletePath & path)
 	Json::Value root;
 	stream >> root;
 
+	bool allTexturesOk = true;
 	for (int i = 0; i < 6; i++)
 	{
-		const std::string strPath = root[i]["path"].asString();
-		paths[i] = FileHandler::CompletePath(strPath);
-		pixels[i] = stbi_load(paths[i].c_str(), &w, &h, &comp, 3);
+		m_textures[i].load(root["textures"][i]);
+		allTexturesOk &= checkTextureCanBeAdded(m_textures[i]);
+	}
+	if (allTexturesOk)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			setTextureWithoutCheck(i, m_textures[i]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			m_textures[i] = ResourcePtr<Texture>();
+		}
+		PRINT_ERROR("error in cubeTexture loading !")
 	}
 
 	internalFormat = root["internalFormat"].asInt();
@@ -460,9 +570,10 @@ void CubeTexture::save(const FileHandler::CompletePath & path) const
 {
 	Json::Value root;
 
+	root["textures"] = Json::Value(Json::arrayValue);
 	for (int i = 0; i < 6; i++)
 	{
-		root[i]["path"] = paths[i].toString();
+		m_textures[i].save(root["textures"][i]);
 	}
 
 	root["internalFormat"] = (int)internalFormat;
@@ -478,6 +589,24 @@ void CubeTexture::save(const FileHandler::CompletePath & path) const
 		return;
 	}
 	stream << root;
+}
+
+void CubeTexture::drawInInspector(Scene & scene)
+{
+	Resource::drawInInspector(scene);
+
+	if (EditorGUI::ResourceField<Texture>("texturePositiveX", m_textures[0]))
+		setTexture(0, m_textures[0]);
+	if(EditorGUI::ResourceField<Texture>("textureNegativeX", m_textures[1]))
+		setTexture(1, m_textures[1]);
+	if(EditorGUI::ResourceField<Texture>("texturePositiveY", m_textures[2]))
+		setTexture(2, m_textures[2]);
+	if(EditorGUI::ResourceField<Texture>("textureNegativeY", m_textures[3]))
+		setTexture(3, m_textures[3]);
+	if(EditorGUI::ResourceField<Texture>("texturePositiveZ", m_textures[4]))
+		setTexture(4, m_textures[4]);
+	if(EditorGUI::ResourceField<Texture>("textureNegativeX", m_textures[5]))
+		setTexture(5, m_textures[5]);
 }
 
 ///////////////////////////////////////////
