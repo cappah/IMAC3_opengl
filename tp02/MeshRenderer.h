@@ -15,6 +15,9 @@ class Entity;
 
 class MeshRenderer : public Component, public IRenderableComponent
 {
+	REFLEXION_HEADER(MeshRenderer)
+	COMPONENT_IMPLEMENTATION_HEADER(MeshRenderer)
+
 private:
 	//%NOCOMMIT%
 	//Mesh* mesh;
@@ -34,12 +37,6 @@ public:
 
 	virtual void applyTransform(const glm::vec3& translation, const glm::vec3& scale = glm::vec3(1, 1, 1), const glm::quat& rotation = glm::quat()) override;
 	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat()) override;
-
-	virtual void eraseFromScene(Scene& scene) override;
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 
 	void setMesh(ResourcePtr<Mesh> _mesh);
 	void addMaterial(ResourcePtr<Material> _material);
@@ -64,5 +61,10 @@ public:
 	virtual const IDrawable& getDrawable(int drawableIndex) const override;
 	virtual const Material& getDrawableMaterial(int drawableIndex) const override;
 	virtual const int getDrawableCount() const override;
+
+	virtual void onAfterComponentAddedToScene(Scene& scene) override;
+	virtual void onBeforeComponentErasedFromScene(Scene& scene) override;
 };
 
+REFLEXION_CPP(MeshRenderer)
+REFLEXION_InheritFrom(MeshRenderer, Component)

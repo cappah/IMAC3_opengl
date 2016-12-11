@@ -25,6 +25,9 @@ namespace Physic {
 
 	class Flag : public Component, public IBatchableWith<MaterialLit>, public IRenderableComponent
 	{
+		REFLEXION_HEADER(Flag)
+		COMPONENT_IMPLEMENTATION_HEADER(Flag)
+
 		glm::vec3 origin;
 		glm::vec3 translation;
 		glm::vec3 scale;
@@ -79,13 +82,6 @@ namespace Physic {
 		void applyForce(const glm::vec3& force);
 		//add gravity to each point of the flag
 		void applyGravity(const glm::vec3& gravity);
-
-		// Inherited via Component
-		virtual void eraseFromScene(Scene & scene) override;
-		virtual void addToScene(Scene & scene) override;
-		virtual Component * clone(Entity * entity) override;
-		virtual void addToEntity(Entity& entity) override;
-		virtual void eraseFromEntity(Entity& entity) override;
 
 		//return the flag mesh
 		Mesh& getMesh();
@@ -147,6 +143,13 @@ namespace Physic {
 		void computeGlobalBreak(float deltaTime, Point* point);
 
 		void computeAutoCollision();
+
+		virtual void onAfterComponentAddedToScene(Scene & scene) override;
+		virtual void onBeforeComponentErasedFromScene(Scene & scene) override;
 };
 
 }
+
+REFLEXION_CPP(Physic::Flag)
+REFLEXION_InheritFrom(Physic::Flag, Component)
+

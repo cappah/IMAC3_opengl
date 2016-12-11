@@ -25,7 +25,7 @@ public:
 
 	template<typename T>
 	inline bool registerInFactory() {
-		BehaviorFactory::get().add(std::type_index(typeid(T)).name(), new T());
+		//BehaviorFactory::get().add(std::type_index(typeid(T)).name(), new T()); //TODO CORE
 		return true;
 	}
 

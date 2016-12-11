@@ -2,11 +2,13 @@
 
 #include "ParticleEmitter.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
 
 namespace Physic {
 
+	COMPONENT_IMPLEMENTATION_CPP(ParticleEmitter)
 
 	ParticleEmitter::ParticleEmitter() : Component(PARTICLE_EMITTER), 
 	m_maxParticleCount(10), m_aliveParticlesCount(0), m_lifeTimeInterval(3,5), m_initialVelocityInterval(0.1f, 0.5f), m_spawnFragment(0), m_particleCountBySecond(10), m_emitInShape(false), m_sortParticles(false),
@@ -802,35 +804,6 @@ namespace Physic {
 		}
 	}
 
-	void ParticleEmitter::eraseFromScene(Scene& scene)
-	{
-		scene.erase(this);
-	}
-
-	void ParticleEmitter::addToScene(Scene& scene)
-	{
-		scene.add(this);
-	}
-
-	Component * ParticleEmitter::clone(Entity* entity)
-	{
-		ParticleEmitter* newParticleEmitter = new ParticleEmitter(*this);
-
-		newParticleEmitter->attachToEntity(entity);
-
-		return newParticleEmitter;
-	}
-
-	void ParticleEmitter::addToEntity(Entity& entity)
-	{
-		entity.add(this);
-	}
-
-	void ParticleEmitter::eraseFromEntity(Entity& entity)
-	{
-		entity.erase(this);
-	}
-
 	void ParticleEmitter::save(Json::Value & rootComponent) const
 	{
 		Component::save(rootComponent);
@@ -925,6 +898,22 @@ namespace Physic {
 	const int ParticleEmitter::getDrawableCount() const
 	{
 		return 1;
+	}
+
+	void ParticleEmitter::onAfterComponentAddedToScene(Scene & scene)
+	{
+		//Add this components to renderables :
+		IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(this);
+		if (asRenderable->getDrawableCount() > 0)
+			scene.addToRenderables(this);
+	}
+
+	void ParticleEmitter::onBeforeComponentErasedFromScene(Scene & scene)
+	{
+		//Remove this components from renderables :
+		IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(this);
+		if (asRenderable->getDrawableCount() > 0)
+			scene.removeFromRenderables(this);
 	}
 
 }

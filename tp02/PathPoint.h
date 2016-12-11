@@ -7,6 +7,9 @@
 
 class PathPoint : public Component
 {
+	REFLEXION_HEADER(PathPoint)
+	COMPONENT_IMPLEMENTATION_HEADER(PathPoint)
+
 private:
 	int m_pathId; //the path this point belong to
 	int m_pointIdx; //the index in the current path
@@ -23,12 +26,9 @@ public:
 	void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
 	// Hérité via Component
-	virtual void eraseFromScene(Scene & scene) override;
-	virtual void addToScene(Scene & scene) override;
-	virtual Component * clone(Entity * entity) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
-
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
 };
+
+REFLEXION_CPP(PathPoint)
+REFLEXION_InheritFrom(PathPoint, Component)

@@ -4,6 +4,7 @@
 //forwards : 
 #include "Ray.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
 #include "Rigidbody.h"
@@ -171,11 +172,6 @@ void Collider::updateOffsetMatrix()
 	}
 }
 
-void Collider::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
 void Collider::render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color)
 {
 	if (!visualMesh.isValid() || !visualMaterial.isValid())
@@ -257,8 +253,25 @@ void Collider::drawInInspector(Scene & scene, const std::vector<Component*>& com
 	}
 }
 
+void Collider::onAfterComponentAddedToEntity(Entity& entity)
+{
+	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
+	if (rigidbody != nullptr)
+		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
+	entity.applyTransform();
+}
+
+void Collider::onBeforeComponentErasedFromEntity(Entity& entity)
+{
+	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
+	if (rigidbody != nullptr)
+		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
+}
+
 
 ///////////////////////////////////////////
+
+COMPONENT_IMPLEMENTATION_CPP(BoxCollider)
 
 BoxCollider::BoxCollider(ResourcePtr<Mesh> _visualMesh, ResourcePtr<Material> _visualMaterial)
 	: Collider(BOX_COLLIDER, getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"))
@@ -402,30 +415,6 @@ void BoxCollider::drawInInspector(Scene& scene, const std::vector<Component*>& c
 	}
 }
 
-Component* BoxCollider::clone(Entity* entity)
-{
-	BoxCollider* newCollider = new BoxCollider(*this);
-
-	newCollider->attachToEntity(entity);
-
-	return newCollider;
-}
-
-void BoxCollider::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-void BoxCollider::addToEntity(Entity & entity)
-{
-	entity.add(this);
-}
-
-void BoxCollider::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
-}
-
 void BoxCollider::coverMesh(const Mesh& mesh)
 {
 	origin = mesh.origin;
@@ -476,6 +465,8 @@ void BoxCollider::load(const Json::Value & rootComponent)
 }
 
 //////////////////////////////////////////////
+
+COMPONENT_IMPLEMENTATION_CPP(CapsuleCollider)
 
 CapsuleCollider::CapsuleCollider()
 	: Collider(CAPSULE_COLLIDER, getMeshFactory().getDefault("capsuleWireframe"), getMaterialFactory().getDefault("wireframe"))
@@ -546,30 +537,6 @@ void CapsuleCollider::drawInInspector(Scene& scene, const std::vector<Component*
 			castedComponent->updateOffsetMatrix();
 		}
 	}
-}
-
-Component* CapsuleCollider::clone(Entity* entity)
-{
-	CapsuleCollider* newCollider = new CapsuleCollider(*this);
-
-	newCollider->attachToEntity(entity);
-
-	return newCollider;
-}
-
-void CapsuleCollider::addToScene(Scene& scene)
-{
-	scene.add(this);
-}
-
-void CapsuleCollider::addToEntity(Entity & entity)
-{
-	entity.add(this);
-}
-
-void CapsuleCollider::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
 }
 
 void CapsuleCollider::coverMesh(const Mesh & mesh)

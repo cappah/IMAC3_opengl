@@ -3,10 +3,11 @@
 #include "Rigidbody.h"
 //forwards : 
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "PhysicManager.h"
 
-
+COMPONENT_IMPLEMENTATION_CPP(Rigidbody)
 
 Rigidbody::Rigidbody() : Component(ComponentType::RIGIDBODY),
 m_translation(0,0,0), m_scale(1,1,1), m_mass(0), m_inertia(0,0,0), m_isTrigger(false), m_useGravity(true),
@@ -458,35 +459,6 @@ void Rigidbody::applyTransformFromPhysicSimulation(const glm::vec3 & translation
 	m_rotation = rotation;
 }
 
-void Rigidbody::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-void Rigidbody::addToScene(Scene & scene)
-{
-	scene.add(this);
-}
-
-void Rigidbody::eraseFromEntity(Entity & entity)
-{
-	entity.erase(this);
-}
-
-void Rigidbody::addToEntity(Entity & entity)
-{
-	entity.add(this);
-}
-
-Component * Rigidbody::clone(Entity * entity)
-{
-	Rigidbody* newRigidbody = new Rigidbody(*this);
-
-	newRigidbody->attachToEntity(entity);
-
-	return newRigidbody;
-}
-
 void Rigidbody::save(Json::Value & componentRoot) const
 {
 	Component::save(componentRoot);
@@ -533,5 +505,16 @@ void Rigidbody::load(const Json::Value & componentRoot)
 
 	//initialization made when the rigidbody is attached to the entity.
 
+}
+
+void Rigidbody::onAfterComponentAddedToScene(Scene & scene)
+{
+	makeShape(); //order the ridigbody to reupdate it collider shape
+	init(scene.getPhysicManager().getBulletDynamicSimulation()); //must be call after the rigidbody has been attached to an entity
+}
+
+void Rigidbody::onAfterComponentAddedToEntity(Entity & entity)
+{
+	entity.applyTransform();
 }
 

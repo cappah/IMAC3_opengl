@@ -4,18 +4,20 @@
 //forwards : 
 #include "Component.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "ComponentFactory.h"
 #include "BehaviorFactory.h"
 #include "PhysicManager.h"
+#include "Application.h"
 
 Entity::Entity(Scene* scene) : TransformNode(), m_scene(scene), m_isSelected(false), m_name("default_entity"), m_parent(nullptr)
 {
-	scene->add(this);
+	scene->getAccessor().addToScene(this);
 }
 
 Entity::Entity(const Entity& other) : TransformNode(other), m_isSelected(other.m_isSelected), m_name(other.m_name), m_scene(other.m_scene), m_parent(other.m_parent)
 {
-	m_scene->add(this);
+	m_scene->getAccessor().addToScene(this);
 
 	for (int i = 0; i < other.m_components.size(); i++)
 	{
@@ -45,7 +47,7 @@ Entity& Entity::operator=(const Entity& other)
 	m_scene = other.m_scene;
 	m_parent = other.m_parent;
 
-	m_scene->add(this);
+	m_scene->getAccessor().addToScene(this);
 
 	eraseAllComponents();
 	for (int i = 0; i < other.m_components.size(); i++)
@@ -379,375 +381,32 @@ void Entity::deselect()
 	m_isSelected = false;
 }
 
-
-Entity& Entity::add(PointLight* pointLight)
+Entity & Entity::add(Component * component)
 {
-	pointLight->attachToEntity(this);
-
-	m_scene->add(pointLight);
-	m_components.push_back(pointLight);
-
+	component->attachToEntity(this);
+	
+	component->addToScene(*m_scene); // Call scene.add<ComponentType>(component);
+	component->onAfterComponentAddedToScene(*m_scene);
+	m_components.push_back(component);
+	component->onAfterComponentAddedToEntity(*this);
+	
 	return *this;
 }
 
-Entity& Entity::add(DirectionalLight* directionalLight)
+Entity & Entity::erase(Component * component)
 {
-	directionalLight->attachToEntity(this);
-
-	m_scene->add(directionalLight);
-	m_components.push_back(directionalLight);
-
-	return *this;
-}
-
-Entity& Entity::add(SpotLight* spotLight)
-{
-	spotLight->attachToEntity(this);
-
-	m_scene->add(spotLight);
-	m_components.push_back(spotLight);
-
-	return *this;
-}
-
-Entity& Entity::add(Collider * collider)
-{
-	collider->attachToEntity(this);
-
-	m_scene->add(collider);
-	m_components.push_back(collider);
-
-	//special stuuf for colliders : 
-	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
-	if (rigidbody != nullptr)
-		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
-	applyTransform();
-
-	return *this;
-}
-
-Entity& Entity::add(MeshRenderer * meshRenderer)
-{
-	meshRenderer->attachToEntity(this);
-
-	m_scene->add(meshRenderer);
-	m_components.push_back(meshRenderer);
-
-	return *this;
-}
-
-Entity & Entity::add(Physic::Flag * flag)
-{
-	flag->attachToEntity(this);
-
-	m_scene->add(flag);
-	m_components.push_back(flag);
-
-	return *this;
-}
-
-Entity & Entity::add(Physic::ParticleEmitter * particleEmitter)
-{
-	particleEmitter->attachToEntity(this);
-
-	m_scene->add(particleEmitter);
-	m_components.push_back(particleEmitter);
-
-	return *this;
-}
-
-Entity & Entity::add(PathPoint * pathPoint)
-{
-	pathPoint->attachToEntity(this);
-
-	m_scene->add(pathPoint);
-	m_components.push_back(pathPoint);
-
-	return *this;
-}
-
-Entity & Entity::add(Billboard * billboard)
-{
-	billboard->attachToEntity(this);
-
-	m_scene->add(billboard);
-	m_components.push_back(billboard);
-
-	return *this;
-}
-
-
-Entity & Entity::add(Camera * camera)
-{
-	camera->attachToEntity(this);
-
-	m_scene->add(camera);
-	m_components.push_back(camera);
-
-	return *this;
-}
-
-Entity & Entity::add(Physic::WindZone * windZone)
-{
-	windZone->attachToEntity(this);
-
-	m_scene->add(windZone);
-	m_components.push_back(windZone);
-
-	return *this;
-}
-
-Entity & Entity::add(Rigidbody* rigidbody)
-{
-	rigidbody->attachToEntity(this);
-
-	m_scene->add(rigidbody);
-	m_components.push_back(rigidbody);
-
-	//special stuff for rigidbody :
-	rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
-	rigidbody->init(m_scene->getPhysicManager().getBulletDynamicSimulation()); //must be call after the rigidbody has been attached to an entity
-	applyTransform();
-
-	return *this;
-}
-
-Entity & Entity::add(Animator * animator)
-{
-	animator->attachToEntity(this);
-
-	m_scene->add(animator);
-	m_components.push_back(animator);
-
-	return *this;
-}
-
-Entity& Entity::add(CharacterController* characterController)
-{
-	characterController->attachToEntity(this);
-
-	m_scene->add(characterController);
-	m_components.push_back(characterController);
-
-	//special stuff for characterController :
-	characterController->makeShape(); 
-	characterController->init(m_scene->getPhysicManager().getBulletDynamicSimulation());
-	applyTransform();
-
-	return *this;
-}
-
-Entity & Entity::add(Behavior * behavior)
-{
-	behavior->attachToEntity(this);
-
-	m_scene->add(behavior);
-	m_components.push_back(behavior);
-
-	return *this;
-}
-
-
-Entity& Entity::erase(PointLight * pointLight)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), pointLight);
-
+	auto findIt = std::find(m_components.begin(), m_components.end(), component);
+	
 	if (findIt != m_components.end())
 	{
+		component->onBeforeComponentErasedFromEntity(*this);
 		m_components.erase(findIt);
-		m_scene->erase(pointLight);
+		component->onBeforeComponentErasedFromScene(*m_scene);
+		component->eraseFromScene(*m_scene);// Call scene.erase<ComponentType>(component);
 	}
-
+	
 	return *this;
 }
-
-Entity& Entity::erase(DirectionalLight * directionalLight)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), directionalLight);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(directionalLight);
-	}
-
-	return *this;
-}
-
-Entity& Entity::erase(SpotLight * spotLight)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), spotLight);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(spotLight);
-	}
-
-	return *this;
-}
-
-Entity& Entity::erase(Collider * collider)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), collider);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(collider);
-	}
-
-	//special stuff for colliders : 
-	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
-	if (rigidbody != nullptr)
-		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
-
-	return *this;
-}
-
-Entity& Entity::erase(MeshRenderer * meshRenderer)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), meshRenderer);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(meshRenderer);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(Physic::Flag * flag)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), flag);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(flag);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(Physic::ParticleEmitter * particleEmitter)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), particleEmitter);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(particleEmitter);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(PathPoint * pathPoint)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), pathPoint);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(pathPoint);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(Billboard * billboard)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), billboard);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(billboard);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(Physic::WindZone * windZone)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), windZone);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(windZone);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(Camera * camera)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), camera);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(camera);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(Rigidbody * rigidbody)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), rigidbody);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(rigidbody);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(Animator * animator)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), animator);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(animator);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(CharacterController * characterController)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), characterController);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(characterController);
-	}
-
-	return *this;
-}
-
-Entity & Entity::erase(Behavior * behavior)
-{
-	auto findIt = std::find(m_components.begin(), m_components.end(), behavior);
-
-	if (findIt != m_components.end())
-	{
-		m_components.erase(findIt);
-		m_scene->erase(behavior);
-	}
-
-	return *this;
-}
-
 
 void Entity::endCreation()
 {
@@ -775,6 +434,8 @@ void Entity::eraseAllComponents()
 {
 	for (int i = 0; i < m_components.size(); i++)
 	{
+		m_components[i]->onBeforeComponentErasedFromEntity(*this);
+		m_components[i]->onBeforeComponentErasedFromScene(*m_scene);
 		m_components[i]->eraseFromScene(*m_scene);
 		//m_components[i] = nullptr;
 	}
@@ -848,7 +509,7 @@ void Entity::eraseAllChilds()
 {
 	while(m_childs.size() > 0)
 	{
-		m_scene->erase(m_childs.back());
+		m_scene->getAccessor().eraseFromScene(m_childs.back());
 		//m_childs[i] = nullptr;
 	}
 	if(m_childs.size() > 0)

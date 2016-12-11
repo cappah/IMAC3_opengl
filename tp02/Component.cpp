@@ -65,6 +65,16 @@ void Component::applyTransformFromPhysicSimulation(const glm::vec3 & translation
 	//to override
 }
 
+void Component::eraseFromEntity(Entity & entity)
+{
+	entity.add(this);
+}
+
+void Component::addToEntity(Entity & entity)
+{
+	entity.add(this);
+}
+
 void Component::save(Json::Value & componentRoot) const
 {
 	//m_entity already set

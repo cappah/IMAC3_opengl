@@ -2,10 +2,13 @@
 
 #include "WindZone.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
 
 namespace Physic {
+
+	COMPONENT_IMPLEMENTATION_CPP(WindZone)
 
 	WindZone::WindZone() : Component(ComponentType::WIND_ZONE), m_direction(0, 0, 1), m_amplitude(1), m_frequency(1), m_randomFactor(0), m_offset(0), m_emissionType(EmissionType::DIRECTIONNAL), m_isAttenuated(false), m_radius(1.f)
 	{
@@ -195,32 +198,6 @@ namespace Physic {
 		}
 	}
 
-	void WindZone::eraseFromScene(Scene & scene)
-	{
-		scene.erase(this);
-	}
-
-	void WindZone::addToScene(Scene & scene)
-	{
-		scene.add(this);
-	}
-
-	Component * WindZone::clone(Entity * entity)
-	{
-		WindZone* windZone = new WindZone(*this);
-
-		windZone->attachToEntity(entity);
-
-		return windZone;
-	}
-	void WindZone::eraseFromEntity(Entity & entity)
-	{
-		entity.erase(this);
-	}
-	void WindZone::addToEntity(Entity & entity)
-	{
-		entity.add(this);
-	}
 	void WindZone::save(Json::Value & componentRoot) const
 	{
 		Component::save(componentRoot);

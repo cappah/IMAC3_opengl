@@ -6,7 +6,8 @@
 class TestBehavior : public Behavior
 {
 public:
-	BEHAVIOR(TestBehavior)
+	//BEHAVIOR(TestBehavior)
+	COMPONENT_IMPLEMENTATION_HEADER(TestBehavior)
 
 	TestBehavior();
 	virtual ~TestBehavior();

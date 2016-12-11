@@ -12,14 +12,42 @@
 #include "jsoncpp/json/json.h"
 
 #include "ISerializable.h"
+#include "Object.h"
 
 //forward
 class Entity;
 class Scene;
 
 
-class Component : public ISerializable
+//Should be called inside all classes which inherite from Component (and are not abstract !), in header file, in class definition.
+#define COMPONENT_IMPLEMENTATION_HEADER(ComponentType)\
+public:\
+virtual void addToScene(Scene& scene) override;\
+virtual void eraseFromScene(Scene& scene) override;\
+virtual Component* clone(Entity* entity) override;\
+private:
+
+//Should be called inside all classes which inherite from Component (and are not abstract !), in .cpp file.
+#define COMPONENT_IMPLEMENTATION_CPP(ComponentType)\
+void ComponentType::addToScene(Scene& scene)\
+{\
+	scene.getAccessor().addToScene<ComponentType>(this);\
+}\
+void ComponentType::eraseFromScene(Scene& scene)\
+{\
+	scene.getAccessor().eraseFromScene<ComponentType>(this);\
+}\
+Component* ComponentType::clone(Entity* entity)\
+{\
+	ComponentType* newTypedComponent = new ComponentType(*this);\
+	newTypedComponent->attachToEntity(entity);\
+	return newTypedComponent;\
+}
+
+class Component : public ISerializable, public Object
 {
+	REFLEXION_HEADER(Component)
+
 public:
 	enum ComponentType {
 		BOX_COLLIDER = 1 << 0, CAPSULE_COLLIDER = 1 << 1, SPHERE_COLLIDER = 1 << 2, MESH_COLLIDER = 1 << 3,
@@ -87,8 +115,16 @@ public:
 	//to add a component to the scene, call entity.add(component).
 	virtual void addToScene(Scene& scene) = 0;
 
-	virtual void eraseFromEntity(Entity& entity) = 0;
-	virtual void addToEntity(Entity& entity) = 0;
+	// Simply call entity.erase(*this). All the logic is done in entity::erase()
+	virtual void eraseFromEntity(Entity& entity);
+	// Simply call entity.erase(*this). All the logic is done in entity::add
+	virtual void addToEntity(Entity& entity);
+
+	// Callbacks for special management when components are created / destroyed
+	virtual void onAfterComponentAddedToScene(Scene& scene) {}
+	virtual void onAfterComponentAddedToEntity(Entity& entity) {}
+	virtual void onBeforeComponentErasedFromEntity(Entity& entity) {}
+	virtual void onBeforeComponentErasedFromScene(Scene& scene) {}
 
 	//clone a component, and attach it to the given entity
 	//This function is internally called by the copy contructor and operator=() of entity, to properly copy the entity.
@@ -97,6 +133,9 @@ public:
 	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(const Json::Value& componentRoot) override;
 };
+
+REFLEXION_CPP(Component)
+REFLEXION_InheritFrom(Component, Object)
 
 template<typename T>
 T* Component::getComponent(Component::ComponentType type)

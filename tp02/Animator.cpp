@@ -3,10 +3,12 @@
 #include "Animator.h"
 //forwards : 
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Factories.h"
 
 #include "EditorGUI.h"
 
+COMPONENT_IMPLEMENTATION_CPP(Animator)
 
 Animator::Animator()
 	: Component(ComponentType::ANIMATOR)
@@ -211,35 +213,6 @@ void Animator::drawInInspector(Scene& scene, const std::vector<Component*>& comp
 		ImGui::PopID();
 		imguiId++;
 	}
-}
-
-void Animator::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-void Animator::addToScene(Scene & scene)
-{
-	scene.add(this);
-}
-
-void Animator::eraseFromEntity(Entity & entity)
-{
-	entity.erase(this);
-}
-
-void Animator::addToEntity(Entity & entity)
-{
-	entity.add(this);
-}
-
-Component * Animator::clone(Entity * entity)
-{
-	Animator* newAnimator= new Animator(*this);
-
-	newAnimator->attachToEntity(entity);
-
-	return newAnimator;
 }
 
 void Animator::save(Json::Value & componentRoot) const

@@ -4,9 +4,11 @@
 //forwards : 
 #include "Factories.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "SerializeUtils.h"
 #include "EditorGUI.h"
 
+COMPONENT_IMPLEMENTATION_CPP(Billboard)
 
 Billboard::Billboard(): Component(ComponentType::BILLBOARD), m_translation(0,0,0), m_scale(1,1)/*, m_textureName("default")*/, m_color(1,1,1,1)
 {
@@ -136,30 +138,6 @@ void Billboard::drawInInspector(Scene & scene, const std::vector<Component*>& co
 	
 }
 
-void Billboard::eraseFromScene(Scene & scene)
-{
-	scene.erase(this);
-}
-
-Component* Billboard::clone(Entity* entity)
-{
-	Billboard* billboard = new Billboard(*this);
-
-	billboard->attachToEntity(entity);
-
-	return billboard;
-}
-
-void Billboard::addToEntity(Entity& entity)
-{
-	entity.add(this);
-}
-
-void Billboard::eraseFromEntity(Entity& entity)
-{
-	entity.erase(this);
-}
-
 void Billboard::save(Json::Value& rootComponent) const
 {
 	Component::save(rootComponent);
@@ -239,7 +217,18 @@ void Billboard::setExternalsOf(const MaterialBillboard & material, const glm::ma
 	material.setUniformColor(getColor());
 }
 
-void Billboard::addToScene(Scene& scene)
+void Billboard::onAfterComponentAddedToScene(Scene & scene)
 {
-	scene.add(this);
+	//Add this components to renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(this);
+	if (asRenderable->getDrawableCount() > 0)
+		scene.addToRenderables(this);
+}
+
+void Billboard::onBeforeComponentErasedFromScene(Scene & scene)
+{
+	//Remove this components from renderables :
+	IRenderableComponent* asRenderable = static_cast<IRenderableComponent*>(this);
+	if (asRenderable->getDrawableCount() > 0)
+		scene.removeFromRenderables(this);
 }

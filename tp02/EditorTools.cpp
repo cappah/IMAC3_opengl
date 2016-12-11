@@ -5,6 +5,7 @@
 #include "Entity.h"
 #include "Scene.h"
 #include "Editor.h"
+#include "Application.h"
 
 ///////////////////////////////// INSPECTOR
 

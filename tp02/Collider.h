@@ -36,6 +36,10 @@ struct CollisionInfo {
 
 struct Collider : public Component
 {
+	REFLEXION_HEADER(Collider)
+
+public:
+
 	ResourcePtr<Material> visualMaterial;
 	ResourcePtr<Mesh> visualMesh;
 
@@ -124,8 +128,6 @@ struct Collider : public Component
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
-	virtual void eraseFromScene(Scene& scene) override;
-
 	//Cover a mesh, based on the mesh bottomLeft and topRight points and the mesh origin
 	virtual void coverMesh(const Mesh& mesh) = 0;
 	//Cover something which have a bottomLeft/min and topRight/max points and an origin
@@ -134,10 +136,21 @@ struct Collider : public Component
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
 
+	void onAfterComponentAddedToEntity(Entity& entity) override;
+	void onBeforeComponentErasedFromEntity(Entity& entity) override;
+
 };
+
+REFLEXION_CPP(Collider)
+REFLEXION_InheritFrom(Collider, Component)
 
 struct BoxCollider : public Collider
 {
+	REFLEXION_HEADER(BoxCollider)
+	COMPONENT_IMPLEMENTATION_HEADER(BoxCollider)
+
+public:
+
 	glm::vec3 localTopRight;
 	glm::vec3 localBottomLeft;
 
@@ -154,10 +167,6 @@ struct BoxCollider : public Collider
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 	virtual void coverMesh(const Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
 	virtual btCollisionShape* makeShape() override;
@@ -166,9 +175,16 @@ struct BoxCollider : public Collider
 	virtual void load(const Json::Value& rootComponent) override;
 };
 
+REFLEXION_CPP(BoxCollider)
+REFLEXION_InheritFrom(BoxCollider, Collider)
 
 struct CapsuleCollider : public Collider
 {
+	REFLEXION_HEADER(CapsuleCollider)
+	COMPONENT_IMPLEMENTATION_HEADER(CapsuleCollider)
+
+public:
+
 	float height;
 	float radius;
 
@@ -181,10 +197,6 @@ struct CapsuleCollider : public Collider
 	virtual void drawInInspector(Scene& scene) override;
 	virtual void drawInInspector(Scene& scene, const std::vector<Component*>& components) override;
 
-	virtual Component* clone(Entity* entity) override;
-	virtual void addToScene(Scene& scene) override;
-	virtual void addToEntity(Entity& entity) override;
-	virtual void eraseFromEntity(Entity& entity) override;
 	virtual void coverMesh(const Mesh& mesh) override;
 	virtual void cover(glm::vec3 min, glm::vec3 max, glm::vec3 origin) override;
 	virtual btCollisionShape* makeShape() override;
@@ -192,3 +204,6 @@ struct CapsuleCollider : public Collider
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
 };
+
+REFLEXION_CPP(CapsuleCollider)
+REFLEXION_InheritFrom(CapsuleCollider, Collider)

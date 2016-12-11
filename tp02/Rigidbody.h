@@ -8,10 +8,11 @@
 #include "Component.h"
 #include "Collider.h"
 
-
-
 class Rigidbody : public Component
 {
+	REFLEXION_HEADER(Rigidbody)
+	COMPONENT_IMPLEMENTATION_HEADER(Rigidbody)
+
 private:
 	glm::vec3 m_translation;
 	glm::quat m_rotation;
@@ -88,15 +89,13 @@ public:
 	virtual void applyTransformFromPhysicSimulation(const glm::vec3& translation, const glm::quat& rotation = glm::quat());
 	//void applyTransformFromPhysicSimulation();
 
-	virtual void eraseFromScene(Scene& scene) override;
-	virtual void addToScene(Scene& scene) override;
-
-	virtual void eraseFromEntity(Entity& entity) override;
-	virtual void addToEntity(Entity& entity) override;
-
-	virtual Component* clone(Entity* entity) override;
-
 	virtual void save(Json::Value& componentRoot) const override;
 	virtual void load(const Json::Value& componentRoot) override;
+
+	virtual void onAfterComponentAddedToScene(Scene& scene) override;
+	virtual void onAfterComponentAddedToEntity(Entity& entity) override;
 };
+
+REFLEXION_CPP(Rigidbody)
+REFLEXION_InheritFrom(Rigidbody, Component)
 

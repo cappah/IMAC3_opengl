@@ -3,6 +3,7 @@
 #include "Editor.h"
 //forwards :
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Application.h"
 #include "Factories.h"
 #include "InputHandler.h"
@@ -10,6 +11,7 @@
 #include "EditorGUI.h"
 #include "EditorFrames.h"
 #include "FrameBuffer.h"
+#include "Renderer.h"
 
 ////////////////////////////////////////// GUI STATES
 
@@ -1313,7 +1315,7 @@ void Editor::deleteSelected(Scene& scene)
 		return;
 
 	for (int i = 0; i < m_currentEntitiesSelected.size(); i++)
-		scene.erase(m_currentEntitiesSelected[i] );
+		scene.getAccessor().eraseFromScene(m_currentEntitiesSelected[i] );
 
 	changeCurrentSelected(nullptr);
 

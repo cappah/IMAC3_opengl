@@ -4,10 +4,12 @@
 //forwards : 
 #include "BehaviorFactory.h"
 #include "Scene.h"
+#include "SceneAccessor.h"
 #include "Coroutine.h"
 #include "Animator.h"
 #include "InputHandler.h"
 #include "CharacterController.h"
+#include "Entity.h"
 
 //constexpr int tatu() {
 //	static int tutu;
@@ -17,6 +19,7 @@
 
 
 REGISTER_BEHAVIOUR(TestBehavior);
+COMPONENT_IMPLEMENTATION_CPP(TestBehavior)
 
 TestBehavior::TestBehavior()
 {
