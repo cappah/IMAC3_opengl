@@ -260,6 +260,7 @@ void DebugRenderEditorFrame::drawContent(Project& project, EditorModal* parentWi
 {
 	if (!m_debugDrawRenderer.expired())
 	{
+		m_debugDrawRenderer.lock()->setFrameSize(m_size);
 		m_debugDrawRenderer.lock()->drawUI();
 	}
 }

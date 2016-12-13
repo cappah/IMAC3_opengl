@@ -5,6 +5,7 @@
 #include "SceneAccessor.h"
 #include "Entity.h"
 #include "Factories.h"
+#include "Skybox.h"
 
 BaseCamera::BaseCamera()
 	: m_position(0, 0, -1)
@@ -13,6 +14,8 @@ BaseCamera::BaseCamera()
 	, m_aspect(16.f / 9.f)
 	, m_zNear(0.1f)
 	, m_zFar(100.f)
+	, m_clearMode(ClearMode::COLOR)
+	, m_clearColor(0,0,0,0)
 {
 
 	// Setup mesh and material
@@ -76,7 +79,7 @@ void BaseCamera::onViewportResized(const glm::vec2& newSize)
 	m_frameBuffer.detachTexture(GL_COLOR_ATTACHMENT0);
 
 	m_texture.freeGL();
-	GlHelper::makeColorTexture(m_texture, newSize.x, newSize.y);
+	GlHelper::makeColorTexture(m_texture, newSize.x, newSize.y); //TMP
 	m_texture.initGL();
 
 	m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);
@@ -86,14 +89,23 @@ void BaseCamera::onViewportResized(const glm::vec2& newSize)
 
 void BaseCamera::renderFrame(const Texture* texture)
 {
+	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
 	m_frameBuffer.bind();
+	glClear(GL_COLOR_BUFFER_BIT);
+	//glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//if (m_clearMode == BaseCamera::ClearMode::SKYBOX)
+	//	renderSkybox();
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture->glId);
 	m_material->use();
 	m_material->setUniformBlitTexture(0);
 	m_quadMesh->draw();
+
 	m_frameBuffer.unbind();
+	glEnable(GL_DEPTH_TEST);
 }
 
 const Texture * BaseCamera::getFinalFrame() const
@@ -104,6 +116,22 @@ const Texture * BaseCamera::getFinalFrame() const
 const GlHelper::Framebuffer & BaseCamera::getFrameBuffer()
 {
 	return m_frameBuffer;
+}
+
+BaseCamera::ClearMode BaseCamera::getClearMode() const
+{
+	return m_clearMode;
+}
+
+const glm::vec4 & BaseCamera::getClearColor() const
+{
+	return m_clearColor;
+}
+
+void BaseCamera::renderSkybox() const
+{
+	assert(m_skybox);
+	m_skybox->render(m_projectionMatrix, m_viewMatrix);
 }
 
 
@@ -233,6 +261,24 @@ void Camera::drawInInspector(Scene& scene)
 	if (ImGui::SliderFloat("aspect", &(m_aspect), 0.01f, 10.f))
 	{
 		updateProjection();
+	}
+
+	int currentClearMode = m_clearMode;
+	ClearMode previousClearMode = m_clearMode;
+	if (ImGui::Combo("clear methode", &currentClearMode, "Color\0Skybox\0"))
+	{
+		m_clearMode = (ClearMode)(currentClearMode);
+		if (previousClearMode == ClearMode::SKYBOX && m_clearMode == ClearMode::COLOR)
+			m_skybox.reset();
+	}
+	if (m_clearMode == ClearMode::COLOR)
+	{
+		ImGui::ColorEdit4("Clear color", &m_clearColor[0], true);
+	}
+	else if (m_clearMode == ClearMode::SKYBOX)
+	{
+		assert(m_skybox);
+		m_skybox->drawUI();
 	}
 
 	m_postProcessProxy.drawUI(); //TODO : multi editing
@@ -569,6 +615,24 @@ void CameraEditor::drawUI()
 	if (ImGui::SliderFloat("camera aspect", &(tmpFloat), 0.01f, 10.f))
 		setAspect(tmpFloat);
 
+	int currentClearMode = m_clearMode;
+	ClearMode previousClearMode = m_clearMode;
+	if (ImGui::Combo("clear methode", &currentClearMode, "Color\0Skybox\0"))
+	{
+		m_clearMode = (ClearMode)(currentClearMode);
+		if (previousClearMode == ClearMode::SKYBOX && m_clearMode == ClearMode::COLOR)
+			m_skybox.reset();
+		else if (previousClearMode == ClearMode::COLOR && m_clearMode == ClearMode::SKYBOX)
+			m_skybox = std::make_shared<Skybox>();
+	}
+	if (m_clearMode == ClearMode::COLOR)
+	{
+		ImGui::ColorEdit4("Clear color", &m_clearColor[0], true);
+	}
+	else if (m_clearMode == ClearMode::SKYBOX && m_skybox)
+	{
+		m_skybox->drawUI();
+	}
 
 	// Draw post process datas : 
 	m_postProcessProxy.drawUI();

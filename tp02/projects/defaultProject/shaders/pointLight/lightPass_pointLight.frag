@@ -45,12 +45,14 @@ vec3 computePointLight(PointLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 spe
 
 	diffuse /= 3.1415f;
 
-	specular *= pow(ndoth, specularPower);
+        specular *= pow(ndoth, specularPower);
 	specular /= ( (specularPower + 8.0) / (8.0*3.1415) );
+
+        //specular = clamp(specular, 0, 100);
 
 	float intensity = light.intensity / (d*d);
 
-	return intensity * light.color * 3.1415 * (diffuse + specular) * (ndotl) ; 
+        return intensity * light.color * 3.1415 * (diffuse + specular) * (ndotl) ;
 }
 
 vec3 kernelSoft[20] = vec3[](
@@ -99,7 +101,7 @@ void main(void)
 	// Convert texture coordinates into screen space coordinates
 	vec2 xy = In.Texcoord * 2.0 -1.0;
 	// Convert depth to -1,1 range and multiply the point by ScreenToWorld matrix
-	vec4 wP = vec4(xy, depth * 2.0 -1.0, 1.0) * ScreenToWorld;
+        vec4 wP = vec4(xy, depth * 2.0 -1.0, 1.0) * ScreenToWorld;
 	// Divide by w
         vec3 p = vec3(wP.xyz / wP.w);
 
@@ -108,13 +110,10 @@ void main(void)
 	float specularPower = normalBuffer.a;
 	vec3 n = normalBuffer.rgb*2.0 -1.0;
 
-	vec3 color = computePointLight( pointLight, p, n, diffuse, specular, specularPower * 100 );
+        vec3 color = computePointLight( pointLight, p, n, diffuse, specular, specularPower * 100 );
         color *= (1.0 - computeShadow(p));
 
-	//if(clothestDepth + shadowBias > currentDepth)
-		Color = vec4(color, 1.0);
-	//else
-	//	Color = vec4(0.0, 0.0, 0.0, 1.0);
+        Color = vec4(color, 1.0);
 
         float brightness = dot(Color.rgb, vec3(0.2126, 0.7152, 0.0722));
         HighValues = (brightness < 1.0) ? vec4(0.0, 0.0, 0.0, 0.0) : Color;

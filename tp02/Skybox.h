@@ -11,9 +11,9 @@
 class Skybox
 {
 	Mesh mesh;
+	//std::string materialName;
 
-	std::string materialName;
-	ResourcePtr<Material> material;
+	ResourcePtr<MaterialSkybox> material;
 
 public:
 

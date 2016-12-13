@@ -118,6 +118,7 @@ private:
 	std::vector<int> m_separatorIndex;
 	bool m_needSeparator;
 	std::string m_currentOutputName;
+	glm::vec2 m_frameSize;
 
 public:
 	DebugDrawRenderer();
@@ -126,6 +127,7 @@ public:
 	void addSeparator();
 	void setCurrentOutputName(const std::string& outputName);
 	void drawOutputIfNeeded(const std::string& outputName, GLuint textureId);
+	void setFrameSize(const glm::vec2& size);
 };
 
 

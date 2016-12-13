@@ -214,6 +214,15 @@
     <ClCompile Include="GlHelper.cpp">
       <Filter>Utils\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="TestMetaData02.cpp">
+      <Filter>Core\Reflexion</Filter>
+    </ClCompile>
+    <ClCompile Include="Reflexion.cpp">
+      <Filter>Core\Reflexion</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneAccessor.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -459,6 +468,19 @@
     <ClInclude Include="GlHelper.h">
       <Filter>Utils\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="TestMetaData02.h">
+      <Filter>Core\Reflexion</Filter>
+    </ClInclude>
+    <ClInclude Include="TestMetaData01.h">
+      <Filter>Core\Reflexion</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflexion.h">
+      <Filter>Core\Reflexion</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneAccessor.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -505,6 +527,9 @@
     </Filter>
     <Filter Include="Rendering">
       <UniqueIdentifier>{f059d7da-31f4-444e-869a-4add8f21228d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Reflexion">
+      <UniqueIdentifier>{f8e77759-aca9-40c4-a884-d5e9028fd9b6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

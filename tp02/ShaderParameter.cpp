@@ -119,7 +119,7 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 	}
 	case ShaderParameter::ShaderParameterType::FLOAT:
 	{
-		int defaultValue = parameterAsJsonValue.get("default", 0).asFloat();
+		float defaultValue = parameterAsJsonValue.get("default", 0).asFloat();
 		return std::make_shared<InternalShaderParameter<float, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
 		break;
 	}

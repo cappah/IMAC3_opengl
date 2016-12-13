@@ -137,7 +137,7 @@ void ResourceFactory<Texture>::initDefaults()
 	newTex->initGL();
 	addDefault("defaultNormal", newTex);
 
-	//default normal
+	//default specular
 	newTex = new Texture(glm::vec3(10, 10, 10));
 	newTex->initGL();
 	addDefault("defaultSpecular", newTex);

@@ -510,7 +510,7 @@ void DebugDrawRenderer::drawUI()
 	}
 
 	if (m_currentOutputName != "")
-		ImGui::Image((void*)m_texture->glId, ImVec2(m_texture->w, m_texture->h), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void*)m_texture->glId, ImVec2(m_frameSize.x, m_frameSize.y), ImVec2(0, 1), ImVec2(1, 0));
 	ImGui::EndChild();
 	ImGui::PopID();
 
@@ -542,4 +542,9 @@ void DebugDrawRenderer::drawOutputIfNeeded(const std::string& outputName, GLuint
 	{
 		drawTexture(textureId);
 	}
+}
+
+void DebugDrawRenderer::setFrameSize(const glm::vec2 & size)
+{
+	m_frameSize = size;
 }

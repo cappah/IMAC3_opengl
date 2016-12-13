@@ -657,6 +657,8 @@ void Renderer::renderShadows(float farPlane, const glm::vec3 & lightPos, const s
 
 void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
 {
+	glClearColor(0, 0, 0, 0);
+
 	renderLightedScene(camera, pointLights, directionalLights, spotLights, debugDrawer);
 
 	if (camera.getPostProcessProxy().getOperationCount() > 0)
@@ -695,7 +697,7 @@ void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLig
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : ShadowPass
 	shadowPass(camera, opaqueRenderBatches, transparentRenderBatches, pointLights, directionalLights, spotLights);
-	///////// END :  ShadowPass
+	///////// END : ShadowPass
 	////////////////////////////////////////////////////////////////////////
 
 	// Viewport 
@@ -706,10 +708,23 @@ void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLig
 	///////////// begin draw world
 
 	////////////////////////////////////////////////////////////////////////
-	///////// BEGIN :  Deferred
+	///////// BEGIN : Deferred
 	deferredPipeline(opaqueRenderBatches, projection, view, cameraPosition, cameraForward, screenToWorld, camera_mvp, pointLights, directionalLights, spotLights);
-	///////// END :  Deferred
+	///////// END : Deferred
 	////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////
+	///////// BEGIN : Transfert depth to main buffer
+	gBufferFBO.bind(GL_READ_FRAMEBUFFER);
+	m_lightPassBuffer.bind(GL_DRAW_FRAMEBUFFER);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	///////// END : Transfert depth to main buffer
+	////////////////////////////////////////////////////////////////////////
+
+	m_lightPassBuffer.bind();
+	if (camera.getClearMode() == BaseCamera::ClearMode::SKYBOX)
+		camera.renderSkybox();
+	m_lightPassBuffer.unbind();
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN :  Forward 
@@ -1054,6 +1069,7 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 {
 	////// begin G pass 
 	gBufferFBO.bind();
+	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	gPass(opaqueRenderBatches, projection, view);
 	gBufferFBO.unbind();
@@ -1061,6 +1077,7 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 
 	///// begin light pass
 	m_lightPassBuffer.bind();
+	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	lightPass(screenToWorld, cameraPosition, cameraForward, pointLights, directionalLights, spotLights);
 	m_lightPassBuffer.unbind();
@@ -1069,28 +1086,24 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 
 void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, int width, int height, const glm::mat4& projection, const glm::mat4& view)
 {
-	// Transfert depth to main buffer : 
-	gBufferFBO.bind(GL_READ_FRAMEBUFFER);
-	m_lightPassBuffer.bind(GL_DRAW_FRAMEBUFFER);
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	// Rebind main buffer as usual : 
 	m_lightPassBuffer.bind();
 
-		//render skybox : 
-		//skybox.render(projection, worldToView); // TODO RENDERING
+	//render skybox : 
+	//skybox.render(projection, worldToView); // TODO RENDERING
 
-		glEnable(GL_BLEND);
-		glDepthMask(GL_FALSE);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		// Render batches (particles and billboards for now)
-		for (auto& renderBatch : transparentRenderBatches)
-		{
-			renderBatch.second->render(projection, view);
-		}
+	// Render batches (particles and billboards for now)
+	for (auto& renderBatch : transparentRenderBatches)
+	{
+		renderBatch.second->render(projection, view);
+	}
 
-		glDepthMask(GL_TRUE);
-		glDisable(GL_BLEND);
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
 
 	m_lightPassBuffer.unbind();
 	CHECK_GL_ERROR("error in forward pass");

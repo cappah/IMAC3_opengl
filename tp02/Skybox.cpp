@@ -68,15 +68,9 @@ void Skybox::render(const glm::mat4& projection, const glm::mat4& view)
 void Skybox::save(Json::Value & rootComponent) const
 {
 	material.save(rootComponent);
-	//rootComponent["textureName"] = material.getInternalData()//material.getDiffuseTexture()->name;
 }
 
 void Skybox::load(const Json::Value & rootComponent)
 {
 	material.load(rootComponent);
-	//std::string textureName = rootComponent.get("textureName", "default").asString();
-	//if (getCubeTextureFactory().contains(textureName)) {
-	//	material.setDiffuseTexture(getCubeTextureFactory().get(textureName));
-	//	getCubeTextureFactory().get(textureName)->initGL();
-	//}
 }

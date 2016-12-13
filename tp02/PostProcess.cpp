@@ -193,6 +193,9 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 	const BloomPostProcessOperationData& castedDatas = *static_cast<const BloomPostProcessOperationData*>(&operationData);
 	const int blurStepCount = castedDatas.getBlurStepCount();
 
+	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
+
 	//// Begin blur pass
 	bool horizontal = true;
 	bool firstPass = true;
@@ -200,11 +203,18 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 	int TexIndex = 0;
 	m_materialBlur->use();
 
-	for (int i = 0; i < blurStepCount *2; i++)
+	for (int i = 0; i < 2; i++)
+	{
+		m_pingPongFB[i].bind();
+		glClear(GL_COLOR_BUFFER_BIT);
+		m_pingPongFB[i].unbind();
+	}
+
+	for (int i = 0; i < blurStepCount; i++)
 	{
 		m_pingPongFB[FBIndex].bind();
 		//m_materialBlur->use();
-		//glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, firstPass ? beautyHighValues.glId : m_colorTextures[TexIndex].glId);
@@ -215,17 +225,12 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 
 		m_pingPongFB[FBIndex].unbind();
 
-		horizontal != horizontal;
-		TexIndex = horizontal ? 1 : 0;
-		FBIndex = horizontal ? 0 : 1;
+		horizontal = !horizontal;
+		FBIndex = horizontal ? 1 : 0;
+		TexIndex = horizontal ? 0 : 1;
+
 		if(firstPass)
 			firstPass = false;
-	}
-
-	if (debugDrawer != nullptr)
-	{
-		debugDrawer->addSeparator();
-		debugDrawer->drawOutputIfNeeded("bloom_blur", m_colorTextures[1].glId);
 	}
 
 	//// End blur pass
@@ -233,13 +238,14 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 
 	//// Begin bloom pass
 	m_finalFB.bind();
+	glClear(GL_COLOR_BUFFER_BIT);
 
 		m_materialBloom->use();
 	
 		m_materialBloom->glUniform_exposure(2.f);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_colorTextures[1].glId);
+		glBindTexture(GL_TEXTURE_2D, m_colorTextures[TexIndex].glId);
 		m_materialBloom->glUniform_TextureBlur(0);
 
 		glActiveTexture(GL_TEXTURE1);
@@ -250,10 +256,15 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 
 	m_finalFB.unbind();
 
+
 	if (debugDrawer != nullptr)
 	{
+		debugDrawer->addSeparator();
+		debugDrawer->drawOutputIfNeeded("bloom_blur", m_colorTextures[TexIndex].glId);
 		debugDrawer->drawOutputIfNeeded("bloom_result", m_finalTexture.glId);
 	}
+
+	glEnable(GL_DEPTH_TEST);
 
 	//// End bloom pass
 }

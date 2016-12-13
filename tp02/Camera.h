@@ -18,8 +18,16 @@
 #include "RenderBatch.h"
 #include "PostProcess.h"
 
+class Skybox;
+
 struct BaseCamera
 {
+public:
+	enum ClearMode {
+		COLOR,
+		SKYBOX
+	};
+
 protected:
 
 	glm::vec3 m_position;
@@ -40,6 +48,11 @@ protected:
 	MaterialBlit* m_material;
 	Mesh* m_quadMesh;
 
+	glm::vec4 m_clearColor;
+	std::shared_ptr<Skybox> m_skybox;
+	ClearMode m_clearMode;
+
+
 public:
 	enum CameraMode { PERSPECTIVE, ORTHOGRAPHIC };
 
@@ -52,6 +65,10 @@ public:
 	void renderFrame(const Texture* texture);
 	const Texture* getFinalFrame() const;
 	const GlHelper::Framebuffer& getFrameBuffer();
+
+	ClearMode getClearMode() const;
+	const glm::vec4& getClearColor() const;
+	void renderSkybox() const;
 
 	//virtual void setTranslationLocal(glm::vec3 pos) = 0;
 	//virtual void translateLocal(glm::vec3 pos) = 0;

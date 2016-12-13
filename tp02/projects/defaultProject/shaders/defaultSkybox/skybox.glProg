@@ -4,5 +4,7 @@
     "geometry" : "",
     "programType" : "custom",
     "pipelineType" : "opaque",
-    "internalShaderParameters" : []
+    "internalShaderParameters" : [
+        {"type" : "cubeTexture", "name" : "Diffuse", "default" : "default" }
+    ]
 }

@@ -64,6 +64,8 @@ struct CubeTexture final : public Resource
 {
 	std::string name;
 
+	bool m_isInitialized;
+
 	//FileHandler::CompletePath paths[6];
 	ResourcePtr<Texture> m_textures[6];
 
@@ -103,6 +105,7 @@ struct CubeTexture final : public Resource
 	bool setTexture(int index, ResourcePtr<Texture> texture);
 	bool initFromTextures(const std::vector<ResourcePtr<Texture>>& textures);
 	bool checkTextureCanBeAdded(const ResourcePtr<Texture>& textureToAdd) const;
+	void clearTextures();
 
 	void initGL();
 	void freeGL();

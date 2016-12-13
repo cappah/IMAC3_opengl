@@ -10,7 +10,7 @@ precision highp int;
 
 // inputs : 
 
-layout(location = FRAG_COLOR, index = 0) out vec3 FragColor;
+//layout(location = FRAG_COLOR, index = 0) out vec3 FragColor;
 
 in block
 {
