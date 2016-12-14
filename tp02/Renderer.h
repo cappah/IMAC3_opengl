@@ -61,13 +61,11 @@ private:
 	//light system
 	LightManager* lightManager;
 
-	//frame buffer for deferred lighting
-	//GLuint gbufferFbo;
-	//GLuint gbufferTextures[3];
 	GlHelper::Framebuffer gBufferFBO;
 	Texture gPassColorTexture;
 	Texture gPassNormalTexture;
 	Texture gPassDepthTexture;
+	Texture gPassHightValuesTexture;
 
 	//for blit pass 
 	std::shared_ptr<MaterialBlit> glProgram_blit;

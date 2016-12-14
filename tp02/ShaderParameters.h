@@ -119,9 +119,11 @@ enum ShaderParameterType {
 	INT,
 	INT2,
 	INT3,
+	INT4,
 	FLOAT,
 	FLOAT2,
 	FLOAT3,
+	FLOAT4,
 	TEXTURE,
 	CUBE_TEXTURE,
 	//arrays :
@@ -141,9 +143,11 @@ static std::vector<std::string> LiteralShaderParameterType{
 	"int",
 	"int2",
 	"int3",
+	"int4",
 	"float",
 	"float2",
-	"float2",
+	"float3",
+	"float4",
 	"texture",
 	"cubeTexture",
 	//arrays :
@@ -180,12 +184,14 @@ private:
 	T m_data;
 	GLuint m_uniformId;
 	bool m_isEditable;
+	EditorGUI::FieldDisplayType m_displayType;
 
 public:
-	InternalShaderParameter(const std::string& name, bool isEditable, T defaultValue)
+	InternalShaderParameter(const std::string& name, bool isEditable, const T& defaultValue, const EditorGUI::FieldDisplayType& displayType)
 		: InternalShaderParameterBase(name)
 		, m_isEditable(isEditable)
 		, m_uniformId(0)
+		, m_displayType(displayType)
 	{
 		m_data = defaultValue;
 	}
@@ -198,7 +204,8 @@ public:
 
 	void drawUI() override
 	{
-		EditorGUI::ValueField<T>(m_name, m_data); //TODO 10
+		if (m_isEditable)
+			EditorGUI::ValueField<T>(m_name, m_data, m_displayType); //TODO 10
 	}
 
 	void pushToGPU(int& boundTextureCount) const override
@@ -302,9 +309,10 @@ private:
 	ResourcePtr<Texture> m_data;
 	GLuint m_uniformId;
 	bool m_isEditable;
+	EditorGUI::FieldDisplayType m_displayType;
 
 public:
-	InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<Texture> defaultValue);
+	InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<Texture> defaultValue, const EditorGUI::FieldDisplayType& displayType);
 
 	//init unifom id
 	void init(GLuint glProgramId);
@@ -328,9 +336,10 @@ private:
 	ResourcePtr<CubeTexture> m_data;
 	GLuint m_uniformId;
 	bool m_isEditable;
+	EditorGUI::FieldDisplayType m_displayType;
 
 public:
-	InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<CubeTexture> defaultValue);
+	InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<CubeTexture> defaultValue, const EditorGUI::FieldDisplayType& displayType);
 	void init(GLuint glProgramId);
 	void drawUI() override;
 	void pushToGPU(int& boundTextureCount) const override;

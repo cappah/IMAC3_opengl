@@ -22,7 +22,7 @@ BaseCamera::BaseCamera()
 	m_quadMesh = getMeshFactory().getDefault("quad").get();
 	m_material = static_cast<MaterialBlit*>(getMaterialFactory().getDefault("blit").get());
 	// Setup texture
-	GlHelper::makeColorTexture(m_texture, 400, 400);
+	GlHelper::makeFloatColorTexture(m_texture, 400, 400);
 	m_texture.initGL();
 	// Setup framebuffer
 	m_frameBuffer.bind();
@@ -79,7 +79,7 @@ void BaseCamera::onViewportResized(const glm::vec2& newSize)
 	m_frameBuffer.detachTexture(GL_COLOR_ATTACHMENT0);
 
 	m_texture.freeGL();
-	GlHelper::makeColorTexture(m_texture, newSize.x, newSize.y); //TMP
+	GlHelper::makeFloatColorTexture(m_texture, newSize.x, newSize.y); //TMP
 	m_texture.initGL();
 
 	m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);

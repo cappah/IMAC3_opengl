@@ -116,5 +116,5 @@ void main(void)
         Color = vec4(color, 1.0);
 
         float brightness = dot(Color.rgb, vec3(0.2126, 0.7152, 0.0722));
-        HighValues = (brightness < 1.0) ? vec4(0.0, 0.0, 0.0, 0.0) : Color;
+        HighValues = (brightness < 1.0) ? vec4(0.0, 0.0, 0.0, 1.0) : Color;
 }

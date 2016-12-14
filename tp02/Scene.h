@@ -4,9 +4,9 @@
 #include <unordered_map>
 
 class Entity;
-class DirectionalLight;
-class PointLight;
-class SpotLight;
+struct DirectionalLight;
+struct PointLight;
+struct SpotLight;
 class Collider;
 class Billboard;
 class Rigidbody;

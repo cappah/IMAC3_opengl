@@ -12,6 +12,7 @@
 #include "ICloner.h"
 
 class DebugDrawRenderer;
+struct PointLight;
 
 class PostProcessOperationData
 {
@@ -30,10 +31,10 @@ protected:
 	std::string m_name;
 public:
 	PostProcessOperation(const std::string& name) : m_name(name) {}
-	virtual void render(const PostProcessOperationData& operationData, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, DebugDrawRenderer* debugDrawer) = 0;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer) = 0;
 	virtual void onViewportResized(float width, float height) = 0;
 	virtual const std::string& getName() const { return m_name; }
-	virtual const Texture* getResult() const = 0;
+	//virtual const Texture* getResult() const = 0;
 };
 
 // Store operations : 
@@ -120,13 +121,18 @@ class PostProcessManager
 {
 private:
 	Mesh m_renderQuad;
+	GlHelper::Framebuffer m_finalFB;
+	Texture m_finalTexture;
+	MaterialBlit m_materialBlit;
+
 	std::unordered_map<std::string, std::shared_ptr<PostProcessOperation>> m_operationList;
 
 public:
 	PostProcessManager();
-	void onViewportResized(float Width, float Height);
+	void onViewportResized(float width, float height);
 	void resizeBlitQuad(const glm::vec4& viewport = glm::vec4(-1, -1, 2, 2));
-	void render(const BaseCamera& camera, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, DebugDrawRenderer* debugDrawer);
+	void render(const BaseCamera& camera, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer);
+	void renderSSAO(const BaseCamera& camera); //TODO SSAO
 	void renderResultOnCamera(BaseCamera& camera);
 	int getOperationCount() const;
 };
@@ -142,6 +148,7 @@ public:
 	std::vector<std::shared_ptr<PostProcessOperationData>>::const_iterator begin() const { return m_operationDataList.begin(); }
 	std::vector<std::shared_ptr<PostProcessOperationData>>::const_iterator end() const { return m_operationDataList.end(); }
 	int getOperationCount() const;
+	PostProcessOperationData* getOperationData(const std::string& operationName) const;
 };
 
 ///////////////////////////////
@@ -150,12 +157,17 @@ class BloomPostProcessOperationData : public PostProcessOperationData
 {
 protected:
 	int m_blurStepCount;
+	float m_exposure;
+	float m_gamma;
+
 
 public:
 	BloomPostProcessOperationData(const std::string& operationName);
 	virtual void drawUI() override;
 
 	int getBlurStepCount() const;
+	float getExposure() const;
+	float getGamma() const;
 };
 
 class BloomPostProcessOperation : public PostProcessOperation
@@ -163,15 +175,52 @@ class BloomPostProcessOperation : public PostProcessOperation
 private:
 	GlHelper::Framebuffer m_pingPongFB[2];
 	Texture m_colorTextures[2];
-	std::shared_ptr<MaterialBlur> m_materialBlur;
 
-	GlHelper::Framebuffer m_finalFB;
-	Texture m_finalTexture;
+	GlHelper::Framebuffer m_highValuesFB;
+	Texture m_highValuesTexture;
+
+	std::shared_ptr<MaterialBlur> m_materialBlur;
 	std::shared_ptr<MaterialBloom> m_materialBloom;
+	std::shared_ptr<MaterialAdd> m_materialAdd;
 
 public:
 	BloomPostProcessOperation(const std::string& operationName);
-	virtual void render(const PostProcessOperationData& operationData, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, DebugDrawRenderer* debugDrawer) override;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer) override;
 	virtual void onViewportResized(float width, float height) override;
-	virtual const Texture* getResult() const override;
+	//virtual const Texture* getResult() const override;
+};
+
+//////////////////////////////
+
+
+class FlaresPostProcessOperationData : public PostProcessOperationData
+{
+protected:
+	MaterialFlares m_materialFlares;
+
+public:
+	FlaresPostProcessOperationData(const std::string& operationName);
+	virtual void drawUI() override;
+	const MaterialFlares& getMaterial() const;
+};
+
+class FlaresPostProcessOperation : public PostProcessOperation
+{
+private:
+	//GlHelper::Framebuffer m_finalFB;
+	//Texture m_finalTexture;
+
+	GlHelper::Framebuffer m_flaresFB;
+	Texture m_flaresTexture;
+
+	GLuint m_positionBuffer;
+	GLuint m_vao;
+
+	std::shared_ptr<MaterialAdd> m_materialAdd;
+
+public:
+	FlaresPostProcessOperation(const std::string& operationName);
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer) override;
+	virtual void onViewportResized(float width, float height) override;
+	//virtual const Texture* getResult() const override;
 };

@@ -23,6 +23,13 @@ struct ResourceFileKey
 	ResourceFileKey(ResourceType _type = ResourceType::NONE, std::string _name = "") : name(_name), type(_type)
 	{}
 
+	ResourceFileKey(const FileHandler::CompletePath& completePath)
+	{
+		type = getResourceTypeFromFileType(completePath.getFileType());
+		assert(type != ResourceType::NONE);
+		name = completePath.getFilename();
+	}
+
 	bool operator==(const ResourceFileKey& other) const {
 		return type == other.type && name == other.name;
 	}
@@ -581,7 +588,7 @@ public :
 	static void renameSubFolderIn(const std::string& folderName, const std::string& newFolderName, ResourceFolder& parentFolder);
 	static void renameResourceIn(ResourceFile& fileToRename, const std::string& newFileName, ResourceFolder& parentFolder);
 
-	static void addExternalResourceTo(ResourceFile& m_resourceFile, ResourceFolder& resourceFolder);
+	static void addExternalResourceTo(const FileHandler::CompletePath& resourcePath, ResourceFolder& resourceFolder);
 
 };
 

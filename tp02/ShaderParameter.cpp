@@ -75,6 +75,12 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 	std::string literaltype = parameterAsJsonValue.get("type", "").asString();
 	std::string name = parameterAsJsonValue.get("name", "").asString();
 	bool isEditable = parameterAsJsonValue.get("editable", true).asBool();
+	std::string displayTypeAsString = parameterAsJsonValue.get("displayType", "default").asString();
+
+	EditorGUI::FieldDisplayType displayType = EditorGUI::FieldDisplayType::DEFAULT;
+	auto foundDisplayTypeIt = std::find(EditorGUI::LiteralFieldDisplayType.begin(), EditorGUI::LiteralFieldDisplayType.end(), displayTypeAsString);
+	if (foundDisplayTypeIt != EditorGUI::LiteralFieldDisplayType.end())
+		displayType = (EditorGUI::FieldDisplayType)std::distance(EditorGUI::LiteralFieldDisplayType.begin(), foundDisplayTypeIt);
 
 	ShaderParameter::ShaderParameterType parameterType = ShaderParameter::ShaderParameterType::TYPE_COUNT;
 	auto foundTypeIt = std::find(ShaderParameter::LiteralShaderParameterType.begin(), ShaderParameter::LiteralShaderParameterType.end(), literaltype);
@@ -89,7 +95,7 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 	case ShaderParameter::ShaderParameterType::INT:
 	{
 		int defaultValue = parameterAsJsonValue.get("default", 0).asInt();
-		return std::make_shared<InternalShaderParameter<int, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<int, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::INT2:
@@ -101,7 +107,7 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 			defaultValue.x = arrayValue[0].asInt();
 			defaultValue.y = arrayValue[1].asInt();
 		}
-		return std::make_shared<InternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<glm::ivec2, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::INT3:
@@ -114,13 +120,27 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 			defaultValue.y = arrayValue[1].asInt();
 			defaultValue.z = arrayValue[2].asInt();
 		}
-		return std::make_shared<InternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<glm::ivec3, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
+		break;
+	}
+	case ShaderParameter::ShaderParameterType::INT4:
+	{
+		glm::ivec4 defaultValue(0, 0, 0, 0);
+		Json::Value arrayValue = parameterAsJsonValue.get("default", Json::Value(Json::ValueType::arrayValue));
+		if (arrayValue.size() == 4)
+		{
+			defaultValue.x = arrayValue[0].asInt();
+			defaultValue.y = arrayValue[1].asInt();
+			defaultValue.z = arrayValue[2].asInt();
+			defaultValue.w = arrayValue[3].asInt();
+		}
+		return std::make_shared<InternalShaderParameter<glm::ivec4, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::FLOAT:
 	{
 		float defaultValue = parameterAsJsonValue.get("default", 0).asFloat();
-		return std::make_shared<InternalShaderParameter<float, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<float, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::FLOAT2:
@@ -132,7 +152,7 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 			defaultValue.x = arrayValue[0].asFloat();
 			defaultValue.y = arrayValue[1].asFloat();
 		}
-		return std::make_shared<InternalShaderParameter<glm::vec2, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<glm::vec2, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::FLOAT3:
@@ -145,19 +165,33 @@ std::shared_ptr<InternalShaderParameterBase> MakeNewInternalShaderParameter(cons
 			defaultValue.y = arrayValue[1].asFloat();
 			defaultValue.z = arrayValue[2].asFloat();
 		}
-		return std::make_shared<InternalShaderParameter<glm::vec3, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<glm::vec3, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
+		break;
+	}
+	case ShaderParameter::ShaderParameterType::FLOAT4:
+	{
+		glm::vec4 defaultValue(0.f, 0.f, 0.f, 0.f);
+		Json::Value arrayValue = parameterAsJsonValue.get("default", Json::Value(Json::ValueType::arrayValue));
+		if (arrayValue.size() == 4)
+		{
+			defaultValue.x = arrayValue[0].asFloat();
+			defaultValue.y = arrayValue[1].asFloat();
+			defaultValue.z = arrayValue[2].asFloat();
+			defaultValue.w = arrayValue[3].asFloat();
+		}
+		return std::make_shared<InternalShaderParameter<glm::vec4, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::TEXTURE:
 	{
 		ResourcePtr<Texture> defaultValue = getTextureFactory().getDefault(parameterAsJsonValue.get("default", "default").asString());
-		return std::make_shared<InternalShaderParameter<Texture, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<Texture, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
 		break;
 	}
 	case ShaderParameter::ShaderParameterType::CUBE_TEXTURE:
 	{
 		ResourcePtr<CubeTexture> defaultValue = getCubeTextureFactory().getDefault(parameterAsJsonValue.get("default", "default").asString());
-		return std::make_shared<InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue);
+		return std::make_shared<InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>>(name, isEditable, defaultValue, displayType);
 		break;
 	}
 	default:
@@ -229,11 +263,12 @@ std::shared_ptr<ExternalShaderParameterBase> MakeNewExternalShaderParameter(cons
 	}
 }
 
-InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<Texture> defaultValue)
+InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<Texture> defaultValue, const EditorGUI::FieldDisplayType& displayType)
 	: InternalShaderParameterBase(name)
 	, m_uniformId(-1)
 	, m_isEditable(isEditable)
 	, m_data(defaultValue)
+	, m_displayType(displayType)
 {}
 
 //init unifom id
@@ -244,7 +279,8 @@ void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::init(GLuint 
 
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::drawUI()
 {
-	EditorGUI::ResourceField<Texture>(m_name, m_data); //TODO 10
+	if (m_isEditable)
+		EditorGUI::ResourceField<Texture>(m_name, m_data); //TODO 10
 }
 
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount) const
@@ -281,11 +317,12 @@ void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::getData(void
 
 // Cube texture : 
 
-InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<CubeTexture> defaultValue)
+InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::InternalShaderParameter(const std::string& name, bool isEditable, ResourcePtr<CubeTexture> defaultValue, const EditorGUI::FieldDisplayType& displayType)
 	: InternalShaderParameterBase(name)
 	, m_uniformId(-1)
 	, m_isEditable(isEditable)
 	, m_data(defaultValue)
+	, m_displayType(displayType)
 {}
 
 //init unifom id
@@ -297,7 +334,8 @@ void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::init(GLu
 
 void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::drawUI()
 {
-	EditorGUI::ResourceField<CubeTexture>(m_name, m_data); //TODO 10
+	if(m_isEditable)
+		EditorGUI::ResourceField<CubeTexture>(m_name, m_data); //TODO 10
 }
 
 void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::pushToGPU(int& boundTextureCount) const

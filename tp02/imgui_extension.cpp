@@ -249,7 +249,7 @@ namespace Ext {
 		ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() - btnWidth);
 		bool clicked = ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_AllowOverlapMode);
 		const float itemHeight = ImGui::GetItemRectSize().y;
-		const ImVec2 pos = ImGui::GetWindowPos() + ImGui::GetCursorPos() + ImVec2(ImGui::GetContentRegionAvailWidth() - 50, 0);
+		const ImVec2 pos = ImGui::GetWindowPos() + ImGui::GetCursorPos() + ImVec2(ImGui::GetContentRegionAvailWidth() - 50, 0) - ImVec2(ImGui::GetScrollX(), ImGui::GetScrollY());
 		if (ImGui::CloseButton(ImGui::GetID("closeBtn"), pos + ImVec2(btnWidth * 0.5, - itemHeight*0.5f - ImGui::GetStyle().ItemSpacing.y), btnWidth*0.5))
 			shouldRemove = true;
 		ImGui::PopID();

@@ -43,7 +43,7 @@ ENUM_MASK_IMPLEMENTATION(EditorDropContext);
 class DroppedFileDragAndDropOperation : public DragAndDropOperation
 {
 private:
-	ResourceFile* m_resourceFile;
+	FileHandler::CompletePath m_resourcePath;
 
 public:
 	DroppedFileDragAndDropOperation(const FileHandler::CompletePath& resourcePath);
@@ -145,6 +145,21 @@ public:
 
 namespace EditorGUI {
 
+	enum FieldDisplayType {
+		DEFAULT = 0,
+		INPUT,
+		SLIDER,
+		COLOR
+	};
+
+	static std::vector<std::string> LiteralFieldDisplayType = {
+		"default",
+		"input",
+		"slider",
+		"color",
+	};
+
+
 	template<typename T>
 	bool ResourceField(const std::string& label, ResourcePtr<T>& resourcePtr);
 	//{
@@ -201,14 +216,14 @@ namespace EditorGUI {
 	
 	//Value fields : 
 	template<typename T>
-	bool ValueField(const std::string& label, T& value)
+	bool ValueField(const std::string& label, T& value, FieldDisplayType displayType)
 	{
 		assert(0 && "invalid value type form this field.");
 		return false;
 	}
 
 	template<typename T>
-	bool ValueField(const std::string& label, T& value, const T& minValue, const T& maxValue)
+	bool ValueField(const std::string& label, T& value, const T& minValue, const T& maxValue, FieldDisplayType displayType)
 	{
 		assert(0 && "invalid value type form this field.");
 		return false;
@@ -241,30 +256,35 @@ namespace EditorGUI {
 
 	//float
 	template<>
-	bool ValueField<float>(const std::string& label, float& value, const float& minValue, const float& maxValue);
+	bool ValueField<float>(const std::string& label, float& value, const float& minValue, const float& maxValue, FieldDisplayType displayType);
 
 	//input field
 
 	//float 
 	template<>
-	bool ValueField<float>(const std::string& label, float& value);
+	bool ValueField<float>(const std::string& label, float& value, FieldDisplayType displayType);
 
 	template<>
-	bool ValueField<glm::vec2>(const std::string& label, glm::vec2& value);
+	bool ValueField<glm::vec2>(const std::string& label, glm::vec2& value, FieldDisplayType displayType);
 
 	template<>
-	bool ValueField<glm::vec3>(const std::string& label, glm::vec3& value);
+	bool ValueField<glm::vec3>(const std::string& label, glm::vec3& value, FieldDisplayType displayType);
 
+	template<>
+	bool ValueField<glm::vec4>(const std::string& label, glm::vec4& value, FieldDisplayType displayType);
 
 	//int 
 	template<>
-	bool ValueField<int>(const std::string& label, int& value);
+	bool ValueField<int>(const std::string& label, int& value, FieldDisplayType displayType);
 
 	template<>
-	bool ValueField<glm::ivec2>(const std::string& label, glm::ivec2& value);
+	bool ValueField<glm::ivec2>(const std::string& label, glm::ivec2& value, FieldDisplayType displayType);
 
 	template<>
-	bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value);
+	bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value, FieldDisplayType displayType);
+
+	template<>
+	bool ValueField<glm::ivec4>(const std::string& label, glm::ivec4& value, FieldDisplayType displayType);
 
 }
 

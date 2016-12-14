@@ -39,12 +39,15 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	gPassNormalTexture.initGL();
 	GlHelper::makeDepthTexture(gPassDepthTexture, width, height);
 	gPassDepthTexture.initGL();
+	GlHelper::makeFloatColorTexture(gPassHightValuesTexture, width, height);
+	gPassHightValuesTexture.initGL();
 
 	gBufferFBO.bind(GL_FRAMEBUFFER);
-	GLenum drawBufferForGPass[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-	gBufferFBO.setDrawBuffers(2, drawBufferForGPass);
+	GLenum drawBufferForGPass[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	gBufferFBO.setDrawBuffers(3, drawBufferForGPass);
 	gBufferFBO.attachTexture(&gPassColorTexture, GL_COLOR_ATTACHMENT0, 0);
 	gBufferFBO.attachTexture(&gPassNormalTexture, GL_COLOR_ATTACHMENT1, 0);
+	gBufferFBO.attachTexture(&gPassHightValuesTexture, GL_COLOR_ATTACHMENT2, 0);
 	gBufferFBO.attachTexture(&gPassDepthTexture, GL_DEPTH_ATTACHMENT, 0);
 
 	gBufferFBO.checkIntegrity();
@@ -119,6 +122,7 @@ void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 	// Detach textures
 	gBufferFBO.detachTexture(GL_COLOR_ATTACHMENT0, 0);
 	gBufferFBO.detachTexture(GL_COLOR_ATTACHMENT1, 0);
+	gBufferFBO.detachTexture(GL_COLOR_ATTACHMENT2, 0);
 	gBufferFBO.detachTexture(GL_DEPTH_ATTACHMENT, 0);
 
 	// Pop, resize and repush textures
@@ -130,6 +134,10 @@ void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 	GlHelper::makeNormalTexture(gPassNormalTexture, width, height);
 	gPassNormalTexture.initGL();
 
+	gPassHightValuesTexture.freeGL();
+	GlHelper::makeFloatColorTexture(gPassHightValuesTexture, width, height);
+	gPassHightValuesTexture.initGL();
+
 	gPassDepthTexture.freeGL();
 	GlHelper::makeDepthTexture(gPassDepthTexture, width, height);
 	gPassDepthTexture.initGL();
@@ -137,6 +145,7 @@ void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 	// Attach texture again
 	gBufferFBO.attachTexture(&gPassColorTexture, GL_COLOR_ATTACHMENT0, 0);
 	gBufferFBO.attachTexture(&gPassNormalTexture, GL_COLOR_ATTACHMENT1, 0);
+	gBufferFBO.attachTexture(&gPassHightValuesTexture, GL_COLOR_ATTACHMENT2, 0);
 	gBufferFBO.attachTexture(&gPassDepthTexture, GL_DEPTH_ATTACHMENT, 0);
 
 	gBufferFBO.checkIntegrity();
@@ -663,7 +672,7 @@ void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights,
 
 	if (camera.getPostProcessProxy().getOperationCount() > 0)
 	{
-		m_postProcessManager.render(camera, *m_lightPassHDRColor, *m_lightPassHighValues, *m_lightPassDepth, debugDrawer);
+		m_postProcessManager.render(camera, *m_lightPassHDRColor, *m_lightPassHighValues, *m_lightPassDepth, gPassHightValuesTexture, pointLights, debugDrawer);
 		m_postProcessManager.renderResultOnCamera(camera);
 	}
 	else

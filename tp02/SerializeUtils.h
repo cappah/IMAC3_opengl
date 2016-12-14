@@ -14,6 +14,7 @@
 #include "glm/gtc/type_ptr.hpp" // glm::value_ptr
 
 #include "jsoncpp/json/json.h"
+#include "ErrorHandler.h"
 
 
 //for serialization : 
@@ -389,58 +390,112 @@ T fromJsonValue(const Json::Value& value)
 template<>
 inline float fromJsonValue<float>(const Json::Value& value)
 {
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return 0.f;
+	}
+
 	return value.asFloat();
 }
 
 template<>
 inline GLuint fromJsonValue<GLuint>(const Json::Value& value)
 {
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return 0;
+	}
+
 	return (GLuint)value.asInt();
 }
 
 template<>
 inline int fromJsonValue<int>(const Json::Value& value)
 {
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return 0;
+	}
+
 	return value.asInt();
 }
 
 template<>
 inline bool fromJsonValue<bool>(const Json::Value& value)
 {
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return false;
+	}
+
 	return value.asBool();
 }
 
 template<>
 inline std::string fromJsonValue<std::string>(const Json::Value& value)
 {
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return "";
+	}
+
 	return value.asString();
 }
 
 template<>
 inline glm::quat fromJsonValue<glm::quat>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return glm::quat();
+	}
+
 	return glm::quat(value[3].asFloat(), value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
 }
 
 template<>
 inline glm::vec2 fromJsonValue<glm::vec2>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return glm::vec2();
+	}
+
 	return glm::vec2(value[0].asFloat(), value[1].asFloat());
 }
 
 template<>
 inline glm::vec3 fromJsonValue<glm::vec3>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+		return glm::vec3();
+	}
+
 	return glm::vec3(value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
 }
 
 template<>
 inline glm::vec4 fromJsonValue<glm::vec4>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return glm::vec4();
+	}
+
 	return glm::vec4(value[0].asFloat(), value[1].asFloat(), value[2].asFloat(), value[3].asFloat());
 }
 
@@ -448,28 +503,52 @@ inline glm::vec4 fromJsonValue<glm::vec4>(const Json::Value& value)
 template<>
 inline glm::ivec2 fromJsonValue<glm::ivec2>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return glm::ivec2();
+	}
+
 	return glm::ivec2(value[0].asFloat(), value[1].asFloat());
 }
 
 template<>
 inline glm::ivec3 fromJsonValue<glm::ivec3>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return glm::ivec3();
+	}
+
 	return glm::ivec3(value[0].asFloat(), value[1].asFloat(), value[2].asFloat());
 }
 
 template<>
 inline glm::ivec4 fromJsonValue<glm::ivec4>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return glm::ivec4();
+	}
+
 	return glm::ivec4(value[0].asFloat(), value[1].asFloat(), value[2].asFloat(), value[3].asFloat());
 }
 
 template<>
 inline glm::mat3 fromJsonValue<glm::mat3>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return glm::mat3(1);
+	}
+
 	glm::mat3 matrix;
 	for (int i = 0, k = 0; i < 3; i++)
 	{
@@ -484,7 +563,13 @@ inline glm::mat3 fromJsonValue<glm::mat3>(const Json::Value& value)
 template<>
 inline glm::mat4 fromJsonValue<glm::mat4>(const Json::Value& value)
 {
-	assert(!value.empty());
+	//assert(!value.empty());
+	if (value.empty())
+	{
+		PRINT_WARNING("Can't load the value from JSonValue");
+			return glm::mat4();
+	}
+
 	glm::mat4 matrix;
 	for (int i = 0, k = 0; i < 4; i++)
 	{

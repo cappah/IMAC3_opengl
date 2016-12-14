@@ -378,16 +378,16 @@ void ResourceTree::renameResourceIn(ResourceFile& fileToRename, const std::strin
 	FileHandler::renameFile(filePath, newFileName);
 }
 
-void ResourceTree::addExternalResourceTo(ResourceFile& resourceFile, ResourceFolder& folderTo)
+void ResourceTree::addExternalResourceTo(const FileHandler::CompletePath& resourcePath, ResourceFolder& folderTo)
 {
-	assert(!folderTo.hasFile(resourceFile.getKey()));
-	if (folderTo.hasFile(resourceFile.getKey()))
+	assert(!folderTo.hasFile(ResourceFileKey(resourcePath)));
+	if (folderTo.hasFile(ResourceFileKey(resourcePath)))
 		return;
 
-	FileHandler::CompletePath newfilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), resourceFile.getPath().getFilenameWithExtention());
+	FileHandler::CompletePath newfilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), resourcePath.getFilenameWithExtention());
 	
-	folderTo.addFile(resourceFile.getPath().getFilenameWithExtention());
-	FileHandler::copyPastFile(resourceFile.getPath(), newfilePath);
+	folderTo.addFile(resourcePath.getFilenameWithExtention());
+	FileHandler::copyPastFile(resourcePath, newfilePath);
 }
 
 /////////// RESOURCE TREE VIEW /////////////

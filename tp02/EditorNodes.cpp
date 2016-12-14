@@ -864,7 +864,7 @@ bool EditorNodeFrameDisplay::drawContent(EditorNode & node, Project & project, E
 	ImGui::PushID(this);
 
 	ImVec2 windowSize(node.getSize().x - parentSizeOffset.x, node.getSize().y - parentSizeOffset.y);
-	ImGui::BeginChild("##child", windowSize, true, ImGuiWindowFlags_NoScrollbar /* ImGuiWindowFlags_HorizontalScrollbar , ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar*/);
+	ImGui::BeginChild("##child", windowSize, true/*, ImGuiWindowFlags_NoScrollbar*/ /* ImGuiWindowFlags_HorizontalScrollbar , ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar*/);
 
 	////// Draw header
 	if (node.getParentNode()->getDisplayLogicType() != EditorNodeDisplayLogicType::UniqueDisplay)

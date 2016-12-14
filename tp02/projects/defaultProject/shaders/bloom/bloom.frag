@@ -11,10 +11,10 @@ out vec4 FragColor;
 uniform sampler2D Texture;
 uniform sampler2D TextureBlur;
 uniform float Exposure;
+uniform float Gamma;
 
 void main(void)
 {
-    const float gamma = 2.2;
 
     vec3 hdrColor = texture(Texture, In.Texcoord).rgb;
     vec3 bloomColor = texture(TextureBlur, In.Texcoord).rgb;
@@ -22,9 +22,9 @@ void main(void)
     // Tone mapping
     vec3 result = vec3(1.0) - exp(-hdrColor * Exposure);
     // Gamma correction
-    result = pow(result, vec3(1.0/ gamma));
+    result = pow(result, vec3(1.0/ Gamma));
 
-    FragColor = vec4(hdrColor, 1.0); //vec4(result, 1.0);
+    FragColor = vec4(result, 1.0);
 
 }
 

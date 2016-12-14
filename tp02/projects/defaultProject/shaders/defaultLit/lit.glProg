@@ -11,6 +11,7 @@
         {"type" : "float", "name" : "SpecularPower", "default" : 0.4},
         {"type" : "float2", "name" : "TextureRepetition", "default" : [10, 10]},
         {"type" : "texture", "name" : "Emissive", "default" : "defaultEmissive"},
-        {"type" : "float", "name" : "EmissiveMultiplier", "default" : 1.0}
+        {"type" : "float", "name" : "EmissiveMultiplier", "default" : 0.0},
+        {"type" : "float3", "name" : "EmissiveColor", "default" : [1.0, 1.0, 1.0], "displayType" : "color"}
     ]
 }

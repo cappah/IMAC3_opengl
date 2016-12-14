@@ -53,6 +53,7 @@ void DroppedFileEditorFrame::drawContent(Project& project, EditorModal* parentWi
 	ImGui::NextColumn();
 
 	//draw resource tree 
+	ImGui::SetNextWindowContentSize( ImVec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y - 50) );
 	ImGui::BeginChild("resourceTreeView");
 	m_treeView.drawContent(project);
 	ImGui::EndChild();

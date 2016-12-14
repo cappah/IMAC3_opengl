@@ -26,6 +26,8 @@ in block
 layout(location = 0 ) out vec4 outColor;
 // Write in GL_COLOR_ATTACHMENT1
 layout(location = 1) out vec4 outNormal;
+// Write in GL_COLOR_ATTACHMENT2
+layout(location = 2) out vec4 outHighValues;
 
 // Uniforms : 
 
@@ -35,11 +37,13 @@ uniform sampler2D Bump;
 uniform sampler2D Emissive;
 uniform float SpecularPower;
 uniform float EmissiveMultiplier;
+uniform vec3 EmissiveColor;
 
 void main()
 {
 
-        outColor = vec4( texture(Diffuse, In.TexCoord).rgb * texture(Emissive, In.TexCoord).rgb * vec3(EmissiveMultiplier, EmissiveMultiplier, EmissiveMultiplier), texture(Specular, In.TexCoord).r );
+        outColor = vec4( texture(Diffuse, In.TexCoord).rgb, texture(Specular, In.TexCoord).r );
+        outHighValues = vec4(texture(Emissive, In.TexCoord).rgb * EmissiveColor.rgb * vec3(EmissiveMultiplier), 1.0);
 
 	vec3 bumpNormal = texture(Bump, In.TexCoord).rgb;
 	bumpNormal = normalize(bumpNormal * 2.0 - 1.0);

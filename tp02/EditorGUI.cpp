@@ -9,9 +9,8 @@
 
 DroppedFileDragAndDropOperation::DroppedFileDragAndDropOperation(const FileHandler::CompletePath& resourcePath)
 	: DragAndDropOperation(EditorDragAndDropType::DroppedFileDragAndDrop, (EditorDropContext::DropIntoFileOrFolder))
-	, m_resourceFile(nullptr)
+	, m_resourcePath(resourcePath)
 { 
-	m_resourceFile = new ResourceFile(resourcePath);
 }
 
 void DroppedFileDragAndDropOperation::dragOperation()
@@ -29,13 +28,12 @@ void DroppedFileDragAndDropOperation::dropOperation(void* customData, int dropCo
 	{
 		ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
 
-		if (!resourceFolder->hasFile(m_resourceFile->getKey()))
+		if (!resourceFolder->hasFile(ResourceFileKey(m_resourcePath)))
 		{
-			ResourceTree::addExternalResourceTo(*m_resourceFile, *resourceFolder);
-			Editor::instance().removeDroppedFile(m_resourceFile->getPath());
+			ResourceTree::addExternalResourceTo(m_resourcePath, *resourceFolder);
+			Editor::instance().removeDroppedFile(m_resourcePath);
 
-			delete m_resourceFile;
-			m_resourceFile = nullptr;
+			m_resourcePath = FileHandler::CompletePath();
 		}
 		else
 			cancelOperation();
@@ -46,17 +44,16 @@ void DroppedFileDragAndDropOperation::dropOperation(void* customData, int dropCo
 
 void DroppedFileDragAndDropOperation::cancelOperation()
 {
-	delete m_resourceFile;
-	m_resourceFile = nullptr;
+	m_resourcePath = FileHandler::CompletePath();
 }
 
 void DroppedFileDragAndDropOperation::updateOperation()
 {
 	ImVec2 mousePos = ImGui::GetMousePos();
 	ImGui::SetNextWindowPos(mousePos);
-	ImGui::Begin("DragAndDropWidget", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
-		ImGui::Text(m_resourceFile->getName().c_str());
-	ImGui::End();
+	ImGui::BeginTooltip();
+		ImGui::Text(m_resourcePath.getFilename().c_str());
+	ImGui::EndTooltip();
 }
 
 bool DroppedFileDragAndDropOperation::canDropInto(void* customData, int dropContext)
@@ -64,7 +61,7 @@ bool DroppedFileDragAndDropOperation::canDropInto(void* customData, int dropCont
 	if (dropContext == EditorDropContext::DropIntoFileOrFolder)
 	{
 		ResourceFolder* resourceFolder = static_cast<ResourceFolder*>(customData);
-		return !resourceFolder->hasFile(m_resourceFile->getKey());
+		return !resourceFolder->hasFile(ResourceFileKey(m_resourcePath));
 	}
 	else
 		return false;
@@ -309,50 +306,75 @@ bool ValueField(const std::string& label, std::string& outString, char* buf, int
 
 //float
 template<>
-bool ValueField<float>(const std::string& label, float& value, const float& minValue, const float& maxValue)
+bool ValueField<float>(const std::string& label, float& value, const float& minValue, const float& maxValue, FieldDisplayType displayType)
 {
-	return ImGui::DragFloat(label.data(), &value, (maxValue - minValue)*0.1f, minValue, maxValue);
+	if(displayType == FieldDisplayType::SLIDER)
+		return ImGui::SliderFloat(label.data(), &value, minValue, maxValue);
+	else
+		return ImGui::DragFloat(label.data(), &value, (maxValue - minValue)*0.1f, minValue, maxValue);
 }
 
 //input field
 
 //float 
 template<>
-bool ValueField<float>(const std::string& label, float& value)
+bool ValueField<float>(const std::string& label, float& value, FieldDisplayType displayType)
 {
 	return ImGui::InputFloat(label.data(), &value);
 }
 
 template<>
-bool ValueField<glm::vec2>(const std::string& label, glm::vec2& value)
+bool ValueField<glm::vec2>(const std::string& label, glm::vec2& value, FieldDisplayType displayType)
 {
 	return ImGui::InputFloat2(label.data(), &value[0]);
 }
 
 template<>
-bool ValueField<glm::vec3>(const std::string& label, glm::vec3& value)
+bool ValueField<glm::vec3>(const std::string& label, glm::vec3& value, FieldDisplayType displayType)
 {
-	return ImGui::InputFloat3(label.data(), &value[0]);
+	if (displayType == FieldDisplayType::COLOR)
+	{
+		return ImGui::ColorEdit3(label.data(), &value[0]);
+	}
+	else
+		return ImGui::InputFloat3(label.data(), &value[0]);
+}
+
+template<>
+bool ValueField<glm::vec4>(const std::string& label, glm::vec4& value, FieldDisplayType displayType)
+{
+	if (displayType == FieldDisplayType::COLOR)
+	{
+		return ImGui::ColorEdit4(label.data(), &value[0]);
+	}
+	else
+		return ImGui::InputFloat4(label.data(), &value[0]);
 }
 
 
 //int 
 template<>
-bool ValueField<int>(const std::string& label, int& value)
+bool ValueField<int>(const std::string& label, int& value, FieldDisplayType displayType)
 {
 	return ImGui::InputInt(label.data(), &value);
 }
 
 template<>
-bool ValueField<glm::ivec2>(const std::string& label, glm::ivec2& value)
+bool ValueField<glm::ivec2>(const std::string& label, glm::ivec2& value, FieldDisplayType displayType)
 {
-	return ImGui::InputInt(label.data(), &value[0]);
+	return ImGui::InputInt2(label.data(), &value[0]);
 }
 
 template<>
-bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value)
+bool ValueField<glm::ivec3>(const std::string& label, glm::ivec3& value, FieldDisplayType displayType)
 {
-	return ImGui::InputInt(label.data(), &value[0]);
+	return ImGui::InputInt3(label.data(), &value[0]);
+}
+
+template<>
+bool ValueField<glm::ivec4>(const std::string& label, glm::ivec4& value, FieldDisplayType displayType)
+{
+	return ImGui::InputInt4(label.data(), &value[0]);
 }
 
 }
