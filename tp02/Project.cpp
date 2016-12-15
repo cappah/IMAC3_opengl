@@ -1096,6 +1096,6 @@ void Project::initProject()
 
 	// renderer : 
 	m_renderer = new Renderer(lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
-	m_renderer->initPostProcessQuad("blit.vert", "blit.frag");
+	//m_renderer->initPostProcessQuad("blit.vert", "blit.frag");
 	m_renderer->initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag", "shadowPassOmni.vert", "shadowPassOmni.frag", "shadowPassOmni.geom");
 }

@@ -64,6 +64,12 @@ void pushParametersToGPU<float>(GLuint uniformId, int count, const std::vector<f
 	glUniform1fv(uniformId, count, &values[0]);
 }
 
+template<>
+void pushParametersToGPU<glm::vec3>(GLuint uniformId, int count, const std::vector<glm::vec3>& values)
+{
+	glUniform3fv(uniformId, count, &values[0][0]);
+}
+
 //TODO : complete
 
 }

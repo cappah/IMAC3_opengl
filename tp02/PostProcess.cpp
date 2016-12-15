@@ -1,6 +1,8 @@
 #include "glew/glew.h"
+#include <random>
 
 #include "PostProcess.h"
+#include "Renderer.h"
 #include "Materials.h"
 #include "Factories.h"
 #include "EditorTools.h"
@@ -12,19 +14,17 @@
 //// BEGIN : PostProcessManager
 
 PostProcessManager::PostProcessManager()
-	: m_renderQuad(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
 {
-	////////////////////// INIT QUAD MESH ////////////////////////
-	m_renderQuad.triangleIndex = { 0, 1, 2, 2, 1, 3 };
-	m_renderQuad.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
-	m_renderQuad.initGl();
-
-	auto& it = PostProcessFactory::instance().begin();
-	while (it != PostProcessFactory::instance().end())
-	{
-		m_operationList[it->first] = it->second->cloneShared(it->first);
-		it++;
-	}
+	////////////////////// INIT POST PROCESS OPERATIONS ////////////////////////
+	//auto& it = PostProcessFactory::instance().begin();
+	//while (it != PostProcessFactory::instance().end())
+	//{
+	//	m_operationList[it->first] = it->second->cloneShared(it->first);
+	//	it++;
+	//}
+	m_ssaoOperation = PostProcessFactory::instance().getInstanceShared("ssao");
+	m_operationList.push_back(PostProcessFactory::instance().getInstanceShared("bloom"));
+	m_operationList.push_back(PostProcessFactory::instance().getInstanceShared("flares"));
 
 	////////////////////// INIT FINAL TEXTURE ////////////////////////
 	GlHelper::makeFloatColorTexture(m_finalTexture, 400, 400);
@@ -55,20 +55,15 @@ void PostProcessManager::onViewportResized(float width, float height)
 
 	for (auto& operation : m_operationList)
 	{
-		operation.second->onViewportResized(width, height);
+		operation->onViewportResized(width, height);
 	}
+
+	// Special operations : 
+	if(m_ssaoOperation)
+		m_ssaoOperation->onViewportResized(width, height);
 }
 
-void PostProcessManager::resizeBlitQuad(const glm::vec4 & viewport)
-{
-	m_renderQuad.vertices = { viewport.x, viewport.y, viewport.x + viewport.z, viewport.y, viewport.x, viewport.y + viewport.w, viewport.x + viewport.z , viewport.y + viewport.w };
-	// update in CG : 
-	glBindBuffer(GL_ARRAY_BUFFER, m_renderQuad.vbo_vertices);
-	glBufferData(GL_ARRAY_BUFFER, m_renderQuad.vertices.size() * sizeof(float), &(m_renderQuad.vertices)[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void PostProcessManager::render(const BaseCamera& camera, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHightValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer)
+void PostProcessManager::render(const BaseCamera& camera, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
 {
 	//auto& it = camera.getPostProcessProxy().begin();
 	//while (it != camera.getPostProcessProxy().end())
@@ -83,32 +78,30 @@ void PostProcessManager::render(const BaseCamera& camera, Texture& beautyColor, 
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_materialBlit.use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, beautyColor.glId);
+	glBindTexture(GL_TEXTURE_2D, renderDatas.lightPassHDRColor.glId);
 	m_materialBlit.setUniformBlitTexture(0);
-	m_renderQuad.draw();
+	renderDatas.quadMesh.draw();
 	m_finalFB.unbind();
 
 	// Add effects to final texture one by one.
 	for (auto operation : m_operationList)
 	{
 		auto postProcessProxy = camera.getPostProcessProxy();
-		auto operationData = postProcessProxy.getOperationData(operation.first);
+		auto operationData = postProcessProxy.getOperationData(operation->getName());
 		if (operationData != nullptr)
 		{
-			operation.second->render(*operationData, camera, m_finalFB, m_finalTexture, m_renderQuad, beautyColor, beautyHighValues, beautyDepth, gPassHightValues, pointLights, debugDrawer);
+			operation->render(*operationData, camera, m_finalFB, m_finalTexture, renderDatas, debugDrawer);
 		}
 	}
 }
 
-void PostProcessManager::renderSSAO(const BaseCamera& camera)
+void PostProcessManager::renderSSAO(const BaseCamera& camera, GlHelper::Framebuffer& ssaoFB, Texture& ssaoTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
 {
-	//TODO SSAO
-	auto operation = m_operationList["ssao"];
 	auto postProcessProxy = camera.getPostProcessProxy();
 	auto operationData = postProcessProxy.getOperationData("ssao");
 	if (operationData != nullptr)
 	{
-		//operation->render(operationDatas, ...); //TODO SSAO
+		m_ssaoOperation->render(*operationData, camera, ssaoFB, ssaoTexture, renderDatas, debugDrawer);
 	}
 }
 
@@ -118,7 +111,7 @@ void PostProcessManager::renderResultOnCamera(BaseCamera& camera)
 	//auto it = camera.getPostProcessProxy().end();
 	//it--;
 	//const Texture* resultTexture = m_operationList[(*it)->getOperationName()]->getResult();
-	camera.renderFrame(&m_finalTexture /*resultTexture*/);
+	camera.renderFrame(m_finalTexture /*resultTexture*/);
 }
 
 int PostProcessManager::getOperationCount() const
@@ -271,7 +264,7 @@ BloomPostProcessOperation::BloomPostProcessOperation(const std::string& operatio
 	m_highValuesFB.unbind();
 }
 
-void BloomPostProcessOperation::render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer)
+void BloomPostProcessOperation::render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
 {
 	const BloomPostProcessOperationData& castedDatas = *static_cast<const BloomPostProcessOperationData*>(&operationData);
 	const int blurStepCount = castedDatas.getBlurStepCount();
@@ -288,14 +281,14 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 	m_materialAdd->use();
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gPassHighValues.glId);
+	glBindTexture(GL_TEXTURE_2D, renderDatas.gPassHightValuesTexture.glId);
 	m_materialAdd->glUniform_Texture01(0);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, beautyHighValues.glId);
+	glBindTexture(GL_TEXTURE_2D, renderDatas.lightPassHighValues.glId);
 	m_materialAdd->glUniform_Texture02(1);
 
-	renderQuad.draw();
+	renderDatas.quadMesh.draw();
 
 	m_highValuesFB.unbind();
 
@@ -324,7 +317,7 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 			m_materialBlur->glUniform_passId(TexIndex);
 			m_materialBlur->glUniform_Texture(0);
 
-			renderQuad.draw();
+			renderDatas.quadMesh.draw();
 
 		m_pingPongFB[FBIndex].unbind();
 
@@ -354,7 +347,7 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 		glBindTexture(GL_TEXTURE_2D, finalTexture.glId);
 		m_materialBloom->glUniform_Texture(1);
 
-		renderQuad.draw();
+		renderDatas.quadMesh.draw();
 
 	finalFB.unbind();
 
@@ -366,6 +359,8 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 		debugDrawer->drawOutputIfNeeded("bloom_blur", m_colorTextures[TexIndex].glId);
 		debugDrawer->drawOutputIfNeeded("bloom_result", finalTexture.glId);
 	}
+
+	CHECK_GL_ERROR("error in Bloom Post Process.");
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -461,7 +456,7 @@ FlaresPostProcessOperation::FlaresPostProcessOperation(const std::string & opera
 	glBindVertexArray(0);
 }
 
-void FlaresPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh & renderQuad, Texture & beautyColor, Texture & beautyHighValues, Texture & beautyDepth, Texture & gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer * debugDrawer)
+void FlaresPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer * debugDrawer)
 {
 	const FlaresPostProcessOperationData* operationDatas = static_cast<const FlaresPostProcessOperationData*>(&operationData);
 	const MaterialFlares& materialFlares = operationDatas->getMaterial();
@@ -472,7 +467,7 @@ void FlaresPostProcessOperation::render(const PostProcessOperationData & operati
 	glBlendFunc(GL_ONE, GL_ONE);
 
 	std::vector<glm::vec3> pointLightPositions;
-	for (auto& light : pointLights)
+	for (auto& light : *renderDatas.pointLights)
 	{
 		pointLightPositions.push_back(light->position);
 	}
@@ -486,7 +481,7 @@ void FlaresPostProcessOperation::render(const PostProcessOperationData & operati
 	materialFlares.glUniform_VP((camera.getProjectionMatrix() * camera.getViewMatrix()));
 
 	glActiveTexture(GL_TEXTURE0 + texCount);
-	glBindTexture(GL_TEXTURE_2D, beautyDepth.glId);
+	glBindTexture(GL_TEXTURE_2D, renderDatas.lightPassDepth.glId);
 	materialFlares.glUniform_Depth(texCount);
 	texCount++;
 
@@ -514,7 +509,7 @@ void FlaresPostProcessOperation::render(const PostProcessOperationData & operati
 		glBindTexture(GL_TEXTURE_2D, m_flaresTexture.glId);
 		m_materialAdd->glUniform_Texture02(1);
 
-		renderQuad.draw();
+		renderDatas.quadMesh.draw();
 
 	finalFB.unbind();
 
@@ -525,6 +520,8 @@ void FlaresPostProcessOperation::render(const PostProcessOperationData & operati
 		debugDrawer->addSeparator();
 		debugDrawer->drawOutputIfNeeded("flares_flareTexture", m_flaresTexture.glId);
 	}
+
+	CHECK_GL_ERROR("error in Flares Post Process.");
 }
 
 void FlaresPostProcessOperation::onViewportResized(float width, float height)
@@ -588,15 +585,132 @@ const MaterialSSAO & SSAOPostProcessOperationData::getMaterial() const
 SSAOPostProcessOperation::SSAOPostProcessOperation(const std::string & operationName)
 	: PostProcessOperation(operationName)
 {
+
+	std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
+	std::default_random_engine randomEngine;
+	///////////////////////// SETUP KERNEL ////////////////////////////
+	for (GLuint i = 0; i < 64; i++)
+	{
+		glm::vec3 sample(
+			randomFloats(randomEngine) * 2.0 - 1.0,
+			randomFloats(randomEngine)* 2.0 - 1.0,
+			randomFloats(randomEngine)
+		);
+		sample = glm::normalize(sample);
+		sample *= randomFloats(randomEngine);
+		GLfloat scale = i / 64.f;
+		scale = glm::mix(0.1f, 1.0f, scale * scale);
+		sample *= scale;
+		m_kernel.push_back(sample);
+	}
+	///////////////////////// SETUP NOISE ////////////////////////////
+	for (GLuint i = 0; i < 16; i++)
+	{
+		glm::vec3 noise(
+			randomFloats(randomEngine) * 2.0 - 1.0,
+			randomFloats(randomEngine) *2.0 - 1.0,
+			0.0
+		);
+		m_noise.push_back(noise);
+	}
+	m_noiseTexture.setTextureParameters(GL_RGB32F, GL_RGB, GL_FLOAT, false);
+	m_noiseTexture.setTextureWrapping(GL_REPEAT, GL_REPEAT);
+	m_noiseTexture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+	m_noiseTexture.setPixels(m_noise, 4, 4);
+	m_noiseTexture.initGL();
+	///////////////////////// SSAO TEXTURE AND FRAMEBUFFER ////////////////////////////
+	GlHelper::makeRedTexture(m_ssaoTexture, 400, 400);
+	m_ssaoTexture.initGL();
+	m_ssaoFB.bind();
+	m_ssaoFB.attachTexture(&m_ssaoTexture, GL_COLOR_ATTACHMENT0);
+	m_ssaoFB.setDrawBuffer(GL_COLOR_ATTACHMENT0);
+	m_ssaoFB.unbind();
+
+	///////////////////////// INIT BLUR MATERIAL ////////////////////////////
+	m_materialBlur.init(*getProgramFactory().get("ssaoBlur"));
 }
 
-void SSAOPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera & camera, GlHelper::Framebuffer & finalFB, Texture & finalTexture, Mesh & renderQuad, Texture & beautyColor, Texture & beautyHighValues, Texture & beautyDepth, Texture & gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer * debugDrawer)
+void SSAOPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera & camera, GlHelper::Framebuffer & finalFB, Texture & finalTexture, RenderDatas& renderDatas, DebugDrawRenderer * debugDrawer)
 {
-	
+
+	///////////////// RENDER SSAO ////////////////////
+	const SSAOPostProcessOperationData* ssaoOperationData = static_cast<const SSAOPostProcessOperationData*>(&operationData);
+	const MaterialSSAO& material = ssaoOperationData->getMaterial();
+
+	m_ssaoFB.bind();
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	material.use();
+	int texCount = 0;
+	material.pushInternalsToGPU(texCount);
+	// Send Depth : 
+	glActiveTexture(GL_TEXTURE0 + texCount);
+	glBindTexture(GL_TEXTURE_2D, renderDatas.gPassDepthTexture.glId);
+	material.glUniform_Depth(texCount);
+	texCount++;
+	// Send Normals :
+	glActiveTexture(GL_TEXTURE0 + texCount);
+	glBindTexture(GL_TEXTURE_2D, renderDatas.gPassNormalTexture.glId);
+	material.glUniform_Normals(texCount);
+	texCount++;
+	// Send Noise :
+	glActiveTexture(GL_TEXTURE0 + texCount);
+	glBindTexture(GL_TEXTURE_2D, m_noiseTexture.glId);
+	material.glUniform_NoiseTexture(texCount);
+	texCount++;
+	// Send Kernel : 
+	material.glUniform_Kernel(m_kernel);
+	// Send Projection :
+	material.glUniform_Projection(camera.getProjectionMatrix());
+	// Send ScreenToView :
+	material.glUniform_ScreenToView(renderDatas.screenToView);
+
+	renderDatas.quadMesh.draw();
+
+	m_ssaoFB.unbind();
+
+	///////////////// BLUR RESULT ////////////////////
+
+	finalFB.bind();
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	m_materialBlur.use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_ssaoTexture.glId);
+	m_materialBlur.glUniform_Texture(0);
+
+	renderDatas.quadMesh.draw();
+
+	finalFB.unbind();
+
+	///////////////// DEBUG OUTPUT ////////////////////
+
+	if (debugDrawer != nullptr)
+	{
+		debugDrawer->addSeparator();
+		debugDrawer->drawOutputIfNeeded("ssao_mainPass", m_ssaoTexture.glId);
+		debugDrawer->drawOutputIfNeeded("ssao_blurred", finalTexture.glId);
+	}
+
+	CHECK_GL_ERROR("error in SSAO pass.");
 }
 
 void SSAOPostProcessOperation::onViewportResized(float width, float height)
 {
+
+	//////////// UPDATE SSAO TEXTURE AND FRAMEBUFFER ////////////
+	m_ssaoFB.bind();
+	m_ssaoFB.detachTexture(GL_COLOR_ATTACHMENT0);
+
+	m_ssaoTexture.freeGL();
+	GlHelper::makeRedTexture(m_ssaoTexture, width, height);
+	m_ssaoTexture.initGL();
+
+	m_ssaoFB.attachTexture(&m_ssaoTexture, GL_COLOR_ATTACHMENT0);
+	m_ssaoFB.unbind();
+
 }
 
 //// END : SSAOPostProcessOperation

@@ -185,6 +185,56 @@ void Texture::setTextureWrapping(GLint _uWrapping, GLint _vWrapping)
 	textureWrapping_v = _vWrapping;
 }
 
+void Texture::setPixels(const std::vector<unsigned char>& _pixels, int _width, int _height, int _comp)
+{
+	if (pixels != nullptr)
+		delete[] pixels;
+
+	pixels = new unsigned char[_pixels.size()];
+	for (int i = 0; i < _pixels.size(); i++)
+	{
+		pixels[i] = _pixels[i];
+	}
+
+	w = _width;
+	h = _height;
+	comp = _comp;
+}
+
+void Texture::setPixels(const std::vector<glm::vec3>& _pixels, int _width, int _height)
+{
+	if (pixels != nullptr)
+		delete[] pixels;
+
+	pixels = new unsigned char[_pixels.size()];
+	for (int i = 0, j = 0; i < _pixels.size(); i+=3, j++)
+	{
+		for(int k = 0; k < 3; k++)
+			pixels[i + k] = _pixels[j][k];
+	}
+
+	w = _width;
+	h = _height;
+	comp = 3;
+}
+
+void Texture::setPixels(const std::vector<glm::vec4>& _pixels, int _width, int _height)
+{
+	if (pixels != nullptr)
+		delete[] pixels;
+
+	pixels = new unsigned char[_pixels.size()];
+	for (int i = 0, j = 0; i < _pixels.size(); i += 4, j++)
+	{
+		for (int k = 0; k < 4; k++)
+			pixels[i + k] = _pixels[j][k];
+	}
+
+	w = _width;
+	h = _height;
+	comp = 4;
+}
+
 void Texture::resizePixelArray(int width, int height, const glm::vec4& color)
 {
 	comp = 4;
@@ -767,6 +817,14 @@ namespace GlHelper {
 	{
 		texture.resizeTexture(width, height);
 		texture.setTextureParameters(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT, false);
+		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	}
+
+	void makeRedTexture(Texture& texture, float width, float height)
+	{
+		texture.resizeTexture(width, height);
+		texture.setTextureParameters(GL_RED, GL_RGB, GL_FLOAT, false);
 		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
 		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	}

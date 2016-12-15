@@ -44,6 +44,9 @@ struct Texture final : public Resource
 	void setTextureParameters(GLint _internalFormat = GL_RGB, GLenum _format = GL_RGB, GLenum _type = GL_UNSIGNED_BYTE, bool _generateMipMap = true);
 	void setTextureMinMaxFilters(GLint _maxFilter = GL_NEAREST, GLint _format = GL_NEAREST);
 	void setTextureWrapping(GLint _uWrapping = GL_CLAMP_TO_EDGE, GLint _vWrapping = GL_CLAMP_TO_EDGE);
+	void setPixels(const std::vector<unsigned char>& _pixels, int _width, int _height, int _comp);
+	void setPixels(const std::vector<glm::vec3>& _pixels, int _width, int _height);
+	void setPixels(const std::vector<glm::vec4>& _pixels, int _width, int _height);
 	void resizePixelArray(int width, int height, const glm::vec4& color);
 	void resizePixelArray(int width, int height, const glm::vec3& color);
 	// This fonction only change width and height without touching pixels
@@ -137,4 +140,6 @@ namespace GlHelper{
 	void makeNormalTexture(Texture& texture, float width, float height);
 	//make a basic depth texture with GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT
 	void makeDepthTexture(Texture& texture, float width, float height);
+	//make a basic depth texture with GL_RED, GL_RGB, GL_FLOAT
+	void makeRedTexture(Texture& texture, float width, float height);
 }

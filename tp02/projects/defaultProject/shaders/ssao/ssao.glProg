@@ -1,0 +1,8 @@
+{
+    "vertex" : "ssao.vert",
+    "fragment" : "ssao.frag",
+    "geometry" : "",
+    "programType" : "custom",
+    "pipelineType" : "opaque",
+    "internalShaderParameters" : []
+}

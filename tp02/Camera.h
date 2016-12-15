@@ -62,7 +62,7 @@ public:
 	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const;
 	virtual const PostProcessProxy& getPostProcessProxy() const;
 	virtual void onViewportResized(const glm::vec2& newSize);
-	void renderFrame(const Texture* texture);
+	void renderFrame(const Texture& texture);
 	const Texture* getFinalFrame() const;
 	const GlHelper::Framebuffer& getFrameBuffer();
 

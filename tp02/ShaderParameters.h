@@ -107,6 +107,9 @@ void pushParametersToGPU(GLuint uniformId, int count, const std::vector<T>& valu
 template<>
 void pushParametersToGPU<float>(GLuint uniformId, int count, const std::vector<float>& values);
 
+template<>
+void pushParametersToGPU<glm::vec3>(GLuint uniformId, int count, const std::vector<glm::vec3>& values);
+
 //TODO : complete
 
 }

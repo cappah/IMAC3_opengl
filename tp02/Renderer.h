@@ -27,61 +27,71 @@ struct LightCullingInfo
 	inline LightCullingInfo(const glm::vec4& _viewport, int _idx) : viewport(_viewport), idx(_idx) {}
 };
 
-class Renderer
+struct RenderDatas
 {
-	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
-
-private:
-	// Light pass FrameBuffer :
-	Texture* m_lightPassHDRColor;
-	Texture* m_lightPassDepth;
-	Texture* m_lightPassHighValues;
-	GlHelper::Framebuffer m_lightPassBuffer;
-	glm::vec2 m_viewportRenderSize;
-
-	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;
-	std::shared_ptr<MaterialShadowPassOmni> shadowPassOmniMaterial;
-
-	//uniform for unidirectional shadow map
-	GLuint uniformShadowMVP;
-
-	//uniforms for omniDirectional shadow map : 
-	GLuint uniformShadowOmniModelMatrix;
-	GLuint uniformShadowOmniVPLight[6];
-	GLuint uniformShadowOmniFarPlane;
-	GLuint uniformShadowOmniLightPos;
-
-	//lighting materials : 
-	std::shared_ptr<MaterialPointLight> m_pointLightMaterial;
-	std::shared_ptr<MaterialDirectionalLight> m_directionalLightMaterial;
-	std::shared_ptr<MaterialSpotLight> m_spotLightMaterial;
-
 	Mesh quadMesh;
 
-	//light system
-	LightManager* lightManager;
+	Texture lightPassHDRColor;
+	Texture lightPassDepth;
+	Texture lightPassHighValues;
 
-	GlHelper::Framebuffer gBufferFBO;
 	Texture gPassColorTexture;
 	Texture gPassNormalTexture;
 	Texture gPassDepthTexture;
 	Texture gPassHightValuesTexture;
 
-	//for blit pass 
-	std::shared_ptr<MaterialBlit> glProgram_blit;
+	glm::mat4 screenToView;
+	glm::mat4 VP;
 
-	//light count after culling : 
+	std::vector<PointLight*>* pointLights;
+	std::vector<DirectionalLight*>* directionalLights;
+	std::vector<SpotLight*>* spotLights;
+
+	//light count after culling :
 	int pointLightCount;
 	int spotLightCount;
 
-	//for light culling : 
+	//for light culling :
 	std::vector<LightCullingInfo> pointLightCullingInfos;
 	std::vector<LightCullingInfo> spotLightCullingInfos;
+};
 
-	//post process : 
+class Renderer
+{
+	enum LightType { POINT = 0, DIRECTIONAL = 1, SPOT = 2 };
+
+private:
+	// Viewport size :
+	glm::vec2 m_viewportRenderSize;
+
+	// FrameBuffers :
+	// For G pass :
+	GlHelper::Framebuffer gBufferFBO;
+	// For light pass :
+	GlHelper::Framebuffer m_lightPassBuffer;
+	// For SSAO pass :
+	GlHelper::Framebuffer m_SSAOPassBuffer;
+	Texture m_ssaoTexture;
+
+	// Render datas :
+	RenderDatas m_renderDatas;
+
+	// Lighting materials :
+	std::shared_ptr<MaterialPointLight> m_pointLightMaterial;
+	std::shared_ptr<MaterialDirectionalLight> m_directionalLightMaterial;
+	std::shared_ptr<MaterialSpotLight> m_spotLightMaterial;
+
+	// For shadows :
+	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;
+	std::shared_ptr<MaterialShadowPassOmni> shadowPassOmniMaterial;
+
+	// Managers :
+	//post process
 	PostProcessManager m_postProcessManager;
+	//light system
+	LightManager* lightManager;
 
-	////shadows : 
+	////shadows :
 	//GLuint shadowFrameBuffer;
 	//GLuint shadowRenderBuffer;
 	//GLuint shadowTexture;
@@ -91,14 +101,13 @@ public:
 	~Renderer();
 
 	//return the final frame, after all render process
-	Texture* getFinalFrame() const;
 	const glm::vec2& getViewportRenderSize() const;
 
 	//update deferred textures used by the FBO when we resize the screen.
 	void onResizeViewport(const glm::vec2& newViewportSize);
 
 	//initialyze buffers for blit quad.
-	void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
+	//void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
 
 	void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path, std::string progamShadowPassOmni_vert_path, std::string progamShadowPassOmni_frag_path, std::string progamShadowPassOmni_geom_path);
 
@@ -115,8 +124,8 @@ public:
 	void renderLightedScene(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
 	void shadowPass(const BaseCamera& camera, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
 	void gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view);
-	void lightPass(const glm::mat4& screenToWorld, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
-	void deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& screenToWorld, const glm::mat4& camera_mvp, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights);
+	void lightPass(const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view);
+	void deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, DebugDrawRenderer* debugDrawer);
 	void forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, int width, int height, const glm::mat4& projection, const glm::mat4& view);
 
 	void debugDrawRenderer(DebugDrawRenderer& debugDrawer) const;

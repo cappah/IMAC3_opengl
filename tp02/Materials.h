@@ -136,6 +136,7 @@ private:
 	GLuint uniform_ColorTexture;
 	GLuint uniform_NormalTexture;
 	GLuint uniform_DepthTexture;
+	GLuint uniform_SSAOTexture;
 	GLuint uniform_ScreenToView;
 	//GLuint uniform_CameraPosition; //No need in eye space
 	GLuint uniform_ShadowTexture;
@@ -165,6 +166,7 @@ public:
 		uniform_ColorTexture = MaterialHelper::getUniform(m_glProgramId, "ColorBuffer");
 		uniform_NormalTexture = MaterialHelper::getUniform(m_glProgramId, "NormalBuffer");
 		uniform_DepthTexture = MaterialHelper::getUniform(m_glProgramId, "DepthBuffer");
+		uniform_SSAOTexture = MaterialHelper::getUniform(m_glProgramId, "SSAOTexture");
 		uniform_ScreenToView = MaterialHelper::getUniform(m_glProgramId, "ScreenToView");
 		//uniform_CameraPosition = MaterialHelper::getUniform(m_glProgramId, "CameraPosition");
 		uniform_ShadowTexture = MaterialHelper::getUniform(m_glProgramId, "Shadow");
@@ -184,6 +186,10 @@ public:
 	void setUniformDepthTexture(int texUnitId)
 	{
 		GlHelper::pushParameterToGPU(uniform_DepthTexture, texUnitId);
+	}
+	void setUniformSSAOTexture(int texUnitId)
+	{
+		GlHelper::pushParameterToGPU(uniform_SSAOTexture, texUnitId);
 	}
 	void setUniformScreenToView(const glm::mat4& screenToWorldMat)
 	{

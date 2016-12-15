@@ -105,6 +105,14 @@ void Mesh::init(const FileHandler::CompletePath & path)
 	initGl();
 }
 
+void Mesh::setMeshDatas(GLenum _primitiveType, unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage)
+{
+	primitiveType = _primitiveType;
+	coordCountByVertex = _coordCountByVertex;
+	vbo_usage = _vbo_usage;
+	drawUsage = _drawUsage;
+}
+
 Mesh::~Mesh()
 {
 	clear();

@@ -9,15 +9,15 @@
 #include "BatchableWith.h"
 
 Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight)  
-	: quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2)
 {
 
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
 	////////////////////// INIT QUAD MESH ////////////////////////
-	quadMesh.triangleIndex = { 0, 1, 2, 2, 1, 3 };
-	quadMesh.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
-	quadMesh.initGl();
+	m_renderDatas.quadMesh.setMeshDatas(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2, GL_STATIC_DRAW);
+	m_renderDatas.quadMesh.triangleIndex = { 0, 1, 2, 2, 1, 3 };
+	m_renderDatas.quadMesh.vertices = { -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0 };
+	m_renderDatas.quadMesh.initGl();
 
 	//////////////////// MAKE NEW LIGHTING MATERIALS ///////////////////
 
@@ -33,22 +33,25 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 	//////////////////// INITIALIZE G BUFFER ///////////////////
 
-	GlHelper::makeColorTexture(gPassColorTexture, width, height);
-	gPassColorTexture.initGL();
-	GlHelper::makeNormalTexture(gPassNormalTexture, width, height);
-	gPassNormalTexture.initGL();
-	GlHelper::makeDepthTexture(gPassDepthTexture, width, height);
-	gPassDepthTexture.initGL();
-	GlHelper::makeFloatColorTexture(gPassHightValuesTexture, width, height);
-	gPassHightValuesTexture.initGL();
+	GlHelper::makeColorTexture(m_renderDatas.gPassColorTexture, width, height);
+	m_renderDatas.gPassColorTexture.initGL();
+
+	GlHelper::makeNormalTexture(m_renderDatas.gPassNormalTexture, width, height);
+	m_renderDatas.gPassNormalTexture.initGL();
+
+	GlHelper::makeDepthTexture(m_renderDatas.gPassDepthTexture, width, height);
+	m_renderDatas.gPassDepthTexture.initGL();
+
+	GlHelper::makeFloatColorTexture(m_renderDatas.gPassHightValuesTexture, width, height);
+	m_renderDatas.gPassHightValuesTexture.initGL();
 
 	gBufferFBO.bind(GL_FRAMEBUFFER);
 	GLenum drawBufferForGPass[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	gBufferFBO.setDrawBuffers(4, drawBufferForGPass);
-	gBufferFBO.attachTexture(&gPassColorTexture, GL_COLOR_ATTACHMENT0, 0);
-	gBufferFBO.attachTexture(&gPassNormalTexture, GL_COLOR_ATTACHMENT1, 0);
-	gBufferFBO.attachTexture(&gPassHightValuesTexture, GL_COLOR_ATTACHMENT2, 0);
-	gBufferFBO.attachTexture(&gPassDepthTexture, GL_DEPTH_ATTACHMENT, 0);
+	gBufferFBO.attachTexture(&m_renderDatas.gPassColorTexture, GL_COLOR_ATTACHMENT0, 0);
+	gBufferFBO.attachTexture(&m_renderDatas.gPassNormalTexture, GL_COLOR_ATTACHMENT1, 0);
+	gBufferFBO.attachTexture(&m_renderDatas.gPassHightValuesTexture, GL_COLOR_ATTACHMENT2, 0);
+	gBufferFBO.attachTexture(&m_renderDatas.gPassDepthTexture, GL_DEPTH_ATTACHMENT, 0);
 
 	gBufferFBO.checkIntegrity();
 	gBufferFBO.unbind();
@@ -60,25 +63,35 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	lightManager->setShadowMapCount(LightManager::DIRECTIONAL, 5);
 	lightManager->setShadowMapCount(LightManager::POINT, 10);
 
-	////////////////////// SETUP MAIN FRAMEBUFFER /////////////////////////
+	////////////////////// SETUP LIGHT PASS FRAMEBUFFER AND TEXTURES /////////////////////////
 
-	m_lightPassHDRColor = GlHelper::makeNewFloatColorTexture(width, height);
-	m_lightPassHDRColor->initGL();
+	GlHelper::makeFloatColorTexture(m_renderDatas.lightPassHDRColor, width, height);
+	m_renderDatas.lightPassHDRColor.initGL();
 
-	m_lightPassDepth = GlHelper::makeNewDepthTexture(width, height);
-	m_lightPassDepth->initGL();
+	GlHelper::makeDepthTexture(m_renderDatas.lightPassDepth, width, height);
+	m_renderDatas.lightPassDepth.initGL();
 
-	m_lightPassHighValues = GlHelper::makeNewFloatColorTexture(width, height);
-	m_lightPassHighValues->initGL();
+	GlHelper::makeFloatColorTexture(m_renderDatas.lightPassHighValues, width, height);
+	m_renderDatas.lightPassHighValues.initGL();
 
 	m_lightPassBuffer.bind();
-	m_lightPassBuffer.attachTexture(m_lightPassHDRColor, GL_COLOR_ATTACHMENT0);
-	m_lightPassBuffer.attachTexture(m_lightPassHighValues, GL_COLOR_ATTACHMENT1);
-	m_lightPassBuffer.attachTexture(m_lightPassDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
+	m_lightPassBuffer.attachTexture(&m_renderDatas.lightPassHDRColor, GL_COLOR_ATTACHMENT0);
+	m_lightPassBuffer.attachTexture(&m_renderDatas.lightPassHighValues, GL_COLOR_ATTACHMENT1);
+	m_lightPassBuffer.attachTexture(&m_renderDatas.lightPassDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
 	GLuint drawBuffers[] = { GL_COLOR_ATTACHMENT0 , GL_COLOR_ATTACHMENT1 };
 	m_lightPassBuffer.setDrawBuffers(2, drawBuffers);
 	m_lightPassBuffer.checkIntegrity();
 	m_lightPassBuffer.unbind();
+
+	////////////////////// SETUP SSAO PASS FRAMEBUFFER AND TEXTURES /////////////////////////
+	GlHelper::makeRedTexture(m_ssaoTexture, width, height);
+	m_ssaoTexture.initGL();
+
+	m_SSAOPassBuffer.bind();
+	m_SSAOPassBuffer.attachTexture(&m_ssaoTexture, GL_COLOR_ATTACHMENT0);
+	m_SSAOPassBuffer.setDrawBuffer(GL_COLOR_ATTACHMENT0);
+	m_SSAOPassBuffer.checkIntegrity();
+	m_SSAOPassBuffer.unbind();
 
 	////////////////////// FINALLY STORE THE VIEWPORT SIZE /////////////////////////
 	m_viewportRenderSize.x = width;
@@ -92,14 +105,6 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 Renderer::~Renderer()
 {
 	delete lightManager;
-	delete m_lightPassHDRColor;
-	delete m_lightPassDepth;
-	delete m_lightPassHighValues;
-}
-
-Texture * Renderer::getFinalFrame() const
-{
-	return m_lightPassHDRColor;
 }
 
 const glm::vec2 & Renderer::getViewportRenderSize() const
@@ -127,50 +132,63 @@ void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 	gBufferFBO.detachTexture(GL_DEPTH_ATTACHMENT, 0);
 
 	// Pop, resize and repush textures
-	gPassColorTexture.freeGL();
-	GlHelper::makeColorTexture(gPassColorTexture, width, height);
-	gPassColorTexture.initGL();
+	m_renderDatas.gPassColorTexture.freeGL();
+	GlHelper::makeColorTexture(m_renderDatas.gPassColorTexture, width, height);
+	m_renderDatas.gPassColorTexture.initGL();
 
-	gPassNormalTexture.freeGL();
-	GlHelper::makeNormalTexture(gPassNormalTexture, width, height);
-	gPassNormalTexture.initGL();
+	m_renderDatas.gPassNormalTexture.freeGL();
+	GlHelper::makeNormalTexture(m_renderDatas.gPassNormalTexture, width, height);
+	m_renderDatas.gPassNormalTexture.initGL();
 
-	gPassHightValuesTexture.freeGL();
-	GlHelper::makeFloatColorTexture(gPassHightValuesTexture, width, height);
-	gPassHightValuesTexture.initGL();
+	m_renderDatas.gPassHightValuesTexture.freeGL();
+	GlHelper::makeFloatColorTexture(m_renderDatas.gPassHightValuesTexture, width, height);
+	m_renderDatas.gPassHightValuesTexture.initGL();
 
-	gPassDepthTexture.freeGL();
-	GlHelper::makeDepthTexture(gPassDepthTexture, width, height);
-	gPassDepthTexture.initGL();
+	m_renderDatas.gPassDepthTexture.freeGL();
+	GlHelper::makeDepthTexture(m_renderDatas.gPassDepthTexture, width, height);
+	m_renderDatas.gPassDepthTexture.initGL();
 
 	// Attach texture again
-	gBufferFBO.attachTexture(&gPassColorTexture, GL_COLOR_ATTACHMENT0, 0);
-	gBufferFBO.attachTexture(&gPassNormalTexture, GL_COLOR_ATTACHMENT1, 0);
-	gBufferFBO.attachTexture(&gPassHightValuesTexture, GL_COLOR_ATTACHMENT2, 0);
-	gBufferFBO.attachTexture(&gPassDepthTexture, GL_DEPTH_ATTACHMENT, 0);
+	gBufferFBO.attachTexture(&m_renderDatas.gPassColorTexture, GL_COLOR_ATTACHMENT0, 0);
+	gBufferFBO.attachTexture(&m_renderDatas.gPassNormalTexture, GL_COLOR_ATTACHMENT1, 0);
+	gBufferFBO.attachTexture(&m_renderDatas.gPassHightValuesTexture, GL_COLOR_ATTACHMENT2, 0);
+	gBufferFBO.attachTexture(&m_renderDatas.gPassDepthTexture, GL_DEPTH_ATTACHMENT, 0);
 
 	gBufferFBO.checkIntegrity();
 	gBufferFBO.unbind();
 
-	////////////////////// RESIZE MAIN TEXTURE /////////////////////////
+	////////////////////// RESIZE LIGHT PASS TEXTURES /////////////////////////
 
-	delete m_lightPassHDRColor;
-	delete m_lightPassDepth;
-	delete m_lightPassHighValues;
+	m_renderDatas.lightPassHDRColor.freeGL();
+	GlHelper::makeColorTexture(m_renderDatas.lightPassHDRColor, width, height);
+	m_renderDatas.lightPassHDRColor.initGL();
 
-	m_lightPassHDRColor = GlHelper::makeNewColorTexture(width, height);
-	m_lightPassHDRColor->initGL();
-	m_lightPassDepth = GlHelper::makeNewDepthTexture(width, height);
-	m_lightPassDepth->initGL();
-	m_lightPassHighValues = GlHelper::makeNewFloatColorTexture(width, height);
-	m_lightPassHighValues->initGL();
+	m_renderDatas.lightPassDepth.freeGL();
+	GlHelper::makeDepthTexture(m_renderDatas.lightPassDepth, width, height);
+	m_renderDatas.lightPassDepth.initGL();
+
+	m_renderDatas.lightPassHighValues.freeGL();
+	GlHelper::makeFloatColorTexture(m_renderDatas.lightPassHighValues, width, height);
+	m_renderDatas.lightPassHighValues.initGL();
 
 	m_lightPassBuffer.bind();
-	m_lightPassBuffer.attachTexture(m_lightPassHDRColor, GL_COLOR_ATTACHMENT0);
-	m_lightPassBuffer.attachTexture(m_lightPassHighValues, GL_COLOR_ATTACHMENT1);
-	m_lightPassBuffer.attachTexture(m_lightPassDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
+	m_lightPassBuffer.attachTexture(&m_renderDatas.lightPassHDRColor, GL_COLOR_ATTACHMENT0);
+	m_lightPassBuffer.attachTexture(&m_renderDatas.lightPassHighValues, GL_COLOR_ATTACHMENT1);
+	m_lightPassBuffer.attachTexture(&m_renderDatas.lightPassDepth, GlHelper::Framebuffer::AttachmentTypes::DEPTH);
 	m_lightPassBuffer.checkIntegrity();
 	m_lightPassBuffer.unbind();
+
+	////////////////////// RESIZE SSAO PASS TEXTURES /////////////////////////
+	m_SSAOPassBuffer.bind();
+	m_SSAOPassBuffer.detachTexture(GL_COLOR_ATTACHMENT0);
+
+	m_ssaoTexture.freeGL();
+	GlHelper::makeRedTexture(m_ssaoTexture, width, height);
+	m_ssaoTexture.initGL();
+
+	m_SSAOPassBuffer.attachTexture(&m_ssaoTexture, GL_COLOR_ATTACHMENT0);
+	m_SSAOPassBuffer.checkIntegrity();
+	m_SSAOPassBuffer.unbind();
 
 	////////////////////// FINALLY STORE THE VIEWPORT SIZE /////////////////////////
 	m_viewportRenderSize.x = width;
@@ -181,11 +199,11 @@ void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 }
 
 
-void Renderer::initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path)
-{
-	//////////////////// BLIT shaders ////////////////////////
-	glProgram_blit = std::make_shared<MaterialBlit>(*getProgramFactory().get("blit"));
-}
+//void Renderer::initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path)
+//{
+//	//////////////////// BLIT shaders ////////////////////////
+//	glProgram_blit = std::make_shared<MaterialBlit>(*getProgramFactory().get("blit"));
+//}
 
 void Renderer::initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path,
 										std::string progamShadowPassOmni_vert_path, std::string progamShadowPassOmni_frag_path, std::string progamShadowPassOmni_geom_path)
@@ -673,27 +691,32 @@ void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights,
 
 	if (camera.getPostProcessProxy().getOperationCount() > 0)
 	{
-		m_postProcessManager.render(camera, *m_lightPassHDRColor, *m_lightPassHighValues, *m_lightPassDepth, gPassHightValuesTexture, pointLights, debugDrawer);
+		m_postProcessManager.render(camera, m_renderDatas, debugDrawer);
 		m_postProcessManager.renderResultOnCamera(camera);
 	}
 	else
 	{
-		camera.renderFrame(m_lightPassHDRColor);
+		camera.renderFrame(m_renderDatas.lightPassHDRColor);
 	}
 }
 
 void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
 {
+
 	////////////////////////////////////////////////////////////////////////
-	///////// BEGIN : Update matrices
+	///////// BEGIN : Update render datas
 	const int width = m_viewportRenderSize.x;
 	const int height = m_viewportRenderSize.y;
 	const glm::vec3& cameraPosition = camera.getCameraPosition();
 	const glm::vec3& cameraForward = camera.getCameraForward();
 	const glm::mat4& projection = camera.getProjectionMatrix();
 	const glm::mat4& view = camera.getViewMatrix();
-	const glm::mat4 camera_mvp = projection * view;
-	const glm::mat4 screenToView = glm::transpose(glm::inverse(projection));
+
+	m_renderDatas.pointLights = &pointLights;
+	m_renderDatas.directionalLights = &directionalLights;
+	m_renderDatas.spotLights = &spotLights;
+	m_renderDatas.VP = projection * view;
+	m_renderDatas.screenToView = glm::transpose(glm::inverse(projection));
 	///////// END : Update matrices
 	////////////////////////////////////////////////////////////////////////
 
@@ -719,7 +742,7 @@ void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLig
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : Deferred
-	deferredPipeline(opaqueRenderBatches, camera, projection, view, cameraPosition, cameraForward, screenToView, camera_mvp, pointLights, directionalLights, spotLights);
+	deferredPipeline(opaqueRenderBatches, camera, projection, view, cameraPosition, cameraForward, debugDrawer);
 	///////// END : Deferred
 	////////////////////////////////////////////////////////////////////////
 
@@ -766,16 +789,16 @@ void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::
 	glEnable(GL_DEPTH_TEST);
 
 	//culling for lights : 
-	updateCulling(camera, pointLights, spotLights, pointLightCullingInfos, spotLightCullingInfos);
+	updateCulling(camera, pointLights, spotLights, m_renderDatas.pointLightCullingInfos, m_renderDatas.spotLightCullingInfos);
 
 	//TODO : check if shadow map count and light count match
 
 	//for spot lights : 
 	//glUseProgram(glProgram_shadowPass);
 	shadowPassMaterial->use();
-	for (int shadowIdx = 0; shadowIdx < spotLightCount; shadowIdx++)
+	for (int shadowIdx = 0; shadowIdx < m_renderDatas.spotLightCount; shadowIdx++)
 	{
-		int lightIdx = spotLightCullingInfos[shadowIdx].idx;
+		int lightIdx = m_renderDatas.spotLightCullingInfos[shadowIdx].idx;
 
 		if (shadowIdx < lightManager->getShadowMapCount(LightManager::SPOT))
 		{
@@ -845,9 +868,9 @@ void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::
 	//for point lights : 
 	//glUseProgram(glProgram_shadowPassOmni);
 	shadowPassOmniMaterial->use();
-	for (int shadowIdx = 0; shadowIdx < pointLightCount; shadowIdx++)
+	for (int shadowIdx = 0; shadowIdx < m_renderDatas.pointLightCount; shadowIdx++)
 	{
-		int lightIdx = pointLightCullingInfos[shadowIdx].idx;
+		int lightIdx = m_renderDatas.pointLightCullingInfos[shadowIdx].idx;
 
 		if (shadowIdx < lightManager->getShadowMapCount(LightManager::POINT))
 		{
@@ -913,7 +936,7 @@ void Renderer::gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaq
 	CHECK_GL_ERROR("error in G pass");
 }
 
-void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
+void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view)
 {
 
 	// The View to world matrix is the same of all the process, we compute it here :
@@ -935,33 +958,36 @@ void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraP
 	m_pointLightMaterial->use();
 
 	// send screen to world matrix : 
-	m_pointLightMaterial->setUniformScreenToView(screenToView);
+	m_pointLightMaterial->setUniformScreenToView(m_renderDatas.screenToView);
 	//m_pointLightMaterial->setUniformCameraPosition(cameraPosition);
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gPassColorTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassColorTexture.glId);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, gPassNormalTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassNormalTexture.glId);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, gPassDepthTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassDepthTexture.glId);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_ssaoTexture.glId);
 
 	m_pointLightMaterial->setUniformColorTexture(0);
 	m_pointLightMaterial->setUniformNormalTexture(1);
 	m_pointLightMaterial->setUniformDepthTexture(2);
+	m_pointLightMaterial->setUniformSSAOTexture(3);
 
-	for (int i = 0; i < pointLightCount; i++)
+	for (int i = 0; i < m_renderDatas.pointLightCount; i++)
 	{
-		int lightIdx = pointLightCullingInfos[i].idx;
-		viewport = pointLightCullingInfos[i].viewport;
+		int lightIdx = m_renderDatas.pointLightCullingInfos[i].idx;
+		viewport = m_renderDatas.pointLightCullingInfos[i].viewport;
 
 		if (i < lightManager->getShadowMapCount(LightManager::POINT))
 		{
 			//active the shadow map texture
-			glActiveTexture(GL_TEXTURE3);
+			glActiveTexture(GL_TEXTURE4);
 			lightManager->bindShadowMapTexture(LightManager::POINT, i);
 			//glUniform1i(uniformTextureShadow[POINT], 3); // send shadow texture
-			m_pointLightMaterial->setUniformShadowTexture(3);
+			m_pointLightMaterial->setUniformShadowTexture(4);
 		}
 
 		//if (passCullingTest(viewport, projection, worldToView, camera.eye, pointLights[i]->boundingBox)) // optimisation test
@@ -973,8 +999,8 @@ void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraP
 			m_pointLightMaterial->setUniformViewToWorld(viewToWorld);
 			m_pointLightMaterial->setUniformFarPlane(100.f);
 
-			lightManager->uniformPointLight(*pointLights[lightIdx], view);
-			quadMesh.draw();
+			lightManager->uniformPointLight(*(*m_renderDatas.pointLights)[lightIdx], view);
+			m_renderDatas.quadMesh.draw();
 		}
 	}
 
@@ -982,35 +1008,38 @@ void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraP
 	m_spotLightMaterial->use();
 
 	// send screen to world matrix : 
-	m_spotLightMaterial->setUniformScreenToView(screenToView);
+	m_spotLightMaterial->setUniformScreenToView(m_renderDatas.screenToView);
 	//m_spotLightMaterial->setUniformCameraPosition(cameraPosition);
 
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gPassColorTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassColorTexture.glId);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, gPassNormalTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassNormalTexture.glId);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, gPassDepthTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassDepthTexture.glId);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_ssaoTexture.glId);
 
 	m_spotLightMaterial->setUniformColorTexture(0);
 	m_spotLightMaterial->setUniformNormalTexture(1);
 	m_spotLightMaterial->setUniformDepthTexture(2);
+	m_spotLightMaterial->setUniformSSAOTexture(3);
 
-	for (int i = 0; i < spotLightCount; i++)
+	for (int i = 0; i < m_renderDatas.spotLightCount; i++)
 	{
 
-		int lightIdx = spotLightCullingInfos[i].idx;
-		viewport = spotLightCullingInfos[i].viewport;
+		int lightIdx = m_renderDatas.spotLightCullingInfos[i].idx;
+		viewport = m_renderDatas.spotLightCullingInfos[i].viewport;
 
 		if (i < lightManager->getShadowMapCount(LightManager::SPOT))
 		{
 			//active the shadow map texture
-			glActiveTexture(GL_TEXTURE3);
+			glActiveTexture(GL_TEXTURE4);
 			lightManager->bindShadowMapTexture(LightManager::SPOT, i);
 			//glUniform1i(uniformTextureShadow[SPOT], 3); // send shadow texture
-			m_spotLightMaterial->setUniformShadowTexture(3);
+			m_spotLightMaterial->setUniformShadowTexture(4);
 		}
 
 		//if (passCullingTest(viewport , projection, worldToView, camera.eye, spotLights[i]->boundingBox)) // optimisation test
@@ -1018,17 +1047,17 @@ void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraP
 			//resize viewport
 			resizeBlitQuad(viewport);
 
-			const glm::vec3 spotLightViewPosition = glm::vec3(view * glm::vec4(spotLights[lightIdx]->position, 1.0));
-			const glm::vec3 spotLightViewDirection = glm::vec3(view * glm::vec4(spotLights[lightIdx]->direction, 0.0));
-			const glm::vec3 spotLightViewUp = glm::vec3(view * glm::vec4(spotLights[lightIdx]->up, 0.0));
-			glm::mat4 projectionSpotLight = glm::perspective(spotLights[lightIdx]->angle*2.f, 1.f, 0.1f, 100.f);
+			const glm::vec3 spotLightViewPosition = glm::vec3(view * glm::vec4((*m_renderDatas.spotLights)[lightIdx]->position, 1.0));
+			const glm::vec3 spotLightViewDirection = glm::vec3(view * glm::vec4((*m_renderDatas.spotLights)[lightIdx]->direction, 0.0));
+			const glm::vec3 spotLightViewUp = glm::vec3(view * glm::vec4((*m_renderDatas.spotLights)[lightIdx]->up, 0.0));
+			glm::mat4 projectionSpotLight = glm::perspective((*m_renderDatas.spotLights)[lightIdx]->angle*2.f, 1.f, 0.1f, 100.f);
 			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLightViewPosition, spotLightViewPosition + spotLightViewDirection, spotLightViewUp);
 			glm::mat4 ViewToLightScreen = projectionSpotLight * worldToLightSpotLight;
 			//glUniformMatrix4fv(uniformWorldToLightScreen_spot, 1, false, glm::value_ptr(WorldToLightScreen));
 			m_spotLightMaterial->setUniformViewToLight(ViewToLightScreen);
 
-			lightManager->uniformSpotLight(*spotLights[lightIdx], view);
-			quadMesh.draw();
+			lightManager->uniformSpotLight(*(*m_renderDatas.spotLights)[lightIdx], view);
+			m_renderDatas.quadMesh.draw();
 		}
 	}
 
@@ -1040,37 +1069,40 @@ void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraP
 	m_directionalLightMaterial->use();
 
 	// send screen to world matrix : 
-	m_directionalLightMaterial->setUniformScreenToView(screenToView);
+	m_directionalLightMaterial->setUniformScreenToView(m_renderDatas.screenToView);
 	//m_directionalLightMaterial->setUniformCameraPosition(cameraPosition);
 
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gPassColorTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassColorTexture.glId);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, gPassNormalTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassNormalTexture.glId);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, gPassDepthTexture.glId);
+	glBindTexture(GL_TEXTURE_2D, m_renderDatas.gPassDepthTexture.glId);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_ssaoTexture.glId);
 
 	m_directionalLightMaterial->setUniformColorTexture(0);
 	m_directionalLightMaterial->setUniformNormalTexture(1);
 	m_directionalLightMaterial->setUniformDepthTexture(2);
+	m_directionalLightMaterial->setUniformSSAOTexture(3);
 
 
-	for (int i = 0; i < directionalLights.size(); i++)
+	for (int i = 0; i < m_renderDatas.directionalLights->size(); i++)
 	{
 		if (i < lightManager->getShadowMapCount(LightManager::DIRECTIONAL))
 		{
 			//active the shadow map texture
-			glActiveTexture(GL_TEXTURE3);
+			glActiveTexture(GL_TEXTURE4);
 			lightManager->bindShadowMapTexture(LightManager::DIRECTIONAL, i);
 			//glUniform1i(uniformTextureShadow[DIRECTIONAL], 3); // send shadow texture
-			m_directionalLightMaterial->setUniformShadowTexture(3);
+			m_directionalLightMaterial->setUniformShadowTexture(4);
 		}
 
-		const glm::vec3 directionalLightViewPosition = glm::vec3(view * glm::vec4(directionalLights[i]->position, 1.0));
-		const glm::vec3 directionalLightViewDirection = glm::vec3(view * glm::vec4(directionalLights[i]->direction, 0.0));
-		const glm::vec3 directionalLightViewUp = glm::vec3(view * glm::vec4(directionalLights[i]->up, 0.0));
+		const glm::vec3 directionalLightViewPosition = glm::vec3(view * glm::vec4((*m_renderDatas.directionalLights)[i]->position, 1.0));
+		const glm::vec3 directionalLightViewDirection = glm::vec3(view * glm::vec4((*m_renderDatas.directionalLights)[i]->direction, 0.0));
+		const glm::vec3 directionalLightViewUp = glm::vec3(view * glm::vec4((*m_renderDatas.directionalLights)[i]->up, 0.0));
 		float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
 		float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
 		float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
@@ -1082,8 +1114,8 @@ void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraP
 		//glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
 		m_directionalLightMaterial->setUniformViewToLight(viewToLightScreen);
 
-		lightManager->uniformDirectionalLight(*directionalLights[i], view);
-		quadMesh.draw();
+		lightManager->uniformDirectionalLight(*(*m_renderDatas.directionalLights)[i], view);
+		m_renderDatas.quadMesh.draw();
 	}
 
 	// Disable blending
@@ -1093,7 +1125,7 @@ void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraP
 	CHECK_GL_ERROR("error in light pass");
 }
 
-void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& screenToView, const glm::mat4& camera_mvp, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
+void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, DebugDrawRenderer* debugDrawer)
 {
 	////// begin G pass 
 	gBufferFBO.bind();
@@ -1104,14 +1136,18 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 	////// end G pass
 
 	////// begin SSAO pass
-	m_postProcessManager.renderSSAO(camera);
+	m_SSAOPassBuffer.bind();
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	m_SSAOPassBuffer.unbind();
+	m_postProcessManager.renderSSAO(camera, m_SSAOPassBuffer, m_ssaoTexture, m_renderDatas, debugDrawer);
 	////// end SSAO pass
 
 	///// begin light pass
 	m_lightPassBuffer.bind();
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	lightPass(screenToView, cameraPosition, cameraForward, view, pointLights, directionalLights, spotLights);
+	lightPass(cameraPosition, cameraForward, view);
 	m_lightPassBuffer.unbind();
 	///// end light pass
 }
@@ -1144,13 +1180,13 @@ void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBat
 void Renderer::debugDrawRenderer(DebugDrawRenderer& debugDrawer) const
 {
 	debugDrawer.addSeparator();
-	debugDrawer.drawOutputIfNeeded("gBuffer_color", gPassColorTexture.glId);
-	debugDrawer.drawOutputIfNeeded("gBuffer_normal", gPassNormalTexture.glId);
-	debugDrawer.drawOutputIfNeeded("gBuffer_depth", gPassDepthTexture.glId);
+	debugDrawer.drawOutputIfNeeded("gBuffer_color", m_renderDatas.gPassColorTexture.glId);
+	debugDrawer.drawOutputIfNeeded("gBuffer_normal", m_renderDatas.gPassNormalTexture.glId);
+	debugDrawer.drawOutputIfNeeded("gBuffer_depth", m_renderDatas.gPassDepthTexture.glId);
 	debugDrawer.addSeparator();
-	debugDrawer.drawOutputIfNeeded("beauty_color", m_lightPassHDRColor->glId);
-	debugDrawer.drawOutputIfNeeded("beauty_depth", m_lightPassDepth->glId);
-	debugDrawer.drawOutputIfNeeded("beauty_highValues", m_lightPassHighValues->glId);
+	debugDrawer.drawOutputIfNeeded("beauty_color", m_renderDatas.lightPassHDRColor.glId);
+	debugDrawer.drawOutputIfNeeded("beauty_depth", m_renderDatas.lightPassDepth.glId);
+	debugDrawer.drawOutputIfNeeded("beauty_highValues", m_renderDatas.lightPassHighValues.glId);
 	CHECK_GL_ERROR("error in render debug pass");
 }
 
@@ -1370,10 +1406,10 @@ bool Renderer::passCullingTest(glm::vec4& viewport, const glm::mat4& projection,
 
 void Renderer::resizeBlitQuad(const glm::vec4 & viewport)
 {
-	quadMesh.vertices = { viewport.x, viewport.y, viewport.x + viewport.z, viewport.y, viewport.x, viewport.y + viewport.w, viewport.x + viewport.z , viewport.y + viewport.w };
+	m_renderDatas.quadMesh.vertices = { viewport.x, viewport.y, viewport.x + viewport.z, viewport.y, viewport.x, viewport.y + viewport.w, viewport.x + viewport.z , viewport.y + viewport.w };
 	// update in CG : 
-	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.vbo_vertices);
-	glBufferData(GL_ARRAY_BUFFER, quadMesh.vertices.size() * sizeof(float), &(quadMesh.vertices)[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, m_renderDatas.quadMesh.vbo_vertices);
+	glBufferData(GL_ARRAY_BUFFER, m_renderDatas.quadMesh.vertices.size() * sizeof(float), &(m_renderDatas.quadMesh.vertices)[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -1397,8 +1433,8 @@ void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>&
 	float minX = -1;
 	float minY = -1;
 
-	pointLightCount = 0;
-	spotLightCount = 0;
+	m_renderDatas.pointLightCount = 0;
+	m_renderDatas.spotLightCount = 0;
 
 	int width = m_viewportRenderSize.x;
 	int height = m_viewportRenderSize.y;
@@ -1555,7 +1591,7 @@ void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>&
 		}
 	}
 
-	spotLightCount = spotLightCullingInfos.size();
-	pointLightCount = pointLightCullingInfos.size();
+	m_renderDatas.spotLightCount = spotLightCullingInfos.size();
+	m_renderDatas.pointLightCount = pointLightCullingInfos.size();
 
 }

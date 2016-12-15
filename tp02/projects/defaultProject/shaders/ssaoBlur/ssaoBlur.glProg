@@ -1,0 +1,8 @@
+{
+    "vertex" : "ssaoBlur.vert",
+    "fragment" : "ssaoBlur.frag",
+    "geometry" : "",
+    "programType" : "custom",
+    "pipelineType" : "opaque",
+    "internalShaderParameters" : []
+}

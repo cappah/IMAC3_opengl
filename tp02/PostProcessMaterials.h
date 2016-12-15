@@ -66,9 +66,34 @@ public:
 class MaterialSSAO : public Material
 {
 private:
+	GLuint m_uniformNormals;
+	GLuint m_uniformNoiseTexture;
+	GLuint m_uniformKernel;
+	GLuint m_uniformDepth;
+	GLuint m_uniformProjection;
+	GLuint m_uniformScreenToView;
+
 
 public:
 	MaterialSSAO();
 	MaterialSSAO(const ShaderProgram& shaderProgram);
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+	void glUniform_Normals(int texId) const;
+	void glUniform_NoiseTexture(int texId) const;
+	void glUniform_Kernel(const std::vector<glm::vec3>& kernel) const;
+	void glUniform_Depth(int texId) const;
+	void glUniform_Projection(const glm::mat4& projection) const;
+	void glUniform_ScreenToView(const glm::mat4& screenToView) const;
+};
+
+class MaterialSSAOBlur : public Material
+{
+private:
+	GLuint m_uniformTexture;
+
+public:
+	MaterialSSAOBlur();
+	MaterialSSAOBlur(const ShaderProgram& shaderProgram);
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+	void glUniform_Texture(int texId) const;
 };

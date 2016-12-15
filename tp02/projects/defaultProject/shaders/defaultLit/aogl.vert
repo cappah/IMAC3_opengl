@@ -53,11 +53,11 @@ void main()
         mat4 normalMatrix = transpose(inverse(ViewMatrix * ModelMatrix));
 
         Out.TexCoord = TexCoord * TextureRepetition;
-        Out.Position = vec3(boneTransform * ViewMatrix * vec4(pos, 1));
+        Out.Position = vec3(ViewMatrix * boneTransform * vec4(pos, 1));
 
 	//calculate TBN matrix : 
-        vec3 T = normalize( vec3(boneTransform * normalMatrix * vec4(Tangent, 0.0)) );
-        vec3 N = normalize( vec3(boneTransform * normalMatrix * vec4(Normal, 0.0)) );
+        vec3 T = normalize( vec3(normalMatrix * boneTransform * vec4(Tangent, 0.0)) );
+        vec3 N = normalize( vec3(normalMatrix * boneTransform * vec4(Normal, 0.0)) );
 	vec3 B = -cross(T, N);
 	Out.TBN = mat3(B, T, N);
 

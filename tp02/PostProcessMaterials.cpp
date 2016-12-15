@@ -151,8 +151,68 @@ MaterialSSAO::MaterialSSAO(const ShaderProgram & shaderProgram)
 
 void MaterialSSAO::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
 {
-	//TODO
+	m_uniformNormals = MaterialHelper::getUniform(m_glProgramId, "Normals");
+	m_uniformNoiseTexture = MaterialHelper::getUniform(m_glProgramId, "NoiseTexture");
+	m_uniformKernel = MaterialHelper::getUniform(m_glProgramId, "Kernel");
+	m_uniformDepth = MaterialHelper::getUniform(m_glProgramId, "Depth");
+	m_uniformProjection = MaterialHelper::getUniform(m_glProgramId, "Projection");
+	m_uniformScreenToView = MaterialHelper::getUniform(m_glProgramId, "ScreenToView");
 
 	if (!checkError("Uniforms"))
 		PRINT_ERROR("error in texture initialization.")
+}
+
+void MaterialSSAO::glUniform_Normals(int texId) const
+{
+	GlHelper::pushParameterToGPU(m_uniformNormals, texId);
+}
+
+void MaterialSSAO::glUniform_NoiseTexture(int texId) const
+{
+	GlHelper::pushParameterToGPU(m_uniformNoiseTexture, texId);
+}
+
+void MaterialSSAO::glUniform_Kernel(const std::vector<glm::vec3>& kernel) const
+{
+	GlHelper::pushParametersToGPU(m_uniformKernel, 64, kernel);
+}
+
+void MaterialSSAO::glUniform_Depth(int texId) const
+{
+	GlHelper::pushParameterToGPU(m_uniformDepth, texId);
+}
+
+void MaterialSSAO::glUniform_Projection(const glm::mat4 & projection) const
+{
+	GlHelper::pushParameterToGPU(m_uniformProjection, projection);
+}
+
+void MaterialSSAO::glUniform_ScreenToView(const glm::mat4 & screenToView) const
+{
+	GlHelper::pushParameterToGPU(m_uniformScreenToView, screenToView);
+}
+
+MaterialSSAOBlur::MaterialSSAOBlur()
+	: Material()
+{
+}
+
+MaterialSSAOBlur::MaterialSSAOBlur(const ShaderProgram & shaderProgram)
+	: Material(shaderProgram)
+{
+	setExternalParameters(shaderProgram.getExternalParameters());
+}
+
+void MaterialSSAOBlur::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+{
+	m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
+
+	if (!checkError("Uniforms"))
+		PRINT_ERROR("error in texture initialization.")
+}
+
+void MaterialSSAOBlur::glUniform_Texture(int texId) const
+{
+	GlHelper::pushParameterToGPU(m_uniformTexture, texId);
+
 }

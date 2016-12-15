@@ -87,7 +87,7 @@ void BaseCamera::onViewportResized(const glm::vec2& newSize)
 	m_frameBuffer.unbind();
 }
 
-void BaseCamera::renderFrame(const Texture* texture)
+void BaseCamera::renderFrame(const Texture& texture)
 {
 	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
@@ -99,7 +99,7 @@ void BaseCamera::renderFrame(const Texture* texture)
 	//	renderSkybox();
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture->glId);
+	glBindTexture(GL_TEXTURE_2D, texture.glId);
 	m_material->use();
 	m_material->setUniformBlitTexture(0);
 	m_quadMesh->draw();

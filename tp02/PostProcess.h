@@ -13,6 +13,8 @@
 
 class DebugDrawRenderer;
 struct PointLight;
+struct RenderDatas;
+class SSAOPostProcessOperation;
 
 class PostProcessOperationData
 {
@@ -31,7 +33,7 @@ protected:
 	std::string m_name;
 public:
 	PostProcessOperation(const std::string& name) : m_name(name) {}
-	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer) = 0;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) = 0;
 	virtual void onViewportResized(float width, float height) = 0;
 	virtual const std::string& getName() const { return m_name; }
 	//virtual const Texture* getResult() const = 0;
@@ -120,19 +122,18 @@ public:
 class PostProcessManager
 {
 private:
-	Mesh m_renderQuad;
 	GlHelper::Framebuffer m_finalFB;
 	Texture m_finalTexture;
 	MaterialBlit m_materialBlit;
 
-	std::unordered_map<std::string, std::shared_ptr<PostProcessOperation>> m_operationList;
+	std::shared_ptr<PostProcessOperation> m_ssaoOperation;
+	std::vector<std::shared_ptr<PostProcessOperation>> m_operationList;
 
 public:
 	PostProcessManager();
 	void onViewportResized(float width, float height);
-	void resizeBlitQuad(const glm::vec4& viewport = glm::vec4(-1, -1, 2, 2));
-	void render(const BaseCamera& camera, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer);
-	void renderSSAO(const BaseCamera& camera); //TODO SSAO
+	void render(const BaseCamera& camera, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
+	void renderSSAO(const BaseCamera& camera, GlHelper::Framebuffer& ssaoFB, Texture& ssaoTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
 	void renderResultOnCamera(BaseCamera& camera);
 	int getOperationCount() const;
 };
@@ -185,7 +186,7 @@ private:
 
 public:
 	BloomPostProcessOperation(const std::string& operationName);
-	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer) override;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
 	virtual void onViewportResized(float width, float height) override;
 	//virtual const Texture* getResult() const override;
 };
@@ -220,7 +221,7 @@ private:
 
 public:
 	FlaresPostProcessOperation(const std::string& operationName);
-	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer) override;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
 	virtual void onViewportResized(float width, float height) override;
 	//virtual const Texture* getResult() const override;
 };
@@ -242,38 +243,37 @@ public:
 class SSAOPostProcessOperation : public PostProcessOperation
 {
 private:
-	//GlHelper::Framebuffer m_finalFB;
-	//Texture m_finalTexture;
+	std::vector<glm::vec3> m_kernel;
+	std::vector<glm::vec3> m_noise;
+	Texture m_noiseTexture;
 
-	GlHelper::Framebuffer m_flaresFB;
-	Texture m_flaresTexture;
+	Texture m_ssaoTexture;
+	GlHelper::Framebuffer m_ssaoFB;
 
-	GLuint m_positionBuffer;
-	GLuint m_vao;
-
-	std::shared_ptr<MaterialAdd> m_materialAdd;
+	MaterialSSAOBlur m_materialBlur;
 
 public:
 	SSAOPostProcessOperation(const std::string& operationName);
-	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer) override;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
 	virtual void onViewportResized(float width, float height) override;
 };
 
 //struct RenderDatas
 //{
 //	// Camera : 
-//	const BaseCamera& camera;
 //	glm::mat4& screenToView;
 //	glm::mat4& VP;
 //	// Mesh : 
 //	Mesh& renderQuad;
 //	// Post G pass textures :
-//	Texture& gPassPositionTexture;
-//	Texture& gPassHighValues;
+//	Texture gPassPositionTexture;
+//	Texture gPassHighValues;
+//	Texture gPassNormalTexture;
+//	Texture gPassDepthTexture;
 //	// Post light pass textures : 
-//	Texture& beautyColor;
-//	Texture& beautyHighValues;
-//	Texture& beautyDepth;
+//	Texture beautyColor;
+//	Texture beautyHighValues;
+//	Texture beautyDepth;
 //	// Lights : 
 //	const std::vector<PointLight*>& pointLights;
 //	const std::vector<DirectionalLight*>& directionalLights;
