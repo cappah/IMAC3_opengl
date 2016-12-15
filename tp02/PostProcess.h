@@ -224,3 +224,58 @@ public:
 	virtual void onViewportResized(float width, float height) override;
 	//virtual const Texture* getResult() const override;
 };
+
+//////////////////////////////
+
+
+class SSAOPostProcessOperationData : public PostProcessOperationData
+{
+protected:
+	MaterialSSAO m_materialSSAO;
+
+public:
+	SSAOPostProcessOperationData(const std::string& operationName);
+	virtual void drawUI() override;
+	const MaterialSSAO& getMaterial() const;
+};
+
+class SSAOPostProcessOperation : public PostProcessOperation
+{
+private:
+	//GlHelper::Framebuffer m_finalFB;
+	//Texture m_finalTexture;
+
+	GlHelper::Framebuffer m_flaresFB;
+	Texture m_flaresTexture;
+
+	GLuint m_positionBuffer;
+	GLuint m_vao;
+
+	std::shared_ptr<MaterialAdd> m_materialAdd;
+
+public:
+	SSAOPostProcessOperation(const std::string& operationName);
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, Mesh& renderQuad, Texture& beautyColor, Texture& beautyHighValues, Texture& beautyDepth, Texture& gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer* debugDrawer) override;
+	virtual void onViewportResized(float width, float height) override;
+};
+
+//struct RenderDatas
+//{
+//	// Camera : 
+//	const BaseCamera& camera;
+//	glm::mat4& screenToView;
+//	glm::mat4& VP;
+//	// Mesh : 
+//	Mesh& renderQuad;
+//	// Post G pass textures :
+//	Texture& gPassPositionTexture;
+//	Texture& gPassHighValues;
+//	// Post light pass textures : 
+//	Texture& beautyColor;
+//	Texture& beautyHighValues;
+//	Texture& beautyDepth;
+//	// Lights : 
+//	const std::vector<PointLight*>& pointLights;
+//	const std::vector<DirectionalLight*>& directionalLights;
+//	const std::vector<SpotLight*>& spotLights;
+//};

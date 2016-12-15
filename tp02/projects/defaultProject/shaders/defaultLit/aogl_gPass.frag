@@ -9,15 +9,11 @@
 precision highp int;
 
 // inputs : 
-
-//layout(location = FRAG_COLOR, index = 0) out vec3 FragColor;
-
 in block
 {
         vec2 TexCoord;
         vec3 Position;
-        //vec3 Normal;
-		mat3 TBN;
+        mat3 TBN;
 } In;
 
 // Outputs : 
@@ -28,9 +24,10 @@ layout(location = 0 ) out vec4 outColor;
 layout(location = 1) out vec4 outNormal;
 // Write in GL_COLOR_ATTACHMENT2
 layout(location = 2) out vec4 outHighValues;
+// Write in GL_COLOR_ATTACHMENT3
+layout(location = 3) out vec4 outPositions;
 
 // Uniforms : 
-
 uniform sampler2D Diffuse;
 uniform sampler2D Specular;
 uniform sampler2D Bump;
@@ -49,4 +46,6 @@ void main()
 	bumpNormal = normalize(bumpNormal * 2.0 - 1.0);
 	bumpNormal = normalize(In.TBN * bumpNormal);
         outNormal = vec4( bumpNormal*0.5+0.5, SpecularPower/100.0 );
+
+        outPositions = vec4(In.Position, 1.0);
 }

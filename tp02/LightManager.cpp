@@ -271,38 +271,24 @@ void LightManager::setLightingMaterials(std::shared_ptr<MaterialPointLight> poin
 	m_spotLightMaterial = spotLightMat;
 }
 
-void LightManager::uniformPointLight(PointLight & light)
+void LightManager::uniformPointLight(PointLight & light, const glm::mat4& view)
 {
-	//glUniform3fv(uniform_pointLight_pos, 1, glm::value_ptr(light.position));
-	//glUniform3fv(uniform_pointLight_col, 1, glm::value_ptr(light.color));
-	//glUniform1f(uniform_pointLight_int, light.intensity);
-
-	m_pointLightMaterial->setUniformLightPosition(light.position);
+	m_pointLightMaterial->setUniformLightPosition( glm::vec3(view * glm::vec4(light.position, 1.0)) ); //Convert to eye space
 	m_pointLightMaterial->setUniformLightColor(light.color);
 	m_pointLightMaterial->setUniformLightIntensity(light.intensity);
 }
 
-void LightManager::uniformDirectionalLight(DirectionalLight & light)
+void LightManager::uniformDirectionalLight(DirectionalLight & light, const glm::mat4& view)
 {
-	//glUniform3fv(uniform_directionalLight_dir, 1, glm::value_ptr(light.direction));
-	//glUniform3fv(uniform_directionalLight_col, 1, glm::value_ptr(light.color));
-	//glUniform1f(uniform_directionalLight_int, light.intensity);
-
-	m_directionalLightMaterial->setUniformLightDirection(light.direction);
+	m_directionalLightMaterial->setUniformLightDirection(glm::vec3(view * glm::vec4(light.direction, 0.0))); //Convert to eye space
 	m_directionalLightMaterial->setUniformLightColor(light.color);
 	m_directionalLightMaterial->setUniformLightIntensity(light.intensity);
 }
 
-void LightManager::uniformSpotLight(SpotLight & light)
+void LightManager::uniformSpotLight(SpotLight & light, const glm::mat4& view)
 {
-	//glUniform3fv(uniform_spotLight_dir, 1, glm::value_ptr(light.direction));
-	//glUniform3fv(uniform_spotLight_col, 1, glm::value_ptr(light.color));
-	//glUniform1f(uniform_spotLight_int, light.intensity);
-	//glUniform3fv(uniform_spotLight_pos, 1, glm::value_ptr(light.position));
-	//glUniform1f(uniform_spotLight_angle, light.angle);
-
-	m_spotLightMaterial->setUniformLightPosition(light.position);
-	m_spotLightMaterial->setUniformLightDirection(light.direction);
+	m_spotLightMaterial->setUniformLightPosition(glm::vec3(view * glm::vec4(light.position, 1.0))); //Convert to eye space
+	m_spotLightMaterial->setUniformLightDirection(glm::vec3(view * glm::vec4(light.direction, 0.0))); //Convert to eye space
 	m_spotLightMaterial->setUniformLightAngle(light.angle);
 	m_spotLightMaterial->setUniformLightColor(light.color);
 	m_spotLightMaterial->setUniformLightIntensity(light.intensity);

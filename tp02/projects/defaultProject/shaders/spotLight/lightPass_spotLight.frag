@@ -15,12 +15,12 @@ layout(location = 1)out vec4 HighValues;
 uniform sampler2D ColorBuffer;
 uniform sampler2D NormalBuffer;
 uniform sampler2D DepthBuffer;
-uniform mat4 ScreenToWorld;
-uniform vec3 CameraPosition;
+uniform mat4 ScreenToView;
+//uniform vec3 CameraPosition;
  
  //shadow : 
  uniform sampler2D Shadow;
- uniform mat4 WorldToLightScreen;
+ uniform mat4 ViewToLightScreen;
 
 
 //lights struct : 
@@ -41,7 +41,7 @@ vec3 computeSpotLight(SpotLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 specu
 {
     vec3 l = normalize( light.position - p);
     float ndotl = clamp(dot(n,l), 0.0, 1.0);
-    vec3 v = normalize(CameraPosition - p);
+    vec3 v = normalize(-p);
     vec3 h = normalize(l+v);
     float ndoth = clamp(dot(n,h),0.0,1.0);
     float d = length(light.position - p);
@@ -73,7 +73,7 @@ float computeShadow(vec3 p)
 {
 	//shadow
 	float shadowBias = 0.001f;
-	vec4 wlP = WorldToLightScreen * vec4(p.xyz, 1.0);
+        vec4 wlP = ViewToLightScreen * vec4(p.xyz, 1.0);
 	vec3 lP = vec3(wlP/wlP.w) * 0.5 + 0.5;
 	//float lDepth = texture(Shadow, lP.xy).r; //textureProj(Shadow, vec4(lP.xy, lP.z - shadowBias, 1.0), 0.0);
 
@@ -103,7 +103,7 @@ void main(void)
 	// Convert texture coordinates into screen space coordinates
 	vec2 xy = In.Texcoord * 2.0 -1.0;
 	// Convert depth to -1,1 range and multiply the point by ScreenToWorld matrix
-	vec4 wP = vec4(xy, depth * 2.0 -1.0, 1.0) * ScreenToWorld;
+        vec4 wP = vec4(xy, depth * 2.0 -1.0, 1.0) * ScreenToView;
 	// Divide by w
 	vec3 p = vec3(wP.xyz / wP.w);
 
@@ -113,7 +113,7 @@ void main(void)
 	vec3 n = normalBuffer.rgb*2.0 -1.0;
 
 	vec3 color = computeSpotLight(spotLight, p, n, diffuse, specular, specularPower * 100);
-	color *= (1-computeShadow(p));
+        color *= (1-computeShadow(p));
 
 	//if(lDepth + shadowBias > lP.z)
 		Color = vec4(color, 1.0);

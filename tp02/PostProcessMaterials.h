@@ -62,3 +62,13 @@ public:
 	void glUniform_Depth(int textureId) const;
 
 };
+
+class MaterialSSAO : public Material
+{
+private:
+
+public:
+	MaterialSSAO();
+	MaterialSSAO(const ShaderProgram& shaderProgram);
+	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+};

@@ -215,8 +215,11 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 		castedMaterial->use();
 		castedMaterial->pushInternalsToGPU(texCount);
 
-		castedMaterial->setUniform_MVP(mvp);
-		castedMaterial->setUniform_normalMatrix(normalMatrix);
+		//castedMaterial->setUniform_MVP(mvp);
+		//castedMaterial->setUniform_normalMatrix(normalMatrix);
+		castedMaterial->setUniformModelMatrix(modelMatrix);
+		castedMaterial->setUniformViewMatrix(view);
+		castedMaterial->setUniformProjectionMatrix(projection);
 		if (m_mesh->getIsSkeletalMesh()) {
 			for (int boneIdx = 0; boneIdx < m_mesh->getSkeleton()->getBoneCount(); boneIdx++)
 				castedMaterial->setUniformBonesTransform(boneIdx, m_mesh->getSkeleton()->getBoneTransform(boneIdx));
@@ -234,8 +237,11 @@ void MeshRenderer::render(const glm::mat4 & projection, const glm::mat4 & view)
 		castedMaterial->use();
 		castedMaterial->pushInternalsToGPU(texCount);
 
-		castedMaterial->setUniform_MVP(mvp);
-		castedMaterial->setUniform_normalMatrix(normalMatrix);
+		//castedMaterial->setUniform_MVP(mvp);
+		//castedMaterial->setUniform_normalMatrix(normalMatrix);
+		castedMaterial->setUniformModelMatrix(modelMatrix);
+		castedMaterial->setUniformViewMatrix(view);
+		castedMaterial->setUniformProjectionMatrix(projection);
 		if (m_mesh->getIsSkeletalMesh())
 			for (int boneIdx = 0; boneIdx < m_mesh->getSkeleton()->getBoneCount(); boneIdx++)
 				castedMaterial->setUniformBonesTransform(boneIdx, m_mesh->getSkeleton()->getBoneTransform(boneIdx));

@@ -624,14 +624,10 @@ const Mesh * SubMesh::getMeshPtr() const
 
 void SubMesh::setExternalsOf(const MaterialLit& material, const glm::mat4& projection, const glm::mat4& view) const
 {
-	glm::mat4 modelMatrix = getModelMatrix();
-	glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
-	glm::mat4 mvp = projection * view * modelMatrix;
-
-	// Uniform MVP :
-	material.setUniform_MVP(mvp);
-	// Uniform NormalMatrix
-	material.setUniform_normalMatrix(normalMatrix);
+	// Transform matrices
+	material.setUniformModelMatrix(getModelMatrix());
+	material.setUniformViewMatrix(view);
+	material.setUniformProjectionMatrix(projection);
 	// Uniform BonesTransform
 	if (getMeshPtr()->getIsSkeletalMesh())
 	{

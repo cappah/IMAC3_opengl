@@ -113,24 +113,33 @@ void Gizmo::render(const glm::mat4& projectionMatrix, const glm::mat4& viewMatri
 	MaterialUnlit* castedMaterial = static_cast<MaterialUnlit*>(material.get()); //TODO : changer ça appres la refonte du pipeline de rendu
 
 	castedMaterial->use();
-	castedMaterial->setUniform_normalMatrix(glm::mat4(1));
+	//castedMaterial->setUniform_normalMatrix(glm::mat4(1));
 
 	//x : 
 	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(scale, 0.f, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(scale*2.f, scale*0.1f, scale*0.1f));
-	castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	//castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	castedMaterial->setUniformModelMatrix(modelMatrix);
+	castedMaterial->setUniformViewMatrix(viewMatrix);
+	castedMaterial->setUniformProjectionMatrix(projectionMatrix);
 	castedMaterial->setUniform_color(glm::vec3(1, 0, 0));
 	mesh.draw();
 
 	//y : 
 	castedMaterial->setUniform_color(glm::vec3(0, 1, 0));
 	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, scale, 0.f)) * glm::scale(glm::mat4(1), glm::vec3(scale*0.1f, scale*2.f, scale*0.1f));
-	castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	//castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	castedMaterial->setUniformModelMatrix(modelMatrix);
+	castedMaterial->setUniformViewMatrix(viewMatrix);
+	castedMaterial->setUniformProjectionMatrix(projectionMatrix);
 	mesh.draw();
 
 	//z : 
 	castedMaterial->setUniform_color(glm::vec3(0, 0, 1));
 	modelMatrix = translation * glm::translate(glm::mat4(1), glm::vec3(0.f, 0.f, scale)) * glm::scale(glm::mat4(1), glm::vec3(scale*0.1f, scale*0.1f, scale*2.f));
-	castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	//castedMaterial->setUniform_MVP(projectionMatrix * viewMatrix * modelMatrix);
+	castedMaterial->setUniformModelMatrix(modelMatrix);
+	castedMaterial->setUniformViewMatrix(viewMatrix);
+	castedMaterial->setUniformProjectionMatrix(projectionMatrix);
 	mesh.draw();
 }
 

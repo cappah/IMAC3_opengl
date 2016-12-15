@@ -867,8 +867,13 @@ namespace Physic {
 		Material3DObject* castedMaterial = static_cast<Material3DObject*>(m_material.get());
 
 		castedMaterial->use();
-		castedMaterial->setUniform_MVP(mvp);
-		castedMaterial->setUniform_normalMatrix(normalMatrix);
+		//castedMaterial->setUniform_MVP(mvp);
+		//castedMaterial->setUniform_normalMatrix(normalMatrix);
+		castedMaterial->setUniformModelMatrix(modelMatrix);
+		castedMaterial->setUniformViewMatrix(view);
+		castedMaterial->setUniformProjectionMatrix(projection);
+
+
 
 		m_mesh.draw();
 	}
@@ -1080,12 +1085,10 @@ namespace Physic {
 
 	void Flag::setExternalsOf(const MaterialLit & material, const glm::mat4 & projection, const glm::mat4 & view) const
 	{
-		const glm::mat4& modelMatrix = getModelMatrix();
-		const glm::mat4 mvp = projection * view * modelMatrix;
-		const glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelMatrix));
-		
-		material.setUniform_MVP(mvp);
-		material.setUniform_normalMatrix(normalMatrix);
+		// Transform matrices
+		material.setUniformModelMatrix(getModelMatrix());
+		material.setUniformViewMatrix(view);
+		material.setUniformProjectionMatrix(projection);
 		material.setUniformUseSkeleton(false);
 	}
 

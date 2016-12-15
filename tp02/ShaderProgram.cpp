@@ -164,7 +164,7 @@ void ShaderProgram::load(const FileHandler::CompletePath& shaderFolderPath, cons
 
 	glLinkProgram(programObject);
 	if (check_link_error(programObject) < 0)
-		exit(1);
+ 		exit(1);
 
 	//check uniform errors : 
 	if (!checkError("Uniforms"))

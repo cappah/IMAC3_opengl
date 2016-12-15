@@ -180,13 +180,17 @@ void Collider::render(const glm::mat4& projection, const glm::mat4& view, const 
 		return;
 	}
 
-	glm::mat4 mvp = projection * view * modelMatrix;
+	//glm::mat4 mvp = projection * view * modelMatrix;
 
 	MaterialUnlit* unlitMat = static_cast<MaterialUnlit*>(visualMaterial.get()); //TODO : à modifier avec l'upgrade du pipeline de visualisation
 
 	unlitMat->use();
-	unlitMat->setUniform_MVP(mvp);
-	unlitMat->setUniform_normalMatrix(glm::mat4(1)); //no need normals
+	unlitMat->setUniformModelMatrix(modelMatrix);
+	unlitMat->setUniformViewMatrix(view);
+	unlitMat->setUniformProjectionMatrix(projection);
+	//unlitMat->setUniform_MVP(mvp);
+	//unlitMat->setUniform_normalMatrix(glm::mat4(1)); //no need normals
+
 	unlitMat->setUniform_color(color);
 
 	visualMesh->draw();

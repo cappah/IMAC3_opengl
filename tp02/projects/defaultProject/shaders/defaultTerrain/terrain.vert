@@ -9,8 +9,11 @@
 precision highp float;
 precision highp int;
 
-uniform mat4 MVP;
-uniform mat4 NormalMatrix;
+//uniform mat4 MVP;
+//uniform mat4 NormalMatrix;
+uniform mat4 ModelMatrix;
+uniform mat4 ProjectionMatrix;
+uniform mat4 ViewMatrix;
 uniform vec2 TextureRepetition;
 
 layout(location = POSITION) in vec3 Position;
@@ -30,19 +33,21 @@ out block
 
 void main()
 {	
-	vec3 pos = Position;
+    vec3 pos = Position;
 
-	Out.TexCoord = TexCoord;
-	Out.RepeatedTexCoord = TexCoord * TextureRepetition;
-	Out.Position = pos;
-	//Out.Normal =  normalize( vec3(NormalMatrix * vec4(Normal, 0)) );
+    Out.TexCoord = TexCoord;
+    Out.RepeatedTexCoord = TexCoord * TextureRepetition;
+    Out.Position = pos;
+    //Out.Normal =  normalize( vec3(NormalMatrix * vec4(Normal, 0)) );
 
-	//calculate TBN matrix : 
-	vec3 T = normalize( vec3(NormalMatrix * vec4(Tangent, 0.0)));
-	vec3 N = normalize( vec3(NormalMatrix * vec4(Normal, 0.0)) );
-	vec3 B = -cross(T, N);
-	Out.TBN = mat3(B, T, N);
+    mat4 normalMatrix = transpose(inverse(ViewMatrix * ModelMatrix));
 
-	gl_Position = MVP * vec4(Position,1);
+    //calculate TBN matrix :
+    vec3 T = normalize( vec3(normalMatrix * vec4(Tangent, 0.0)));
+    vec3 N = normalize( vec3(normalMatrix * vec4(Normal, 0.0)) );
+    vec3 B = -cross(T, N);
+    Out.TBN = mat3(B, T, N);
+
+    gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(Position,1);
 	
 }

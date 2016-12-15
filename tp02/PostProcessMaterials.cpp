@@ -137,3 +137,22 @@ void MaterialFlares::glUniform_Depth(int textureId) const
 {
 	GlHelper::pushParameterToGPU(m_uniformDepth, textureId);
 }
+
+MaterialSSAO::MaterialSSAO()
+	: Material()
+{
+}
+
+MaterialSSAO::MaterialSSAO(const ShaderProgram & shaderProgram)
+	: Material(shaderProgram)
+{
+	setExternalParameters(shaderProgram.getExternalParameters());
+}
+
+void MaterialSSAO::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+{
+	//TODO
+
+	if (!checkError("Uniforms"))
+		PRINT_ERROR("error in texture initialization.")
+}

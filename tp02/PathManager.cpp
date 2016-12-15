@@ -124,13 +124,16 @@ void PathManager::render(const BaseCamera& camera)
 
 	for (auto& path : m_paths)
 	{
-		glm::mat4 MVP = projection * view;
-		glm::mat4 normalMatrix = glm::mat4(1);
+		//glm::mat4 MVP = projection * view;
+		//glm::mat4 normalMatrix = glm::mat4(1);
 
 		Material3DObject* castedMaterial = static_cast<Material3DObject*>(m_material.get()); //TODO changer ça apres la refonte du pipeline de rendu
 
-		castedMaterial->setUniform_MVP(MVP);
-		castedMaterial->setUniform_normalMatrix(normalMatrix);
+		//castedMaterial->setUniform_MVP(MVP);
+		//castedMaterial->setUniform_normalMatrix(normalMatrix);
+		castedMaterial->setUniformModelMatrix(glm::mat4(1));
+		castedMaterial->setUniformViewMatrix(view);
+		castedMaterial->setUniformProjectionMatrix(projection);
 
 		path->draw();
 	}

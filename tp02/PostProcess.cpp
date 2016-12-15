@@ -561,3 +561,43 @@ void FlaresPostProcessOperation::onViewportResized(float width, float height)
 
 //// END : FlaresPostProcessOperation
 ////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////
+//// BEGIN : SSAOPostProcessOperation
+
+REGISTER_POST_PROCESS(SSAOPostProcessOperation, SSAOPostProcessOperationData, "ssao")
+
+SSAOPostProcessOperationData::SSAOPostProcessOperationData(const std::string & operationName)
+	: PostProcessOperationData(operationName)
+{
+	m_materialSSAO.init(*getProgramFactory().get("ssao"));
+}
+
+void SSAOPostProcessOperationData::drawUI()
+{
+	m_materialSSAO.drawUI();
+}
+
+const MaterialSSAO & SSAOPostProcessOperationData::getMaterial() const
+{
+	return m_materialSSAO;
+}
+
+/////////////
+
+SSAOPostProcessOperation::SSAOPostProcessOperation(const std::string & operationName)
+	: PostProcessOperation(operationName)
+{
+}
+
+void SSAOPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera & camera, GlHelper::Framebuffer & finalFB, Texture & finalTexture, Mesh & renderQuad, Texture & beautyColor, Texture & beautyHighValues, Texture & beautyDepth, Texture & gPassHighValues, const std::vector<PointLight*>& pointLights, DebugDrawRenderer * debugDrawer)
+{
+	
+}
+
+void SSAOPostProcessOperation::onViewportResized(float width, float height)
+{
+}
+
+//// END : SSAOPostProcessOperation
+////////////////////////////////////////////////////////////////

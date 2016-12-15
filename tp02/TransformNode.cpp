@@ -200,6 +200,13 @@ void TransformNode::updateModelMatrix()
 
 void TransformNode::drawUI(bool local)
 {
+
+	glm::vec3 tmpTrans = m_translation;
+	if (ImGui::InputFloat3("translation", &tmpTrans[0]))
+	{
+		setTranslation(tmpTrans);
+		applyTransform();
+	}
 	if (!local)
 	{
 		glm::vec3 tmpRot = m_eulerRotation * (180.f / glm::pi<float>());
@@ -242,14 +249,21 @@ void TransformNode::drawInInspector(bool local, const std::vector<IDrawableInIns
 	if (selection.size() == 0)
 		return;
 
+	glm::vec3 tmpTrans = m_translation;
+	if (ImGui::InputFloat3("translation", &tmpTrans[0]))
+	{
+		for (auto& node : selection)
+		{
+			Entity* entity = static_cast<Entity*>(node);
+			entity->setTranslation(tmpTrans);
+			entity->applyTransform();
+		}
+	}
 	if (!local)
 	{
 		glm::vec3 tmpRot = m_eulerRotation * (180.f / glm::pi<float>());
 		if (ImGui::SliderFloat3("rotation", &tmpRot[0], 0, 360))
 		{
-			//m_eulerRotation = tmpRot * glm::pi<float>() / 180.f;
-			//setRotation(glm::quat(m_eulerRotation));
-
 			for (auto& node : selection)
 			{
 				Entity* entity = static_cast<Entity*>(node);

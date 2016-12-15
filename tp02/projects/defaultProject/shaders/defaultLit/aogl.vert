@@ -14,8 +14,11 @@ precision highp int;
 
 const unsigned int MAX_BONE_COUNT = 100;
 
-uniform mat4 MVP;
-uniform mat4 NormalMatrix;
+//uniform mat4 MVP;
+//uniform mat4 NormalMatrix;
+uniform mat4 ModelMatrix;
+uniform mat4 ProjectionMatrix;
+uniform mat4 ViewMatrix;
 uniform vec2 TextureRepetition;
 uniform mat4 BonesTransform[MAX_BONE_COUNT];
 uniform bool UseSkeleton = false;
@@ -32,7 +35,6 @@ out block
 {
 	vec2 TexCoord; 
 	vec3 Position;
-	//vec3 Normal;
 	mat3 TBN;
 } Out;
 
@@ -48,16 +50,17 @@ void main()
 
 	vec3 pos = Position;
 
+        mat4 normalMatrix = transpose(inverse(ViewMatrix * ModelMatrix));
+
         Out.TexCoord = TexCoord * TextureRepetition;
-	Out.Position = vec3(boneTransform * vec4(pos, 1));
-	//Out.Normal =  normalize( vec3(NormalMatrix * vec4(Normal, 0)) );
+        Out.Position = vec3(boneTransform * ViewMatrix * vec4(pos, 1));
 
 	//calculate TBN matrix : 
-	vec3 T = normalize( vec3(boneTransform * NormalMatrix * vec4(Tangent, 0.0)) );
-	vec3 N = normalize( vec3(boneTransform * NormalMatrix * vec4(Normal, 0.0)) );
+        vec3 T = normalize( vec3(boneTransform * normalMatrix * vec4(Tangent, 0.0)) );
+        vec3 N = normalize( vec3(boneTransform * normalMatrix * vec4(Normal, 0.0)) );
 	vec3 B = -cross(T, N);
 	Out.TBN = mat3(B, T, N);
 
-	gl_Position = MVP * boneTransform * vec4(Position,1);
+        gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * boneTransform * vec4(Position,1);
 	
 }

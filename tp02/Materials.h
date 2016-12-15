@@ -136,8 +136,8 @@ private:
 	GLuint uniform_ColorTexture;
 	GLuint uniform_NormalTexture;
 	GLuint uniform_DepthTexture;
-	GLuint uniform_ScreenToWorld;
-	GLuint uniform_CameraPosition;
+	GLuint uniform_ScreenToView;
+	//GLuint uniform_CameraPosition; //No need in eye space
 	GLuint uniform_ShadowTexture;
 
 public:
@@ -165,8 +165,8 @@ public:
 		uniform_ColorTexture = MaterialHelper::getUniform(m_glProgramId, "ColorBuffer");
 		uniform_NormalTexture = MaterialHelper::getUniform(m_glProgramId, "NormalBuffer");
 		uniform_DepthTexture = MaterialHelper::getUniform(m_glProgramId, "DepthBuffer");
-		uniform_ScreenToWorld = MaterialHelper::getUniform(m_glProgramId, "ScreenToWorld");
-		uniform_CameraPosition = MaterialHelper::getUniform(m_glProgramId, "CameraPosition");
+		uniform_ScreenToView = MaterialHelper::getUniform(m_glProgramId, "ScreenToView");
+		//uniform_CameraPosition = MaterialHelper::getUniform(m_glProgramId, "CameraPosition");
 		uniform_ShadowTexture = MaterialHelper::getUniform(m_glProgramId, "Shadow");
 
 		if (!checkError("Uniforms"))
@@ -185,14 +185,14 @@ public:
 	{
 		GlHelper::pushParameterToGPU(uniform_DepthTexture, texUnitId);
 	}
-	void setUniformScreenToWorld(const glm::mat4& screenToWorldMat)
+	void setUniformScreenToView(const glm::mat4& screenToWorldMat)
 	{
-		GlHelper::pushParameterToGPU(uniform_ScreenToWorld, screenToWorldMat);
+		GlHelper::pushParameterToGPU(uniform_ScreenToView, screenToWorldMat);
 	}
-	void setUniformCameraPosition(const glm::vec3& cameraPosition)
-	{
-		GlHelper::pushParameterToGPU(uniform_CameraPosition, cameraPosition);
-	}
+	//void setUniformCameraPosition(const glm::vec3& cameraPosition)
+	//{
+	//	GlHelper::pushParameterToGPU(uniform_CameraPosition, cameraPosition);
+	//}
 	void setUniformShadowTexture(int texUnitId)
 	{
 		GlHelper::pushParameterToGPU(uniform_ShadowTexture, texUnitId);
@@ -202,6 +202,7 @@ public:
 class MaterialPointLight final : public MaterialLight
 {
 private:
+	GLuint uniform_ViewToWorld;
 	GLuint uniform_FarPlane;
 	GLuint uniform_lightPosition;
 	GLuint uniform_lightColor;
@@ -229,6 +230,7 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
+		uniform_ViewToWorld = MaterialHelper::getUniform(m_glProgramId, "ViewToWorld");
 		uniform_FarPlane = MaterialHelper::getUniform(m_glProgramId, "FarPlane");
 		uniform_lightPosition = MaterialHelper::getUniform(m_glProgramId, "pointLight.position");
 		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "pointLight.color");
@@ -236,6 +238,11 @@ public:
 
 		if (!checkError("Uniforms"))
 			PRINT_ERROR("error in texture initialization.")
+	}
+
+	void setUniformViewToWorld(const glm::mat4& ViewToWorld)
+	{
+		GlHelper::pushParameterToGPU(uniform_ViewToWorld, ViewToWorld);
 	}
 
 	void setUniformFarPlane(float farPlane)
@@ -261,7 +268,7 @@ class MaterialDirectionalLight final : public MaterialLight
 {
 private:
 
-	GLuint uniform_WorldToLight;
+	GLuint uniform_ViewToLight;
 	GLuint uniform_lightDirection;
 	GLuint uniform_lightColor;
 	GLuint uniform_lightIntensity;
@@ -288,7 +295,7 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_WorldToLight = MaterialHelper::getUniform(m_glProgramId, "WorldToLightScreen");
+		uniform_ViewToLight = MaterialHelper::getUniform(m_glProgramId, "ViewToLightScreen");
 		uniform_lightDirection = MaterialHelper::getUniform(m_glProgramId, "directionalLight.direction");
 		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "directionalLight.color");
 		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "directionalLight.intensity");
@@ -297,9 +304,9 @@ public:
 			PRINT_ERROR("error in texture initialization.")
 	}
 
-	void setUniformWorldToLight(const glm::mat4& worldToLightMat)
+	void setUniformViewToLight(const glm::mat4& worldToLightMat)
 	{
-		GlHelper::pushParameterToGPU(uniform_WorldToLight, worldToLightMat);
+		GlHelper::pushParameterToGPU(uniform_ViewToLight, worldToLightMat);
 	}
 
 	void setUniformLightDirection(const glm::vec3& lightDir)
@@ -320,7 +327,7 @@ class MaterialSpotLight final : public MaterialLight
 {
 private:
 
-	GLuint uniform_WorldToLight;
+	GLuint uniform_ViewToLight;
 	GLuint uniform_lightDirection;
 	GLuint uniform_lightPosition;
 	GLuint uniform_lightAngle;
@@ -349,7 +356,7 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_WorldToLight = MaterialHelper::getUniform(m_glProgramId, "WorldToLightScreen");
+		uniform_ViewToLight = MaterialHelper::getUniform(m_glProgramId, "ViewToLightScreen");
 		uniform_lightDirection = MaterialHelper::getUniform(m_glProgramId, "spotLight.direction");
 		uniform_lightAngle = MaterialHelper::getUniform(m_glProgramId, "spotLight.angle");
 		uniform_lightPosition = MaterialHelper::getUniform(m_glProgramId, "spotLight.position");
@@ -360,9 +367,9 @@ public:
 			PRINT_ERROR("error in texture initialization.")
 	}
 
-	void setUniformWorldToLight(const glm::mat4& worldToLightMat)
+	void setUniformViewToLight(const glm::mat4& viewToLightMat)
 	{
-		GlHelper::pushParameterToGPU(uniform_WorldToLight, worldToLightMat);
+		GlHelper::pushParameterToGPU(uniform_ViewToLight, viewToLightMat);
 	}
 
 	void setUniformLightPosition(const glm::vec3& lightPos)
@@ -542,8 +549,11 @@ public:
 class Material3DObject : public BatchableMaterial<Material3DObject, Material> //public Material
 {
 private:
-	GLuint uniform_MVP;
-	GLuint uniform_normalMatrix;
+	//GLuint uniform_MVP;
+	//GLuint uniform_normalMatrix;
+	GLuint uniform_ModelMatrix;
+	GLuint uniform_ViewMatrix;
+	GLuint uniform_ProjectionMatrix;
 	std::vector<GLuint> uniform_bonesTransform;
 	GLuint uniform_useSkeleton;
 
@@ -569,8 +579,11 @@ public:
 
 	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override
 	{
-		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
-		uniform_normalMatrix = MaterialHelper::getUniform(m_glProgramId, "NormalMatrix");
+		/*uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+		uniform_normalMatrix = MaterialHelper::getUniform(m_glProgramId, "NormalMatrix");*/
+		uniform_ModelMatrix = MaterialHelper::getUniform(m_glProgramId, "ModelMatrix");
+		uniform_ViewMatrix = MaterialHelper::getUniform(m_glProgramId, "ViewMatrix");
+		uniform_ProjectionMatrix = MaterialHelper::getUniform(m_glProgramId, "ProjectionMatrix");
 		uniform_bonesTransform = MaterialHelper::getUniforms(m_glProgramId, "BonesTransform", MAX_BONE_COUNT);
 		uniform_useSkeleton = MaterialHelper::getUniform(m_glProgramId, "UseSkeleton");
 
@@ -578,13 +591,25 @@ public:
 			PRINT_ERROR("error in texture initialization.")
 	}
 
-	void setUniform_MVP(const glm::mat4& mvp) const
+	//void setUniform_MVP(const glm::mat4& mvp) const
+	//{
+	//	GlHelper::pushParameterToGPU(uniform_MVP, mvp);
+	//}
+	//void setUniform_normalMatrix(const glm::mat4& normalMatrix) const
+	//{
+	//	GlHelper::pushParameterToGPU(uniform_normalMatrix, normalMatrix);
+	//}
+	void setUniformModelMatrix(const glm::mat4& modelMatrix) const
 	{
-		GlHelper::pushParameterToGPU(uniform_MVP, mvp);
+		GlHelper::pushParameterToGPU(uniform_ModelMatrix, modelMatrix);
 	}
-	void setUniform_normalMatrix(const glm::mat4& normalMatrix) const
+	void setUniformViewMatrix(const glm::mat4& viewMatrix) const
 	{
-		GlHelper::pushParameterToGPU(uniform_normalMatrix, normalMatrix);
+		GlHelper::pushParameterToGPU(uniform_ViewMatrix, viewMatrix);
+	}
+	void setUniformProjectionMatrix(const glm::mat4& projectionMatrix) const
+	{
+		GlHelper::pushParameterToGPU(uniform_ProjectionMatrix, projectionMatrix);
 	}
 	void setUniformBonesTransform(unsigned int idx, const glm::mat4& boneTransform) const
 	{

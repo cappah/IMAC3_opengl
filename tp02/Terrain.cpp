@@ -1396,8 +1396,11 @@ void Terrain::render(const glm::mat4& projection, const glm::mat4& view)
 		m_material.setUniformLayoutOffset(glm::vec2(offsetMin, offsetMax));
 		m_material.setUniformTextureRepetition(m_textureRepetitions[i]);
 
-		m_material.setUniform_MVP(mvp);
-		m_material.setUniform_normalMatrix(normalMatrix);
+		//m_material.setUniform_MVP(mvp);
+		//m_material.setUniform_normalMatrix(normalMatrix);
+		m_material.setUniformModelMatrix(modelMatrix);
+		m_material.setUniformViewMatrix(view);
+		m_material.setUniformProjectionMatrix(projection);
 
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, m_triangleCount * 3, GL_UNSIGNED_INT, (GLvoid*)0);

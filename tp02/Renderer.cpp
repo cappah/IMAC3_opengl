@@ -43,8 +43,8 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	gPassHightValuesTexture.initGL();
 
 	gBufferFBO.bind(GL_FRAMEBUFFER);
-	GLenum drawBufferForGPass[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	gBufferFBO.setDrawBuffers(3, drawBufferForGPass);
+	GLenum drawBufferForGPass[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	gBufferFBO.setDrawBuffers(4, drawBufferForGPass);
 	gBufferFBO.attachTexture(&gPassColorTexture, GL_COLOR_ATTACHMENT0, 0);
 	gBufferFBO.attachTexture(&gPassNormalTexture, GL_COLOR_ATTACHMENT1, 0);
 	gBufferFBO.attachTexture(&gPassHightValuesTexture, GL_COLOR_ATTACHMENT2, 0);
@@ -123,6 +123,7 @@ void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 	gBufferFBO.detachTexture(GL_COLOR_ATTACHMENT0, 0);
 	gBufferFBO.detachTexture(GL_COLOR_ATTACHMENT1, 0);
 	gBufferFBO.detachTexture(GL_COLOR_ATTACHMENT2, 0);
+	gBufferFBO.detachTexture(GL_COLOR_ATTACHMENT3, 0);
 	gBufferFBO.detachTexture(GL_DEPTH_ATTACHMENT, 0);
 
 	// Pop, resize and repush textures
@@ -692,7 +693,7 @@ void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLig
 	const glm::mat4& projection = camera.getProjectionMatrix();
 	const glm::mat4& view = camera.getViewMatrix();
 	const glm::mat4 camera_mvp = projection * view;
-	const glm::mat4 screenToWorld = glm::transpose(glm::inverse(camera_mvp));
+	const glm::mat4 screenToView = glm::transpose(glm::inverse(projection));
 	///////// END : Update matrices
 	////////////////////////////////////////////////////////////////////////
 
@@ -705,7 +706,7 @@ void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLig
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : ShadowPass
-	shadowPass(camera, opaqueRenderBatches, transparentRenderBatches, pointLights, directionalLights, spotLights);
+	shadowPass(camera, opaqueRenderBatches, transparentRenderBatches, pointLights, directionalLights, spotLights, debugDrawer);
 	///////// END : ShadowPass
 	////////////////////////////////////////////////////////////////////////
 
@@ -718,7 +719,7 @@ void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLig
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : Deferred
-	deferredPipeline(opaqueRenderBatches, projection, view, cameraPosition, cameraForward, screenToWorld, camera_mvp, pointLights, directionalLights, spotLights);
+	deferredPipeline(opaqueRenderBatches, camera, projection, view, cameraPosition, cameraForward, screenToView, camera_mvp, pointLights, directionalLights, spotLights);
 	///////// END : Deferred
 	////////////////////////////////////////////////////////////////////////
 
@@ -757,7 +758,7 @@ void Renderer::renderLightedScene(const BaseCamera& camera, std::vector<PointLig
 	m_lightPassBuffer.bind();
 }
 
-void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
+void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
 {
 	const glm::vec3& cameraForward = camera.getCameraForward();
 	const glm::vec3& cameraPosition = camera.getCameraPosition();
@@ -816,7 +817,7 @@ void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::
 			float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
 			float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
 			float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
-			glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalLights[lightIdx]->position.y /*directionalShadowMapFar*0.5f*/, cameraPosition.z);
+			glm::vec3 orig = directionalLights[lightIdx]->position; // glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalLights[lightIdx]->position.y /*directionalShadowMapFar*0.5f*/, cameraPosition.z);
 			glm::vec3 eye = -directionalLights[lightIdx]->direction + orig;
 			glm::mat4 lightProjection = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
 			glm::mat4 lightView = glm::lookAt(eye, orig, directionalLights[lightIdx]->up);
@@ -854,12 +855,12 @@ void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::
 			glClear(GL_DEPTH_BUFFER_BIT);
 			glm::mat4 lightProjection = glm::perspective(glm::radians(90.f), 1.f, 1.f, 100.f);
 			std::vector<glm::mat4> lightVPs;
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
-			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(1.f, 0.f, 0.f) , glm::vec3(0.f, -1.f, 0.f)) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 1.f, 0.f) , glm::vec3(0.f, 0.f, 1.f) ) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 0.f, 1.f) , glm::vec3(0.f, -1.f, 0.f)) );
+			lightVPs.push_back(lightProjection * glm::lookAt(pointLights[lightIdx]->position, pointLights[lightIdx]->position + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)) );
 
 			for (auto& renderBatchPair : opaqueRenderBatches)
 			{
@@ -881,6 +882,14 @@ void Renderer::shadowPass(const BaseCamera& camera, const std::map<GLuint, std::
 	}
 
 	CHECK_GL_ERROR("error in shadow pass");
+
+	if (debugDrawer != nullptr)
+	{
+		if(lightManager->getShadowMapCount(LightManager::DIRECTIONAL) > 0)
+			debugDrawer->drawOutputIfNeeded("shadow_directionnal", lightManager->getDirectionalShadowMap(0).getTextureId());
+		if (lightManager->getShadowMapCount(LightManager::SPOT) > 0)
+			debugDrawer->drawOutputIfNeeded("shadow_spot", lightManager->getSpotShadowMap(0).getTextureId());
+	}
 }
 
 void Renderer::gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view)
@@ -904,8 +913,11 @@ void Renderer::gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaq
 	CHECK_GL_ERROR("error in G pass");
 }
 
-void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
+void Renderer::lightPass(const glm::mat4& screenToView, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
 {
+
+	// The View to world matrix is the same of all the process, we compute it here :
+	glm::mat4 viewToWorld = glm::inverse(view);
 
 	///// begin light pass
 	// Disable the depth test
@@ -923,8 +935,8 @@ void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& camera
 	m_pointLightMaterial->use();
 
 	// send screen to world matrix : 
-	m_pointLightMaterial->setUniformScreenToWorld(screenToWorld);
-	m_pointLightMaterial->setUniformCameraPosition(cameraPosition);
+	m_pointLightMaterial->setUniformScreenToView(screenToView);
+	//m_pointLightMaterial->setUniformCameraPosition(cameraPosition);
 
 	//geometry informations :
 	glActiveTexture(GL_TEXTURE0);
@@ -958,9 +970,10 @@ void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& camera
 			resizeBlitQuad(viewport);
 
 			//glUniform1f(uniformLightFarPlane, 100.f);
+			m_pointLightMaterial->setUniformViewToWorld(viewToWorld);
 			m_pointLightMaterial->setUniformFarPlane(100.f);
 
-			lightManager->uniformPointLight(*pointLights[lightIdx]);
+			lightManager->uniformPointLight(*pointLights[lightIdx], view);
 			quadMesh.draw();
 		}
 	}
@@ -969,8 +982,8 @@ void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& camera
 	m_spotLightMaterial->use();
 
 	// send screen to world matrix : 
-	m_spotLightMaterial->setUniformScreenToWorld(screenToWorld);
-	m_spotLightMaterial->setUniformCameraPosition(cameraPosition);
+	m_spotLightMaterial->setUniformScreenToView(screenToView);
+	//m_spotLightMaterial->setUniformCameraPosition(cameraPosition);
 
 
 	//geometry informations :
@@ -1005,13 +1018,16 @@ void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& camera
 			//resize viewport
 			resizeBlitQuad(viewport);
 
+			const glm::vec3 spotLightViewPosition = glm::vec3(view * glm::vec4(spotLights[lightIdx]->position, 1.0));
+			const glm::vec3 spotLightViewDirection = glm::vec3(view * glm::vec4(spotLights[lightIdx]->direction, 0.0));
+			const glm::vec3 spotLightViewUp = glm::vec3(view * glm::vec4(spotLights[lightIdx]->up, 0.0));
 			glm::mat4 projectionSpotLight = glm::perspective(spotLights[lightIdx]->angle*2.f, 1.f, 0.1f, 100.f);
-			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLights[lightIdx]->position, spotLights[lightIdx]->position + spotLights[lightIdx]->direction, spotLights[lightIdx]->up);
-			glm::mat4 WorldToLightScreen = projectionSpotLight * worldToLightSpotLight;
+			glm::mat4 worldToLightSpotLight = glm::lookAt(spotLightViewPosition, spotLightViewPosition + spotLightViewDirection, spotLightViewUp);
+			glm::mat4 ViewToLightScreen = projectionSpotLight * worldToLightSpotLight;
 			//glUniformMatrix4fv(uniformWorldToLightScreen_spot, 1, false, glm::value_ptr(WorldToLightScreen));
-			m_spotLightMaterial->setUniformWorldToLight(WorldToLightScreen);
+			m_spotLightMaterial->setUniformViewToLight(ViewToLightScreen);
 
-			lightManager->uniformSpotLight(*spotLights[lightIdx]);
+			lightManager->uniformSpotLight(*spotLights[lightIdx], view);
 			quadMesh.draw();
 		}
 	}
@@ -1024,8 +1040,8 @@ void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& camera
 	m_directionalLightMaterial->use();
 
 	// send screen to world matrix : 
-	m_directionalLightMaterial->setUniformScreenToWorld(screenToWorld);
-	m_directionalLightMaterial->setUniformCameraPosition(cameraPosition);
+	m_directionalLightMaterial->setUniformScreenToView(screenToView);
+	//m_directionalLightMaterial->setUniformCameraPosition(cameraPosition);
 
 
 	//geometry informations :
@@ -1052,18 +1068,21 @@ void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& camera
 			m_directionalLightMaterial->setUniformShadowTexture(3);
 		}
 
+		const glm::vec3 directionalLightViewPosition = glm::vec3(view * glm::vec4(directionalLights[i]->position, 1.0));
+		const glm::vec3 directionalLightViewDirection = glm::vec3(view * glm::vec4(directionalLights[i]->direction, 0.0));
+		const glm::vec3 directionalLightViewUp = glm::vec3(view * glm::vec4(directionalLights[i]->up, 0.0));
 		float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
 		float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
 		float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
-		glm::vec3 orig = glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalLights[i]->position.y/*directionalShadowMapFar*0.5f*/, cameraPosition.z);
-		glm::vec3 eye = -directionalLights[i]->direction + orig;
+		glm::vec3 orig = directionalLightViewPosition; ///*glm::vec3(0, 0, 1)*directionalShadowMapRadius + */glm::vec3(0, directionalLightViewPosition.y/*directionalShadowMapFar*0.5f*/, 0);
+		glm::vec3 eye = -directionalLightViewDirection + orig;
 		glm::mat4 projectionDirectionalLight = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
-		glm::mat4 worldToLightDirectionalLight = glm::lookAt(eye, orig, directionalLights[i]->up);
-		glm::mat4 WorldToLightScreen = projectionDirectionalLight * worldToLightDirectionalLight;
+		glm::mat4 viewToLightDirectionalLight = glm::lookAt(eye, orig, directionalLightViewUp);
+		glm::mat4 viewToLightScreen = projectionDirectionalLight * viewToLightDirectionalLight;
 		//glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
-		m_directionalLightMaterial->setUniformWorldToLight(WorldToLightScreen);
+		m_directionalLightMaterial->setUniformViewToLight(viewToLightScreen);
 
-		lightManager->uniformDirectionalLight(*directionalLights[i]);
+		lightManager->uniformDirectionalLight(*directionalLights[i], view);
 		quadMesh.draw();
 	}
 
@@ -1074,7 +1093,7 @@ void Renderer::lightPass(const glm::mat4& screenToWorld, const glm::vec3& camera
 	CHECK_GL_ERROR("error in light pass");
 }
 
-void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& screenToWorld, const glm::mat4& camera_mvp, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
+void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& screenToView, const glm::mat4& camera_mvp, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights)
 {
 	////// begin G pass 
 	gBufferFBO.bind();
@@ -1084,11 +1103,15 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 	gBufferFBO.unbind();
 	////// end G pass
 
+	////// begin SSAO pass
+	m_postProcessManager.renderSSAO(camera);
+	////// end SSAO pass
+
 	///// begin light pass
 	m_lightPassBuffer.bind();
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	lightPass(screenToWorld, cameraPosition, cameraForward, pointLights, directionalLights, spotLights);
+	lightPass(screenToView, cameraPosition, cameraForward, view, pointLights, directionalLights, spotLights);
 	m_lightPassBuffer.unbind();
 	///// end light pass
 }

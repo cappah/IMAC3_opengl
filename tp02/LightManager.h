@@ -28,6 +28,11 @@ struct ShadowMap
 
 	ShadowMap(const ShadowMap& other) = delete;
 	ShadowMap& operator=(const ShadowMap& other) = delete;
+
+	GLuint getTextureId()
+	{
+		return shadowTexture;
+	}
 };
 
 struct OmniShadowMap // omnidirectional shadow map for point lights
@@ -80,12 +85,22 @@ public:
 	void bindShadowMapTexture(LightType lightType, int index);
 
 	void setLightingMaterials(std::shared_ptr<MaterialPointLight> pointLightMat, std::shared_ptr<MaterialDirectionalLight> directionalLightMat, std::shared_ptr<MaterialSpotLight> spotLightMat);
-	void uniformPointLight(PointLight& light);
-	void uniformDirectionalLight(DirectionalLight& light);
-	void uniformSpotLight(SpotLight& light);
+	void uniformPointLight(PointLight& light, const glm::mat4& view);
+	void uniformDirectionalLight(DirectionalLight& light, const glm::mat4& view);
+	void uniformSpotLight(SpotLight& light, const glm::mat4& view);
 
 	float getDirectionalShadowMapViewportSize() const;
 	float getDirectionalShadowMapViewportNear() const;
 	float getDirectionalShadowMapViewportFar() const;
+
+	ShadowMap& getDirectionalShadowMap(int i)
+	{
+		return directional_shadowMaps[i];
+	}
+
+	ShadowMap& getSpotShadowMap(int i)
+	{
+		return spot_shadowMaps[i];
+	}
 };
 
