@@ -357,6 +357,7 @@
     <ClInclude Include="GUI.h" />
     <ClInclude Include="IClonable.h" />
     <ClInclude Include="ICloner.h" />
+    <ClInclude Include="IDGenerator.h" />
     <ClInclude Include="IDrawable.h" />
     <ClInclude Include="IDrawableInInspector.h" />
     <ClInclude Include="imgui_extension.h" />

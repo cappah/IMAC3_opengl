@@ -1010,12 +1010,12 @@ void Project::initDefaultAssets()
 	Texture* texSkyFront = new Texture(FileHandler::CompletePath("textures/skyboxes/front.png"));
 	Texture* texSkyBack = new Texture(FileHandler::CompletePath("textures/skyboxes/back.png"));
 
-	getTextureFactory().addDefault("skyRight", texSkyRight);
-	getTextureFactory().addDefault("skyLeft", texSkyLeft);
-	getTextureFactory().addDefault("skyTop", texSkyTop);
-	getTextureFactory().addDefault("skyBottom", texSkyBottom);
-	getTextureFactory().addDefault("skyFront", texSkyFront);
-	getTextureFactory().addDefault("skyBack", texSkyBack);
+	getTextureFactory().addDefaultResource("skyRight", texSkyRight);
+	getTextureFactory().addDefaultResource("skyLeft", texSkyLeft);
+	getTextureFactory().addDefaultResource("skyTop", texSkyTop);
+	getTextureFactory().addDefaultResource("skyBottom", texSkyBottom);
+	getTextureFactory().addDefaultResource("skyFront", texSkyFront);
+	getTextureFactory().addDefaultResource("skyBack", texSkyBack);
 
 	//std::vector<FileHandler::CompletePath> skyboxTexturePaths = { 
 	//	FileHandler::CompletePath("textures/skyboxes/right.png"), FileHandler::CompletePath("textures/skyboxes/left.png"),
@@ -1044,10 +1044,10 @@ void Project::initDefaultAssets()
 	// So initialyzing materials before TextureFectory initialysation will create materials with wrong texture and mesh names. 
 
 	////////// INITIALYZE DEFAULT TEXTURES IN FACTORY : 
-	getTextureFactory().addDefault("brickDiffuse", diffuseTexture);
-	getTextureFactory().addDefault("brickSpecular", specularTexture);
-	getTextureFactory().addDefault("brickBump", bumpTexture);
-	getTextureFactory().addDefault("grass01Diffuse", grassTextureDiffuse);
+	getTextureFactory().addDefaultResource("brickDiffuse", diffuseTexture);
+	getTextureFactory().addDefaultResource("brickSpecular", specularTexture);
+	getTextureFactory().addDefaultResource("brickBump", bumpTexture);
+	getTextureFactory().addDefaultResource("grass01Diffuse", grassTextureDiffuse);
 
 	// materials : 
 	//MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, getTextureFactory().get("default"), getTextureFactory().get("default"), getTextureFactory().get("default"), 50);
@@ -1060,7 +1060,7 @@ void Project::initDefaultAssets()
 
 	////////// INITIALYZE DEFAULT MATERIALS IN FACTORY : 
 	//getMaterialFactory().add("default", defaultMaterial);
-	getMaterialFactory().addDefault("brick", brickMaterial);
+	getMaterialFactory().addDefaultResource("brick", brickMaterial);
 	//getMaterialFactory().add("wireframe", wireframeMaterial);
 	//getMaterialFactory().add("grassField", grassFieldMaterial);
 
@@ -1069,7 +1069,7 @@ void Project::initDefaultAssets()
 	//getMeshFactory().add("cubeWireframe", cubeWireFrame);
 	//getMeshFactory().add("plane", plane);
 
-	getCubeTextureFactory().addDefault("plaineSkybox", defaultSkybox);
+	getCubeTextureFactory().addDefaultResource("plaineSkybox", defaultSkybox);
 
 	////////// INITIALYZE DEFAULT PROGRAMS IN FACTORY : 
 	//getProgramFactory().add("defaultLit", programObject_gPass);

@@ -200,7 +200,7 @@ public:
 	template<typename U>
 	void addFile(const FileHandler::CompletePath& filePath, U* resource)
 	{
-		getResourceFactory<U>().add(filePath, resource);
+		getResourceFactory<U>().addResourceForce(filePath, resource);
 		m_filesContainer.push_back(ResourceFile(filePath));
 	}
 

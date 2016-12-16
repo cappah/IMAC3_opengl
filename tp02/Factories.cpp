@@ -8,7 +8,7 @@
 
 //addings : 
 template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
+void ResourceFactory<Material>::addResourceForce(const FileHandler::CompletePath& path, unsigned int hashKey)
 {
 	Material* newResource = makeNewMaterialInstance(path);
 	newResource->init(path);
@@ -19,7 +19,7 @@ void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsig
 }
 
 template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path)
+void ResourceFactory<Material>::addResourceSoft(const FileHandler::CompletePath& path)
 {
 	Material* newResource = makeNewMaterialInstance(path);
 	newResource->init(path);
@@ -120,7 +120,7 @@ void ResourceFactory<CubeTexture>::initDefaults()
 	auto newTex = new CubeTexture(255, 255, 255);
 	newTex->initGL();
 	newTex->name = "default";
-	addDefault(newTex->name, newTex);
+	addDefaultResource(newTex->name, newTex);
 }
 
 //Textures
@@ -130,22 +130,22 @@ void ResourceFactory<Texture>::initDefaults()
 	//default diffuse
 	auto newTex = new Texture(glm::vec3(255, 255, 255));
 	newTex->initGL();
-	addDefault("default", newTex);
+	addDefaultResource("default", newTex);
 
 	//default normal
 	newTex = new Texture(glm::vec3(0, 0, 125));
 	newTex->initGL();
-	addDefault("defaultNormal", newTex);
+	addDefaultResource("defaultNormal", newTex);
 
 	//default specular
 	newTex = new Texture(glm::vec3(10, 10, 10));
 	newTex->initGL();
-	addDefault("defaultSpecular", newTex);
+	addDefaultResource("defaultSpecular", newTex);
 
 	//default emissive
 	newTex = new Texture(glm::vec3(255, 255, 255));
 	newTex->initGL();
-	addDefault("defaultEmissive", newTex);
+	addDefaultResource("defaultEmissive", newTex);
 }
 
 
@@ -163,37 +163,37 @@ void ResourceFactory<Material>::initDefaults()
 	*/
 	
 	Material* newMat = new MaterialLit(*getProgramFactory().get("lit"));
-	addDefault("defaultLit", newMat);
+	addDefaultResource("defaultLit", newMat);
 
 	newMat = new MaterialSkybox(*getProgramFactory().get("skybox"));
-	addDefault("defaultSkybox", newMat);
+	addDefaultResource("defaultSkybox", newMat);
 
 	newMat = new MaterialUnlit(*getProgramFactory().get("unlit"));
-	addDefault("wireframe", newMat);
+	addDefaultResource("wireframe", newMat);
 
 	newMat = new MaterialInstancedUnlit(*getProgramFactory().get("wireframeInstanced"));
-	addDefault("wireframeInstanced", newMat);
+	addDefaultResource("wireframeInstanced", newMat);
 
 	newMat = new MaterialGrassField(*getProgramFactory().get("grassField"));
-	addDefault("grassfield", newMat);
+	addDefaultResource("grassfield", newMat);
 
 	newMat = new MaterialBillboard(*getProgramFactory().get("billboard"));
-	addDefault("billboard", newMat);
+	addDefaultResource("billboard", newMat);
 
 	newMat = new MaterialParticles(*getProgramFactory().get("particles"));
-	addDefault("particles", newMat);
+	addDefaultResource("particles", newMat);
 
 	newMat = new MaterialParticlesCPU(*getProgramFactory().get("particlesCPU"));
-	addDefault("particlesCPU", newMat);
+	addDefaultResource("particlesCPU", newMat);
 
 	newMat = new MaterialParticleSimulation(*getProgramFactory().get("particleSimulation"));
-	addDefault("particleSimulation", newMat);
+	addDefaultResource("particleSimulation", newMat);
 
 	newMat = new MaterialDebugDrawer(*getProgramFactory().get("debugDrawer"));
-	addDefault("debugDrawer", newMat);	
+	addDefaultResource("debugDrawer", newMat);
 
 	newMat = new MaterialBlit(*getProgramFactory().get("blit"));
-	addDefault("blit", newMat);
+	addDefaultResource("blit", newMat);
 }
 
 //Mesh
@@ -337,12 +337,12 @@ void ResourceFactory<Mesh>::initDefaults()
 	//quad->computeBoundingBox();
 
 	//addDefault("default", cube);
-	addDefault("cube", cube);
-	addDefault("cubeWireframe", cubeWireFrame);
-	addDefault("capsuleWireframe", capsuleWireFrame);
-	addDefault("sphereWireframe", sphereWireFrame);
-	addDefault("plane", plane);
-	addDefault("quad", quad);
+	addDefaultResource("cube", cube);
+	addDefaultResource("cubeWireframe", cubeWireFrame);
+	addDefaultResource("capsuleWireframe", capsuleWireFrame);
+	addDefaultResource("sphereWireframe", sphereWireFrame);
+	addDefaultResource("plane", plane);
+	addDefaultResource("quad", quad);
 }
 
 
@@ -508,22 +508,22 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 	case NONE:
 		break;
 	case PROGRAME:
-		getResourceFactory<ShaderProgram>().add(completePath);
+		getResourceFactory<ShaderProgram>().addResourceSoft(completePath);
 		break;
 	case TEXTURE:
-		getResourceFactory<Texture>().add(completePath);
+		getResourceFactory<Texture>().addResourceSoft(completePath);
 		break;
 	case CUBE_TEXTURE:
-		getResourceFactory<CubeTexture>().add(completePath); //TODO
+		getResourceFactory<CubeTexture>().addResourceSoft(completePath);
 		break;
 	case MESH:
-		getResourceFactory<Mesh>().add(completePath);
+		getResourceFactory<Mesh>().addResourceSoft(completePath);
 		break;
 	case SKELETAL_ANIMATION:
 		//getResourceFactory<SkeletalAnimation>().add(completePath); //TODO
 		break;
 	case MATERIAL:
-		getResourceFactory<Material>().add(completePath); //TODO
+		getResourceFactory<Material>().addResourceSoft(completePath);
 		break;
 	default:
 		break;

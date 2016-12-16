@@ -481,6 +481,9 @@
     <ClInclude Include="SceneAccessor.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="IDGenerator.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

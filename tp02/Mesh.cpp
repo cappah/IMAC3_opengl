@@ -583,7 +583,7 @@ void Mesh::loadAnimations(const FileHandler::CompletePath& scenePath, const aiSc
 	{
 		std::string subFileName(scene->mAnimations[i]->mName.C_Str());
 		FileHandler::CompletePath animPath(scenePath.getPath(), scenePath.getFilename(), scenePath.getExtention(), &subFileName);
-		getSkeletalAnimationFactory().add(animPath, new SkeletalAnimation(scene->mAnimations[i]));
+		getSkeletalAnimationFactory().addResourceForce(animPath, new SkeletalAnimation(scene->mAnimations[i]));
 
 		animNames.push_back(subFileName);
 	}

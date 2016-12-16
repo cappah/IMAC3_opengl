@@ -45,10 +45,10 @@ public:
 	//create the nex resource at given path. tell the resource tree to effectivly add a new file
 	//void createNewResource(const FileHandler::CompletePath& path);
 	//add a resource which have already been created/loaded by the resource tree
-	void add(const FileHandler::CompletePath& path);
+	void addResourceSoft(const FileHandler::CompletePath& path);
 	template<typename U>
-	void add(const FileHandler::CompletePath& path);
-	void add(const FileHandler::CompletePath& path, T* value);
+	void addResourceSoft(const FileHandler::CompletePath& path);
+	void addResourceForce(const FileHandler::CompletePath& path, T* value);
 	void erase(const FileHandler::CompletePath& path);
 	ResourcePtr<T> get(const FileHandler::CompletePath& path);
 	bool contains(const FileHandler::CompletePath& path);
@@ -59,7 +59,7 @@ public:
 
 
 	void initDefaults();
-	void addDefault(const std::string& name, T* resource);
+	void addDefaultResource(const std::string& name, T* resource);
 	ResourcePtr<T> getDefault(const std::string& name);
 	bool containsDefault(const std::string& name);
 	T* getRawDefault(unsigned int hashKey);
@@ -79,7 +79,7 @@ public:
 	SINGLETON_IMPL(ResourceFactory);
 
 private:
-	void add(const FileHandler::CompletePath& path, unsigned int hashKey);
+	void addResourceForce(const FileHandler::CompletePath& path, unsigned int hashKey);
 
 };
 
@@ -101,19 +101,22 @@ public:
 	//create the nex resource at given path. tell the resource tree to effectivly add a new file
 	//void createNewResource(const FileHandler::CompletePath& path);
 	//add a resource which have already been created/loaded by the resource tree
-	void add(const FileHandler::CompletePath& path)
+	void addResourceSoft(const FileHandler::CompletePath& path)
 	{
+		std::string name = path.getFilename();
+
+		if (m_resources.find(name) != m_resources.end())
+			return;
+
 		ShaderProgram* newResource = new ShaderProgram(path);
 		newResource->init(path);
-
-		std::string name = path.getFilename();
 
 		m_resources[name] = newResource;
 		m_resourceMapping[name] = ++s_resourceCount;
 		m_resourcesFromHashKey[s_resourceCount] = newResource;
 		
 	}
-	void add(const std::string& name, ShaderProgram* value)
+	void addResourceForce(const std::string& name, ShaderProgram* value)
 	{
 		m_resources[name] = value;
 		m_resourceMapping[name] = ++s_resourceCount;
@@ -181,7 +184,7 @@ public:
 			if (FileHandler::getFileTypeFromExtention(outExtention) == FileHandler::FileType::SHADER_PROGRAM)
 			{
 				FileHandler::CompletePath shaderPath(path.toString() + "/" + fileNameAndExtention);
-				add(shaderPath);
+				addResourceSoft(shaderPath);
 			}
 		}
 	}
@@ -217,7 +220,7 @@ public:
 	SINGLETON_IMPL(ResourceFactory);
 
 private:
-	void add(const std::string& name, unsigned int hashKey)
+	void addResourceForce(const std::string& name, unsigned int hashKey)
 	{
 		ShaderProgram* newResource = new ShaderProgram();
 		newResource->init(name);
@@ -246,7 +249,7 @@ ResourceFactory<T>::ResourceFactory()
 //}
 
 template<typename T>
-void ResourceFactory<T>::add(const FileHandler::CompletePath& path, T* value)
+void ResourceFactory<T>::addResourceForce(const FileHandler::CompletePath& path, T* value)
 {
 	m_resources[path] = value;
 	m_resourceMapping[path] = ++s_resourceCount;
@@ -255,8 +258,11 @@ void ResourceFactory<T>::add(const FileHandler::CompletePath& path, T* value)
 
 
 template<typename T>
-void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
+void ResourceFactory<T>::addResourceSoft(const FileHandler::CompletePath& path)
 {
+	if (m_resources.find(path) != m_resources.end())
+		return;
+
 	T* newResource = new T();
 	newResource->init(path);
 
@@ -266,7 +272,7 @@ void ResourceFactory<T>::add(const FileHandler::CompletePath& path)
 }
 
 template<typename T>
-void ResourceFactory<T>::add(const FileHandler::CompletePath& path, unsigned int hashKey)
+void ResourceFactory<T>::addResourceForce(const FileHandler::CompletePath& path, unsigned int hashKey)
 {
 	T* newResource = new T();
 	newResource->init(path);
@@ -358,7 +364,7 @@ void ResourceFactory<T>::initDefaults()
 }
 
 template<typename T>
-void ResourceFactory<T>::addDefault(const std::string& name, T* resource)
+void ResourceFactory<T>::addDefaultResource(const std::string& name, T* resource)
 {
 	//resource->setName(name);
 	setResourceName(resource, name);
@@ -441,7 +447,7 @@ void ResourceFactory<T>::load(const Json::Value & entityRoot)
 		std::string resourcePath = entityRoot[i]["path"].asString();
 		unsigned int resourceHashKey = entityRoot[i]["hashKey"].asUInt();
 		if (resourcePath != "")
-			add(FileHandler::CompletePath(resourcePath), resourceHashKey);
+			addResourceForce(FileHandler::CompletePath(resourcePath), resourceHashKey);
 
 		if (resourceCount < resourceHashKey )
 			resourceCount = resourceHashKey;
@@ -478,9 +484,9 @@ typename std::map<std::string, T*>::iterator ResourceFactory<T>::defaultResource
 //Specialisations : 
 
 template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
+void ResourceFactory<Material>::addResourceForce(const FileHandler::CompletePath& path, unsigned int hashKey);
 template<>
-void ResourceFactory<Material>::add(const FileHandler::CompletePath& path);
+void ResourceFactory<Material>::addResourceSoft(const FileHandler::CompletePath& path);
 //
 //template<>
 //void ResourceFactory<Material>::add(const FileHandler::CompletePath& path, unsigned int hashKey);
