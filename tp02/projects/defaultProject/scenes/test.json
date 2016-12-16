@@ -1,0 +1,1000 @@
+{
+	"entities" : 
+	[
+		{
+			"childCount" : 0,
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"bottomLeft" : 
+					[
+						-0.5,
+						1,
+						-0.5
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						1.5,
+						0,
+						1
+					],
+					"offsetPosition" : 
+					[
+						0,
+						0,
+						0
+					],
+					"offsetScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"origin" : 
+					[
+						0,
+						0,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"topRight" : 
+					[
+						0.5,
+						2,
+						0.5
+					],
+					"translation" : 
+					[
+						0,
+						1.5,
+						0
+					],
+					"type" : 1,
+					"visualMaterialName" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 33
+					},
+					"visualMeshName" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 43
+					}
+				},
+				{
+					"boundingBox" : 
+					{
+						"bottomLeft" : 
+						[
+							-16.098146438598633,
+							-14.598146438598633,
+							-16.098146438598633
+						],
+						"localBottomLeft" : 
+						[
+							-0.5,
+							-0.5,
+							-0.5
+						],
+						"localTopRight" : 
+						[
+							0.5,
+							0.5,
+							0.5
+						],
+						"modelMatrix" : 
+						[
+							32.196292877197266,
+							0,
+							0,
+							0,
+							0,
+							32.196292877197266,
+							0,
+							0,
+							0,
+							0,
+							32.196292877197266,
+							0,
+							0,
+							1.5,
+							0,
+							1
+						],
+						"offsetPosition" : 
+						[
+							0,
+							0,
+							0
+						],
+						"offsetScale" : 
+						[
+							1,
+							1,
+							1
+						],
+						"origin" : 
+						[
+							0,
+							0,
+							0
+						],
+						"rotation" : 
+						[
+							0,
+							0,
+							0,
+							1
+						],
+						"scale" : 
+						[
+							32.196292877197266,
+							32.196292877197266,
+							32.196292877197266
+						],
+						"topRight" : 
+						[
+							16.098146438598633,
+							17.598146438598633,
+							16.098146438598633
+						],
+						"translation" : 
+						[
+							0,
+							1.5,
+							0
+						],
+						"type" : 1,
+						"visualMaterialName" : 
+						{
+							"isDefaultResource" : true,
+							"resourceHashKey" : 33
+						},
+						"visualMeshName" : 
+						{
+							"isDefaultResource" : true,
+							"resourceHashKey" : 43
+						}
+					},
+					"color" : 
+					[
+						0.78431373834609985,
+						0.074509806931018829,
+						0.30980393290519714
+					],
+					"intensity" : 10,
+					"position" : 
+					[
+						0,
+						1.5,
+						0
+					],
+					"type" : 32
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"isRootEntity" : true,
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"localTranslation" : 
+			[
+				0,
+				1.5,
+				0
+			],
+			"modelMatrix" : 
+			[
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				1.5,
+				0,
+				1
+			],
+			"name" : "point light",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"translation" : 
+			[
+				0,
+				1.5,
+				0
+			]
+		},
+		{
+			"childCount" : 0,
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"material" : 
+					[
+						{
+							"isDefaultResource" : true,
+							"resourceHashKey" : 58
+						}
+					],
+					"materialCount" : 1,
+					"mesh" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 42
+					},
+					"type" : 16
+				},
+				{
+					"bottomLeft" : 
+					[
+						2.5,
+						-0.5,
+						-6.2816834449768066
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						3,
+						0,
+						-5.7816834449768066,
+						1
+					],
+					"offsetPosition" : 
+					[
+						0,
+						0,
+						0
+					],
+					"offsetScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"origin" : 
+					[
+						0,
+						0,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"topRight" : 
+					[
+						3.5,
+						0.5,
+						-5.2816834449768066
+					],
+					"translation" : 
+					[
+						3,
+						0,
+						-5.7816834449768066
+					],
+					"type" : 1,
+					"visualMaterialName" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 33
+					},
+					"visualMeshName" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 43
+					}
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"isRootEntity" : true,
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"localTranslation" : 
+			[
+				3,
+				0,
+				-5.7816834449768066
+			],
+			"modelMatrix" : 
+			[
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				3,
+				0,
+				-5.7816834449768066,
+				1
+			],
+			"name" : "cube",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"translation" : 
+			[
+				3,
+				0,
+				-5.7816834449768066
+			]
+		},
+		{
+			"childCount" : 0,
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"material" : 
+					[
+						{
+							"isDefaultResource" : true,
+							"resourceHashKey" : 58
+						}
+					],
+					"materialCount" : 1,
+					"mesh" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 42
+					},
+					"type" : 16
+				},
+				{
+					"bottomLeft" : 
+					[
+						-2,
+						-2.5,
+						-10.536836624145508
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						10,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						10,
+						0,
+						3,
+						-2,
+						-5.536837100982666,
+						1
+					],
+					"offsetPosition" : 
+					[
+						0,
+						0,
+						0
+					],
+					"offsetScale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"origin" : 
+					[
+						0,
+						0,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						10,
+						1,
+						10
+					],
+					"topRight" : 
+					[
+						8,
+						-1.5,
+						-0.53683710098266602
+					],
+					"translation" : 
+					[
+						3,
+						-2,
+						-5.536837100982666
+					],
+					"type" : 1,
+					"visualMaterialName" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 33
+					},
+					"visualMeshName" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 43
+					}
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"isRootEntity" : true,
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				10,
+				1,
+				10
+			],
+			"localTranslation" : 
+			[
+				3,
+				-2,
+				-5.536837100982666
+			],
+			"modelMatrix" : 
+			[
+				10,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				10,
+				0,
+				3,
+				-2,
+				-5.536837100982666,
+				1
+			],
+			"name" : "cube",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				10,
+				1,
+				10
+			],
+			"translation" : 
+			[
+				3,
+				-2,
+				-5.536837100982666
+			]
+		},
+		{
+			"childCount" : 0,
+			"componentCount" : 2,
+			"components" : 
+			[
+				{
+					"bottomLeft" : 
+					[
+						-5.0767312049865723,
+						-18.469804763793945,
+						0
+					],
+					"localBottomLeft" : 
+					[
+						-0.5,
+						-0.5,
+						-0.5
+					],
+					"localTopRight" : 
+					[
+						0.5,
+						0.5,
+						0.5
+					],
+					"modelMatrix" : 
+					[
+						10.051154136657715,
+						0,
+						0,
+						0,
+						0,
+						12.313202857971191,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						-0.051154177635908127,
+						-12.313202857971191,
+						0,
+						1
+					],
+					"offsetPosition" : 
+					[
+						-0.051154177635908127,
+						-12.313202857971191,
+						0
+					],
+					"offsetScale" : 
+					[
+						10.051154136657715,
+						12.313202857971191,
+						0
+					],
+					"origin" : 
+					[
+						-0.5,
+						-0.5,
+						0
+					],
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						0
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"topRight" : 
+					[
+						4.9744229316711426,
+						-6.1566014289855957,
+						0
+					],
+					"translation" : 
+					[
+						0,
+						0,
+						0
+					],
+					"type" : 1,
+					"visualMaterialName" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 33
+					},
+					"visualMeshName" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 43
+					}
+				},
+				{
+					"autoCollisionDistance" : 0.0099999997764825821,
+					"autoCollisionRigidity" : 0.0099999997764825821,
+					"autoCollisionViscosity" : 0.0010000000474974513,
+					"computeAutoCollision" : false,
+					"height" : 10,
+					"mass" : 0.10000000149011612,
+					"material" : 
+					{
+						"isDefaultResource" : true,
+						"resourceHashKey" : 58
+					},
+					"materialName" : "brick",
+					"modelMatrix" : 
+					[
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						0,
+						0,
+						0,
+						1
+					],
+					"origin" : 
+					[
+						-0.5,
+						-0.5,
+						0
+					],
+					"rigidity" : 0.029999999329447746,
+					"rotation" : 
+					[
+						0,
+						0,
+						0,
+						1
+					],
+					"scale" : 
+					[
+						1,
+						1,
+						1
+					],
+					"subdivision" : 10,
+					"translation" : 
+					[
+						0,
+						0,
+						0
+					],
+					"type" : 256,
+					"viscosity" : 0.0030000000260770321,
+					"width" : 10
+				}
+			],
+			"eulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"isRootEntity" : true,
+			"localEulerRotation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"localRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"localScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"localTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"modelMatrix" : 
+			[
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1
+			],
+			"name" : "flag",
+			"parentRotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"parentScale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"parentTranslation" : 
+			[
+				0,
+				0,
+				0
+			],
+			"rotation" : 
+			[
+				0,
+				0,
+				0,
+				1
+			],
+			"scale" : 
+			[
+				1,
+				1,
+				1
+			],
+			"translation" : 
+			[
+				0,
+				0,
+				0
+			]
+		}
+	],
+	"entityCount" : 4,
+	"skybox" : 
+	{
+		"isDefaultResource" : true,
+		"resourceHashKey" : 32
+	},
+	"terrain" : 
+	{
+		"depth" : 100,
+		"height" : 10,
+		"materialLayoutCount" : 0,
+		"offset" : 
+		[
+			0,
+			0,
+			0
+		],
+		"seed" : 0,
+		"subdivision" : 30,
+		"terrainNoise" : 
+		{
+			"height" : 512,
+			"maxHeight" : 32,
+			"octaveCount" : 3,
+			"persistence" : 0.5,
+			"samplingOffset" : 64,
+			"seed" : 0
+		},
+		"width" : 100
+	}
+}

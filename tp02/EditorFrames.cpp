@@ -7,6 +7,136 @@
 #include "EditorTools.h" //forward
 #include "Camera.h"
 #include "PostProcess.h"
+#include "EditorWindowManager.h"
+
+
+SaveSceneAsEditorFrame::SaveSceneAsEditorFrame(EditorWindowManager * windowManager)
+	: EditorFrame("SaveSceneAsWindow")
+	, m_windowManagerRef(windowManager)
+{
+	for (int i = 0; i < 60; i++)
+		m_savePath[i] = '\0';
+}
+
+void SaveSceneAsEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
+{
+	bool validPathEntered = true;
+	ImGui::InputText("set scene name", m_savePath, 60);
+	if (m_savePath[0] == '\0' || m_savePath == "")
+		validPathEntered = false;
+
+	if (validPathEntered)
+	{
+		FileHandler::CompletePath scenePath(project.getScenesFolderPath().toString() + m_savePath + ".json");
+
+		if (!FileHandler::fileExists(scenePath))
+		{
+			if (ImGui::Button("save"))
+			{
+				project.saveAsActiveScene(scenePath);
+				parentWindow->closeModal();
+			}
+		}
+		else if (validPathEntered)
+		{
+			ImGui::Text("A scene with the same name already exists.");
+		}
+	}
+	else
+	{
+		ImGui::Text("Invalid name.");
+	}
+	
+	if (ImGui::Button("Cancel"))
+	{
+		parentWindow->closeModal();
+	}
+}
+
+
+LoadSceneEditorFrame::LoadSceneEditorFrame(EditorWindowManager * windowManager)
+	: EditorFrame("LoadSceneWindow")
+	, m_windowManagerRef(windowManager)
+	, m_needToSaveScene(true)
+{
+}
+
+void LoadSceneEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
+{
+	if (m_needToSaveScene)
+	{
+		ImGui::Text("Would you like to save the current scene ?");
+		if (ImGui::Button("Yes"))
+		{
+			if (!project.activeSceneExists())
+				m_windowManagerRef->addModal(std::make_shared<SaveSceneAsEditorFrame>(m_windowManagerRef));
+			else
+				project.saveActiveScene();
+			m_needToSaveScene = false;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("No"))
+		{
+			m_needToSaveScene = false;
+		}
+	}
+	else
+	{
+		std::vector<std::string> outSceneNames;
+		FileHandler::getAllFileNames(project.getScenesFolderPath(), outSceneNames);
+		for (int i = 0; i < outSceneNames.size(); i++)
+		{
+			std::string filename;
+			std::string extention;
+			FileHandler::splitFileNameExtention(outSceneNames[i], filename, extention);
+
+			if (ImGui::Button(filename.c_str()))
+			{
+				project.loadSceneAsynchrone(filename);
+				ImGui::CloseCurrentPopup();
+			}
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			parentWindow->closeModal();
+		}
+	}
+}
+
+NewSceneEditorFrame::NewSceneEditorFrame(EditorWindowManager * windowManager)
+	: EditorFrame("NewSceneWindow")
+	, m_windowManagerRef(windowManager)
+	, m_needToSaveScene(true)
+{
+}
+
+void NewSceneEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
+{
+	if (m_needToSaveScene)
+	{
+		ImGui::Text("Would you like to save the current scene ?");
+		if (ImGui::Button("Yes"))
+		{
+			if (!project.activeSceneExists())
+				m_windowManagerRef->addModal(std::make_shared<SaveSceneAsEditorFrame>(m_windowManagerRef));
+			else
+				project.saveActiveScene();
+			m_needToSaveScene = false;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("No"))
+		{
+			m_needToSaveScene = false;
+		}
+	}
+	else
+	{
+		project.createAndSwitchToNewSceneAsynchrone();
+		parentWindow->closeModal();
+	}
+}
+
+///////////////////////////////
 
 //DroppedFileEditorWindow* DroppedFileEditorWindow::modalRef = nullptr;
 
@@ -124,14 +254,14 @@ void SkyboxToolEditorFrame::drawContent(Project& project, EditorModal* parentWin
 
 //////////////////////////////
 
-SceneManagerEditorFrame::SceneManagerEditorFrame(const std::string& name)
-	: EditorFrame(name)
-{}
-
-void SceneManagerEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
-{
-	project.drawUI();
-}
+//SceneManagerEditorFrame::SceneManagerEditorFrame(const std::string& name)
+//	: EditorFrame(name)
+//{}
+//
+//void SceneManagerEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
+//{
+//	project.drawUI();
+//}
 
 //////////////////////////////
 

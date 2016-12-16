@@ -137,7 +137,7 @@ public:
 	virtual void load(const Json::Value& rootComponent) override;
 
 	void onAfterComponentAddedToEntity(Entity& entity) override;
-	void onBeforeComponentErasedFromEntity(Entity& entity) override;
+	void onAfterComponentErasedFromEntity(Entity& entity) override;
 
 };
 

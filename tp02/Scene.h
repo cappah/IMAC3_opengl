@@ -173,6 +173,7 @@ public:
 	Physic::PhysicManager& getPhysicManager();
 
 	std::string getName() const;
+	void setName(const std::string& name);
 
 	//helper to load entities, for making links between entities and their childs
 	void resolveEntityChildSaving(Json::Value & rootComponent, Entity* currentEntity);

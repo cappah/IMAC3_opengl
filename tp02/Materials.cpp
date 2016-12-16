@@ -103,7 +103,12 @@ Material::Material(const ShaderProgram& shaderProgram)
 
 Material::~Material()
 {
-	getProgramFactory().get(m_glProgramName)->removeMaterialRef(this);
+	if (m_glProgramName != "")
+	{
+		auto shaderProgramRef = getProgramFactory().get(m_glProgramName);
+		if(shaderProgramRef.isValid())
+			shaderProgramRef->removeMaterialRef(this);
+	}
 }
 
 void Material::initInternalParameters()

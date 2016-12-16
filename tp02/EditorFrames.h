@@ -13,6 +13,44 @@ class SceneHierarchy;
 class DebugDrawRenderer;
 class Viewport;
 class CameraEditor;
+class EditorWindowManager;
+
+
+class SaveSceneAsEditorFrame : public EditorFrame
+{
+private:
+	EditorWindowManager* m_windowManagerRef;
+	char m_savePath[60];
+
+public:
+	SaveSceneAsEditorFrame(EditorWindowManager* windowManager);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+class LoadSceneEditorFrame : public EditorFrame
+{
+private:
+	EditorWindowManager* m_windowManagerRef;
+	bool m_needToSaveScene;
+
+public:
+	LoadSceneEditorFrame(EditorWindowManager* windowManager);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+class NewSceneEditorFrame : public EditorFrame
+{
+private:
+	EditorWindowManager* m_windowManagerRef;
+	char m_newPath[60];
+	bool m_needToSaveScene;
+
+public:
+	NewSceneEditorFrame(EditorWindowManager* windowManager);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+/////////////////////////////////////////
 
 class DroppedFileEditorFrame : public EditorFrame
 {
@@ -64,12 +102,12 @@ public:
 
 /////////////////////////////////////////
 
-class SceneManagerEditorFrame : public EditorFrame
-{
-public:
-	SceneManagerEditorFrame(const std::string& name);
-	void drawContent(Project& project, EditorModal* parentWindow) override;
-};
+//class SceneManagerEditorFrame : public EditorFrame
+//{
+//public:
+//	SceneManagerEditorFrame(const std::string& name);
+//	void drawContent(Project& project, EditorModal* parentWindow) override;
+//};
 
 /////////////////////////////////////////
 

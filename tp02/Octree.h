@@ -245,15 +245,18 @@ void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, const spatialK
 	{
 		if (childBounds[i]->contains(spatialKey))
 		{
-			childs[i]->remove(item, spatialKey, ++currentDepth, maxDepth);
-
-			if (childs[i]->getElementCount() <= 0 && childs[i]->getActiveChildCount() <= 0) 
+			if (childs[i] != nullptr)
 			{
-				delete childs[i];
-				childs[i] = nullptr;
-			}
+				childs[i]->remove(item, spatialKey, ++currentDepth, maxDepth);
 
-			return;
+				if (childs[i]->getElementCount() <= 0 && childs[i]->getActiveChildCount() <= 0) 
+				{
+					delete childs[i];
+					childs[i] = nullptr;
+				}
+
+				return;
+			}
 		}
 	}
 	//none of childs contains the current spatialKey, and max depth not reached (shouldn't happend for insertion based only on position...), 
@@ -285,15 +288,18 @@ void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, int currentDep
 		{
 			if (childBounds[i]->contains(item)) 
 			{
-				childs[i]->remove(item, ++currentDepth, maxDepth);
-
-				if (childs[i]->getElementCount() <= 0 && childs[i]->getActiveChildCount() <= 0)	
+				if (childs[i] != nullptr)
 				{
-					delete childs[i];
-					childs[i] = nullptr;
-				}
+					childs[i]->remove(item, ++currentDepth, maxDepth);
 
-				return;
+					if (childs[i]->getElementCount() <= 0 && childs[i]->getActiveChildCount() <= 0)	
+					{
+						delete childs[i];
+						childs[i] = nullptr;
+					}
+
+					return;
+				}
 			}
 		}
 	}

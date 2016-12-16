@@ -259,15 +259,15 @@ void Collider::drawInInspector(Scene & scene, const std::vector<Component*>& com
 
 void Collider::onAfterComponentAddedToEntity(Entity& entity)
 {
-	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
+	Rigidbody* rigidbody = entity.getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
 	if (rigidbody != nullptr)
 		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
 	entity.applyTransform();
 }
 
-void Collider::onBeforeComponentErasedFromEntity(Entity& entity)
+void Collider::onAfterComponentErasedFromEntity(Entity& entity)
 {
-	Rigidbody* rigidbody = getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
+	Rigidbody* rigidbody = entity.getComponent<Rigidbody>(Component::ComponentType::RIGIDBODY);
 	if (rigidbody != nullptr)
 		rigidbody->makeShape(); //order the ridigbody to reupdate it collider shape
 }

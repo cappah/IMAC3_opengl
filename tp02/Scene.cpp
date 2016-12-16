@@ -387,6 +387,11 @@ std::string Scene::getName() const
 	return m_name;
 }
 
+void Scene::setName(const std::string & name)
+{
+	m_name = name;
+}
+
 void Scene::resolveEntityChildSaving(Json::Value & rootComponent, Entity* currentEntity) 
 {
 	rootComponent["isRootEntity"] = false;

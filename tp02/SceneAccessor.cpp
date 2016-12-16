@@ -21,11 +21,11 @@ SceneAccessor& SceneAccessor::addToScene(Entity* entity)
 	return *this;
 }
 
-SceneAccessor& SceneAccessor::eraseFromScene(Entity* entity)
+SceneAccessor& SceneAccessor::removeFromScene(Entity* entity)
 {
 	auto& entities = m_scene->m_entities;
 
-	delete entity;
+	//delete entity;
 	m_scene->m_entities.erase(std::remove(entities.begin(), entities.end(), entity));
 
 	return *this;

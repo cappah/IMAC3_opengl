@@ -1,0 +1,112 @@
+{
+	"cubeTextureFactory" : 
+	[
+		{
+			"hashKey" : 79,
+			"path" : "assets/skyboxes/sky.ctx"
+		}
+	],
+	"materialFactory" : 
+	[
+		{
+			"hashKey" : 60,
+			"path" : "assets/barrel/barrelMat.mat"
+		}
+	],
+	"meshFactory" : [],
+	"textureFactory" : 
+	[
+		{
+			"hashKey" : 61,
+			"path" : "assets/barrel/Diffuse.tga"
+		},
+		{
+			"hashKey" : 62,
+			"path" : "assets/barrel/Normal.tga"
+		},
+		{
+			"hashKey" : 63,
+			"path" : "assets/barrel/Spec.tga"
+		},
+		{
+			"hashKey" : 64,
+			"path" : "assets/flag/flagMedieval2.png"
+		},
+		{
+			"hashKey" : 65,
+			"path" : "assets/flares/flare_01.png"
+		},
+		{
+			"hashKey" : 66,
+			"path" : "assets/flares/flare_02.bmp"
+		},
+		{
+			"hashKey" : 67,
+			"path" : "assets/flares/flare_03.jpg"
+		},
+		{
+			"hashKey" : 68,
+			"path" : "assets/grass/grass01.png"
+		},
+		{
+			"hashKey" : 69,
+			"path" : "assets/grass/grass02.png"
+		},
+		{
+			"hashKey" : 70,
+			"path" : "assets/ground/shortGrass.png"
+		},
+		{
+			"hashKey" : 71,
+			"path" : "assets/ground/shortGrass_n.png"
+		},
+		{
+			"hashKey" : 72,
+			"path" : "assets/particles/fire.png"
+		},
+		{
+			"hashKey" : 73,
+			"path" : "assets/particles/particle.png"
+		},
+		{
+			"hashKey" : 74,
+			"path" : "assets/skyboxes/back.png"
+		},
+		{
+			"hashKey" : 75,
+			"path" : "assets/skyboxes/bones.png"
+		},
+		{
+			"hashKey" : 76,
+			"path" : "assets/skyboxes/front.png"
+		},
+		{
+			"hashKey" : 77,
+			"path" : "assets/skyboxes/left.png"
+		},
+		{
+			"hashKey" : 78,
+			"path" : "assets/skyboxes/right.png"
+		},
+		{
+			"hashKey" : 80,
+			"path" : "assets/skyboxes/spnza_bricks_a_bump.png"
+		},
+		{
+			"hashKey" : 81,
+			"path" : "assets/skyboxes/spnza_bricks_a_diff.tga"
+		},
+		{
+			"hashKey" : 82,
+			"path" : "assets/skyboxes/top.png"
+		},
+		{
+			"hashKey" : 83,
+			"path" : "assets/spnza_bricks_a_normal.png"
+		},
+		{
+			"hashKey" : 84,
+			"path" : "assets/spnza_bricks_a_spec.tga"
+		}
+	]
+}

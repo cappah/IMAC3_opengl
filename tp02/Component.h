@@ -22,20 +22,24 @@ class Scene;
 //Should be called inside all classes which inherite from Component (and are not abstract !), in header file, in class definition.
 #define COMPONENT_IMPLEMENTATION_HEADER(ComponentType)\
 public:\
-virtual void addToScene(Scene& scene) override;\
-virtual void eraseFromScene(Scene& scene) override;\
+virtual void addToSceneAtomic(Scene& scene) override;\
+virtual void removeFromSceneAtomic(Scene& scene) override;\
 virtual Component* clone(Entity* entity) override;\
 private:
 
 //Should be called inside all classes which inherite from Component (and are not abstract !), in .cpp file.
 #define COMPONENT_IMPLEMENTATION_CPP(ComponentType)\
-void ComponentType::addToScene(Scene& scene)\
+void ComponentType::addToSceneAtomic(Scene& scene)\
 {\
+	onBeforeComponentAddedToScene(scene);\
 	scene.getAccessor().addToScene<ComponentType>(this);\
+	onAfterComponentAddedToScene(scene);\
 }\
-void ComponentType::eraseFromScene(Scene& scene)\
+void ComponentType::removeFromSceneAtomic(Scene& scene)\
 {\
-	scene.getAccessor().eraseFromScene<ComponentType>(this);\
+	onBeforeComponentErasedFromScene(scene);\
+	scene.getAccessor().removeFromScene<ComponentType>(this);\
+	onAfterComponentErasedFromScene(scene);\
 }\
 Component* ComponentType::clone(Entity* entity)\
 {\
@@ -109,20 +113,25 @@ public:
 	//Erase a component from the scene
 	//You normally don't have to directly call this function
 	//to erase a component from the scene, call entity.erase(component).
-	virtual void eraseFromScene(Scene& scene) = 0;
+	virtual void removeFromSceneAtomic(Scene& scene) = 0;
 	//Add a component to the scene
 	//You normally don't have to directly call this function
 	//to add a component to the scene, call entity.add(component).
-	virtual void addToScene(Scene& scene) = 0;
+	virtual void addToSceneAtomic(Scene& scene) = 0;
 
 	// Simply call entity.erase(*this). All the logic is done in entity::erase()
 	virtual void eraseFromEntity(Entity& entity);
-	// Simply call entity.erase(*this). All the logic is done in entity::add
+	// Simply call entity.add(*this). All the logic is done in entity::add()
 	virtual void addToEntity(Entity& entity);
 
 	// Callbacks for special management when components are created / destroyed
 	virtual void onAfterComponentAddedToScene(Scene& scene) {}
 	virtual void onAfterComponentAddedToEntity(Entity& entity) {}
+	virtual void onAfterComponentErasedFromEntity(Entity& entity) {}
+	virtual void onAfterComponentErasedFromScene(Scene& scene) {}
+
+	virtual void onBeforeComponentAddedToScene(Scene& scene) {}
+	virtual void onBeforeComponentAddedToEntity(Entity& entity) {}
 	virtual void onBeforeComponentErasedFromEntity(Entity& entity) {}
 	virtual void onBeforeComponentErasedFromScene(Scene& scene) {}
 

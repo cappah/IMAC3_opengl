@@ -6,8 +6,8 @@
 #include "Gizmo.h"
 #include "ResourceTree.h"
 #include "ISingleton.h"
-#include "EditorWindowManager.h"
 #include "EditorTools.h"
+#include "EditorWindowManager.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -120,6 +120,8 @@ private:
 	ImGuiID m_lastDraggedWindowId;
 
 	std::shared_ptr<EditorStyleSheet> m_styleSheet;
+
+	bool m_needToSaveScene;
 
 	////windows (views)
 	//std::vector<std::shared_ptr<EditorWindow>> m_editorWindows;

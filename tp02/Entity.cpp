@@ -10,12 +10,22 @@
 #include "PhysicManager.h"
 #include "Application.h"
 
-Entity::Entity(Scene* scene) : TransformNode(), m_scene(scene), m_isSelected(false), m_name("default_entity"), m_parent(nullptr)
+Entity::Entity(Scene* scene) 
+	: TransformNode()
+	, m_scene(scene)
+	, m_isSelected(false)
+	, m_name("default_entity")
+	, m_parent(nullptr)
 {
 	scene->getAccessor().addToScene(this);
 }
 
-Entity::Entity(const Entity& other) : TransformNode(other), m_isSelected(other.m_isSelected), m_name(other.m_name), m_scene(other.m_scene), m_parent(other.m_parent)
+Entity::Entity(const Entity& other) 
+	: TransformNode(other)
+	, m_isSelected(other.m_isSelected)
+	, m_name(other.m_name)
+	, m_scene(other.m_scene)
+	, m_parent(other.m_parent)
 {
 	m_scene->getAccessor().addToScene(this);
 
@@ -24,15 +34,13 @@ Entity::Entity(const Entity& other) : TransformNode(other), m_isSelected(other.m
 		//copy the entity
 		auto newComponent = other.m_components[i]->clone(this);
 		//add to scene
-		newComponent->addToScene(*other.m_scene); 
-		//add to entity
-		m_components.push_back(newComponent);
+		add(newComponent);
 	}
 	eraseAllChilds();
 	for (int i = 0; i < other.m_childs.size(); i++)
 	{
 		auto newEntity = new Entity(*other.m_childs[i]);
-		m_childs.push_back(newEntity);
+		addChild(newEntity);
 	}
 
 	updateModelMatrix();
@@ -52,18 +60,15 @@ Entity& Entity::operator=(const Entity& other)
 	eraseAllComponents();
 	for (int i = 0; i < other.m_components.size(); i++)
 	{
-		//copy the entity
+		//copy the component
 		auto newComponent = other.m_components[i]->clone(this);
-		//add to scene
-		newComponent->addToScene(*m_scene);
-		//add to entity
-		m_components.push_back(newComponent);
+		add(newComponent);
 	}
 	eraseAllChilds();
 	for (int i = 0; i < other.m_childs.size(); i++)
 	{
 		auto newEntity = new Entity(*other.m_childs[i]);
-		m_childs.push_back(newEntity);
+		addChild(newEntity);
 	}
 
 	return *this;
@@ -384,28 +389,46 @@ void Entity::deselect()
 Entity & Entity::add(Component * component)
 {
 	component->attachToEntity(this);
-	
-	component->addToScene(*m_scene); // Call scene.add<ComponentType>(component);
-	component->onAfterComponentAddedToScene(*m_scene);
+	component->addToSceneAtomic(*m_scene); // Call scene.add<ComponentType>(component);
+	addComponentAtomic(component);
+
+	return *this;
+}
+
+void Entity::addComponentAtomic(Component* component)
+{
+	component->onBeforeComponentAddedToEntity(*this);
 	m_components.push_back(component);
 	component->onAfterComponentAddedToEntity(*this);
-	
-	return *this;
 }
 
 Entity & Entity::erase(Component * component)
 {
-	auto findIt = std::find(m_components.begin(), m_components.end(), component);
+	bool componentFound = removeComponentAtomic(component);
+	if(componentFound)
+	{
+		component->removeFromSceneAtomic(*m_scene); // Call scene.erase<ComponentType>(component);
+		component->attachToEntity(nullptr);
+		delete component;
+		component = nullptr;
+	}
 	
+	return *this;
+}
+
+bool Entity::removeComponentAtomic(Component* component)
+{
+	auto findIt = std::find(m_components.begin(), m_components.end(), component);
+
 	if (findIt != m_components.end())
 	{
 		component->onBeforeComponentErasedFromEntity(*this);
 		m_components.erase(findIt);
-		component->onBeforeComponentErasedFromScene(*m_scene);
-		component->eraseFromScene(*m_scene);// Call scene.erase<ComponentType>(component);
+		component->onAfterComponentErasedFromEntity(*this);
+		return true;
 	}
-	
-	return *this;
+	else
+		return false;
 }
 
 void Entity::endCreation()
@@ -432,12 +455,23 @@ void Entity::endCreation()
 
 void Entity::eraseAllComponents()
 {
-	for (int i = 0; i < m_components.size(); i++)
+	const int componentSize = m_components.size();
+	for (int i = 0; i < componentSize; i++)
 	{
-		m_components[i]->onBeforeComponentErasedFromEntity(*this);
-		m_components[i]->onBeforeComponentErasedFromScene(*m_scene);
-		m_components[i]->eraseFromScene(*m_scene);
-		//m_components[i] = nullptr;
+		auto currentComponent = m_components[0];
+		
+		currentComponent->onBeforeComponentErasedFromScene(*m_scene);
+		currentComponent->removeFromSceneAtomic(*m_scene);
+		currentComponent->onAfterComponentErasedFromScene(*m_scene);
+
+		currentComponent->onBeforeComponentErasedFromEntity(*this);
+		std::iter_swap(m_components.begin(), m_components.end() - 1);
+		m_components.pop_back();
+		currentComponent->onAfterComponentErasedFromEntity(*this);
+
+		currentComponent->attachToEntity(nullptr);
+
+		delete currentComponent;
 	}
 	m_components.clear();
 }
@@ -509,7 +543,9 @@ void Entity::eraseAllChilds()
 {
 	while(m_childs.size() > 0)
 	{
-		m_scene->getAccessor().eraseFromScene(m_childs.back());
+		m_scene->getAccessor().removeFromScene(m_childs.back());
+		delete m_childs.back();
+		m_childs.back() = nullptr;
 		//m_childs[i] = nullptr;
 	}
 	if(m_childs.size() > 0)

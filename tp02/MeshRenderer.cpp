@@ -332,3 +332,12 @@ void MeshRenderer::onBeforeComponentErasedFromScene(Scene & scene)
 		scene.removeFromRenderables(this);
 }
 
+void MeshRenderer::onAfterComponentAddedToEntity(Entity & entity)
+{
+	if (m_entity != nullptr)
+	{
+		auto collider = static_cast<Collider*>(m_entity->getComponent(Component::COLLIDER));
+		if (collider != nullptr)
+			collider->coverMesh(*m_mesh);
+	}
+}

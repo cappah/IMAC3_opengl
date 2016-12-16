@@ -142,6 +142,9 @@ public:
 	Entity& add(Component* component);
 	Entity& erase(Component* component);
 
+	bool removeComponentAtomic(Component* component);
+	void addComponentAtomic(Component* component);
+
 	//finalyze the creation of the entity, should be called after all components has been added to the entity : 
 	//One of the goal of this function is to properly set up the collider such that it cover well all the components of the entity.
 	void endCreation();

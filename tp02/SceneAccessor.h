@@ -25,7 +25,7 @@ public:
 	{}
 
 	SceneAccessor& addToScene(Entity* entity);
-	SceneAccessor& eraseFromScene(Entity* entity);
+	SceneAccessor& removeFromScene(Entity* entity);
 
 	template<typename T>
 	SceneAccessor& addToScene(Component* component)
@@ -43,11 +43,13 @@ public:
 	}
 
 	template<typename T>
-	SceneAccessor& eraseFromScene(Component* component)
+	SceneAccessor& removeFromScene(Component* component)
 	{
+		int id = component->getClassId();
+
 		std::vector<T*>& vectorOfComponents = *static_cast<std::vector<T*>*>(getSceneComponentContainer(component->getClassId()));
 
-		delete component;
+		//delete component;
 		vectorOfComponents.erase(std::remove(vectorOfComponents.begin(), vectorOfComponents.end(), component));
 
 		return *this;

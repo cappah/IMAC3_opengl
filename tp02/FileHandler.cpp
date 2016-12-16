@@ -208,7 +208,6 @@ std::ofstream& operator<<(std::ofstream& os, const Path& path)
 
 //////////////////////////////
 
-
 CompletePath::CompletePath()
 	: m_fileName("")
 	, m_extention("")
@@ -696,24 +695,28 @@ std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& p
 	return pathLength;
 }
 
+std::size_t splitFileNameExtention(const std::string fileNameAndExtension, std::string& fileName, std::string& extention)
+{
+	std::size_t fileNameLength = fileNameAndExtension.find_last_of(".");
+	if (fileNameLength == std::string::npos) {
+		//No extention found
+		fileNameLength = fileNameAndExtension.size();
+		fileName = fileNameAndExtension;
+		extention = "";
+	}
+	else {
+		fileName = fileNameAndExtension.substr(0, fileNameLength);
+		extention = fileNameAndExtension.substr(fileNameLength + 1);
+	}
+	return fileNameLength;
+}
+
 std::size_t splitPathFileNameExtention(const std::string& pathAndFileNameAndExtention, std::string& path, std::string& filename, std::string& extention)
 {
 	std::string filenameAndExtention;
 
 	splitPathFileName(pathAndFileNameAndExtention, path, filenameAndExtention);
-
-	std::size_t fileNameLength = filenameAndExtention.find_last_of(".");
-	if (fileNameLength == std::string::npos) {
-		//No extention found
-		fileNameLength = filenameAndExtention.size();
-		filename = filenameAndExtention;
-		extention = "";
-	}
-	else {
-		filename = filenameAndExtention.substr(0, fileNameLength);
-		extention = filenameAndExtention.substr(fileNameLength + 1);
-	}
-	return fileNameLength;
+	return splitFileNameExtention(filenameAndExtention, filename, extention);
 }
 
 void copyPastFile(const CompletePath& from, const Path& to)

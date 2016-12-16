@@ -23,7 +23,7 @@ private:
 	//Mesh* mesh;
 	//std::vector<Material3DObject*> material;
 	ResourcePtr<Mesh> m_mesh;
-	std::vector<std::shared_ptr<SubMesh>> m_subMeshes;
+	std::vector<std::shared_ptr<SubMesh>> m_subMeshes; // Warning ! Deep copy needed !
 	std::vector<ResourcePtr<Material>> m_materials;
 
 public:
@@ -64,6 +64,7 @@ public:
 
 	virtual void onAfterComponentAddedToScene(Scene& scene) override;
 	virtual void onBeforeComponentErasedFromScene(Scene& scene) override;
+	virtual void onAfterComponentAddedToEntity(Entity& entity) override;
 };
 
 REFLEXION_CPP(MeshRenderer)

@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "../glm/common.hpp"
+#include "glm/common.hpp"
 
 #include "Point.h"
 

@@ -296,20 +296,41 @@ void Editor::drawMenuEntry_options(Project& project)
 	{
 		if (ImGui::Selectable("save"))
 		{
-			if (project.getName() == "")
-				m_saveWindowOpen = true;
+			//if (project.getName() == "")
+			// Has the scene already been saved, ot is it a new scene ?
+			if (!project.activeSceneExists())
+			{
+				// If it is a new scene, we give it a name.
+				//m_saveWindowOpen = true; // Open popup to save scene
+				m_windowManager.addModal(std::make_shared<SaveSceneAsEditorFrame>(&m_windowManager));
+				project.saveResources(); // Save resources
+			}
 			else
-				project.save();
+			{
+				// Otherwise, we juste save the scene.
+				project.save(); // Save active scene + resources
+			}
 			//ImGui::OpenPopup("save window");
 		}
 		if (ImGui::Selectable("save as"))
 		{
-			m_saveWindowOpen = true;
+			//m_saveWindowOpen = true; // Open popup to save scene
+			m_windowManager.addModal(std::make_shared<SaveSceneAsEditorFrame>(&m_windowManager));
+			project.saveResources(); // Save resources
 		}
 		if (ImGui::Selectable("load"))
 		{
-			m_loadWindowOpen = true;
+			//m_loadWindowOpen = true;
+			m_windowManager.addModal(std::make_shared<LoadSceneEditorFrame>(&m_windowManager));
+			m_needToSaveScene = true; // Tell the system that we may want to save the scene.
 			//ImGui::OpenPopup("load window");
+		}
+		if (ImGui::Selectable("new"))
+		{
+			//m_loadWindowOpen = true;
+			m_windowManager.addModal(std::make_shared<NewSceneEditorFrame>(&m_windowManager));
+			m_needToSaveScene = true; // Tell the system that we may want to save the scene.
+									  //ImGui::OpenPopup("load window");
 		}
 
 		ImGui::EndMenu();
@@ -611,10 +632,10 @@ void Editor::drawMenuEntry_windows()
 		{
 			m_windowManager.addWindow(std::make_shared<SkyboxToolEditorFrame>("Skybox tool"));
 		}
-		if (!m_windowManager.isFrameOpen("Scene manager") && ImGui::Button("Scene manager"))
-		{
-			m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>("Scene manager"));
-		}
+		//if (!m_windowManager.isFrameOpen("Scene manager") && ImGui::Button("Scene manager"))
+		//{
+		//	m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>("Scene manager"));
+		//}
 		if (!m_windowManager.isFrameOpen("Debug renderer") && ImGui::Button("Debug renderer"))
 		{
 			m_windowManager.addWindow(std::make_shared<DebugRenderEditorFrame>("Debug renderer", m_debugDrawRenderer));
@@ -697,68 +718,108 @@ void Editor::displayModals(Project& project)
 
 	m_windowManager.displayModals(project, *this);
 
-	//load : 
-	bool loadModalWindowOpen = true;
-	if (ImGui::BeginPopupModal("load window", &loadModalWindowOpen))
-	{
-		ImGui::InputText("project name", &m_loadPath[0], 60);
-		if (ImGui::Button("load"))
-		{
-			std::string loadPath = ("save/" + std::string(m_loadPath));
+	////load : 
+	//bool loadModalWindowOpen = true;
+	//if (ImGui::BeginPopupModal("load window", &loadModalWindowOpen))
+	//{
+	//	ImGui::Text("Would you like to save the current scene ?");
+	//	if (ImGui::Button("Yes"))
+	//	{
 
-			//Verify the validity of path :
-			std::vector<std::string> dirNames;
-			FileHandler::getAllDirNames(FileHandler::Path("save/"), dirNames);
-			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_loadPath)) != dirNames.end());
+	//		project.saveActiveScene();
+	//		m_needToSaveScene = false;
+	//	}
+	//	ImGui::SameLine();
+	//	if (ImGui::Button("No"))
+	//	{
+	//		m_needToSaveScene = false;
+	//	}
 
-			if (m_loadPath != "" && dirAlreadyExists)
-			{
-				project.open(m_loadPath, loadPath);
-				//scene.clear(); //clear the previous scene
-				//scene.load(loadPath);
-				changeCurrentSelected(nullptr);
-			}
-			else
-			{
-				std::cout << "can't load project with name : " << m_loadPath << " no project found." << std::endl;
-			}
-			ImGui::CloseCurrentPopup();
-		}
+	//	std::vector<std::string> outSceneNames;
+	//	FileHandler::getAllFileNames(project.getScenesFolderPath(), outSceneNames);
+	//	for (int i = 0; i < outSceneNames.size(); i++)
+	//	{
+	//		if (ImGui::Button(outSceneNames[i].c_str()))
+	//		{
+	//			project.loadScene(outSceneNames[i]);
+	//			ImGui::CloseCurrentPopup();
+	//		}
+	//	}
 
-		ImGui::EndPopup();
-	}
+	//	ImGui::EndPopup();
 
-	//save
-	bool saveModalWindowOpen = true;
-	if (ImGui::BeginPopupModal("save window", &saveModalWindowOpen))
-	{
-		ImGui::InputText("set project name", m_savePath, 60);
-		if (ImGui::Button("save"))
-		{
-			std::string savePath = ("save/" + std::string(m_savePath));
+	//	//ImGui::InputText("project name", &m_loadPath[0], 60);
+	//	//if (ImGui::Button("load"))
+	//	//{
+	//	//	std::string loadPath = ("save/" + std::string(m_loadPath));
 
-			//Verify the validity of path :
-			std::vector<std::string> dirNames;
-			FileHandler::getAllDirNames(FileHandler::Path("save/"), dirNames);
-			bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_savePath)) != dirNames.end());
+	//	//	//Verify the validity of path :
+	//	//	std::vector<std::string> dirNames;
+	//	//	FileHandler::getAllDirNames(FileHandler::Path("save/"), dirNames);
+	//	//	bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_loadPath)) != dirNames.end());
 
-			if (m_savePath != "" && !dirAlreadyExists)
-			{
-				project.setName(m_savePath);
-				project.setPath(savePath);
-				project.save();
-			}
-			else
-			{
-				std::cout << "can't save project with name : " << m_savePath << " a project with the same name was found." << std::endl;
-			}
+	//	//	if (m_loadPath != "" && dirAlreadyExists)
+	//	//	{
+	//	//		project.open(m_loadPath, loadPath);
+	//	//		//scene.clear(); //clear the previous scene
+	//	//		//scene.load(loadPath);
+	//	//		changeCurrentSelected(nullptr);
+	//	//	}
+	//	//	else
+	//	//	{
+	//	//		std::cout << "can't load project with name : " << m_loadPath << " no project found." << std::endl;
+	//	//	}
+	//	//	ImGui::CloseCurrentPopup();
+	//	//}
 
-			//scene.save(savePath);
-			ImGui::CloseCurrentPopup();
-		}
+	//	//ImGui::EndPopup();
+	//}
 
-		ImGui::EndPopup();
-	}
+	////save
+	//bool saveModalWindowOpen = true;
+	//if (ImGui::BeginPopupModal("save window", &saveModalWindowOpen))
+	//{
+	//	ImGui::InputText("set scene name", m_savePath, 60);
+	//	FileHandler::CompletePath scenePath(project.getScenesFolderPath().toString() + m_savePath + ".json");
+	//	if (!FileHandler::fileExists(scenePath))
+	//	{
+	//		if (ImGui::Button("save"))
+	//		{
+	//			project.saveAsActiveScene(scenePath);
+	//		}
+	//	}
+	//	else
+	//	{
+	//		ImGui::Text("A scene with the same name already exists.");
+	//	}
+
+	//	//ImGui::InputText("set project name", m_savePath, 60);
+	//	//if (ImGui::Button("save"))
+	//	//{
+	//	//	std::string savePath = ("save/" + std::string(m_savePath));
+
+	//	//	//Verify the validity of path :
+	//	//	std::vector<std::string> dirNames;
+	//	//	FileHandler::getAllDirNames(FileHandler::Path("save/"), dirNames);
+	//	//	bool dirAlreadyExists = (std::find(dirNames.begin(), dirNames.end(), std::string(m_savePath)) != dirNames.end());
+
+	//	//	if (m_savePath != "" && !dirAlreadyExists)
+	//	//	{
+	//	//		project.setName(m_savePath);
+	//	//		project.setPath(savePath);
+	//	//		project.save();
+	//	//	}
+	//	//	else
+	//	//	{
+	//	//		std::cout << "can't save project with name : " << m_savePath << " a project with the same name was found." << std::endl;
+	//	//	}
+
+	//	//	//scene.save(savePath);
+	//	//	ImGui::CloseCurrentPopup();
+	//	//}
+
+	//	//ImGui::EndPopup();
+	//}
 }
 
 //void Editor::addModal(std::shared_ptr<EditorWindow> modal)
@@ -1315,7 +1376,11 @@ void Editor::deleteSelected(Scene& scene)
 		return;
 
 	for (int i = 0; i < m_currentEntitiesSelected.size(); i++)
-		scene.getAccessor().eraseFromScene(m_currentEntitiesSelected[i] );
+	{
+		scene.getAccessor().removeFromScene(m_currentEntitiesSelected[i]);
+		delete m_currentEntitiesSelected[i];
+		m_currentEntitiesSelected[i] = nullptr;
+	}
 
 	changeCurrentSelected(nullptr);
 

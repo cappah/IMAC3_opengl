@@ -426,7 +426,7 @@ void ResourceFactory<T>::clear()
 template<typename T>
 void ResourceFactory<T>::save(Json::Value & entityRoot) const
 {
-	entityRoot["size"] = m_resources.size();
+	entityRoot = Json::Value(Json::arrayValue);
 	int i = 0;
 	for (auto it = m_resources.begin(); it != m_resources.end(); it++)
 	{
@@ -441,7 +441,7 @@ void ResourceFactory<T>::load(const Json::Value & entityRoot)
 {
 	unsigned int resourceCount = s_resourceCount;
 
-	int size = entityRoot.get("size", 0).asInt();
+	int size = entityRoot.size();
 	for (int i = 0; i < size; i++)
 	{
 		std::string resourcePath = entityRoot[i]["path"].asString();

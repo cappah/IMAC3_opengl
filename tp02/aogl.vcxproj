@@ -94,7 +94,7 @@
     <ClCompile>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\jsoncpp\json;$(ProjectDir)lib\include;$(ProjectDir)lib\glfw\include;src;common;lib;lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\jsoncpp\json;$(ProjectDir)lib\assimp\include;$(ProjectDir)lib\glew;$(ProjectDir)lib\glfw\include;src;common;lib;lib\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -115,7 +115,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimpd.lib;glu32.lib;opengl32.lib;gdi32.lib;winmm.lib;user32.lib;jsoncpp.lib;fileHandling.lib;LinearMath_Debug.lib;BulletCollision_Debug.lib;BulletDynamics_Debug.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glu32.lib;opengl32.lib;gdi32.lib;winmm.lib;user32.lib;stb.lib;fileHandling.lib;glew.lib;assimpd.lib;jsoncpp.lib;LinearMath_Debug.lib;BulletCollision_Debug.lib;BulletDynamics_Debug.lib;glfw3.lib;imgui.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)aogl_d.exe</OutputFile>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <AdditionalLibraryDirectories>$(ProjectDir)bin\debug;$(ProjectDir)lib\assimp;$(ProjectDir)lib\glfw\build\src\Debug;$(ProjectDir)lib\bullet3\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -305,18 +305,6 @@
     <ProjectReference Include="FileHandling\FileHandling.vcxproj">
       <Project>{ef2f6e9c-db43-452c-9ddf-b4feef91dfc6}</Project>
     </ProjectReference>
-    <ProjectReference Include="imgui.vcxproj">
-      <Project>{0098A80F-6CAC-D0C0-352E-7420A101CDF1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="glew.vcxproj">
-      <Project>{7463977C-609A-980D-0987-7E10F59C140F}</Project>
-    </ProjectReference>
-    <ProjectReference Include="JsonCpp.vcxproj">
-      <Project>{6311edd4-a67e-4057-a858-a417fb6f7bd1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="stb.vcxproj">
-      <Project>{6EAB880B-DAB4-887C-6330-9F7CCF38947C}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -355,6 +343,7 @@
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="GlHelper.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="IAsynchronousCommand.h" />
     <ClInclude Include="IClonable.h" />
     <ClInclude Include="ICloner.h" />
     <ClInclude Include="IDGenerator.h" />

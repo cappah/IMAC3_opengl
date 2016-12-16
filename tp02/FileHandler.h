@@ -149,6 +149,7 @@ void removeDirectory(const Path& path);
 std::vector<std::string> splitString(const std::string& s, char delim);
 std::vector<std::string> splitString(const std::string& s, char delim01, char delim02);
 std::size_t splitPathFileName(const std::string& pathAndFileName, std::string& path, std::string& filename);
+std::size_t splitFileNameExtention(const std::string fileNameAndExtension, std::string& fileName, std::string& extention);
 std::size_t splitPathFileNameExtention(const std::string& pathAndFileNameAndExtention, std::string& path, std::string& filename, std::string& extention);
 
 void copyPastFile(const CompletePath &from, const Path &to);

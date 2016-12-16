@@ -484,6 +484,9 @@
     <ClInclude Include="IDGenerator.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="IAsynchronousCommand.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
