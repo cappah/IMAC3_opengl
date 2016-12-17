@@ -3,9 +3,15 @@
 #include "Lights.h"
 #include "Scene.h"
 #include "SceneAccessor.h"
+#include "Factories.h"
 
 
-Light::Light(float _intensity, glm::vec3 _color) : Component(LIGHT), intensity(_intensity), color(_color)
+Light::Light(float _intensity, glm::vec3 _color) 
+	: Component(LIGHT)
+	, intensity(_intensity)
+	, color(_color)
+	, castShadows(true)
+	, useFlare(true)
 {
 
 }
@@ -24,6 +30,21 @@ glm::vec3 Light::getColor() const
 	return color;
 }
 
+bool Light::getCastShadows() const
+{
+	return castShadows;
+}
+
+bool Light::getUseFlare() const
+{
+	return useFlare;
+}
+
+const MaterialFlares * Light::getFlareMaterial() const
+{
+	return static_cast<const MaterialFlares*>(flareMaterial.get());
+}
+
 void Light::setIntensity(float i)
 {
 	intensity = i;
@@ -38,6 +59,16 @@ void Light::setColor(const glm::vec3 & c)
 
 	//light bounding box is based on the colot, so we have to update it when we change the light color
 	updateBoundingBox();
+}
+
+void Light::setCastShadows(bool state)
+{
+	castShadows = state;
+}
+
+void Light::setUseFlare(bool state)
+{
+	useFlare = state;
 }
 
 void Light::updateBoundingBox()
@@ -90,6 +121,11 @@ void PointLight::drawInInspector(Scene& scene)
 		updateBoundingBox();
 	if (ImGui::ColorEdit3("light color", &color[0]))
 		updateBoundingBox();
+	if (ImGui::RadioButton("cast shadows", castShadows))
+		castShadows = !castShadows;
+	if (ImGui::RadioButton("use flare", useFlare))
+		useFlare = !useFlare;
+	EditorGUI::ResourceField("Flare material", flareMaterial);
 }
 
 void PointLight::drawInInspector(Scene& scene, const std::vector<Component*>& components)
@@ -116,6 +152,33 @@ void PointLight::drawInInspector(Scene& scene, const std::vector<Component*>& co
 			castedComponent->updateBoundingBox();
 		}
 	}
+	if (ImGui::RadioButton("cast shadows", castShadows))
+	{
+		castShadows = !castShadows;
+		for (auto component : components)
+		{
+			PointLight* castedComponent = static_cast<PointLight*>(component);
+			castedComponent->castShadows = castShadows;
+		}
+	}
+	if (ImGui::RadioButton("use Flare", useFlare))
+	{
+		useFlare = !useFlare;
+		for (auto component : components)
+		{
+			PointLight* castedComponent = static_cast<PointLight*>(component);
+			castedComponent->useFlare = useFlare;
+		}
+	}
+	if (EditorGUI::ResourceField("Flare material", flareMaterial))
+	{
+		for (auto component : components)
+		{
+			PointLight* castedComponent = static_cast<PointLight*>(component);
+			castedComponent->flareMaterial = flareMaterial;
+		}
+	}
+
 }
 
 void PointLight::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -169,6 +232,11 @@ void DirectionalLight::drawInInspector(Scene& scene)
 {
 	ImGui::SliderFloat("light intensity", &intensity, 0.f, 10.f);
 	ImGui::ColorEdit3("light color", &color[0]);
+	if (ImGui::RadioButton("cast shadows", castShadows))
+		castShadows = !castShadows;
+	if (ImGui::RadioButton("use flare", useFlare))
+		useFlare = !useFlare;
+	EditorGUI::ResourceField("Flare material", flareMaterial);
 }
 
 void DirectionalLight::drawInInspector(Scene& scene, const std::vector<Component*>& components)
@@ -189,6 +257,32 @@ void DirectionalLight::drawInInspector(Scene& scene, const std::vector<Component
 		{
 			DirectionalLight* castedComponent = static_cast<DirectionalLight*>(component);
 			castedComponent->color = _color;
+		}
+	}
+	if (ImGui::RadioButton("cast shadows", castShadows))
+	{
+		castShadows = !castShadows;
+		for (auto component : components)
+		{
+			DirectionalLight* castedComponent = static_cast<DirectionalLight*>(component);
+			castedComponent->castShadows = castShadows;
+		}
+	}
+	if (ImGui::RadioButton("use Flare", useFlare))
+	{
+		useFlare = !useFlare;
+		for (auto component : components)
+		{
+			DirectionalLight* castedComponent = static_cast<DirectionalLight*>(component);
+			castedComponent->useFlare = useFlare;
+		}
+	}
+	if (EditorGUI::ResourceField("Flare material", flareMaterial))
+	{
+		for (auto component : components)
+		{
+			DirectionalLight* castedComponent = static_cast<DirectionalLight*>(component);
+			castedComponent->flareMaterial = flareMaterial;
 		}
 	}
 }
@@ -249,6 +343,11 @@ void SpotLight::drawInInspector(Scene& scene)
 		updateBoundingBox();
 
 	ImGui::SliderFloat("light angles", &angle, 0.f, glm::pi<float>());
+	if (ImGui::RadioButton("cast shadows", castShadows))
+		castShadows = !castShadows;
+	if (ImGui::RadioButton("use flare", useFlare))
+		useFlare = !useFlare;
+	EditorGUI::ResourceField("Flare material", flareMaterial);
 }
 
 void SpotLight::drawInInspector(Scene& scene, const std::vector<Component*>& components)
@@ -280,6 +379,32 @@ void SpotLight::drawInInspector(Scene& scene, const std::vector<Component*>& com
 		{
 			SpotLight* castedComponent = static_cast<SpotLight*>(component);
 			castedComponent->angle = _angle;
+		}
+	}
+	if (ImGui::RadioButton("cast shadows", castShadows))
+	{
+		castShadows = !castShadows;
+		for (auto component : components)
+		{
+			SpotLight* castedComponent = static_cast<SpotLight*>(component);
+			castedComponent->castShadows = castShadows;
+		}
+	}
+	if (ImGui::RadioButton("use Flare", useFlare))
+	{
+		useFlare = !useFlare;
+		for (auto component : components)
+		{
+			SpotLight* castedComponent = static_cast<SpotLight*>(component);
+			castedComponent->useFlare = useFlare;
+		}
+	}
+	if (EditorGUI::ResourceField("Flare material", flareMaterial))
+	{
+		for (auto component : components)
+		{
+			SpotLight* castedComponent = static_cast<SpotLight*>(component);
+			castedComponent->flareMaterial = flareMaterial;
 		}
 	}
 }

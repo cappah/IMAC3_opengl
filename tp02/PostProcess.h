@@ -214,7 +214,7 @@ private:
 	GlHelper::Framebuffer m_flaresFB;
 	Texture m_flaresTexture;
 
-	GLuint m_positionBuffer;
+	GLuint m_flareDatasBuffer;
 	GLuint m_vao;
 
 	std::shared_ptr<MaterialAdd> m_materialAdd;

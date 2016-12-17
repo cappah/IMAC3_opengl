@@ -438,6 +438,8 @@ void Project::edit()
 		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 		editor.renderUI(*this);
 
+		DragAndDropManager::updateDragAndDrop(); // Must be called before ImGui::Render()
+
 		ImGui::Render();
 
 		glDisable(GL_BLEND);
@@ -448,7 +450,6 @@ void Project::edit()
 
 		///////////////////////////////////////////////
 		//BEGIN : LATE UPDATES
-		DragAndDropManager::updateDragAndDrop();
 		lateUpdate();
 		//END : LATE UPDATES
 		///////////////////////////////////////////////
@@ -1233,5 +1234,5 @@ void Project::initProject()
 	// renderer : 
 	m_renderer = new Renderer(lightManager, "aogl.vert", "aogl_gPass.frag", "aogl_lightPass.vert", "aogl_lightPass_pointLight.frag", "aogl_lightPass_directionalLight.frag", "aogl_lightPass_spotLight.frag"); // call lightManager.init()
 	//m_renderer->initPostProcessQuad("blit.vert", "blit.frag");
-	m_renderer->initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag", "shadowPassOmni.vert", "shadowPassOmni.frag", "shadowPassOmni.geom");
+	//m_renderer->initialyzeShadowMapping("shadowPass.vert", "shadowPass.frag", "shadowPassOmni.vert", "shadowPassOmni.frag", "shadowPassOmni.geom");
 }

@@ -1,6 +1,9 @@
 #include "stdafx.h"
 
 #include "LightManager.h"
+#include "Factories.h"
+#include "EditorTools.h"
+#include "Renderer.h"
 
 ShadowMap::ShadowMap(int _textureWidth, int _textureHeight) : textureWidth(_textureWidth), textureHeight(_textureHeight)
 {
@@ -175,9 +178,16 @@ OmniShadowMap::~OmniShadowMap()
 
 ///////////////////////////////////////////////////////
 
-LightManager::LightManager() : directionalShadowMapViewportSize(128), directionalShadowMapViewportNear(0.1f), directionalShadowMapViewportFar(100.f)
+LightManager::LightManager() 
+	: directionalShadowMapViewportSize(128)
+	, directionalShadowMapViewportNear(0.1f)
+	, directionalShadowMapViewportFar(100.f)
 {
+	//////////////////// shadow pass shader ////////////////////////
+	shadowPassMaterial = std::make_shared<MaterialShadowPass>(*getProgramFactory().get("shadowPass"));
 
+	//////////////////// omnidirectional shadow pass shader ////////////////////////
+	shadowPassOmniMaterial = std::make_shared<MaterialShadowPassOmni>(*getProgramFactory().get("shadowPassOmni"));
 }
 
 void LightManager::setShadowMapCount(LightType lightType, unsigned int count)
@@ -201,7 +211,7 @@ void LightManager::setShadowMapCount(LightType lightType, unsigned int count)
 	}
 }
 
-int LightManager::getShadowMapCount(LightType lightType)
+size_t LightManager::getShadowMapCount(LightType lightType)
 {
 	if (lightType == LightType::SPOT)
 	{
@@ -264,6 +274,25 @@ void LightManager::bindShadowMapTexture(LightType lightType, int index)
 	}
 }
 
+GLuint LightManager::getShadowMapTextureId(LightType lightType, int index)
+{
+	if (lightType == LightType::SPOT)
+	{
+		assert(index >= 0 && index < spot_shadowMaps.size());
+		return spot_shadowMaps[index].shadowTexture;
+	}
+	else if (lightType == LightType::DIRECTIONAL)
+	{
+		assert(index >= 0 && index < directional_shadowMaps.size());
+		return directional_shadowMaps[index].shadowTexture;
+	}
+	else
+	{
+		assert(index >= 0 && index < point_shadowMaps.size());
+		return point_shadowMaps[index].shadowTexture;
+	}
+}
+
 void LightManager::setLightingMaterials(std::shared_ptr<MaterialPointLight> pointLightMat, std::shared_ptr<MaterialDirectionalLight> directionalLightMat, std::shared_ptr<MaterialSpotLight> spotLightMat)
 {
 	m_pointLightMaterial = pointLightMat;
@@ -307,4 +336,180 @@ float LightManager::getDirectionalShadowMapViewportNear() const
 float LightManager::getDirectionalShadowMapViewportFar() const
 {
 	return directionalShadowMapViewportFar;
+}
+
+void LightManager::generateShadowMaps(const BaseCamera & camera, RenderDatas & renderDatas, DebugDrawRenderer * debugDrawer)
+{
+	////////////////////////////////////////////////////////////////////////
+	///////// BEGIN : Get batches
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches = camera.getRenderBatches(PipelineTypes::OPAQUE_PIPILINE);
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches = camera.getRenderBatches(PipelineTypes::TRANSPARENT_PIPELINE);
+	///////// END : Get batches
+	////////////////////////////////////////////////////////////////////////
+
+	const glm::vec3& cameraForward = camera.getCameraForward();
+	const glm::vec3& cameraPosition = camera.getCameraPosition();
+
+	glEnable(GL_DEPTH_TEST);
+
+	//for spot lights : 
+	//glUseProgram(glProgram_shadowPass);
+	shadowPassMaterial->use();
+	for (int lightIdx = 0, shadowIdx = 0; lightIdx < std::min(renderDatas.spotLightRenderDatas.size(), getShadowMapCount(LightManager::SPOT)); lightIdx++)
+	{
+		SpotLight* currentLight = renderDatas.spotLightRenderDatas[lightIdx].light;
+
+		if (currentLight->getCastShadows())
+		{
+			bindShadowMapFBO(LightManager::SPOT, shadowIdx);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glm::mat4 lightProjection = glm::perspective(currentLight->angle*2.f, 1.f, 0.1f, 100.f);
+			glm::mat4 lightView = glm::lookAt(currentLight->position, currentLight->position + currentLight->direction, currentLight->up);
+
+			for (auto& renderBatchPair : opaqueRenderBatches)
+			{
+				const IRenderBatch& renderBatch = *renderBatchPair.second;
+				for (auto& drawable : renderBatch.getDrawables())
+				{
+					if (drawable->castShadows())
+						renderShadows(lightProjection, lightView, *drawable);
+				}
+			}
+
+			unbindShadowMapFBO(LightManager::SPOT);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			renderDatas.spotLightRenderDatas[lightIdx].shadowMapTextureId = getShadowMapTextureId(LightManager::SPOT, shadowIdx);
+			shadowIdx++;
+		}
+	}
+
+
+	//for directional lights : 
+	//glUseProgram(glProgram_shadowPass);
+	shadowPassMaterial->use();
+	for (int lightIdx = 0, shadowIdx = 0; lightIdx < std::min(renderDatas.directionalLightRenderDatas.size(), getShadowMapCount(LightManager::DIRECTIONAL)); lightIdx++)
+	{
+		DirectionalLight* currentLight = renderDatas.directionalLightRenderDatas[lightIdx].light;
+
+		if (currentLight->getCastShadows())
+		{
+			bindShadowMapFBO(LightManager::DIRECTIONAL, shadowIdx);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			float directionalShadowMapRadius = getDirectionalShadowMapViewportSize()*0.5f;
+			float directionalShadowMapNear = getDirectionalShadowMapViewportNear();
+			float directionalShadowMapFar = getDirectionalShadowMapViewportFar();
+			glm::vec3 orig = currentLight->position; // glm::vec3(cameraForward.x, 0, cameraForward.z)*directionalShadowMapRadius + glm::vec3(cameraPosition.x, directionalLights[lightIdx]->position.y /*directionalShadowMapFar*0.5f*/, cameraPosition.z);
+			glm::vec3 eye = -currentLight->direction + orig;
+			glm::mat4 lightProjection = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
+			glm::mat4 lightView = glm::lookAt(eye, orig, currentLight->up);
+
+			for (auto& renderBatchPair : opaqueRenderBatches)
+			{
+				const IRenderBatch& renderBatch = *renderBatchPair.second;
+				for (auto& drawable : renderBatch.getDrawables())
+				{
+					if (drawable->castShadows())
+						renderShadows(lightProjection, lightView, *drawable);
+				}
+			}
+
+			unbindShadowMapFBO(LightManager::DIRECTIONAL);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			renderDatas.directionalLightRenderDatas[lightIdx].shadowMapTextureId = getShadowMapTextureId(LightManager::DIRECTIONAL, shadowIdx);
+
+			shadowIdx++;
+		}
+	}
+
+
+	//for point lights : 
+	shadowPassOmniMaterial->use();
+	for (int lightIdx = 0, shadowIdx = 0; lightIdx < std::min(renderDatas.pointLightRenderDatas.size(), getShadowMapCount(LightManager::POINT)); lightIdx++)
+	{
+		PointLight* currentLight = renderDatas.pointLightRenderDatas[lightIdx].light;
+
+		if (currentLight->getCastShadows())
+		{
+			bindShadowMapFBO(LightManager::POINT, shadowIdx);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			glm::mat4 lightProjection = glm::perspective(glm::radians(90.f), 1.f, 1.f, 100.f);
+			std::vector<glm::mat4> lightVPs;
+			lightVPs.push_back(lightProjection * glm::lookAt(currentLight->position, currentLight->position + glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(currentLight->position, currentLight->position + glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, -1.f, 0.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(currentLight->position, currentLight->position + glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 1.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(currentLight->position, currentLight->position + glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, -1.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(currentLight->position, currentLight->position + glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, -1.f, 0.f)));
+			lightVPs.push_back(lightProjection * glm::lookAt(currentLight->position, currentLight->position + glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, -1.f, 0.f)));
+
+			for (auto& renderBatchPair : opaqueRenderBatches)
+			{
+				const IRenderBatch& renderBatch = *renderBatchPair.second;
+				for (auto& drawable : renderBatch.getDrawables())
+				{
+					if (drawable->castShadows())
+						renderShadows(100.f, currentLight->position, lightVPs, *drawable);
+				}
+			}
+
+			unbindShadowMapFBO(LightManager::POINT);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			renderDatas.pointLightRenderDatas[lightIdx].shadowMapTextureId = getShadowMapTextureId(LightManager::POINT, shadowIdx);
+
+			shadowIdx++;
+		}
+	}
+
+	CHECK_GL_ERROR("error in shadow pass");
+
+	if (debugDrawer != nullptr)
+	{
+		if (getShadowMapCount(LightManager::DIRECTIONAL) > 0)
+			debugDrawer->drawOutputIfNeeded("shadow_directionnal", getDirectionalShadowMap(0).getTextureId());
+		if (getShadowMapCount(LightManager::SPOT) > 0)
+			debugDrawer->drawOutputIfNeeded("shadow_spot", getSpotShadowMap(0).getTextureId());
+	}
+}
+
+void LightManager::renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, const IDrawable& drawable)
+{
+	glm::mat4 modelMatrix = drawable.getModelMatrix(); //get modelMatrix
+
+													   // From object to light (MV for light)
+	glm::mat4 objectToLight = lightView * modelMatrix;
+	// From object to shadow map screen space (MVP for light)
+	glm::mat4 objectToLightScreen = lightProjection * objectToLight;
+	// From world to shadow map screen space 
+	glm::mat4 worldToLightScreen = lightProjection * lightView;
+
+	//glUniformMatrix4fv(uniformShadowMVP, 1, false, glm::value_ptr(objectToLightScreen));
+	shadowPassMaterial->setUniformMVP(objectToLightScreen);
+
+	//draw mesh : 
+	drawable.draw();
+
+}
+
+void LightManager::renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, const IDrawable& drawable)
+{
+	//get modelMatrix
+	glm::mat4 modelMatrix = drawable.getModelMatrix();
+
+	for (int i = 0; i < 6; i++)
+	{
+		// the light_projection * light_view to transform vertices in light space in geometry shader
+		//glUniformMatrix4fv(uniformShadowOmniVPLight[i], 1, false, glm::value_ptr(lightVPs[i]));  
+		shadowPassOmniMaterial->setUniformVPLight(lightVPs[i], i);
+	}
+	// model matrix of the mesh
+	//glUniformMatrix4fv(uniformShadowOmniModelMatrix, 1, false, glm::value_ptr(modelMatrix)); 
+	//glUniform3fv(uniformShadowOmniLightPos, 1, glm::value_ptr(lightPos));
+	//glUniform1f(uniformShadowOmniFarPlane, farPlane);
+	shadowPassOmniMaterial->setUniformModelMatrix(modelMatrix);
+	shadowPassOmniMaterial->setUniformLightPos(lightPos);
+	shadowPassOmniMaterial->setUniformFarPlane(farPlane);
+
+	//draw mesh : 
+	drawable.draw();
 }

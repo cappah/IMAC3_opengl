@@ -10,10 +10,19 @@ out block
 {
     vec2 Texcoord;
     flat int FlareIdx;
+    vec3 FlareColor;
+    float FlareIntensity;
 } Out;
 
-void makeFlare(vec2 screenPosition, float halfWidth, float halfHeight)
+in geomDatas
 {
+    vec4 LightPosClipSpace;
+    vec3 FlareColor;
+    float FlareIntensity;
+} In[];
+
+void makeFlare(vec2 screenPosition, float halfWidth, float halfHeight)
+{    
     vec2 offset = vec2(-halfWidth, -halfHeight);
     gl_Position = vec4(screenPosition + offset, 0, 1);
     Out.Texcoord = vec2(0.0, 0.0);
@@ -41,15 +50,19 @@ uniform sampler2D Depth;
 uniform float TrailLength;
 uniform float TrailCollapsePos;
 uniform float TrailSize;
-uniform float MainFlareSize;
+uniform vec2 MainFlareSize;
+uniform float FlareOffsetMultiplier;
 
-uniform mat4 VP;
+//uniform mat4 VP;
 
 const int trailCount = 6;
 
 void main()
 {
-   vec4 lightPosClipSpace = VP * gl_in[0].gl_Position;
+    Out.FlareColor = In[0].FlareColor;
+    Out.FlareIntensity = In[0].FlareIntensity;
+
+   vec4 lightPosClipSpace = In[0].LightPosClipSpace;// * gl_in[0].gl_Position;
    float lightDepth = (lightPosClipSpace.z / lightPosClipSpace.w) * 0.5 + 0.5;
    vec2 lightPosScreenSpace = lightPosClipSpace.xy / lightPosClipSpace.w;
    vec2 lightPosTextureSpace = lightPosScreenSpace * 0.5 + 0.5;
@@ -59,9 +72,10 @@ void main()
    if(abs(lightPosScreenSpace.x) > 1.0 || abs(lightPosScreenSpace.y) > 1.0 || texture(Depth, lightPosTextureSpace).r < lightDepth)
        return;
 
+   float modifiedTrailCollapsePos = TrailCollapsePos + (length(lightPosScreenSpace) * FlareOffsetMultiplier);
    vec2 trailDir = normalize(-lightPosScreenSpace);
-   vec2 tailCollapsePoint = (lightPosScreenSpace + trailDir * TrailCollapsePos);
-   float sizeCoeff = TrailSize / (TrailCollapsePos == 0.0 ? 0.001 : TrailCollapsePos);
+   vec2 tailCollapsePoint = (lightPosScreenSpace + trailDir * modifiedTrailCollapsePos);
+   float sizeCoeff = TrailSize / (modifiedTrailCollapsePos == 0.0 ? 0.001 : modifiedTrailCollapsePos);
    float distToCenter = length(lightPosScreenSpace);
    vec2 uStep = (trailDir * TrailLength) / trailCount;
 
@@ -72,7 +86,7 @@ void main()
 
    //First flare
    Out.FlareIdx = 0;
-   makeFlare(flarePos, MainFlareSize, MainFlareSize*yRatio);
+   makeFlare(flarePos, MainFlareSize.x, MainFlareSize.y*yRatio);
 
    //Flares forming the trail
    for(int i = 0; i < trailCount; i++)

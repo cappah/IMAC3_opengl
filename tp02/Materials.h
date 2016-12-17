@@ -140,6 +140,7 @@ private:
 	GLuint uniform_ScreenToView;
 	//GLuint uniform_CameraPosition; //No need in eye space
 	GLuint uniform_ShadowTexture;
+	GLuint uniform_ShadowFactor;
 
 public:
 	MaterialLight()
@@ -170,6 +171,7 @@ public:
 		uniform_ScreenToView = MaterialHelper::getUniform(m_glProgramId, "ScreenToView");
 		//uniform_CameraPosition = MaterialHelper::getUniform(m_glProgramId, "CameraPosition");
 		uniform_ShadowTexture = MaterialHelper::getUniform(m_glProgramId, "Shadow");
+		uniform_ShadowFactor = MaterialHelper::getUniform(m_glProgramId, "ShadowFactor");
 
 		if (!checkError("Uniforms"))
 			PRINT_ERROR("error in texture initialization.")
@@ -202,6 +204,10 @@ public:
 	void setUniformShadowTexture(int texUnitId)
 	{
 		GlHelper::pushParameterToGPU(uniform_ShadowTexture, texUnitId);
+	}
+	void setUniformShadowFactor(float factor)
+	{
+		GlHelper::pushParameterToGPU(uniform_ShadowFactor, factor);
 	}
 };
 

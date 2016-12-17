@@ -22,6 +22,7 @@ uniform mat4 ScreenToView;
  //shadow : 
  uniform sampler2D Shadow;
  uniform mat4 ViewToLightScreen;
+ uniform float ShadowFactor;
 
 //lights struct : 
 
@@ -105,9 +106,9 @@ void main(void)
     vec3 ambient = 0.2 * diffuse * (1.0 - ssaoOcclusion);
     vec3 color = computeDirectionalLight(directionalLight, p, n, diffuse, specular, specularPower * 100);
     color += ambient;
-    color *= (1.0 - (computeShadow(p) + ssaoOcclusion));
+    color *= (1.0 - (computeShadow(p)*ShadowFactor + ssaoOcclusion));
 
-    Color = vec4(color, 1.0);
+    Color = vec4(color, ceil(1.0 - depth)); // Transparency at infinity;
 
     float brightness = dot(Color.rgb, vec3(0.2126, 0.7152, 0.0722));
     HighValues = (brightness < 1.0) ? vec4(0.0, 0.0, 0.0, 0.0) : Color;

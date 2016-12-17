@@ -19,6 +19,7 @@
 
 //forward
 class Entity;
+class MaterialFlares;
 
 struct Light : public Component
 {
@@ -28,14 +29,22 @@ public:
 
 	float intensity;
 	glm::vec3 color;
+	bool castShadows;
+	bool useFlare;
+	ResourcePtr<Material> flareMaterial;
 
 	Light(float _intensity, glm::vec3 _color);
 	virtual ~Light();
 
 	float getIntensity() const;
 	glm::vec3 getColor() const;
+	bool getCastShadows() const;
+	bool getUseFlare() const;
+	const MaterialFlares* getFlareMaterial() const;
 	void setIntensity(float i);
 	void setColor(const glm::vec3& c);
+	void setCastShadows(bool state);
+	void setUseFlare(bool state);
 
 	virtual void updateBoundingBox();
 

@@ -89,12 +89,12 @@ void BaseCamera::onViewportResized(const glm::vec2& newSize)
 
 void BaseCamera::renderFrame(const Texture& texture)
 {
-	glDisable(GL_BLEND);
+	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 	m_frameBuffer.bind();
-	glClear(GL_COLOR_BUFFER_BIT);
-	//glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
 	//glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
+	glClear(GL_COLOR_BUFFER_BIT);
 	//if (m_clearMode == BaseCamera::ClearMode::SKYBOX)
 	//	renderSkybox();
 
@@ -106,6 +106,7 @@ void BaseCamera::renderFrame(const Texture& texture)
 
 	m_frameBuffer.unbind();
 	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 }
 
 const Texture * BaseCamera::getFinalFrame() const

@@ -14,6 +14,6 @@ uniform sampler2D Texture;
 
 void main(void)
 {
-    vec3 color = texture(Texture, In.Texcoord).rgb;
-    Color = vec4(color, 1.0);
+    vec4 color = texture(Texture, In.Texcoord).rgba;
+    Color = color;
 }

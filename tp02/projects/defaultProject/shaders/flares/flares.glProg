@@ -10,6 +10,9 @@
         {"type" : "float", "name" : "TrailLength", "default" : 1.5 },
         {"type" : "float", "name" : "TrailSize", "default" : 0.12 },
         {"type" : "float", "name" : "TrailCollapsePos", "default" : 0.6 },
-        {"type" : "float", "name" : "MainFlareSize", "default" : 0.15 }
+        {"type" : "float2", "name" : "MainFlareSize", "default" : [0.30, 0.08] },
+        {"type" : "float", "name" : "Intensity", "default" : 110.0 },
+        {"type" : "float", "name" : "MinIntensity", "default" : 0.0 },
+        {"type" : "float", "name" : "FlareOffsetMultiplier", "default" : 0.2 }
     ]
 }

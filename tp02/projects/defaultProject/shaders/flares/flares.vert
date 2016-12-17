@@ -1,16 +1,27 @@
 #version 410 core
 
 #define POSITION 0
+#define COLOR 1
+#define INTENSITY 2
 
-layout(location = POSITION) in vec2 Position;
+layout(location = POSITION) in vec3 Position;
+layout(location = COLOR) in vec3 Color;
+layout(location = INTENSITY) in float Intensity;
 
-out block
+out geomDatas
 {
-    vec2 Texcoord;
+    vec4 LightPosClipSpace;
+    vec3 FlareColor;
+    float FlareIntensity;
 } Out;
+
+uniform mat4 VP;
 
 void main()
 {   
-    Out.Texcoord = Position * 0.5 + 0.5;
-    gl_Position = vec4(Position.xy, 0.0, 1.0);
+    Out.LightPosClipSpace = VP * vec4(Position.xyz, 1.0);
+    Out.FlareColor = Color;
+    Out.FlareIntensity = Intensity;
+
+    gl_Position = vec4(Position.xyz, 1.0);
 }

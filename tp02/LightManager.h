@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "glm/glm.hpp"
 #include "glm/vec3.hpp" // glm::vec3
@@ -11,6 +12,10 @@
 
 #include "Materials.h"
 #include "Lights.h"
+
+class RenderDatas;
+class BaseCamera;
+class DebugDrawRenderer;
 
 struct ShadowMap
 {
@@ -73,16 +78,20 @@ private:
 	float directionalShadowMapViewportNear;
 	float directionalShadowMapViewportFar;
 
+	// For shadows :
+	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;
+	std::shared_ptr<MaterialShadowPassOmni> shadowPassOmniMaterial;
 
 public:
 	LightManager();
 
 	void setShadowMapCount(LightType lightType, unsigned int count);
-	int getShadowMapCount(LightType lightType);
+	size_t getShadowMapCount(LightType lightType);
 	//bind shadow map and resize viewport to cover the right area on screen
 	void bindShadowMapFBO(LightType lightType, int index);
 	void unbindShadowMapFBO(LightType lightType);
 	void bindShadowMapTexture(LightType lightType, int index);
+	GLuint getShadowMapTextureId(LightType lightType, int index);
 
 	void setLightingMaterials(std::shared_ptr<MaterialPointLight> pointLightMat, std::shared_ptr<MaterialDirectionalLight> directionalLightMat, std::shared_ptr<MaterialSpotLight> spotLightMat);
 	void uniformPointLight(PointLight& light, const glm::mat4& view);
@@ -102,5 +111,13 @@ public:
 	{
 		return spot_shadowMaps[i];
 	}
+
+	void generateShadowMaps(const BaseCamera& camera, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
+
+	//render a shadow on a shadow map
+	void renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, const IDrawable& drawable);
+
+	//render a shadow on a shadow map
+	void renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, const IDrawable& drawable);
 };
 

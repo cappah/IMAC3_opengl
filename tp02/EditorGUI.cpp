@@ -51,9 +51,9 @@ void DroppedFileDragAndDropOperation::updateOperation()
 {
 	ImVec2 mousePos = ImGui::GetMousePos();
 	ImGui::SetNextWindowPos(mousePos);
-	ImGui::BeginTooltip();
-		ImGui::Text(m_resourcePath.getFilename().c_str());
-	ImGui::EndTooltip();
+	ImGui::Begin("DragAndDropWidget", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoInputs);
+	ImGui::Text(m_resourcePath.getFilename().c_str());
+	ImGui::End();
 }
 
 bool DroppedFileDragAndDropOperation::canDropInto(void* customData, int dropContext)

@@ -19,12 +19,38 @@
 
 class DebugDrawRenderer;
 
-struct LightCullingInfo
+//struct LightCullingInfo
+//{
+//	glm::vec4 viewport;
+//	int idx;
+//
+//	inline LightCullingInfo(const glm::vec4& _viewport, int _idx) : viewport(_viewport), idx(_idx) {}
+//};
+
+struct PointLightRenderDatas
 {
 	glm::vec4 viewport;
-	int idx;
+	PointLight* light;
+	GLuint shadowMapTextureId;
 
-	inline LightCullingInfo(const glm::vec4& _viewport, int _idx) : viewport(_viewport), idx(_idx) {}
+	inline PointLightRenderDatas(const glm::vec4& _viewport, PointLight* _light) : viewport(_viewport), light(_light), shadowMapTextureId(0) {}
+};
+
+struct SpotLightRenderDatas
+{
+	glm::vec4 viewport;
+	SpotLight* light;
+	GLuint shadowMapTextureId;
+
+	inline SpotLightRenderDatas(const glm::vec4& _viewport, SpotLight* _light) : viewport(_viewport), light(_light), shadowMapTextureId(0) {}
+};
+
+struct DirectionalLightRenderDatas
+{
+	DirectionalLight* light;
+	GLuint shadowMapTextureId;
+
+	inline DirectionalLightRenderDatas(DirectionalLight* _light) : light(_light), shadowMapTextureId(0) {}
 };
 
 struct RenderDatas
@@ -43,17 +69,20 @@ struct RenderDatas
 	glm::mat4 screenToView;
 	glm::mat4 VP;
 
-	std::vector<PointLight*>* pointLights;
-	std::vector<DirectionalLight*>* directionalLights;
-	std::vector<SpotLight*>* spotLights;
+	//std::vector<PointLight*>* pointLights;
+	//std::vector<DirectionalLight*>* directionalLights;
+	//std::vector<SpotLight*>* spotLights;
 
 	//light count after culling :
-	int pointLightCount;
-	int spotLightCount;
+	//int pointLightCount;
+	//int spotLightCount;
 
 	//for light culling :
-	std::vector<LightCullingInfo> pointLightCullingInfos;
-	std::vector<LightCullingInfo> spotLightCullingInfos;
+	//std::vector<LightCullingInfo> pointLightCullingInfos;
+	//std::vector<LightCullingInfo> spotLightCullingInfos;
+	std::vector<PointLightRenderDatas> pointLightRenderDatas;
+	std::vector<SpotLightRenderDatas> spotLightRenderDatas;
+	std::vector<DirectionalLightRenderDatas> directionalLightRenderDatas;
 };
 
 class Renderer
@@ -81,10 +110,6 @@ private:
 	std::shared_ptr<MaterialDirectionalLight> m_directionalLightMaterial;
 	std::shared_ptr<MaterialSpotLight> m_spotLightMaterial;
 
-	// For shadows :
-	std::shared_ptr<MaterialShadowPass> shadowPassMaterial;
-	std::shared_ptr<MaterialShadowPassOmni> shadowPassOmniMaterial;
-
 	// Managers :
 	//post process
 	PostProcessManager m_postProcessManager;
@@ -109,20 +134,19 @@ public:
 	//initialyze buffers for blit quad.
 	//void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
 
-	void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path, std::string progamShadowPassOmni_vert_path, std::string progamShadowPassOmni_frag_path, std::string progamShadowPassOmni_geom_path);
+	//void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path, std::string progamShadowPassOmni_vert_path, std::string progamShadowPassOmni_frag_path, std::string progamShadowPassOmni_geom_path);
 
-	//render a shadow on a shadow map
-	void renderShadows(const glm::mat4& lightProjection, const glm::mat4& lightView, const IDrawable& drawable);
-
-	//render a shadow on a shadow map
-	void renderShadows(float farPlane, const glm::vec3 & lightPos, const std::vector<glm::mat4>& lightVPs, const IDrawable& drawable);
-
-	//render all entities of the scene, using deferred shading.
-	//[DEPRECATED]
-	//void render(const BaseCamera& camera, std::vector<MeshRenderer*>& meshRenderers, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, Terrain& terrain, Skybox& skybox, std::vector<Physic::Flag*>& flags, std::vector<Billboard*>& billboards, std::vector<Physic::ParticleEmitter*>& particleEmitters, DebugDrawRenderer* debugDrawer);
+	// Camera culling for point lights and spot lights
+	void updateCulling(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<PointLightRenderDatas>& pointLightRenderDatas, std::vector<SpotLightRenderDatas>& spotLightRenderDatas);
+	// Apply light culling, and populate lightRenderDatas
+	void lightCullingPass(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
+	// Compute shadow maps
+	void shadowPass(const BaseCamera& camera, DebugDrawRenderer* debugDrawer = nullptr);
+	// Main render function. Will render the sene into a camera texture.
 	void render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
-	void renderLightedScene(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
-	void shadowPass(const BaseCamera& camera, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
+	// Render the scene with lights.
+	void renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* debugDrawer = nullptr);
+	
 	void gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view);
 	void lightPass(const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view);
 	void deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, DebugDrawRenderer* debugDrawer);
@@ -146,8 +170,5 @@ public:
 
 	//resize the blit quad, changing its vertices coordinates
 	void resizeBlitQuad(const glm::vec4& viewport = glm::vec4(-1,-1,2,2));
-
-	// Camera culling for light
-	void updateCulling(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<LightCullingInfo>& pointLightCullingInfos, std::vector<LightCullingInfo>& spotLightCullingInfos);
 };
 

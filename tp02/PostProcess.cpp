@@ -447,11 +447,18 @@ FlaresPostProcessOperation::FlaresPostProcessOperation(const std::string & opera
 	//m_finalFB.unbind();
 
 	glGenVertexArrays(1, &m_vao);
-	glGenBuffers(1, &m_positionBuffer);
+	glGenBuffers(1, &m_flareDatasBuffer);
 	glBindVertexArray(m_vao);
-	glBindBuffer(GL_ARRAY_BUFFER, m_positionBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, m_flareDatasBuffer);
+	// Position :
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 7, (void*)0); // 3 floats 
+	// Color :
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 7, (void*)(sizeof(GL_FLOAT) * 3)); // 3 floats
+	// Intensity :
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 7, (void*)(sizeof(GL_FLOAT) * 6)); // 1 float
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
@@ -462,36 +469,164 @@ void FlaresPostProcessOperation::render(const PostProcessOperationData & operati
 	const MaterialFlares& materialFlares = operationDatas->getMaterial();
 
 
+	std::unordered_map<const MaterialFlares*, std::vector<int>[3]> m_lightsMapping;
+
+	int index = 0;
+	for (auto& lightRenderData : renderDatas.pointLightRenderDatas)
+	{
+		if (lightRenderData.light->getUseFlare())
+		{
+			if (lightRenderData.light->getFlareMaterial())
+				m_lightsMapping[lightRenderData.light->getFlareMaterial()][LightManager::POINT].push_back(index);
+			else
+				m_lightsMapping[&materialFlares][LightManager::POINT].push_back(index);
+		}
+		index++;
+	}
+	index = 0;
+	for (auto& lightRenderData : renderDatas.spotLightRenderDatas)
+	{
+		if (lightRenderData.light->getUseFlare())
+		{
+			if (lightRenderData.light->getFlareMaterial())
+				m_lightsMapping[lightRenderData.light->getFlareMaterial()][LightManager::SPOT].push_back(index);
+			else
+				m_lightsMapping[&materialFlares][LightManager::SPOT].push_back(index);
+		}
+		index++;
+	}
+	index = 0;
+	for (auto& lightRenderData : renderDatas.directionalLightRenderDatas)
+	{
+		if (lightRenderData.light->getUseFlare())
+		{
+			if (lightRenderData.light->getFlareMaterial())
+				m_lightsMapping[lightRenderData.light->getFlareMaterial()][LightManager::DIRECTIONAL].push_back(index);
+			else
+				m_lightsMapping[&materialFlares][LightManager::DIRECTIONAL].push_back(index);
+		}
+		index++;
+	}
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);
 
-	std::vector<glm::vec3> pointLightPositions;
-	for (auto& light : *renderDatas.pointLights)
-	{
-		pointLightPositions.push_back(light->position);
-	}
-	glBindVertexArray(m_vao);
-	glBindBuffer(GL_ARRAY_BUFFER, m_positionBuffer);
-	glBufferData(GL_ARRAY_BUFFER, pointLightPositions.size() * sizeof(float) * 3, &pointLightPositions[0], GL_DYNAMIC_DRAW);
-	
-	materialFlares.use();
-	int texCount = 0;
-	materialFlares.pushInternalsToGPU(texCount);
-	materialFlares.glUniform_VP((camera.getProjectionMatrix() * camera.getViewMatrix()));
-
-	glActiveTexture(GL_TEXTURE0 + texCount);
-	glBindTexture(GL_TEXTURE_2D, renderDatas.lightPassDepth.glId);
-	materialFlares.glUniform_Depth(texCount);
-	texCount++;
-
 	m_flaresFB.bind();
 	glClear(GL_COLOR_BUFFER_BIT);
-	glDrawArrays(GL_POINTS, 0, pointLightPositions.size());
-	m_flaresFB.unbind();
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	materialFlares.use();
+
+	for (auto& lights : m_lightsMapping)
+	{
+		const MaterialFlares* currentMaterial = lights.first;
+		std::vector<int>& pointLightsDatas = lights.second[LightManager::POINT];
+		std::vector<int>& spotLightsDatas = lights.second[LightManager::SPOT];
+		std::vector<int>& directionalLightsDatas = lights.second[LightManager::DIRECTIONAL];
+
+		int flareCount = 0;
+		std::vector<float> flareDatas;
+		// For point lights :
+		for (int lightIdx : pointLightsDatas)
+		{
+			PointLightRenderDatas& lightRenderData = renderDatas.pointLightRenderDatas[lightIdx];
+
+			glm::vec3 lightPosition = lightRenderData.light->position;
+			float angleToLight = glm::dot(glm::normalize(lightPosition - camera.getCameraPosition()), camera.getCameraForward());
+			float maxAngleToLight = ((90.f * glm::pi<float>()) / 180.f);
+
+			if (renderDatas.pointLightRenderDatas[lightIdx].light->getUseFlare())
+			{
+				flareDatas.push_back(lightRenderData.light->position.x);
+				flareDatas.push_back(lightRenderData.light->position.y);
+				flareDatas.push_back(lightRenderData.light->position.z);
+
+				flareDatas.push_back(lightRenderData.light->color.x);
+				flareDatas.push_back(lightRenderData.light->color.y);
+				flareDatas.push_back(lightRenderData.light->color.z);
+
+				float distanceToCamera = glm::distance(camera.getCameraPosition(), lightRenderData.light->position);
+				float intensity = lightRenderData.light->intensity / (0.01 + distanceToCamera*distanceToCamera) *  (1.F - angleToLight / maxAngleToLight);
+				flareDatas.push_back(intensity);
+				flareCount++;
+			}
+		}
+		// For spot lights :
+		for (int lightIdx : spotLightsDatas)
+		{
+			SpotLightRenderDatas& lightRenderData = renderDatas.spotLightRenderDatas[lightIdx];
+
+			glm::vec3 lightDirection = lightRenderData.light->direction;
+			glm::vec3 lightPosition = lightRenderData.light->position;
+			float angleToCamera = glm::dot(glm::normalize(camera.getCameraPosition() - lightPosition), lightDirection);
+			float maxAngleToCamera = lightRenderData.light->angle * 0.5f;
+			float angleToLight = glm::dot(glm::normalize(lightPosition - camera.getCameraPosition()), camera.getCameraForward());
+			float maxAngleToLight = ((90.f * glm::pi<float>()) / 180.f);
+
+			if (lightRenderData.light->getUseFlare() && angleToLight < maxAngleToCamera)
+			{
+				flareDatas.push_back(lightRenderData.light->position.x);
+				flareDatas.push_back(lightRenderData.light->position.y);
+				flareDatas.push_back(lightRenderData.light->position.z);
+
+				flareDatas.push_back(lightRenderData.light->color.x);
+				flareDatas.push_back(lightRenderData.light->color.y);
+				flareDatas.push_back(lightRenderData.light->color.z);
+
+				float distanceToCamera = glm::distance(camera.getCameraPosition(), lightRenderData.light->position);
+				float intensity = (lightRenderData.light->intensity / (0.01 + distanceToCamera*distanceToCamera)) * (1.F - angleToLight / maxAngleToLight);
+				flareDatas.push_back(intensity);
+				flareCount++;
+			}
+		}
+		// For directional lights :
+		for (int lightIdx : directionalLightsDatas)
+		{
+			DirectionalLightRenderDatas& lightRenderData = renderDatas.directionalLightRenderDatas[lightIdx];
+
+			glm::vec3 lightDirection = lightRenderData.light->direction;
+			glm::vec3 lightPosition = lightRenderData.light->position;
+			float angleToCamera = glm::dot(glm::normalize(camera.getCameraPosition() - lightPosition), lightDirection);
+			float maxAngleToCamera = ((90.f * glm::pi<float>()) / 180.f);
+			float angleToLight = glm::dot(glm::normalize(lightPosition - camera.getCameraPosition()), camera.getCameraForward());
+			float maxAngleToLight = ((90.f * glm::pi<float>()) / 180.f);
+
+			if (lightRenderData.light->getUseFlare() && angleToLight < maxAngleToCamera)
+			{
+				flareDatas.push_back(lightRenderData.light->position.x);
+				flareDatas.push_back(lightRenderData.light->position.y);
+				flareDatas.push_back(lightRenderData.light->position.z);
+
+				flareDatas.push_back(lightRenderData.light->color.x);
+				flareDatas.push_back(lightRenderData.light->color.y);
+				flareDatas.push_back(lightRenderData.light->color.z);
+
+				float intensity = lightRenderData.light->intensity * (1.F - angleToLight / maxAngleToLight);
+				flareDatas.push_back(intensity);
+				flareCount++;
+			}
+		}
+
+		// Update vbo :
+		glBindVertexArray(m_vao);
+		glBindBuffer(GL_ARRAY_BUFFER, m_flareDatasBuffer);
+		glBufferData(GL_ARRAY_BUFFER, flareDatas.size() * sizeof(float), &flareDatas[0], GL_DYNAMIC_DRAW);
+
+		int texCount = 0;
+		currentMaterial->pushInternalsToGPU(texCount);
+		currentMaterial->glUniform_VP((camera.getProjectionMatrix() * camera.getViewMatrix()));
+
+		glActiveTexture(GL_TEXTURE0 + texCount);
+		glBindTexture(GL_TEXTURE_2D, renderDatas.lightPassDepth.glId);
+		currentMaterial->glUniform_Depth(texCount);
+		texCount++;
+
+		glDrawArrays(GL_POINTS, 0, flareCount);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	m_flaresFB.unbind();
 
 	glDisable(GL_BLEND);
 
