@@ -4,11 +4,15 @@
 #include <vector>
 
 #include "ISingleton.h"
+#include "ISerializable.h"
 
-struct ID
+struct ID : public ISerializable
 {
 	int generation;
 	int index;
+
+	ID() : index(-1), generation(-1)
+	{}
 
 	ID(int _index, int _generation) : index(_index), generation(_generation)
 	{}
@@ -19,24 +23,85 @@ struct ID
 		generation = -1;
 	}
 
-	bool operator==(const ID& other)
+	bool operator==(const ID& other) const
 	{
 		return generation == other.generation && index == other.index;
 	}
+
+	bool operator<(const ID& other) const
+	{
+		return index < other.index;
+	}
+
+	virtual void save(Json::Value & entityRoot) const override
+	{
+		entityRoot["index"] = index;
+		entityRoot["generation"] = generation;
+	}
+
+	virtual void load(const Json::Value & entityRoot) override
+	{
+		index = entityRoot.get("index", -1).asInt();
+		generation = entityRoot.get("generation", -1).asInt();
+	}
+
+	bool isValid() const
+	{
+		return index != -1 && generation != -1;
+	}
 };
 
-class IDGenerator : public ISingleton<IDGenerator>
+template<typename T>
+class IDGenerator : public ISingleton<IDGenerator<T>>
 {
 private:
 	std::vector<bool> m_used;
 	std::vector<int> m_generation;
-	int m_lastIndex;
+
 public:
 	IDGenerator()
-		: m_lastIndex(0)
 	{
 		m_used.resize(100, false);
 		m_generation.resize(100, 0);
+	}
+	
+	bool isIDLocked(const ID& id)
+	{
+		// Out of bounds
+		if (m_used.size() <= id.index || m_generation.size() <= id.index)
+			return false;
+
+		// Generation mismatch
+		return m_generation[id.index] == id.generation ? m_used[id.index] : false;
+	}
+
+	bool isIDValid(const ID& id)
+	{
+		// Invalid
+		if (id.generation < 0 || id.index < 0)
+			return false;
+
+		return isIDLocked(id);
+	}
+
+	void lockID(ID idToLock)
+	{
+		if (m_used.size() <= idToLock.index)
+		{
+			const idCountToAdd = idToLock.index - m_used.size() +1;
+			for (int i = 0; i < idCountToAdd; i++)
+			{
+				m_used.push_back(false);
+				m_generation.push_back(0);
+			}
+		}
+
+		assert(m_used[idToLock.index] == false); // ID must be free
+
+		m_used[idToLock.index] = true;
+		m_generation[idToLock.index] = idToLock.generation;	
+
+		assert(m_used.size() == m_generation.size());
 	}
 
 	ID lockID()
@@ -53,9 +118,8 @@ public:
 		{
 			m_generation.push_back(0);
 			m_used.push_back(true);
-			m_lastIndex++;
-			assert(m_lastIndex == m_generation.size() && m_lastIndex == m_used.size());
-			return ID(m_lastIndex - 1, m_generation.back());
+			assert(m_used.size() == m_generation.size());
+			return ID(m_used.size() - 1, m_generation.back());
 		}
 	}
 

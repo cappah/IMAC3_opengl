@@ -117,9 +117,9 @@ Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 	}
 }
 
-void Texture::init(const FileHandler::CompletePath& path)
+void Texture::init(const FileHandler::CompletePath& path, const ID& id)
 {
-	Resource::init(path);
+	Resource::init(path, id);
 
 	assert(!Project::isPathPointingInsideProjectFolder(path));
 	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
@@ -612,9 +612,9 @@ void CubeTexture::freeGL()
 	}
 }
 
-void CubeTexture::init(const FileHandler::CompletePath & path)
+void CubeTexture::init(const FileHandler::CompletePath & path, const ID& id)
 {
-	Resource::init(path);
+	Resource::init(path, id);
 
 	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
 	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);

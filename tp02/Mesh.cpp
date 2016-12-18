@@ -64,9 +64,12 @@ Mesh::Mesh(const FileHandler::CompletePath& _path, const std::string& meshName)
 	}
 }
 
-void Mesh::init(const FileHandler::CompletePath & path)
+void Mesh::init(const FileHandler::CompletePath & path, const ID& id)
 {
-	Resource::init(path);
+	Resource::init(path, id);
+
+	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
 
 	primitiveType = GL_TRIANGLES;
 	coordCountByVertex = 3;
@@ -93,13 +96,13 @@ void Mesh::init(const FileHandler::CompletePath & path)
 		delete importer;
 	importer = new Assimp::Importer();
 
-	const aiScene* pScene = importer->ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* pScene = importer->ReadFile(absolutePath.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 	if (pScene) {
-		Ret = initFromScene(pScene, path);
+		Ret = initFromScene(pScene, absolutePath);
 	}
 	else {
-		std::cout << "Error parsing " << path.toString() << " : " << importer->GetErrorString() << std::endl;
+		std::cout << "Error parsing " << absolutePath.toString() << " : " << importer->GetErrorString() << std::endl;
 	}
 
 	initGl();

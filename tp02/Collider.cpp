@@ -14,7 +14,7 @@ CollisionInfo::CollisionInfo(Rigidbody* _rigidbody, const glm::vec3& _point, con
 
 ///////////////////////////////
 
-Collider::Collider(ComponentType colliderType, ResourcePtr<Mesh> _visualMesh, ResourcePtr<Material> _visualMaterial)
+Collider::Collider(ComponentType colliderType, Mesh* _visualMesh, Material* _visualMaterial)
 	: Component(colliderType)
 	, visualMesh(_visualMesh)
 	, visualMaterial(_visualMaterial)
@@ -277,7 +277,7 @@ void Collider::onAfterComponentErasedFromEntity(Entity& entity)
 
 COMPONENT_IMPLEMENTATION_CPP(BoxCollider)
 
-BoxCollider::BoxCollider(ResourcePtr<Mesh> _visualMesh, ResourcePtr<Material> _visualMaterial)
+BoxCollider::BoxCollider(Mesh* _visualMesh, Material* _visualMaterial)
 	: Collider(BOX_COLLIDER, getMeshFactory().getDefault("cubeWireframe"), getMaterialFactory().getDefault("wireframe"))
 {
 	localTopRight = glm::vec3(0.5f, 0.5f, 0.5f);

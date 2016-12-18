@@ -19,9 +19,10 @@ public:
 	SkeletalAnimation();
 	SkeletalAnimation(aiAnimation* animation);
 	~SkeletalAnimation();
-	void init(const FileHandler::CompletePath& path) override
+	void init(const FileHandler::CompletePath& path, const ID& id) override
 	{
-		Resource::init(path);
+		Resource::init(path, id);
+
 		const std::string animName = path.getSubFileName();
 		assert(!animName.empty());
 

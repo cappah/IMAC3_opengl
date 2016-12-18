@@ -55,7 +55,7 @@ struct Texture final : public Resource
 	void initGL();
 	void freeGL();
 
-	void init(const FileHandler::CompletePath& path) override;
+	void init(const FileHandler::CompletePath& path, const ID& id) override;
 
 	void drawInInspector(Scene & scene) override;
 	void drawIconeInResourceTree() override;
@@ -114,7 +114,7 @@ struct CubeTexture final : public Resource
 	void freeGL();
 
 	//For saving internal resource
-	void init(const FileHandler::CompletePath& path) override;
+	void init(const FileHandler::CompletePath& path, const ID& id) override;
 	void load(const FileHandler::CompletePath& path);
 	void save(const FileHandler::CompletePath& path) const;
 

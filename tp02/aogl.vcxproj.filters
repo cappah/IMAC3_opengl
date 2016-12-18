@@ -487,6 +487,9 @@
     <ClInclude Include="IAsynchronousCommand.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="IResourcePtr.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

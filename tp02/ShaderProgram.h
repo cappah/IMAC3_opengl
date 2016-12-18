@@ -61,7 +61,7 @@ public:
 	//ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);
 	//ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath);
 
-	void init(const FileHandler::CompletePath& path) override;
+	void init(const FileHandler::CompletePath& path, const ID& id) override;
 
 	void load(const FileHandler::CompletePath& path);
 	//void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);

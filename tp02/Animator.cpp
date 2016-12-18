@@ -235,7 +235,7 @@ void Animator::load(const Json::Value & componentRoot)
 
 	m_skeletonPath = FileHandler::CompletePath(componentRoot.get("skeletonPath", "").asString());
 	auto mesh = getMeshFactory().get(m_skeletonPath);
-	if (mesh.isValid()) 
+	if (mesh != nullptr) 
 	{
 		m_skeleton = mesh->getSkeleton();
 	}

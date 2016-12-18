@@ -8,10 +8,10 @@
 
 //addings : 
 template<>
-void ResourceFactory<Material>::addResourceForce(const FileHandler::CompletePath& path, unsigned int hashKey)
+void ResourceFactory<Material>::addResourceForce(const FileHandler::CompletePath& path, const ID& hashKey)
 {
 	Material* newResource = makeNewMaterialInstance(path);
-	newResource->init(path);
+	newResource->init(path, hashKey);
 
 	m_resources[path] = newResource;
 	m_resourceMapping[path] = hashKey;
@@ -22,11 +22,13 @@ template<>
 void ResourceFactory<Material>::addResourceSoft(const FileHandler::CompletePath& path)
 {
 	Material* newResource = makeNewMaterialInstance(path);
-	newResource->init(path);
+
+	ID newId = IDGenerator<Resource>::instance().lockID();
+	newResource->init(path, newId);
 
 	m_resources[path] = newResource;
-	m_resourceMapping[path] = ++s_resourceCount;
-	m_resourcesFromHashKey[s_resourceCount] = newResource;
+	m_resourceMapping[path] = newId;
+	m_resourcesFromHashKey[newId] = newResource;
 }
 
 //Creation : 
@@ -479,20 +481,20 @@ Resource* getResourceFromTypeAndCompletePath(ResourceType resourceType, const Fi
 		return nullptr;
 		break;
 	case TEXTURE:
-		return getResourceFactory<Texture>().get(completePath).get();
+		return getResourceFactory<Texture>().get(completePath);
 		break;
 	case CUBE_TEXTURE:
-		return getResourceFactory<CubeTexture>().get(completePath).get();
+		return getResourceFactory<CubeTexture>().get(completePath);
 		break;
 	case MESH:
-		return getResourceFactory<Mesh>().get(completePath).get();
+		return getResourceFactory<Mesh>().get(completePath);
 		break;
 	case SKELETAL_ANIMATION:
 		PRINT_WARNING("Your are trying to use getResourceFromTypeAndCompletePath() on skeletal animation. It will return null");
 		return nullptr;
 		break;
 	case MATERIAL:
-		return getResourceFactory<Material>().get(completePath).get();
+		return getResourceFactory<Material>().get(completePath);
 		break;
 	default:
 		break;

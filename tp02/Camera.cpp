@@ -19,8 +19,8 @@ BaseCamera::BaseCamera()
 {
 
 	// Setup mesh and material
-	m_quadMesh = getMeshFactory().getDefault("quad").get();
-	m_material = static_cast<MaterialBlit*>(getMaterialFactory().getDefault("blit").get());
+	m_quadMesh = getMeshFactory().getDefault("quad");
+	m_material = static_cast<MaterialBlit*>(getMaterialFactory().getDefault("blit"));
 	// Setup texture
 	GlHelper::makeFloatColorTexture(m_texture, 400, 400);
 	m_texture.initGL();

@@ -106,7 +106,7 @@ Material::~Material()
 	if (m_glProgramName != "")
 	{
 		auto shaderProgramRef = getProgramFactory().get(m_glProgramName);
-		if(shaderProgramRef.isValid())
+		if(shaderProgramRef != nullptr)
 			shaderProgramRef->removeMaterialRef(this);
 	}
 }
@@ -119,10 +119,11 @@ void Material::initInternalParameters()
 	}
 }
 
-void Material::init(const FileHandler::CompletePath& path)
+void Material::init(const FileHandler::CompletePath& path, const ID& id)
 {
-	Resource::init(path);
+	Resource::init(path, id);
 
+	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
 	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
 
 	std::ifstream stream;

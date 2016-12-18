@@ -352,6 +352,7 @@
     <ClInclude Include="imgui_extension.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="IRenderableComponent.h" />
+    <ClInclude Include="IResourcePtr.h" />
     <ClInclude Include="ISerializable.h" />
     <ClInclude Include="ISingleton.h" />
     <ClInclude Include="LightManager.h" />

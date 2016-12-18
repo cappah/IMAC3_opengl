@@ -17,6 +17,8 @@
 #include "ResourcePointer.h"
 #include "Project.h"
 
+#include "IDGenerator.h"
+
 class ResourceFactoryBase
 {
 protected:
@@ -24,17 +26,21 @@ protected:
 	{
 		resource->setName(name);
 	}
+	void setResourceID(Resource* resource, ID id)
+	{
+		resource->setResourceID(id);
+	}
 };
 
 template<typename T>
 class ResourceFactory : public ISingleton<ResourceFactory<T>>, public ISerializable, public ResourceFactoryBase
 {
 private:
-	std::map<FileHandler::CompletePath, unsigned int> m_resourceMapping;
-	std::map<std::string, unsigned int> m_defaultResourceMapping;
+	std::map<FileHandler::CompletePath, ID> m_resourceMapping;
+	std::map<std::string, ID> m_defaultResourceMapping;
 
-	std::map<unsigned int, T*> m_resourcesFromHashKey;
-	std::map<unsigned int, T*> m_defaultResourcesFromHashKey;
+	std::map<ID, T*> m_resourcesFromHashKey;
+	std::map<ID, T*> m_defaultResourcesFromHashKey;
 
 	std::map<FileHandler::CompletePath, T*> m_resources;
 	std::map<std::string, T*> m_defaultResources;
@@ -50,21 +56,21 @@ public:
 	void addResourceSoft(const FileHandler::CompletePath& path);
 	void addResourceForce(const FileHandler::CompletePath& path, T* value);
 	void erase(const FileHandler::CompletePath& path);
-	ResourcePtr<T> get(const FileHandler::CompletePath& path);
+	T* get(const FileHandler::CompletePath& path);
 	bool contains(const FileHandler::CompletePath& path);
-	T* getRaw(unsigned int hashKey);
-	bool contains(unsigned int hashKey);
-	unsigned int getHashKeyForResource(const FileHandler::CompletePath& path) const;
+	T* getRaw(const ID& hashKey);
+	bool contains(const ID& hashKey);
+	ID getHashKeyForResource(const FileHandler::CompletePath& path) const;
 	void changeResourceKey(const FileHandler::CompletePath& oldKey, const FileHandler::CompletePath& newKey);
 
 
 	void initDefaults();
 	void addDefaultResource(const std::string& name, T* resource);
-	ResourcePtr<T> getDefault(const std::string& name);
+	T* getDefault(const std::string& name);
 	bool containsDefault(const std::string& name);
-	T* getRawDefault(unsigned int hashKey);
-	bool containsDefault(unsigned int hashKey);
-	unsigned int getHashKeyForDefaultResource(const std::string& name) const;
+	T* getRawDefault(const ID& hashKey);
+	bool containsDefault(const ID& hashKey);
+	ID getHashKeyForDefaultResource(const std::string& name) const;
 
 	void clear();
 
@@ -79,7 +85,7 @@ public:
 	SINGLETON_IMPL(ResourceFactory);
 
 private:
-	void addResourceForce(const FileHandler::CompletePath& path, unsigned int hashKey);
+	void addResourceForce(const FileHandler::CompletePath& path, const ID& hashKey);
 
 };
 
@@ -89,8 +95,8 @@ template<>
 class ResourceFactory<ShaderProgram> : public ISingleton<ResourceFactory<ShaderProgram>>, public ISerializable
 {
 private:
-	std::map<std::string, unsigned int> m_resourceMapping;
-	std::map<unsigned int, ShaderProgram*> m_resourcesFromHashKey;
+	std::map<std::string, ID> m_resourceMapping;
+	std::map<ID, ShaderProgram*> m_resourcesFromHashKey;
 	std::map<std::string, ShaderProgram*> m_resources;
 
 public:
@@ -108,49 +114,53 @@ public:
 		if (m_resources.find(name) != m_resources.end())
 			return;
 
+		ID newID = IDGenerator<Resource>::instance().lockID();
 		ShaderProgram* newResource = new ShaderProgram(path);
-		newResource->init(path);
+		newResource->init(path, newID);
 
 		m_resources[name] = newResource;
-		m_resourceMapping[name] = ++s_resourceCount;
-		m_resourcesFromHashKey[s_resourceCount] = newResource;
+		m_resourceMapping[name] = newID;
+		m_resourcesFromHashKey[newID] = newResource;
+		//m_resourceMapping[name] = ++s_resourceCount;
+		//m_resourcesFromHashKey[s_resourceCount] = newResource;
 		
 	}
 	void addResourceForce(const std::string& name, ShaderProgram* value)
 	{
 		m_resources[name] = value;
-		m_resourceMapping[name] = ++s_resourceCount;
-		m_resourcesFromHashKey[s_resourceCount] = value;
+		ID newID = IDGenerator<Resource>::instance().lockID();
+		m_resourceMapping[name] = newID;
+		m_resourcesFromHashKey[newID] = value;
 	}
 	void erase(const std::string& name)
 	{
 		if (m_resources.find(name) == m_resources.end())
 			return;
 
-		unsigned int resourceHashKey = m_resourceMapping[name];
+		ID resourceID = m_resourceMapping[name];
 		delete m_resources[name];
 
 		m_resources.erase(name);
 		m_resourceMapping.erase(name);
-		m_resourcesFromHashKey.erase(resourceHashKey);
+		m_resourcesFromHashKey.erase(resourceID);
 	}
-	ResourcePtr<ShaderProgram> get(const std::string& name)
+	ShaderProgram* get(const std::string& name)
 	{
-		return ResourcePtr<ShaderProgram>(m_resources[name], m_resourceMapping[name], false);
+		return m_resources[name];
 	}
 	bool contains(const std::string& name)
 	{
 		return m_resources.find(name) != m_resources.end();
 	}
-	ShaderProgram* getRaw(unsigned int hashKey)
+	ShaderProgram* getRaw(const ID& hashKey)
 	{
 		return m_resourcesFromHashKey[hashKey];
 	}
-	bool contains(unsigned int hashKey)
+	bool contains(const ID& hashKey)
 	{
 		return m_resourcesFromHashKey.find(hashKey) != m_resourcesFromHashKey.end();
 	}
-	unsigned int getHashKeyForResource(const std::string& name) const
+	ID getHashKeyForResource(const std::string& name) const
 	{
 		return m_resourceMapping.at(name);
 	}
@@ -158,23 +168,33 @@ public:
 	//load all programs which are in "[projectPath]/shaders/"
 	void initDefaults()
 	{
-		FileHandler::Path shadersPath = FileHandler::Path(Project::getPath().toString() + "/shaders/");
-		loadAllPrograms(shadersPath);
+		FileHandler::Path shadersPath = FileHandler::Path(Project::getShaderFolderPath());
+		loadAllPrograms(shadersPath, FileHandler::Path(shadersPath.back()));
 	}
 
 	//add all programs recursivly to the ShaderProgram factory 
-	void loadAllPrograms(const FileHandler::Path& path)
+	//void loadAllPrograms(const FileHandler::Path& shaderFolderPath)
+	//{
+	//	std::vector<std::string> dirNames;
+	//	FileHandler::getAllDirNames(shaderFolderPath, dirNames);
+
+	//	for (auto& dirName : dirNames)
+	//	{
+	//		loadAllPrograms(FileHandler::Path(shaderFolderPath.toString() + "/" + dirName), FileHandler::Path(dirName));
+	//	}
+	//}
+	void loadAllPrograms(const FileHandler::Path& absolutePath, const FileHandler::Path& relativePath)
 	{
 		std::vector<std::string> dirNames;
-		FileHandler::getAllDirNames(path, dirNames);
+		FileHandler::getAllDirNames(absolutePath, dirNames);
 
 		for (auto& dirName : dirNames)
 		{
-			loadAllPrograms(FileHandler::Path(path.toString() + "/" + dirName));
+			loadAllPrograms(FileHandler::Path(absolutePath.toString() + "/" + dirName), FileHandler::Path(relativePath.toString() + "/" + dirName) );
 		}
 
 		std::vector<std::string> fileNames;
-		FileHandler::getAllFileNames(path, fileNames);
+		FileHandler::getAllFileNames(absolutePath, fileNames);
 		std::string outExtention;
 
 		for (auto& fileNameAndExtention : fileNames)
@@ -183,7 +203,7 @@ public:
 			FileHandler::getExtentionFromExtendedFilename(fileNameAndExtention, outExtention);
 			if (FileHandler::getFileTypeFromExtention(outExtention) == FileHandler::FileType::SHADER_PROGRAM)
 			{
-				FileHandler::CompletePath shaderPath(path.toString() + "/" + fileNameAndExtention);
+				FileHandler::CompletePath shaderPath(relativePath.toString() + "/" + fileNameAndExtention);
 				addResourceSoft(shaderPath);
 			}
 		}
@@ -220,10 +240,10 @@ public:
 	SINGLETON_IMPL(ResourceFactory);
 
 private:
-	void addResourceForce(const std::string& name, unsigned int hashKey)
+	void addResourceForce(const std::string& name, const ID& hashKey)
 	{
 		ShaderProgram* newResource = new ShaderProgram();
-		newResource->init(name);
+		newResource->init(name, hashKey);
 
 		m_resources[name] = newResource;
 		m_resourceMapping[name] = hashKey;
@@ -252,8 +272,9 @@ template<typename T>
 void ResourceFactory<T>::addResourceForce(const FileHandler::CompletePath& path, T* value)
 {
 	m_resources[path] = value;
-	m_resourceMapping[path] = ++s_resourceCount;
-	m_resourcesFromHashKey[s_resourceCount] = value;
+	ID newID = IDGenerator<Resource>::instance().lockID();
+	m_resourceMapping[path] = newID;
+	m_resourcesFromHashKey[newID] = value;
 }
 
 
@@ -263,19 +284,21 @@ void ResourceFactory<T>::addResourceSoft(const FileHandler::CompletePath& path)
 	if (m_resources.find(path) != m_resources.end())
 		return;
 
+	ID newID = IDGenerator<Resource>::instance().lockID();
+
 	T* newResource = new T();
-	newResource->init(path);
+	newResource->init(path, newID);
 
 	m_resources[path] = newResource;
-	m_resourceMapping[path] = ++s_resourceCount;
-	m_resourcesFromHashKey[s_resourceCount] = newResource;
+	m_resourceMapping[path] = newID;
+	m_resourcesFromHashKey[newID] = newResource;
 }
 
 template<typename T>
-void ResourceFactory<T>::addResourceForce(const FileHandler::CompletePath& path, unsigned int hashKey)
+void ResourceFactory<T>::addResourceForce(const FileHandler::CompletePath& path, const ID& hashKey)
 {
 	T* newResource = new T();
-	newResource->init(path);
+	newResource->init(path, hashKey);
 
 	m_resources[path] = newResource;
 	m_resourceMapping[path] = hashKey;
@@ -299,7 +322,7 @@ void ResourceFactory<T>::erase(const FileHandler::CompletePath& path)
 	if (m_resources.find(path) == m_resources.end())
 		return;
 
-	unsigned int resourceHashKey = m_resourceMapping[path];
+	ID resourceHashKey = m_resourceMapping[path];
 	delete m_resources[path];
 
 	m_resources.erase(path);
@@ -308,19 +331,19 @@ void ResourceFactory<T>::erase(const FileHandler::CompletePath& path)
 }
 
 template<typename T>
-unsigned int ResourceFactory<T>::getHashKeyForResource(const FileHandler::CompletePath& path) const
+ID ResourceFactory<T>::getHashKeyForResource(const FileHandler::CompletePath& path) const
 {
 	return m_resourceMapping.at(path);
 }
 
 template<typename T>
-ResourcePtr<T> ResourceFactory<T>::get(const FileHandler::CompletePath& path)
+T* ResourceFactory<T>::get(const FileHandler::CompletePath& path)
 {
-	return ResourcePtr<T>(m_resources[path], m_resourceMapping[path], false);
+	return m_resources[path];
 }
 
 template<typename T>
-T* ResourceFactory<T>::getRaw(unsigned int hashKey)
+T* ResourceFactory<T>::getRaw(const ID& hashKey)
 {
 	return m_resourcesFromHashKey[hashKey];
 }
@@ -332,7 +355,7 @@ bool ResourceFactory<T>::contains(const FileHandler::CompletePath& path)
 }
 
 template<typename T>
-bool ResourceFactory<T>::contains(unsigned int hashKey)
+bool ResourceFactory<T>::contains(const ID& hashKey)
 {
 	return m_resourcesFromHashKey.find(hashKey) != m_resourcesFromHashKey.end();
 }
@@ -347,7 +370,7 @@ void ResourceFactory<T>::changeResourceKey(const FileHandler::CompletePath& oldK
 	T* movingResource = m_resources[oldKey];
 
 	//remove resource without deleting it
-	unsigned int resourceHashKey = m_resourceMapping[oldKey];
+	ID resourceHashKey = m_resourceMapping[oldKey];
 	m_resources.erase(oldKey);
 	m_resourceMapping.erase(oldKey);
 
@@ -366,28 +389,30 @@ void ResourceFactory<T>::initDefaults()
 template<typename T>
 void ResourceFactory<T>::addDefaultResource(const std::string& name, T* resource)
 {
-	//resource->setName(name);
+	ID newID = IDGenerator<Resource>::instance().lockID();
+
 	setResourceName(resource, name);
+	setResourceID(resource, newID);
 
 	m_defaultResources[name] = resource;
-	m_defaultResourceMapping[name] = ++s_resourceCount;
-	m_defaultResourcesFromHashKey[s_resourceCount] = resource;
+	m_defaultResourceMapping[name] = newID;
+	m_defaultResourcesFromHashKey[newID] = resource;
 }
 
 template<typename T>
-unsigned int ResourceFactory<T>::getHashKeyForDefaultResource(const std::string& name) const
+ID ResourceFactory<T>::getHashKeyForDefaultResource(const std::string& name) const
 {
 	return m_defaultResourceMapping[name];
 }
 
 template<typename T>
-ResourcePtr<T> ResourceFactory<T>::getDefault(const std::string& name)
+T* ResourceFactory<T>::getDefault(const std::string& name)
 {
-	return ResourcePtr<T>(m_defaultResources[name], m_defaultResourceMapping[name], true);
+	return m_defaultResources[name];
 }
 
 template<typename T>
-T* ResourceFactory<T>::getRawDefault(unsigned int hashKey)
+T* ResourceFactory<T>::getRawDefault(const ID& hashKey)
 {
 	return m_defaultResourcesFromHashKey[hashKey];
 }
@@ -399,7 +424,7 @@ bool ResourceFactory<T>::containsDefault(const std::string& name)
 }
 
 template<typename T>
-bool ResourceFactory<T>::containsDefault(unsigned int hashKey)
+bool ResourceFactory<T>::containsDefault(const ID& hashKey)
 {
 	return m_defaultResourcesFromHashKey.find(hashKey) != m_resources.end();
 }
@@ -431,7 +456,7 @@ void ResourceFactory<T>::save(Json::Value & entityRoot) const
 	for (auto it = m_resources.begin(); it != m_resources.end(); it++)
 	{
 		entityRoot[i]["path"] = it->first.toString();
-		entityRoot[i]["hashKey"] = getHashKeyForResource(it->first.toString());
+		getHashKeyForResource(it->first.toString()).save(entityRoot[i]["hashKey"]);
 		i++;
 	}
 }
@@ -439,22 +464,29 @@ void ResourceFactory<T>::save(Json::Value & entityRoot) const
 template<typename T>
 void ResourceFactory<T>::load(const Json::Value & entityRoot)
 {
-	unsigned int resourceCount = s_resourceCount;
-
 	int size = entityRoot.size();
 	for (int i = 0; i < size; i++)
 	{
 		std::string resourcePath = entityRoot[i]["path"].asString();
-		unsigned int resourceHashKey = entityRoot[i]["hashKey"].asUInt();
+
+		ID resourceHashKey;
+		resourceHashKey.load(entityRoot[i]["hashKey"]);
+
+		bool error = true;
 		if (resourcePath != "")
-			addResourceForce(FileHandler::CompletePath(resourcePath), resourceHashKey);
-
-		if (resourceCount < resourceHashKey )
-			resourceCount = resourceHashKey;
+		{
+			FileHandler::CompletePath resourceCompletePath(resourcePath);
+			if (FileHandler::fileExists(resourceCompletePath) && resourceHashKey.isValid())
+			{
+				addResourceForce(FileHandler::CompletePath(resourcePath), resourceHashKey);
+				error = false;
+			}
+		}
+		if (error)
+		{
+			PRINT_ERROR("Error in resourceloading !");
+		}
 	}
-
-	if (s_resourceCount < resourceCount)
-		s_resourceCount = resourceCount;
 }
 
 template<typename T>
@@ -484,7 +516,7 @@ typename std::map<std::string, T*>::iterator ResourceFactory<T>::defaultResource
 //Specialisations : 
 
 template<>
-void ResourceFactory<Material>::addResourceForce(const FileHandler::CompletePath& path, unsigned int hashKey);
+void ResourceFactory<Material>::addResourceForce(const FileHandler::CompletePath& path, const ID& hashKey);
 template<>
 void ResourceFactory<Material>::addResourceSoft(const FileHandler::CompletePath& path);
 //
@@ -586,16 +618,22 @@ template<typename T>
 void ResourcePtr<T>::load(const Json::Value & entityRoot)
 {
 	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
-	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();
+	m_resourceHashKey.load(entityRoot.get("resourceHashKey", Json::nullValue));
 	m_rawPtr = m_isDefaultResource ? getResourceFactory<T>().getRawDefault(m_resourceHashKey) : getResourceFactory<T>().getRaw(m_resourceHashKey);
+
+	assert(m_rawPtr != nullptr);
+	m_rawPtr->addReferenceToThis(this);
 }
 
 template<>
 inline void ResourcePtr<ShaderProgram>::load(const Json::Value & entityRoot)
 {
 	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
-	m_resourceHashKey = entityRoot["resourceHashKey"].asUInt();
+	m_resourceHashKey.load(entityRoot.get("resourceHashKey", Json::nullValue));
 	m_rawPtr = getResourceFactory<ShaderProgram>().getRaw(m_resourceHashKey);
+
+	assert(m_rawPtr != nullptr);
+	m_rawPtr->addReferenceToThis(this);
 }
 
 ///////////////// RESOURCE FIELD /////////////////

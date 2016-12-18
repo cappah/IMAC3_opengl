@@ -29,9 +29,14 @@ ShaderProgram::ShaderProgram(const FileHandler::CompletePath& path)
 //	load(vertexShaderPath, fragmentShaderPath, geometryShaderPath);
 //}
 
-void ShaderProgram::init(const FileHandler::CompletePath& path)
+void ShaderProgram::init(const FileHandler::CompletePath& path, const ID& id)
 {
-	load(path);
+	Resource::init(path, id);
+
+	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
+
+	load(absolutePath);
 }
 
 void ShaderProgram::load(const FileHandler::CompletePath& path)

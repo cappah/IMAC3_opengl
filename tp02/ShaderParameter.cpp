@@ -312,7 +312,7 @@ void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::load(const J
 
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::setData(const void* data)
 {
-	m_data = *(static_cast< const ResourcePtr<Texture> *>(data));
+	m_data = static_cast<const Texture*>(data);
 }
 
 void InternalShaderParameter<Texture, ShaderParameter::IsNotArray>::getData(void* outData)
@@ -363,7 +363,7 @@ void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::load(con
 
 void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::setData(const void* data)
 {
-	m_data = *(static_cast< const ResourcePtr<CubeTexture> *>(data));
+	m_data = static_cast<const CubeTexture*>(data);
 }
 void InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>::getData(void* outData)
 {

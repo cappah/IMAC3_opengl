@@ -59,7 +59,7 @@ public:
 	virtual ~Material();
 	//init internal params. Should be called in constructor, or just after construction.
 	void initInternalParameters();
-	virtual void init(const FileHandler::CompletePath& path) override;
+	virtual void init(const FileHandler::CompletePath& path, const ID& id) override;
 	void init(const ShaderProgram& shaderProgram);
 	void drawUI();
 	void pushInternalsToGPU(int& boundTextureCount) const;
@@ -1232,7 +1232,7 @@ public:
 		m_uniformCameraUp = MaterialHelper::getUniform(m_glProgramId, "CameraUp");
 
 		if (!checkError("Uniforms"))
-			PRINT_ERROR("error in texture initialization.")
+			PRINT_ERROR("error in uniform initialization.")
 	}
 
 	void glUniform_VP(const glm::mat4& VP)

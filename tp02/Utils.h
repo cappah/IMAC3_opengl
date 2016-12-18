@@ -29,7 +29,7 @@ inline T operator& (T a, T b) { return (T)((int)a & (int)b); }\
 inline T operator^ (T a, T b) { return (T)((int)a ^ (int)b); }\
 inline T& operator|= (T& a, T b) { return (T&)((int&)a |= (int)b); }\
 inline T& operator&= (T& a, T b) { return (T&)((int&)a &= (int)b); }\
-inline T& operator^= (T& a, T b) { return (T&)((int&)a ^= (int)b); }\
+inline T& operator^= (T& a, T b) { return (T&)((int&)a ^= (int)b); }
 
 namespace patch
 {

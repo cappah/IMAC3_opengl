@@ -55,7 +55,7 @@ public:
 	glm::quat rotation;
 	glm::mat4 modelMatrix;
 
-	Collider(ComponentType colliderType, ResourcePtr<Mesh> _visualMesh = ResourcePtr<Mesh>(), ResourcePtr<Material> _visualMaterial = ResourcePtr<Material>());
+	Collider(ComponentType colliderType, Mesh* _visualMesh = nullptr, Material* _visualMaterial = nullptr);
 	virtual ~Collider();
 
 	//add a visual representation to this collider
@@ -157,7 +157,7 @@ public:
 	glm::vec3 topRight;
 	glm::vec3 bottomLeft;
 
-	BoxCollider(ResourcePtr<Mesh> _visualMesh = ResourcePtr<Mesh>(), ResourcePtr<Material> _visualMaterial = ResourcePtr<Material>());
+	BoxCollider(Mesh* _visualMesh = nullptr, Material* _visualMaterial = nullptr);
 
 	virtual void updateModelMatrix() override;
 	virtual void render(const glm::mat4& projection, const glm::mat4& view, const glm::vec3& color = glm::vec3(1,0,0)) override;
