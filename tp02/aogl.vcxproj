@@ -379,6 +379,7 @@
     <ClInclude Include="Reflexion.h" />
     <ClInclude Include="RenderBatch.h" />
     <ClInclude Include="BatchableWith.h" />
+    <ClInclude Include="RenderDatas.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourcePointer.h" />

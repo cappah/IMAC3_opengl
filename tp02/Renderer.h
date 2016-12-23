@@ -16,6 +16,7 @@
 #include "ErrorHandler.h"
 
 #include "PostProcess.h"
+#include "RenderDatas.h"
 
 class DebugDrawRenderer;
 
@@ -27,63 +28,6 @@ class DebugDrawRenderer;
 //	inline LightCullingInfo(const glm::vec4& _viewport, int _idx) : viewport(_viewport), idx(_idx) {}
 //};
 
-struct PointLightRenderDatas
-{
-	glm::vec4 viewport;
-	PointLight* light;
-	GLuint shadowMapTextureId;
-
-	inline PointLightRenderDatas(const glm::vec4& _viewport, PointLight* _light) : viewport(_viewport), light(_light), shadowMapTextureId(0) {}
-};
-
-struct SpotLightRenderDatas
-{
-	glm::vec4 viewport;
-	SpotLight* light;
-	GLuint shadowMapTextureId;
-
-	inline SpotLightRenderDatas(const glm::vec4& _viewport, SpotLight* _light) : viewport(_viewport), light(_light), shadowMapTextureId(0) {}
-};
-
-struct DirectionalLightRenderDatas
-{
-	DirectionalLight* light;
-	GLuint shadowMapTextureId;
-
-	inline DirectionalLightRenderDatas(DirectionalLight* _light) : light(_light), shadowMapTextureId(0) {}
-};
-
-struct RenderDatas
-{
-	Mesh quadMesh;
-
-	Texture lightPassHDRColor;
-	Texture lightPassDepth;
-	Texture lightPassHighValues;
-
-	Texture gPassColorTexture;
-	Texture gPassNormalTexture;
-	Texture gPassDepthTexture;
-	Texture gPassHightValuesTexture;
-
-	glm::mat4 screenToView;
-	glm::mat4 VP;
-
-	//std::vector<PointLight*>* pointLights;
-	//std::vector<DirectionalLight*>* directionalLights;
-	//std::vector<SpotLight*>* spotLights;
-
-	//light count after culling :
-	//int pointLightCount;
-	//int spotLightCount;
-
-	//for light culling :
-	//std::vector<LightCullingInfo> pointLightCullingInfos;
-	//std::vector<LightCullingInfo> spotLightCullingInfos;
-	std::vector<PointLightRenderDatas> pointLightRenderDatas;
-	std::vector<SpotLightRenderDatas> spotLightRenderDatas;
-	std::vector<DirectionalLightRenderDatas> directionalLightRenderDatas;
-};
 
 class Renderer
 {
@@ -135,6 +79,13 @@ public:
 	//void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
 
 	//void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path, std::string progamShadowPassOmni_vert_path, std::string progamShadowPassOmni_frag_path, std::string progamShadowPassOmni_geom_path);
+
+	// Utility function to push all light/shadow uniforms to GPU
+	void Renderer::pushPointLightUniforms(PointLightRenderDatas& pointLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
+	// Utility function to push all light/shadow uniforms to GPU
+	void Renderer::pushSpotLightUniforms(SpotLightRenderDatas& spotLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
+	// Utility function to push all light/shadow uniforms to GPU
+	void Renderer::pushDirectionalLightUniforms(DirectionalLightRenderDatas& directionalLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
 
 	// Camera culling for point lights and spot lights
 	void updateCulling(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<PointLightRenderDatas>& pointLightRenderDatas, std::vector<SpotLightRenderDatas>& spotLightRenderDatas);

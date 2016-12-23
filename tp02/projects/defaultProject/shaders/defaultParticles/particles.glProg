@@ -1,8 +1,7 @@
 {
-    "vertex" : "particle.vert",
-    "fragment" : "particle.frag",
-    "geometry" : "particle.geom",
-    "programType" : "custom",
-    "pipelineType" : "transparent",
+    "pipelineHandling" : ["deferred", "forward"],
+    "baseMaterial" : "particle",
+    "deferred" : {"vertex" : "particle.vert", "fragment" : "particle.frag", "geometry" : "particle.geom"},
+    "forward" : {"vertex" : "transparent.vert", "fragment" : "transparent.frag", "geometry" : ""}, //TODO
     "internalShaderParameters" : []
 }

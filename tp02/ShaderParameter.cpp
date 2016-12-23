@@ -51,6 +51,18 @@ void pushParameterToGPU<glm::ivec3>(GLuint uniformId, const glm::ivec3& value)
 }
 
 template<>
+void pushParameterToGPU<glm::vec4>(GLuint uniformId, const glm::vec4& value)
+{
+	glUniform4f(uniformId, value.x, value.y, value.z, value.w);
+}
+
+template<>
+void pushParameterToGPU<glm::ivec4>(GLuint uniformId, const glm::ivec4& value)
+{
+	glUniform4i(uniformId, value.x, value.y, value.z, value.w);
+}
+
+template<>
 void pushParameterToGPU<glm::mat4>(GLuint uniformId, const glm::mat4& value)
 {
 	glUniformMatrix4fv(uniformId, 1, false, glm::value_ptr(value));

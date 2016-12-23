@@ -342,8 +342,8 @@ void LightManager::generateShadowMaps(const BaseCamera & camera, RenderDatas & r
 {
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : Get batches
-	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches = camera.getRenderBatches(PipelineTypes::OPAQUE_PIPILINE);
-	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches = camera.getRenderBatches(PipelineTypes::TRANSPARENT_PIPELINE);
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches = camera.getRenderBatches(Rendering::PipelineType::DEFERRED_PIPILINE);
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches = camera.getRenderBatches(Rendering::PipelineType::FORWARD_PIPELINE);
 	///////// END : Get batches
 	////////////////////////////////////////////////////////////////////////
 

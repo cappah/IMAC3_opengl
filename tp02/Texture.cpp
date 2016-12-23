@@ -87,7 +87,7 @@ Texture::Texture(int width, int height, const glm::vec3& color)
 	}
 }
 
-Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
+Texture::Texture(const FileHandler::CompletePath& _path, AlphaMode alphaMode)
 	: Resource(_path)
 	, glId(0)
 	, generateMipMap(true)
@@ -97,7 +97,7 @@ Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 	, minFilter(GL_LINEAR)
 	, magFilter(GL_LINEAR)
 {
-	if (!alphaChannel)
+	if (alphaMode == AlphaMode::WITHOUT_ALPHA)
 	{
 		internalFormat = GL_RGB;
 		format = GL_RGB;
@@ -105,8 +105,9 @@ Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 		comp = 3;
 		int texComp;
 		pixels = stbi_load(_path.c_str(), &w, &h, &texComp, comp);
+		assert(pixels != nullptr);
 	}
-	else
+	else if(alphaMode == AlphaMode::WITH_ALPHA)
 	{
 		internalFormat = GL_RGBA;
 		format = GL_RGBA;
@@ -114,6 +115,34 @@ Texture::Texture(const FileHandler::CompletePath& _path, bool alphaChannel)
 		comp = 4;
 		int texComp;
 		pixels = stbi_load(_path.c_str(), &w, &h, &texComp, comp);
+		assert(pixels != nullptr);
+	}
+	else
+	{
+		type = GL_UNSIGNED_BYTE;
+		int texComp;
+		pixels = stbi_load(_path.c_str(), &w, &h, &texComp, 0);
+		assert(pixels != nullptr);
+		comp = texComp;
+		if (comp == 4)
+		{
+			internalFormat = GL_RGBA;
+			format = GL_RGBA;
+		}
+		else if (comp == 3)
+		{
+			internalFormat = GL_RGB;
+			format = GL_RGB;
+		}
+		else if (comp == 1)
+		{
+			internalFormat = GL_RED;
+			format = GL_RED;
+		}
+		else
+		{
+			ASSERT(false, "You are initalizing a texture wing wrong number of component. Number of component supported : 1, 3 or4");
+		}
 	}
 }
 
@@ -124,12 +153,33 @@ void Texture::init(const FileHandler::CompletePath& path, const ID& id)
 	assert(!Project::isPathPointingInsideProjectFolder(path));
 	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
 
-	internalFormat = GL_RGB;
-	format = GL_RGB;
 	type = GL_UNSIGNED_BYTE;
-	comp = 3;
 	int texComp;
-	pixels = stbi_load(absolutePath.c_str(), &w, &h, &texComp, comp);
+	pixels = stbi_load(absolutePath.c_str(), &w, &h, &texComp, 0);
+	CHECK_STBI_ERROR("Error when loading texture : %s", absolutePath.c_str());
+	//ErrorHandler::error("Error when loading texture : %d, %f", 10, 4.5);
+
+	assert(pixels != nullptr);
+	comp = texComp;
+	if (comp == 4)
+	{
+		internalFormat = GL_RGBA;
+		format = GL_RGBA;
+	}
+	else if (comp == 3)
+	{
+		internalFormat = GL_RGB;
+		format = GL_RGB;
+	}
+	else if (comp == 1)
+	{
+		internalFormat = GL_RED;
+		format = GL_RED;
+	}
+	else
+	{
+		ASSERT(false, "You are initalizing a texture wing wrong number of component. Number of component supported : 1, 3 or4");
+	}
 
 	initGL();
 }
@@ -299,8 +349,7 @@ void Texture::initGL()
 		else
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 
-		if (!checkError("Uniforms"))
-			PRINT_ERROR("error in texture initialization.")
+		CHECK_GL_ERROR("error in texture initialization.");
 	}
 }
 
@@ -598,8 +647,7 @@ void CubeTexture::initGL()
 
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-		if (!checkError("Uniforms"))
-			PRINT_ERROR("error in texture initialization.")
+		CHECK_GL_ERROR("error in texture initialization.");
 	}
 }
 

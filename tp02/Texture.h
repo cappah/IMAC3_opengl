@@ -11,6 +11,13 @@
 #include "Resource.h"
 #include "ResourcePointer.h"
 
+enum class AlphaMode
+{
+	WITH_ALPHA,
+	WITHOUT_ALPHA,
+	AUTOMATIC
+};
+
 struct Texture final : public Resource
 {
 	int w;
@@ -38,7 +45,7 @@ struct Texture final : public Resource
 	Texture::Texture(const glm::vec4& color);
 	Texture(int width, int height, const glm::vec4& color);
 	Texture(int width, int height, const glm::vec3& color);
-	Texture(const FileHandler::CompletePath& _path, bool alphaChannel = true);
+	Texture(const FileHandler::CompletePath& _path, AlphaMode alphaMode = AlphaMode::AUTOMATIC);
 	~Texture();
 
 	void setTextureParameters(GLint _internalFormat = GL_RGB, GLenum _format = GL_RGB, GLenum _type = GL_UNSIGNED_BYTE, bool _generateMipMap = true);

@@ -97,7 +97,8 @@ public:
 		m_resourceHashKey = other.m_resourceHashKey;
 		m_isDefaultResource = other.m_isDefaultResource;
 
-		m_rawPtr->addReferenceToThis(this);
+		if(m_rawPtr != nullptr)
+			m_rawPtr->addReferenceToThis(this);
 	}
 
 	ResourcePtr<T>& operator=(const ResourcePtr<T>& other)

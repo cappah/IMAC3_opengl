@@ -74,21 +74,21 @@ struct AABB
 			center.z - halfSizes.z > otherCenter.z - otherHalfSize.z && center.z + halfSizes.z <= otherCenter.z + otherHalfSize.z);
 	}
 
-	bool containedInSphere(const glm::vec3& center, float radius) const
+	bool containedInSphere(const glm::vec3& otherCenter, float otherRadius) const
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			if (glm::distance(getPointPosition(i), center) > radius)
+			if (glm::distance(getPointPosition(i), otherCenter) > otherRadius)
 				return false;
 		}
 		return true;
 	}
 
-	bool containedInOrIntersectedBySphere(const glm::vec3& center, float radius) const
+	bool containedInOrIntersectedBySphere(const glm::vec3& otherCenter, float otherRadius) const
 	{
 		int intersectCount = 0;
 		for(int i = 0; i < 3; i++)
-			intersectCount += (glm::min(glm::distance(center[i] + halfSizes[i], center[i]), glm::distance(center[i] - halfSizes[i], center[i])) < radius) ? 1 : 0;
+			intersectCount += (glm::min(glm::distance(center[i] + halfSizes[i], otherCenter[i]), glm::distance(center[i] - halfSizes[i], otherCenter[i])) < otherRadius) ? 1 : 0;
 		if (intersectCount >= 2)
 			return true;
 		else

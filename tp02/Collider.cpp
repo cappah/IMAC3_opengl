@@ -38,11 +38,11 @@ void Collider::setVisual(ResourcePtr<Mesh> _visualMesh, ResourcePtr<Material> _v
 	visualMaterial = _visualMaterial;
 }
 
-void Collider::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
+void Collider::applyTransform(const glm::vec3 & _translation, const glm::vec3 & _scale, const glm::quat & _rotation)
 {
-	this->rotation = rotation;
+	this->rotation = _rotation;
 
-	applyTransform(translation, scale);
+	applyTransform(_translation, _scale);
 }
 
 void Collider::applyTransformFromPhysicSimulation(const glm::vec3 & translation, const glm::quat & rotation)

@@ -460,9 +460,7 @@ void Entity::eraseAllComponents()
 	{
 		auto currentComponent = m_components[0];
 		
-		currentComponent->onBeforeComponentErasedFromScene(*m_scene);
 		currentComponent->removeFromSceneAtomic(*m_scene);
-		currentComponent->onAfterComponentErasedFromScene(*m_scene);
 
 		currentComponent->onBeforeComponentErasedFromEntity(*this);
 		std::iter_swap(m_components.begin(), m_components.end() - 1);

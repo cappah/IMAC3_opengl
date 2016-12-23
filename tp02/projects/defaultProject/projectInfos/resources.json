@@ -1,0 +1,202 @@
+{
+	"cubeTextureFactory" : [],
+	"materialFactory" : 
+	[
+		{
+			"hashKey" : 
+			{
+				"generation" : 0,
+				"index" : 127
+			},
+			"path" : "assets/barrel/testLit.mat"
+		}
+	],
+	"meshFactory" : [],
+	"textureFactory" : 
+	[
+		{
+			"hashKey" : 
+			{
+				"generation" : 0,
+				"index" : 123
+			},
+			"path" : "assets/barrel/Diffuse.tga"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 124
+			},
+			"path" : "assets/barrel/Normal.tga"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 125
+			},
+			"path" : "assets/barrel/Spec.tga"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 2,
+				"index" : 126
+			},
+			"path" : "assets/flag/flagMedieval2.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 128
+			},
+			"path" : "assets/flares/flare02_PNG.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 129
+			},
+			"path" : "assets/flares/flare_01_JPG.jpg"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 130
+			},
+			"path" : "assets/flares/flare_01_PNG.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 131
+			},
+			"path" : "assets/grass/grass01.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 132
+			},
+			"path" : "assets/grass/grass02.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 133
+			},
+			"path" : "assets/ground/shortGrass.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 134
+			},
+			"path" : "assets/ground/shortGrass_n.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 135
+			},
+			"path" : "assets/particles/fire.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 136
+			},
+			"path" : "assets/particles/particle.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 137
+			},
+			"path" : "assets/skyboxes/back.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 138
+			},
+			"path" : "assets/skyboxes/bones.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 139
+			},
+			"path" : "assets/skyboxes/front.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 140
+			},
+			"path" : "assets/skyboxes/left.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 141
+			},
+			"path" : "assets/skyboxes/right.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 142
+			},
+			"path" : "assets/skyboxes/spnza_bricks_a_bump.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 143
+			},
+			"path" : "assets/skyboxes/spnza_bricks_a_diff.tga"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 144
+			},
+			"path" : "assets/skyboxes/top.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 145
+			},
+			"path" : "assets/spnza_bricks_a_normal.png"
+		},
+		{
+			"hashKey" : 
+			{
+				"generation" : 1,
+				"index" : 146
+			},
+			"path" : "assets/spnza_bricks_a_spec.tga"
+		}
+	]
+}

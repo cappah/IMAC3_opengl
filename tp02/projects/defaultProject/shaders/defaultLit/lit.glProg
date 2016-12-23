@@ -1,11 +1,11 @@
 {
-    "vertex" : "aogl.vert",
-    "fragment" : "aogl_gPass.frag",
-    "geometry" : "",
-    "programType" : "lit",
-    "pipelineType" : "opaque",
+    "pipelineHandling" : ["deferred", "forward"],
+    "baseMaterial" : "object3D",
+    "deferred" : {"vertex" : "aogl.vert", "fragment" : "aogl_gPass.frag", "geometry" : ""},
+    "forward" : {"vertex" : "transparent.vert", "fragment" : "transparent.frag", "geometry" : ""},
     "internalShaderParameters" : [
         {"type" : "texture", "name" : "Diffuse", "default" : "default" },
+        {"type" : "float4", "name" : "TintColor", "default" : [1.0, 1.0, 1.0, 1.0], "displayType" : "color"},
         {"type" : "texture", "name" : "Specular", "default" : "defaultSpecular"},
         {"type" : "texture", "name" : "Bump", "default" : "defaultNormal"},
         {"type" : "float", "name" : "SpecularPower", "default" : 0.4},

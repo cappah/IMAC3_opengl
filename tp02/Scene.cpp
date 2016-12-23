@@ -30,7 +30,7 @@ Scene::Scene(Renderer* renderer, const std::string& sceneName)
 {
 	m_accessor = std::make_shared<SceneAccessor>(this);
 	m_physicManager = new Physic::PhysicManager();
-	m_terrain.initPhysics(m_physicManager->getBulletDynamicSimulation());
+	//m_terrain.initPhysics(m_physicManager->getBulletDynamicSimulation());
 
 	//////////////////////////////////////////////
 	//// BEGIN : Component container mapping
@@ -132,7 +132,7 @@ void Scene::clear()
 	m_entities.clear();
 
 	//clear systems : 
-	m_terrain.clear();
+	//m_terrain.clear();
 	m_physicManager->clear();
 	delete m_physicManager;
 	//m_skybox.clear(); //TODO
@@ -246,12 +246,12 @@ void Scene::renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer
 
 void Scene::updatePhysic(float deltaTime, const BaseCamera& camera)
 {
-	m_physicManager->update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters);
+	m_physicManager->update(deltaTime, camera, m_flags, /*m_terrain,*/ m_windZones, m_particleEmitters);
 }
 
 void Scene::updatePhysic(float deltaTime, const BaseCamera& camera, bool updateInEditMode)
 {
-	m_physicManager->update(deltaTime, camera, m_flags, m_terrain, m_windZones, m_particleEmitters, updateInEditMode);
+	m_physicManager->update(deltaTime, camera, m_flags, /*m_terrain,*/ m_windZones, m_particleEmitters, updateInEditMode);
 }
 
 void Scene::updateAnimations(float time)
@@ -357,15 +357,15 @@ void Scene::setIsDebugPhysicVisible(bool value)
 	m_isDebugPhysicVisible = value;
 }
 
-Terrain& Scene::getTerrain()
-{
-	return m_terrain;
-}
-
-Skybox& Scene::getSkybox()
-{
-	return m_skybox;
-}
+//Terrain& Scene::getTerrain()
+//{
+//	return m_terrain;
+//}
+//
+//Skybox& Scene::getSkybox()
+//{
+//	return m_skybox;
+//}
 
 PathManager & Scene::getPathManager()
 {
@@ -420,8 +420,8 @@ void Scene::save(const FileHandler::CompletePath& path)
 	}
 
 	//TODO
-	m_terrain.save(root["terrain"]);
-	m_skybox.save(root["skybox"]);
+	//m_terrain.save(root["terrain"]);
+	//m_skybox.save(root["skybox"]);
 	
 	//DEBUG
 	//std::cout << root;
@@ -485,9 +485,9 @@ void Scene::load(const FileHandler::CompletePath& path)
 	}
 
 	//TODO
-	m_terrain.load(root["terrain"]);
+	//m_terrain.load(root["terrain"]);
 	//m_terrain.initPhysics(m_physicManager.getBulletDynamicSimulation()); //TODO automatize this process in loading ? 
-	m_skybox.load(root["skybox"]);
+	//m_skybox.load(root["skybox"]);
 
 }
 
@@ -502,4 +502,10 @@ void Scene::onViewportResized(const glm::vec2 & newSize)
 	{
 		camera->onViewportResized(newSize);
 	}
+}
+
+void Scene::drawUI()
+{
+	ImGui::Text("Visibility octree debug :");
+	m_renderables.drawDebug();
 }

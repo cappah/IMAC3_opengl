@@ -22,14 +22,11 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	//////////////////// MAKE NEW LIGHTING MATERIALS ///////////////////
 
 	m_pointLightMaterial = std::make_shared<MaterialPointLight>(*getProgramFactory().get("pointLight"));
-	if (!checkError("uniforms"))
-		PRINT_ERROR("");
+	CHECK_GL_ERROR("uniforms");
 	m_directionalLightMaterial = std::make_shared<MaterialDirectionalLight>(*getProgramFactory().get("directionalLight"));
-	if (!checkError("uniforms"))
-		PRINT_ERROR("");
+	CHECK_GL_ERROR("uniforms");
 	m_spotLightMaterial = std::make_shared<MaterialSpotLight>(*getProgramFactory().get("spotLight"));
-	if (!checkError("uniforms"))
-		PRINT_ERROR("");
+	CHECK_GL_ERROR("uniforms");
 
 	//////////////////// INITIALIZE G BUFFER ///////////////////
 
@@ -97,8 +94,7 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	m_viewportRenderSize.x = width;
 	m_viewportRenderSize.y = height;
 
-	if (!checkError("uniforms"))
-		PRINT_ERROR("");
+	CHECK_GL_ERROR("uniforms");
 
 }
 
@@ -283,8 +279,8 @@ void Renderer::renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* d
 {
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : Get batches
-	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches = camera.getRenderBatches(PipelineTypes::OPAQUE_PIPILINE);
-	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches = camera.getRenderBatches(PipelineTypes::TRANSPARENT_PIPELINE);
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches = camera.getRenderBatches(Rendering::PipelineType::DEFERRED_PIPILINE);
+	const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches = camera.getRenderBatches(Rendering::PipelineType::FORWARD_PIPELINE);
 	///////// END : Get batches
 	////////////////////////////////////////////////////////////////////////
 
@@ -376,6 +372,100 @@ void Renderer::gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaq
 	CHECK_GL_ERROR("error in G pass");
 }
 
+void Renderer::pushPointLightUniforms(PointLightRenderDatas& pointLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view)
+{
+	PointLight* currentLight = pointLightRenderDatas.light;
+	//viewport = m_renderDatas.pointLightRenderDatas[i].viewport;
+	GLuint shadowMapTextureId = pointLightRenderDatas.shadowMapTextureId;
+
+	if (currentLight->getCastShadows() && shadowMapTextureId != 0)
+	{
+		// Send the shadow map texture
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, shadowMapTextureId);
+		m_pointLightMaterial->setUniformShadowTexture(4);
+		m_pointLightMaterial->setUniformShadowFactor(1.f);
+	}
+	else
+	{
+		m_pointLightMaterial->setUniformShadowFactor(0.f);
+	}
+	//resizeBlitQuad(viewport);
+
+	m_pointLightMaterial->setUniformViewToWorld(viewToWorld);
+	m_pointLightMaterial->setUniformFarPlane(100.f);
+
+	lightManager->uniformPointLight(*currentLight, view);
+}
+
+void Renderer::pushSpotLightUniforms(SpotLightRenderDatas& spotLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view)
+{
+	SpotLight* currentLight = spotLightRenderDatas.light;
+	//viewport = spotLightRenderDatas.viewport;
+	GLuint shadowMapTextureId = spotLightRenderDatas.shadowMapTextureId;
+
+	if (currentLight->getCastShadows() && shadowMapTextureId != 0)
+	{
+		//active the shadow map texture
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, shadowMapTextureId);
+		m_spotLightMaterial->setUniformShadowTexture(4);
+		m_pointLightMaterial->setUniformShadowFactor(1.f);
+	}
+	else
+	{
+		m_pointLightMaterial->setUniformShadowFactor(0.f);
+	}
+	//resize viewport
+	//resizeBlitQuad(viewport);
+
+	const glm::vec3 spotLightViewPosition = glm::vec3(view * glm::vec4(currentLight->position, 1.0));
+	const glm::vec3 spotLightViewDirection = glm::vec3(view * glm::vec4(currentLight->direction, 0.0));
+	const glm::vec3 spotLightViewUp = glm::vec3(view * glm::vec4(currentLight->up, 0.0));
+	glm::mat4 projectionSpotLight = glm::perspective(currentLight->angle*2.f, 1.f, 0.1f, 100.f);
+	glm::mat4 worldToLightSpotLight = glm::lookAt(spotLightViewPosition, spotLightViewPosition + spotLightViewDirection, spotLightViewUp);
+	glm::mat4 ViewToLightScreen = projectionSpotLight * worldToLightSpotLight;
+	//glUniformMatrix4fv(uniformWorldToLightScreen_spot, 1, false, glm::value_ptr(WorldToLightScreen));
+	m_spotLightMaterial->setUniformViewToLight(ViewToLightScreen);
+
+	lightManager->uniformSpotLight(*currentLight, view);
+}
+
+void Renderer::pushDirectionalLightUniforms(DirectionalLightRenderDatas& directionalLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view)
+{
+	DirectionalLight* currentLight = directionalLightRenderDatas.light;
+	GLuint shadowMapTextureId = directionalLightRenderDatas.shadowMapTextureId;
+
+	if (currentLight->getCastShadows() && shadowMapTextureId != 0)
+	{
+		//active the shadow map texture
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, shadowMapTextureId);
+		m_directionalLightMaterial->setUniformShadowTexture(4);
+		m_pointLightMaterial->setUniformShadowFactor(1.f);
+	}
+	else
+	{
+		m_pointLightMaterial->setUniformShadowFactor(0.f);
+	}
+
+	const glm::vec3 directionalLightViewPosition = glm::vec3(view * glm::vec4(currentLight->position, 1.0));
+	const glm::vec3 directionalLightViewDirection = glm::vec3(view * glm::vec4(currentLight->direction, 0.0));
+	const glm::vec3 directionalLightViewUp = glm::vec3(view * glm::vec4(currentLight->up, 0.0));
+	float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
+	float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
+	float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
+	glm::vec3 orig = directionalLightViewPosition; ///*glm::vec3(0, 0, 1)*directionalShadowMapRadius + */glm::vec3(0, directionalLightViewPosition.y/*directionalShadowMapFar*0.5f*/, 0);
+	glm::vec3 eye = -directionalLightViewDirection + orig;
+	glm::mat4 projectionDirectionalLight = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
+	glm::mat4 viewToLightDirectionalLight = glm::lookAt(eye, orig, directionalLightViewUp);
+	glm::mat4 viewToLightScreen = projectionDirectionalLight * viewToLightDirectionalLight;
+	//glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
+	m_directionalLightMaterial->setUniformViewToLight(viewToLightScreen);
+
+	lightManager->uniformDirectionalLight(*currentLight, view);
+}
+
 void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view)
 {
 
@@ -419,28 +509,12 @@ void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& came
 
 	for (int i = 0; i < m_renderDatas.pointLightRenderDatas.size(); i++)
 	{
-		PointLight* currentLight = m_renderDatas.pointLightRenderDatas[i].light;
+		// Push light unfiforms
+		pushPointLightUniforms(m_renderDatas.pointLightRenderDatas[i], viewToWorld, view);
+		// Optimisation : Resize viewport
 		viewport = m_renderDatas.pointLightRenderDatas[i].viewport;
-		GLuint shadowMapTextureId = m_renderDatas.pointLightRenderDatas[i].shadowMapTextureId;
-
-		if (currentLight->getCastShadows() && shadowMapTextureId != 0)
-		{
-			// Send the shadow map texture
-			glActiveTexture(GL_TEXTURE4);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, shadowMapTextureId);
-			m_pointLightMaterial->setUniformShadowTexture(4);
-			m_pointLightMaterial->setUniformShadowFactor(1.f);
-		}
-		else
-		{
-			m_pointLightMaterial->setUniformShadowFactor(0.f);
-		}
 		resizeBlitQuad(viewport);
-
-		m_pointLightMaterial->setUniformViewToWorld(viewToWorld);
-		m_pointLightMaterial->setUniformFarPlane(100.f);
-
-		lightManager->uniformPointLight(*currentLight, view);
+		// Draw quad
 		m_renderDatas.quadMesh.draw();
 	}
 
@@ -473,35 +547,12 @@ void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& came
 
 	for (int i = 0; i < m_renderDatas.spotLightRenderDatas.size(); i++)
 	{
-		SpotLight* currentLight = m_renderDatas.spotLightRenderDatas[i].light;
+		// Push light uniforms
+		pushSpotLightUniforms(m_renderDatas.spotLightRenderDatas[i], viewToWorld, view);
+		// Optimisation : Resize viewport
 		viewport = m_renderDatas.spotLightRenderDatas[i].viewport;
-		GLuint shadowMapTextureId = m_renderDatas.spotLightRenderDatas[i].shadowMapTextureId;
-
-		if (currentLight->getCastShadows() && shadowMapTextureId != 0)
-		{
-			//active the shadow map texture
-			glActiveTexture(GL_TEXTURE4);
-			glBindTexture(GL_TEXTURE_2D, shadowMapTextureId);
-			m_spotLightMaterial->setUniformShadowTexture(4);
-			m_pointLightMaterial->setUniformShadowFactor(1.f);
-		}
-		else
-		{
-			m_pointLightMaterial->setUniformShadowFactor(0.f);
-		}
-		//resize viewport
 		resizeBlitQuad(viewport);
-
-		const glm::vec3 spotLightViewPosition = glm::vec3(view * glm::vec4(currentLight->position, 1.0));
-		const glm::vec3 spotLightViewDirection = glm::vec3(view * glm::vec4(currentLight->direction, 0.0));
-		const glm::vec3 spotLightViewUp = glm::vec3(view * glm::vec4(currentLight->up, 0.0));
-		glm::mat4 projectionSpotLight = glm::perspective(currentLight->angle*2.f, 1.f, 0.1f, 100.f);
-		glm::mat4 worldToLightSpotLight = glm::lookAt(spotLightViewPosition, spotLightViewPosition + spotLightViewDirection, spotLightViewUp);
-		glm::mat4 ViewToLightScreen = projectionSpotLight * worldToLightSpotLight;
-		//glUniformMatrix4fv(uniformWorldToLightScreen_spot, 1, false, glm::value_ptr(WorldToLightScreen));
-		m_spotLightMaterial->setUniformViewToLight(ViewToLightScreen);
-
-		lightManager->uniformSpotLight(*currentLight, view);
+		// Render Quad
 		m_renderDatas.quadMesh.draw();
 	}
 
@@ -540,37 +591,9 @@ void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& came
 
 	for (int i = 0; i < m_renderDatas.directionalLightRenderDatas.size(); i++)
 	{
-		DirectionalLight* currentLight = m_renderDatas.directionalLightRenderDatas[i].light;
-		GLuint shadowMapTextureId = m_renderDatas.directionalLightRenderDatas[i].shadowMapTextureId;
-
-		if (currentLight->getCastShadows() && shadowMapTextureId != 0)
-		{
-			//active the shadow map texture
-			glActiveTexture(GL_TEXTURE4);
-			glBindTexture(GL_TEXTURE_2D, shadowMapTextureId);
-			m_directionalLightMaterial->setUniformShadowTexture(4);
-			m_pointLightMaterial->setUniformShadowFactor(1.f);
-		}
-		else
-		{
-			m_pointLightMaterial->setUniformShadowFactor(0.f);
-		}
-
-		const glm::vec3 directionalLightViewPosition = glm::vec3(view * glm::vec4(currentLight->position, 1.0));
-		const glm::vec3 directionalLightViewDirection = glm::vec3(view * glm::vec4(currentLight->direction, 0.0));
-		const glm::vec3 directionalLightViewUp = glm::vec3(view * glm::vec4(currentLight->up, 0.0));
-		float directionalShadowMapRadius = lightManager->getDirectionalShadowMapViewportSize()*0.5f;
-		float directionalShadowMapNear = lightManager->getDirectionalShadowMapViewportNear();
-		float directionalShadowMapFar = lightManager->getDirectionalShadowMapViewportFar();
-		glm::vec3 orig = directionalLightViewPosition; ///*glm::vec3(0, 0, 1)*directionalShadowMapRadius + */glm::vec3(0, directionalLightViewPosition.y/*directionalShadowMapFar*0.5f*/, 0);
-		glm::vec3 eye = -directionalLightViewDirection + orig;
-		glm::mat4 projectionDirectionalLight = glm::ortho(-directionalShadowMapRadius, directionalShadowMapRadius, -directionalShadowMapRadius, directionalShadowMapRadius, directionalShadowMapNear, directionalShadowMapFar);
-		glm::mat4 viewToLightDirectionalLight = glm::lookAt(eye, orig, directionalLightViewUp);
-		glm::mat4 viewToLightScreen = projectionDirectionalLight * viewToLightDirectionalLight;
-		//glUniformMatrix4fv(uniformWorldToLightScreen_directional, 1, false, glm::value_ptr(WorldToLightScreen));
-		m_directionalLightMaterial->setUniformViewToLight(viewToLightScreen);
-
-		lightManager->uniformDirectionalLight(*currentLight, view);
+		// Push light uniforms
+		pushDirectionalLightUniforms(m_renderDatas.directionalLightRenderDatas[i], viewToWorld, view);
+		// Render quad
 		m_renderDatas.quadMesh.draw();
 	}
 	/////// END : Directional light
@@ -612,23 +635,19 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 
 void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, int width, int height, const glm::mat4& projection, const glm::mat4& view)
 {
-	// Rebind main buffer as usual : 
 	m_lightPassBuffer.bind();
 
-	//render skybox : 
-	//skybox.render(projection, worldToView); // TODO RENDERING
-
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
-	glDepthMask(GL_FALSE);
+	//glDepthMask(GL_FALSE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	// Render batches (particles and billboards for now)
 	for (auto& renderBatch : transparentRenderBatches)
 	{
-		renderBatch.second->render(projection, view);
+		renderBatch.second->renderForward(projection, view, m_renderDatas);
 	}
-
-	glDepthMask(GL_TRUE);
+	
+	//glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
 
 	m_lightPassBuffer.unbind();
@@ -898,10 +917,10 @@ void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>&
 	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);
 
 	int lastId = pointLights.size() - 1;;
-	for (int i = 0; i < pointLights.size(); i++)
+	for (int lightIdx = 0; lightIdx < pointLights.size(); lightIdx++)
 	{
 
-		BoxCollider& collider = pointLights[i]->boundingBox;
+		BoxCollider& collider = pointLights[lightIdx]->boundingBox;
 		glm::vec3 topRight = collider.topRight;
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
@@ -964,19 +983,19 @@ void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>&
 		//second optimisation : we modify the quad verticies such that it is reduce to the area of the light
 		if (insideFrustum)
 		{
-			float width = maxX - minX;
-			float height = maxY - minY;
+			float viewportWidth = maxX - minX;
+			float viewportHeight = maxY - minY;
 			
-			pointLightRenderDatas.push_back(PointLightRenderDatas(glm::vec4(minX, minY, width, height), pointLights[i]));
+			pointLightRenderDatas.push_back(PointLightRenderDatas(glm::vec4(minX, minY, viewportWidth, viewportHeight), pointLights[lightIdx]));
 		}
 
 	}
 
 	//lastId = spotLights.size() - 1;
-	for (int i = 0; i < spotLights.size(); i++)
+	for (int lightIdx = 0; lightIdx < spotLights.size(); lightIdx++)
 	{
 
-		BoxCollider& collider = spotLights[i]->boundingBox;
+		BoxCollider& collider = spotLights[lightIdx]->boundingBox;
 		glm::vec3 topRight = collider.topRight;
 		glm::vec3 bottomLeft = collider.bottomLeft;
 
@@ -1042,7 +1061,7 @@ void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>&
 			float width = maxX - minX;
 			float height = maxY - minY;
 
-			spotLightRenderDatas.push_back(SpotLightRenderDatas(glm::vec4(minX, minY, width, height), spotLights[i]));
+			spotLightRenderDatas.push_back(SpotLightRenderDatas(glm::vec4(minX, minY, width, height), spotLights[lightIdx]));
 		}
 	}
 

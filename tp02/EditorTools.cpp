@@ -548,3 +548,24 @@ void DebugDrawRenderer::setFrameSize(const glm::vec2 & size)
 {
 	m_frameSize = size;
 }
+
+/////////////////////////////////
+
+WorldPropertiesTool::WorldPropertiesTool()
+{
+}
+
+void WorldPropertiesTool::setScene(Scene * scene)
+{
+	m_currentScene = scene;
+}
+
+Scene * WorldPropertiesTool::getScene() const
+{
+	return m_currentScene;
+}
+
+void WorldPropertiesTool::drawUI()
+{
+	m_currentScene->drawUI();
+}

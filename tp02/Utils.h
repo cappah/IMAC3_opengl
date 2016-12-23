@@ -55,7 +55,7 @@ GLuint compile_shader(GLenum shaderType, const char * sourceBuffer, int bufferSi
 GLuint compile_shader_from_file(GLenum shaderType, const char * fileName);
 
 // OpenGL utils
-bool checkError(const char* title);
+//bool checkError(const char* title);
 
 //return the point in world coordinate matching the given mouse position in screen space : 
 glm::vec3 screenToWorld(float mouse_x, float mouse_y, int width, int height, BaseCamera& camera);

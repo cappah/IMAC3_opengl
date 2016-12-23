@@ -54,10 +54,11 @@ void SaveSceneAsEditorFrame::drawContent(Project & project, EditorModal * parent
 }
 
 
-LoadSceneEditorFrame::LoadSceneEditorFrame(EditorWindowManager * windowManager)
+LoadSceneEditorFrame::LoadSceneEditorFrame(EditorWindowManager * windowManager, Editor* editorPtr)
 	: EditorFrame("LoadSceneWindow")
 	, m_windowManagerRef(windowManager)
 	, m_needToSaveScene(true)
+	, m_editorPtr(editorPtr)
 {
 }
 
@@ -92,6 +93,7 @@ void LoadSceneEditorFrame::drawContent(Project & project, EditorModal * parentWi
 
 			if (ImGui::Button(filename.c_str()))
 			{
+				m_editorPtr->deselectAll();
 				project.loadSceneAsynchrone(filename);
 				ImGui::CloseCurrentPopup();
 			}
@@ -230,27 +232,27 @@ void ViewportEditorFrame::onFrameResized()
 
 ///////////////////////////////
 
-TerrainToolEditorFrame::TerrainToolEditorFrame(const std::string& name)
-	: EditorFrame(name)
-{}
-
-void TerrainToolEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
-{
-	Scene* scene = project.getActiveScene();
-	scene->getTerrain().drawUI();
-}
-
-//////////////////////////////
-
-SkyboxToolEditorFrame::SkyboxToolEditorFrame(const std::string& name)
-	: EditorFrame(name)
-{}
-
-void SkyboxToolEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
-{
-	Scene* scene = project.getActiveScene();
-	scene->getSkybox().drawUI();
-}
+//TerrainToolEditorFrame::TerrainToolEditorFrame(const std::string& name)
+//	: EditorFrame(name)
+//{}
+//
+//void TerrainToolEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
+//{
+//	Scene* scene = project.getActiveScene();
+//	scene->getTerrain().drawUI();
+//}
+//
+////////////////////////////////
+//
+//SkyboxToolEditorFrame::SkyboxToolEditorFrame(const std::string& name)
+//	: EditorFrame(name)
+//{}
+//
+//void SkyboxToolEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
+//{
+//	Scene* scene = project.getActiveScene();
+//	scene->getSkybox().drawUI();
+//}
 
 //////////////////////////////
 
@@ -423,4 +425,17 @@ EditorCameraEditorFrame::EditorCameraEditorFrame(const std::string & name, Camer
 void EditorCameraEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
 {
 	m_editorCamera->drawUI();
+}
+
+//////////////////////////////
+
+WorldPropertiesEditorFrame::WorldPropertiesEditorFrame(const std::string & name, std::shared_ptr<WorldPropertiesTool> model)
+	: EditorFrame(name)
+	, m_worldPropertiesTool(model)
+{
+}
+
+void WorldPropertiesEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
+{
+	m_worldPropertiesTool.lock()->drawUI();
 }

@@ -193,9 +193,9 @@ void PointLight::setBoundingBoxVisual(ResourcePtr<Mesh> visualMesh, ResourcePtr<
 	boundingBox.setVisual(visualMesh, visualMaterial);
 }
 
-void PointLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 color)
+void PointLight::renderBoundingBox(const glm::mat4& projectile, const glm::mat4& view, glm::vec3 _color)
 {
-	boundingBox.render(projectile, view, color);
+	boundingBox.render(projectile, view, _color);
 }
 
 void PointLight::save(Json::Value & rootComponent) const

@@ -20,6 +20,36 @@
 //forward
 class Entity;
 class MaterialFlares;
+struct PointLight;
+struct SpotLight;
+struct DirectionalLight;
+
+struct PointLightRenderDatas
+{
+	glm::vec4 viewport;
+	PointLight* light;
+	GLuint shadowMapTextureId;
+
+	inline PointLightRenderDatas(const glm::vec4& _viewport, PointLight* _light) : viewport(_viewport), light(_light), shadowMapTextureId(0) {}
+};
+
+struct SpotLightRenderDatas
+{
+	glm::vec4 viewport;
+	SpotLight* light;
+	GLuint shadowMapTextureId;
+
+	inline SpotLightRenderDatas(const glm::vec4& _viewport, SpotLight* _light) : viewport(_viewport), light(_light), shadowMapTextureId(0) {}
+};
+
+struct DirectionalLightRenderDatas
+{
+	DirectionalLight* light;
+	GLuint shadowMapTextureId;
+
+	inline DirectionalLightRenderDatas(DirectionalLight* _light) : light(_light), shadowMapTextureId(0) {}
+};
+
 
 struct Light : public Component
 {

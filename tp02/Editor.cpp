@@ -55,6 +55,7 @@ Editor::Editor() : m_isGizmoVisible(true), m_isMovingGizmo(false), m_isUIVisible
 	m_resourceTree = std::make_shared<ResourceTree>(Project::getAssetsFolderPath());
 	m_inspector = std::make_shared<Inspector>(this);
 	m_sceneHierarchy = std::make_shared<SceneHierarchy>(this);
+	m_worldPropertiesTool = std::make_shared<WorldPropertiesTool>();
 	m_debugDrawRenderer = std::make_shared<DebugDrawRenderer>();
 	m_viewport = std::make_shared<Viewport>();
 
@@ -210,6 +211,11 @@ void Editor::onEntitySelected()
 	m_currentSelectionType = SelectionType::ENTITY;
 }
 
+void Editor::deselectAll()
+{
+	m_currentEntitiesSelected.clear();
+}
+
 //void Editor::clearSelectedComponents()
 //{
 //	m_pointLights.clear();
@@ -321,7 +327,7 @@ void Editor::drawMenuEntry_options(Project& project)
 		if (ImGui::Selectable("load"))
 		{
 			//m_loadWindowOpen = true;
-			m_windowManager.addModal(std::make_shared<LoadSceneEditorFrame>(&m_windowManager));
+			m_windowManager.addModal(std::make_shared<LoadSceneEditorFrame>(&m_windowManager, this));
 			m_needToSaveScene = true; // Tell the system that we may want to save the scene.
 			//ImGui::OpenPopup("load window");
 		}
@@ -616,6 +622,10 @@ void Editor::drawMenuEntry_windows()
 		{
 			m_windowManager.addWindow(std::make_shared<SceneHierarchyEditorFrame>("SceneHierarchy", m_sceneHierarchy));
 		}
+		if (!m_windowManager.isFrameOpen("WorldProperties") && ImGui::Button("WorldProperties"))
+		{
+			m_windowManager.addWindow(std::make_shared<WorldPropertiesEditorFrame>("WorldProperties", m_worldPropertiesTool));
+		}
 		if (!m_windowManager.isFrameOpen("Inspector") && ImGui::Button("Inspector"))
 		{
 			m_windowManager.addWindow(std::make_shared<InspectorEditorFrame>("Inspector", m_inspector));
@@ -624,14 +634,14 @@ void Editor::drawMenuEntry_windows()
 		{
 			m_windowManager.addWindow(std::make_shared<ResourceTreeView>("Resource tree", m_resourceTree.get(), this));
 		}
-		if (!m_windowManager.isFrameOpen("Terrain tool") && ImGui::Button("Terrain tool"))
-		{
-			m_windowManager.addWindow(std::make_shared<TerrainToolEditorFrame>("Terrain tool"));
-		}
-		if (!m_windowManager.isFrameOpen("Skybox tool") && ImGui::Button("Skybox tool"))
-		{
-			m_windowManager.addWindow(std::make_shared<SkyboxToolEditorFrame>("Skybox tool"));
-		}
+		//if (!m_windowManager.isFrameOpen("Terrain tool") && ImGui::Button("Terrain tool"))
+		//{
+		//	m_windowManager.addWindow(std::make_shared<TerrainToolEditorFrame>("Terrain tool"));
+		//}
+		//if (!m_windowManager.isFrameOpen("Skybox tool") && ImGui::Button("Skybox tool"))
+		//{
+		//	m_windowManager.addWindow(std::make_shared<SkyboxToolEditorFrame>("Skybox tool"));
+		//}
 		//if (!m_windowManager.isFrameOpen("Scene manager") && ImGui::Button("Scene manager"))
 		//{
 		//	m_windowManager.addWindow(std::make_shared<SceneManagerEditorFrame>("Scene manager"));
@@ -1115,6 +1125,7 @@ void Editor::renderUI(Project& project)
 	Scene& scene = *project.getActiveScene();
 	m_inspector->setScene(&scene);
 	m_sceneHierarchy->setScene(&scene);
+	m_worldPropertiesTool->setScene(&scene);
 
 	if (!m_isUIVisible)
 		return;
@@ -1610,7 +1621,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 	const bool isViewportHovered = m_viewport->getIsHovered();
 
 	//Terrain tool
-	if (m_windowManager.isFrameOpen("Terrain tool"))
+	/*if (m_windowManager.isFrameOpen("Terrain tool"))
 	{
 		if (isViewportHovered 
 			&& InputHandler::getMouseButton(GLFW_MOUSE_BUTTON_1, InputHandler::FOCUSING_EDITOR)
@@ -1636,7 +1647,7 @@ void Editor::update(/*Camera & camera*/ Scene& scene, GLFWwindow* window)
 					scene.getTerrain().drawGrassOnTerrain(collisionInfo.point);
 			}
 		}
-	}
+	}*/
 
 	//update gizmo
 	float distanceToCamera = glm::length(m_camera->getCameraPosition() - m_gizmo->getPosition());

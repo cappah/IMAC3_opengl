@@ -14,6 +14,7 @@ class DebugDrawRenderer;
 class Viewport;
 class CameraEditor;
 class EditorWindowManager;
+class WorldPropertiesTool;
 
 
 class SaveSceneAsEditorFrame : public EditorFrame
@@ -32,9 +33,10 @@ class LoadSceneEditorFrame : public EditorFrame
 private:
 	EditorWindowManager* m_windowManagerRef;
 	bool m_needToSaveScene;
+	Editor* m_editorPtr;
 
 public:
-	LoadSceneEditorFrame(EditorWindowManager* windowManager);
+	LoadSceneEditorFrame(EditorWindowManager* windowManager, Editor* editorPtr);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
 };
 
@@ -84,21 +86,21 @@ public:
 
 /////////////////////////////////////////
 
-class TerrainToolEditorFrame : public EditorFrame
-{
-public:
-	TerrainToolEditorFrame(const std::string& name);
-	void drawContent(Project& project, EditorModal* parentWindow) override;
-};
-
-/////////////////////////////////////////
-
-class SkyboxToolEditorFrame : public EditorFrame
-{
-public:
-	SkyboxToolEditorFrame(const std::string& name);
-	void drawContent(Project& project, EditorModal* parentWindow) override;
-};
+//class TerrainToolEditorFrame : public EditorFrame
+//{
+//public:
+//	TerrainToolEditorFrame(const std::string& name);
+//	void drawContent(Project& project, EditorModal* parentWindow) override;
+//};
+//
+///////////////////////////////////////////
+//
+//class SkyboxToolEditorFrame : public EditorFrame
+//{
+//public:
+//	SkyboxToolEditorFrame(const std::string& name);
+//	void drawContent(Project& project, EditorModal* parentWindow) override;
+//};
 
 /////////////////////////////////////////
 
@@ -164,6 +166,18 @@ public:
 
 /////////////////////////////////////////
 
+class WorldPropertiesEditorFrame : public EditorFrame
+{
+private:
+	std::weak_ptr<WorldPropertiesTool> m_worldPropertiesTool;
+
+public:
+	WorldPropertiesEditorFrame(const std::string& name, std::shared_ptr<WorldPropertiesTool> model);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+/////////////////////////////////////////
+
 class EditorCameraEditorFrame : public EditorFrame
 {
 private:
@@ -171,5 +185,17 @@ private:
 
 public:
 	EditorCameraEditorFrame(const std::string& name, CameraEditor* camera);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+/////////////////////////////////////////
+
+class SceneEditorFrame : public EditorFrame
+{
+private:
+	Scene* m_scene;
+
+public:
+	SceneEditorFrame(const std::string& name, CameraEditor* camera);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
 };

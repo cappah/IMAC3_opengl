@@ -33,7 +33,7 @@ BaseCamera::BaseCamera()
 
 void BaseCamera::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
 {
-	for (int i = 0; i < PipelineTypes::COUNT; i++)
+	for (int i = 0; i < static_cast<int>(Rendering::PipelineType::COUNT); i++)
 		m_renderBatches[i].clear();
 
 	std::vector<IRenderableComponent*> visibleComponents;
@@ -44,11 +44,12 @@ void BaseCamera::computeCulling(const Octree<IRenderableComponent, AABB>& octree
 		const int drawableCount = visibleComponent->getDrawableCount();
 		for (int i = 0; i < drawableCount; i++)
 		{
-			PipelineTypes renderPipelineType = visibleComponent->getDrawableMaterial(i).getRenderPipelineType();
-			assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
+			Rendering::PipelineType renderPipelineType = visibleComponent->getDrawableMaterial(i).getPipelineType();
+			int renderPipelineTypeAsInt = static_cast<int>(renderPipelineType);
+			assert(renderPipelineType >= static_cast<Rendering::PipelineType>(0) && renderPipelineType < Rendering::PipelineType::COUNT);
 
-			auto foundRenderBatch = m_renderBatches[renderPipelineType].find(visibleComponent->getDrawableMaterial(i).getGLId());
-			if (foundRenderBatch != m_renderBatches[renderPipelineType].end())
+			auto foundRenderBatch = m_renderBatches[renderPipelineTypeAsInt].find(visibleComponent->getDrawableMaterial(i).getGLId());
+			if (foundRenderBatch != m_renderBatches[renderPipelineTypeAsInt].end())
 			{
 				foundRenderBatch->second->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
 			}
@@ -56,16 +57,16 @@ void BaseCamera::computeCulling(const Octree<IRenderableComponent, AABB>& octree
 			{
 				auto newRenderBatch = visibleComponent->getDrawableMaterial(i).MakeSharedRenderBatch();
 				newRenderBatch->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
-				m_renderBatches[renderPipelineType][visibleComponent->getDrawableMaterial(i).getGLId()] = newRenderBatch;
+				m_renderBatches[renderPipelineTypeAsInt][visibleComponent->getDrawableMaterial(i).getGLId()] = newRenderBatch;
 			}
 		}
 	}
 }
 
-const std::map<GLuint, std::shared_ptr<IRenderBatch>>& BaseCamera::getRenderBatches(PipelineTypes renderPipelineType) const
+const std::map<GLuint, std::shared_ptr<IRenderBatch>>& BaseCamera::getRenderBatches(Rendering::PipelineType renderPipelineType) const
 {
-	assert(renderPipelineType >= 0 && renderPipelineType < PipelineTypes::COUNT);
-	return m_renderBatches[renderPipelineType];
+	assert(renderPipelineType >= static_cast<Rendering::PipelineType>(0) && renderPipelineType < Rendering::PipelineType::COUNT);
+	return m_renderBatches[static_cast<int>(renderPipelineType)];
 }
 
 const PostProcessProxy & BaseCamera::getPostProcessProxy() const

@@ -574,7 +574,7 @@ ResourceFactory<T>& getResourceFactory()
 template<typename T>
 ResourceType getResourceType()
 {
-	assert(false, "resource not implementaed");
+	assert(false && "resource not implementaed");
 	return ResourceType::NONE;
 }
 

@@ -93,6 +93,8 @@ struct OctreeNode
 	//get all elements which are visible by the camera modelized by the givent view and projection matrices :
 	void findVisibleElements(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, std::vector<ItemType*>& results, int currentDepth, int maxDepth) const;
 
+	void drawDebug() const;
+
 	//bool contains(const glm::vec3& point);
 	//bool contains(ItemType* item);
 	//bool containedIn(const glm::vec3& position, float halfSize);
@@ -102,6 +104,26 @@ struct OctreeNode
 	//void getAllElementsContained(std::vector<ItemType*>& _elements, const glm::vec3& center, float radius);
 };
 
+
+template<typename ItemType, typename spatialKeyType>
+void OctreeNode<ItemType, spatialKeyType>::drawDebug() const
+{
+	ImGui::Text("center : %f, %f, %f", center.x, center.y, center.z);
+	ImGui::Text("halfSize : %f", halfSize);
+	ImGui::Text("element count : %d", elements.size());
+
+	for (int i = 0; i < 8; i++)
+	{
+		if (childs[i] != nullptr)
+		{
+			if (ImGui::TreeNode((void*)childs[i], "Child %d", i))
+			{
+					childs[i]->drawDebug();
+				ImGui::TreePop();
+			}
+		}
+	}
+}
 
 template<typename ItemType, typename spatialKeyType>
 void OctreeNode<ItemType, spatialKeyType>::findVisibleElements(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, std::vector<ItemType*>& results, int currentDepth, int maxDepth) const
@@ -247,7 +269,7 @@ void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, const spatialK
 		{
 			if (childs[i] != nullptr)
 			{
-				childs[i]->remove(item, spatialKey, ++currentDepth, maxDepth);
+				childs[i]->remove(item, spatialKey, (currentDepth + 1), maxDepth);
 
 				if (childs[i]->getElementCount() <= 0 && childs[i]->getActiveChildCount() <= 0) 
 				{
@@ -290,7 +312,7 @@ void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, int currentDep
 			{
 				if (childs[i] != nullptr)
 				{
-					childs[i]->remove(item, ++currentDepth, maxDepth);
+					childs[i]->remove(item, (currentDepth + 1), maxDepth);
 
 					if (childs[i]->getElementCount() <= 0 && childs[i]->getActiveChildCount() <= 0)	
 					{
@@ -326,7 +348,7 @@ ItemType*  OctreeNode<ItemType, spatialKeyType>::find(const spatialKeyType& spat
 	{
 		if (childBounds[i]->contains(spatialKey))
 		{
-			return childs[i]->find(spatialKey, ++currentDepth, maxDepth);
+			return childs[i]->find(spatialKey, (currentDepth + 1), maxDepth);
 		}
 	}
 	//none of childs contains the current spatialKey, and max depth not reached (shouldn't happend for insertion based only on position...) :
@@ -358,7 +380,7 @@ void  OctreeNode<ItemType, spatialKeyType>::findAll(const spatialKeyType& spatia
 	{
 		if (childBounds[i]->contains(spatialKey))
 		{
-			return childs[i]->findAll(spatialKey, ++currentDepth, maxDepth, results);
+			return childs[i]->findAll(spatialKey, (currentDepth + 1), maxDepth, results);
 		}
 	}
 	//none of childs contains the current spatialKey, and max depth not reached (shouldn't happend for insertion based only on position...) :
@@ -473,6 +495,8 @@ public:
 	glm::vec3 getCenter() const;
 
 	void getAllCenterAndSize(std::vector<glm::vec3>& centers, std::vector<float>& halfSizes) const;
+
+	void drawDebug() const;
 };
 
 
@@ -568,6 +592,17 @@ void Octree<ItemType, spatialKeyType>::getAllCenterAndSize(std::vector<glm::vec3
 	halfSizes.push_back(m_root->halfSize);
 
 	m_root->getAllCenterAndSize(centers, halfSizes);
+}
+
+template<typename ItemType, typename spatialKeyType>
+inline void Octree<ItemType, spatialKeyType>::drawDebug() const
+{
+	if (ImGui::TreeNode((void*)this, "Octree"))
+	{
+		m_root->drawDebug();
+
+		ImGui::TreePop();
+	}
 }
 
 

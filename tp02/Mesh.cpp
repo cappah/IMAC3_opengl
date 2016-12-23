@@ -234,8 +234,7 @@ void Mesh::initGl()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (!checkError("Uniforms"))
-		PRINT_ERROR("error in mesh initialization.")
+	CHECK_GL_ERROR("error in mesh initialization.");
 }
 
 void Mesh::freeGl()
@@ -633,7 +632,7 @@ const Mesh * SubMesh::getMeshPtr() const
 	return m_meshPtr;
 }
 
-void SubMesh::setExternalsOf(const MaterialLit& material, const glm::mat4& projection, const glm::mat4& view) const
+void SubMesh::setExternalsOf(const Material3DObject& material, const glm::mat4& projection, const glm::mat4& view) const
 {
 	// Transform matrices
 	material.setUniformModelMatrix(getModelMatrix());

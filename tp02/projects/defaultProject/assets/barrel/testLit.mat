@@ -1,0 +1,60 @@
+{
+	"internalParameters" : 
+	[
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : 1,
+				"index" : 3
+			}
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : 1,
+				"index" : 7
+			}
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : 1,
+				"index" : 5
+			}
+		},
+		{
+			"data" : 0.40000000596046448
+		},
+		{
+			"data" : 
+			[
+				10,
+				10
+			]
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : 1,
+				"index" : 9
+			}
+		},
+		{
+			"data" : 0
+		},
+		{
+			"data" : 
+			[
+				1,
+				1,
+				1
+			]
+		}
+	],
+	"pipelineType" : "deferred",
+	"shaderProgramName" : "lit"
+}

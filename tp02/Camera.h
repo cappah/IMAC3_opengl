@@ -41,7 +41,7 @@ protected:
 	float m_zNear;
 	float m_zFar;
 
-	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[PipelineTypes::COUNT];
+	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[static_cast<int>(Rendering::PipelineType::COUNT)];
 	PostProcessProxy m_postProcessProxy;
 	GlHelper::Framebuffer m_frameBuffer;
 	Texture m_texture;
@@ -59,7 +59,7 @@ public:
 	BaseCamera();
 
 	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree);
-	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const;
+	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(Rendering::PipelineType renderPipelineType) const;
 	virtual const PostProcessProxy& getPostProcessProxy() const;
 	virtual void onViewportResized(const glm::vec2& newSize);
 	void renderFrame(const Texture& texture);

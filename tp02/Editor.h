@@ -111,6 +111,7 @@ private:
 	std::shared_ptr<ResourceTree> m_resourceTree;
 	std::shared_ptr<Inspector> m_inspector;
 	std::shared_ptr<SceneHierarchy> m_sceneHierarchy;
+	std::shared_ptr<WorldPropertiesTool> m_worldPropertiesTool;
 	std::shared_ptr<DebugDrawRenderer> m_debugDrawRenderer;
 	std::shared_ptr<Viewport> m_viewport;
 
@@ -153,8 +154,12 @@ public:
 
 	void renderGizmo(BaseCamera& camera);
 
+	// Deals with selection :
 	void onResourceSelected();
 	void onEntitySelected();
+	void deselectAll();
+	Entity* duplicateSelected();
+	void deleteSelected(Scene& scene);
 
 	//void hideAllToolsUI();
 	//void displayTopLeftWindow(Project& project);
@@ -169,24 +174,21 @@ public:
 	void launchGameInEditMode(Project& project);
 	void stopGameInEditMode(Project& project);
 
-	//Window handling
+	// Window handling :
 	void displayBackgroundWindow(Project& project);
 	void displayFloatingWindows(Project& project);
 
-	// Modals handling
+	// Modals handling :
 	void displayModals(Project& project);
 	//void addModal(std::shared_ptr<EditorWindow> modal);
 	//void removeModal(EditorWindow* modal);
 
+	// Deals with gizmo :
 	bool testGizmoIntersection(const Ray& ray);
 	void beginMoveGizmo();
 	bool isMovingGizmo();
 	void endMoveGizmo();
 	void moveGizmo(const Ray& ray);
-
-	Entity* duplicateSelected();
-
-	void deleteSelected(Scene& scene);
 
 	void toggleUIVisibility();
 	void toggleGizmoVisibility();

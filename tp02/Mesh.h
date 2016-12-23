@@ -129,10 +129,10 @@ private:
 	void loadAnimations(const FileHandler::CompletePath& scenePath, const aiScene* scene);
 };
 
-class MaterialLit;
+class Material3DObject;
 
 // Represent an instance of a subpart of the mesh in the world.
-class SubMesh final : public IBatchableWith<MaterialLit>
+class SubMesh final : public IBatchableWith<Material3DObject>
 {
 private:
 	const Mesh* m_meshPtr;
@@ -157,6 +157,6 @@ public:
 	virtual bool castShadows() const override;
 	const Mesh* getMeshPtr() const;
 
-	void setExternalsOf(const MaterialLit& material, const glm::mat4& projection, const glm::mat4& view) const override;
+	void setExternalsOf(const Material3DObject& material, const glm::mat4& projection, const glm::mat4& view) const override;
 
 };

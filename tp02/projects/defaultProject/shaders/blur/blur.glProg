@@ -1,8 +1,8 @@
 {
+    "pipelineHandling" : "custom",
+    "baseMaterial" : "custom",
     "vertex" : "blur.vert",
     "fragment" : "blur.frag",
     "geometry" : "",
-    "programType" : "custom",
-    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

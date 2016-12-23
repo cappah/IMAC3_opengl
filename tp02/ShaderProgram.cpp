@@ -3,16 +3,17 @@
 #include "RenderBatch.h"
 #include "ShaderParameters.h"
 #include "ShaderProgram.h"
+#include "Factories.h"
 
 
 ShaderProgram::ShaderProgram()
-	:id(0)
+	//:id(0)
 {
 }
 
 ShaderProgram::ShaderProgram(const FileHandler::CompletePath& path)
 	: Resource(path)
-	, id(0)
+	//, id(0)
 {
 }
 
@@ -51,23 +52,67 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 	Json::Value root;
 	stream >> root;
 
-	const std::string vertexShaderName = root.get("vertex", "").asString();
-	const std::string fragmentShaderName = root.get("fragment", "").asString();
-	const std::string geometryShaderName = root.get("geometry", "").asString();
+	// Pipeline handling type
+	m_pipelineHandlingTypes.clear();
+	Json::Value pipelineHandlingTypeJson = root["pipelineHandling"];
+	if (pipelineHandlingTypeJson.isArray())
+	{
+		for (int i = 0; i < pipelineHandlingTypeJson.size(); i++)
+		{
+			auto foundItPipelineType = std::find(Rendering::PipelineTypesToString.begin(), Rendering::PipelineTypesToString.end(), pipelineHandlingTypeJson[i].asString());
+			assert(foundItPipelineType != Rendering::PipelineTypesToString.end());
+			int foundIdxPipelineType = foundItPipelineType - Rendering::PipelineTypesToString.begin();
+			m_pipelineHandlingTypes.push_back((Rendering::PipelineType)foundIdxPipelineType);
+		}
+	}
+	else
+	{
+		auto foundItPipelineType = std::find(Rendering::PipelineTypesToString.begin(), Rendering::PipelineTypesToString.end(), root.get("pipelineHandling", "").asString()/*pipelineHandlingTypeJson.asString()*/);
+		assert(foundItPipelineType != Rendering::PipelineTypesToString.end());
+		int foundIdxPipelineType = foundItPipelineType - Rendering::PipelineTypesToString.begin();
+		m_pipelineHandlingTypes.push_back((Rendering::PipelineType)foundIdxPipelineType);
+	}
 
-	load(path, vertexShaderName, fragmentShaderName, geometryShaderName);
+	// Base Material
+	auto foundItBaseMaterial = std::find(Rendering::BaseMaterialTypeToString.begin(), Rendering::BaseMaterialTypeToString.end(), root.get("baseMaterial", "").asString());
+	assert(foundItBaseMaterial != Rendering::BaseMaterialTypeToString.end());
+	int foundIdxBaseMaterial = foundItBaseMaterial - Rendering::BaseMaterialTypeToString.begin();
+	m_baseMaterialType = (Rendering::BaseMaterialType)foundIdxBaseMaterial;
 
-	// Pipeline type
-	auto foundItPipelineType = std::find(PipelineTypesToString.begin(), PipelineTypesToString.end(), root.get("pipelineType", "").asString());
-	assert(foundItPipelineType != PipelineTypesToString.end());
-	int foundIdxPipelineType = foundItPipelineType - PipelineTypesToString.begin();
-	m_pipelineType = (PipelineTypes)foundIdxPipelineType;
+	if (std::find(m_pipelineHandlingTypes.begin(), m_pipelineHandlingTypes.end(), Rendering::PipelineType::DEFERRED_PIPILINE) != m_pipelineHandlingTypes.end()
+		&& std::find(m_pipelineHandlingTypes.begin(), m_pipelineHandlingTypes.end(), Rendering::PipelineType::FORWARD_PIPELINE) != m_pipelineHandlingTypes.end())
+	{
+		Json::Value deferredJson = root.get("deferred", "");
+		assert(!deferredJson.empty());
+		Json::Value forwardJson = root.get("forward", "");
+		assert(!forwardJson.empty());
 
-	// Program type
-	auto foundItProgramType = std::find(ShaderProgramTypes.begin(), ShaderProgramTypes.end(), root.get("programType", "").asString());
-	assert(foundItProgramType != ShaderProgramTypes.end());
-	int foundIdxProgramType = foundItProgramType - ShaderProgramTypes.begin();
-	m_programType = (ShaderProgramType)foundIdxProgramType;
+		// Deferred : 
+		std::string vertexShaderName = deferredJson.get("vertex", "").asString();
+		std::string fragmentShaderName = deferredJson.get("fragment", "").asString();
+		std::string geometryShaderName = deferredJson.get("geometry", "").asString();
+
+		load(Rendering::PipelineType::DEFERRED_PIPILINE, path, vertexShaderName, fragmentShaderName, geometryShaderName);
+
+		// Forward : 
+		vertexShaderName = forwardJson.get("vertex", "").asString();
+		fragmentShaderName = forwardJson.get("fragment", "").asString();
+		geometryShaderName = forwardJson.get("geometry", "").asString();
+
+		load(Rendering::PipelineType::FORWARD_PIPELINE, path, vertexShaderName, fragmentShaderName, geometryShaderName);
+	}
+	else
+	{
+		const std::string vertexShaderName = root.get("vertex", "").asString();
+		const std::string fragmentShaderName = root.get("fragment", "").asString();
+		const std::string geometryShaderName = root.get("geometry", "").asString();
+
+		assert(m_pipelineHandlingTypes.size() == 1);
+		Rendering::PipelineType pipelineType = (Rendering::PipelineType)m_pipelineHandlingTypes[0];
+		load(pipelineType, path, vertexShaderName, fragmentShaderName, geometryShaderName);
+	}
+
+
 
 	// Internal parameters
 	Json::Value internalShaderParameters = root["internalShaderParameters"];
@@ -79,12 +124,12 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 		assert(internalShaderParameters.isValidIndex(i));
 
 		auto newParameter = MakeNewInternalShaderParameter(internalShaderParameters[i]);
-		newParameter->init(id); //don't forget to init the parameter to get the uniforms
+		//newParameter->init(id); //don't forget to init the parameter to get the uniforms
 		m_internalShaderParameters.push_back(newParameter);
 	}
 
 	// External parameters
-	Json::Value externalShaderParameters = root["externalShaderParameters"];
+	/*Json::Value externalShaderParameters = root["externalShaderParameters"];
 	int externalShaderParameterCount = externalShaderParameters.size();
 
 	m_externalShaderParameters.clear();
@@ -96,10 +141,9 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 		std::string parameterName = externalShaderParameters[i].get("name", "").asString();
 
 		m_externalShaderParameters.push_back(MakeNewExternalShaderParameter(parameterType, parameterName));
-	}
+	}*/
 
-	if (!checkError("Uniforms"))
-		PRINT_ERROR("error in shader program initialization.")
+	PRINT_ERROR("error in shader program initialization.");
 }
 //
 //void ShaderProgram::load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
@@ -133,7 +177,7 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 //}
 //
 
-void ShaderProgram::load(const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName)
+void ShaderProgram::load(Rendering::PipelineType pipelineType, const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName)
 {
 	bool hasVertShader = !vertexShaderName.empty();
 	bool hasFragShader = !fragmentShaderName.empty();
@@ -172,15 +216,40 @@ void ShaderProgram::load(const FileHandler::CompletePath& shaderFolderPath, cons
  		exit(1);
 
 	//check uniform errors : 
-	if (!checkError("Uniforms"))
-		exit(1);
+	ASSERT_GL_ERROR("error in material initialization.");
 
-	id = programObject;
+	ids[pipelineType] = programObject;
 }
 
-void ShaderProgram::LoadMaterialInstance(Material* material)
+bool ShaderProgram::implementPipeline(Rendering::PipelineType pipelineType) const
 {
-	material->loadFromShaderProgramDatas(id,m_pipelineType, m_internalShaderParameters, m_externalShaderParameters);
+	return ids.find(pipelineType) != ids.end();
+}
+
+int ShaderProgram::getImplementedPipelineCount() const
+{
+	return m_pipelineHandlingTypes.size();
+}
+
+Rendering::PipelineType ShaderProgram::getImplementedPipeline(int idx) const
+{
+	assert(idx >= 0 && idx < m_pipelineHandlingTypes.size());
+	return m_pipelineHandlingTypes[idx];
+}
+
+GLuint ShaderProgram::getProgramId(Rendering::PipelineType pipelineType) const
+{
+	assert(ids.find(pipelineType) != ids.end());
+	return ids.find(pipelineType)->second;
+}
+
+void ShaderProgram::LoadMaterialInstance(Material* material) const
+{
+	Rendering::PipelineType materialPipelineType = material->getPipelineType();
+	auto& foundProgramId = ids.find(materialPipelineType);
+	assert(foundProgramId != ids.end());
+
+	material->loadFromShaderProgramDatas(foundProgramId->second, m_internalShaderParameters/*, m_externalShaderParameters*/);
 }
 
 void ShaderProgram::addMaterialRef(Material* ref)
@@ -199,29 +268,59 @@ const std::vector<std::shared_ptr<InternalShaderParameterBase>>& ShaderProgram::
 	return m_internalShaderParameters;
 }
 
-const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& ShaderProgram::getExternalParameters() const
+//const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& ShaderProgram::getExternalParameters() const
+//{
+//	return m_externalShaderParameters;
+//}
+
+Rendering::BaseMaterialType ShaderProgram::getBaseMaterialType() const
 {
-	return m_externalShaderParameters;
+	return m_baseMaterialType;
 }
 
-ShaderProgramType ShaderProgram::getType() const
+Material* ShaderProgram::makeNewMaterialInstance(const FileHandler::CompletePath& completePath)
 {
-	return m_programType;
+	switch (m_baseMaterialType)
+	{
+	case Rendering::BaseMaterialType::OBJECT_3D:
+		return new Material3DObject(*this, completePath);
+	case Rendering::BaseMaterialType::BILLBOARD:
+		return new MaterialBillboard(*this, completePath);
+	case Rendering::BaseMaterialType::PARTICLE:
+		return new MaterialParticlesCPU(*this, completePath);
+	default:
+		std::cout << "warning : we are trying to build a custom material from its program !";
+		return nullptr;
+	}
 }
 
-PipelineTypes ShaderProgram::getPipelineType() const
+std::shared_ptr<Material> ShaderProgram::makeSharedMaterialInstance(const FileHandler::CompletePath& completePath)
 {
-	return m_pipelineType;
+	switch (m_baseMaterialType)
+	{
+	case Rendering::BaseMaterialType::OBJECT_3D:
+		return std::make_shared<Material3DObject>(*this, completePath);
+	case Rendering::BaseMaterialType::BILLBOARD:
+		return std::make_shared<MaterialBillboard>(*this, completePath);
+	case Rendering::BaseMaterialType::PARTICLE:
+		return std::make_shared<MaterialParticlesCPU>(*this, completePath);
+	default:
+		std::cout << "warning : we are trying to build a custom material from its program !";
+		return nullptr;
+	}
 }
+
 
 Material* ShaderProgram::makeNewMaterialInstance()
 {
-	switch (m_programType)
+	switch (m_baseMaterialType)
 	{
-	case LIT:
-		return new MaterialLit(*this);
-	case UNLIT:
-		return new MaterialUnlit(*this);
+	case Rendering::BaseMaterialType::OBJECT_3D:
+		return new Material3DObject(*this);
+	case Rendering::BaseMaterialType::BILLBOARD:
+		return new MaterialBillboard(*this);
+	case Rendering::BaseMaterialType::PARTICLE:
+		return new MaterialParticlesCPU(*this);
 	default:
 		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;
@@ -230,13 +329,16 @@ Material* ShaderProgram::makeNewMaterialInstance()
 
 std::shared_ptr<Material> ShaderProgram::makeSharedMaterialInstance()
 {
-	switch (m_programType)
+	switch (m_baseMaterialType)
 	{
-	case LIT:
-		return std::make_shared<MaterialLit>(*this);
-	case UNLIT:
-		return std::make_shared<MaterialUnlit>(*this);
+	case Rendering::BaseMaterialType::OBJECT_3D:
+		return std::make_shared<Material3DObject>(*this);
+	case Rendering::BaseMaterialType::BILLBOARD:
+		return std::make_shared<MaterialBillboard>(*this);
+	case Rendering::BaseMaterialType::PARTICLE:
+		return std::make_shared<MaterialParticlesCPU>(*this);
 	default:
+		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;
 	}
 }
@@ -256,21 +358,29 @@ Material* makeNewMaterialInstance(const FileHandler::CompletePath& path)
 	Json::Value root;
 	stream >> root;
 
-	auto foundItProgramType = std::find(ShaderProgramTypes.begin(), ShaderProgramTypes.end(), root.get("programType", "custom").asString());
-	int foundIdxProgramType = foundItProgramType - ShaderProgramTypes.begin();
-	ShaderProgramType programType = (ShaderProgramType)foundIdxProgramType;
+	std::string shaderProgramName = root.get("shaderProgramName", "").asString();
+	assert(shaderProgramName != "");
+	ShaderProgram* program = getProgramFactory().get(shaderProgramName);
+	assert(program != nullptr);
+	Rendering::BaseMaterialType baseMaterialType = program->getBaseMaterialType();
 
-	switch (programType)
+	switch (baseMaterialType)
 	{
-	case LIT:
+	case Rendering::BaseMaterialType::OBJECT_3D:
 	{
-		Material* newMaterial = new MaterialLit();
+		Material* newMaterial = new Material3DObject();
 		newMaterial->load(root);
 		return newMaterial;
 	}
-	case UNLIT:
+	case Rendering::BaseMaterialType::BILLBOARD:
 	{
-		Material* newMaterial = new MaterialUnlit();
+		Material* newMaterial = new MaterialBillboard();
+		newMaterial->load(root);
+		return newMaterial;
+	}
+	case Rendering::BaseMaterialType::PARTICLE:
+	{
+		Material* newMaterial = new MaterialParticlesCPU();
 		newMaterial->load(root);
 		return newMaterial;
 	}

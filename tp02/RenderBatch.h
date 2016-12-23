@@ -7,6 +7,8 @@
 #include "IDrawable.h"
 #include "BatchableWith.h"
 #include "Materials.h"
+#include "Lights.h"
+#include "RenderDatas.h"
 
 class IRenderBatch
 {
@@ -16,6 +18,7 @@ public:
 	virtual void add(const IDrawable* drawable, const Material* material) = 0;
 	virtual void clear() = 0;
 	virtual void render(const glm::mat4& projection, const glm::mat4& view) const = 0;
+	virtual void renderForward(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const = 0;
 	const std::vector<const IDrawable*>& getDrawables() const
 	{
 		return m_drawables;
@@ -35,6 +38,7 @@ public:
 	void add(const IDrawable* drawable, const Material* material) override;
 	void clear() override;
 	void render(const glm::mat4& projection, const glm::mat4& view) const override;
+	void renderForward(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const override;
 };
 
 //////////////////////////////////////////////
@@ -92,6 +96,45 @@ inline void RenderBatch<MaterialType>::render(const glm::mat4& projection, const
 		texCount = 0;
 	}
 }
+
+template<typename MaterialType>
+inline void RenderBatch<MaterialType>::renderForward(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const
+{
+	const MaterialType* material = m_container.begin()->first;
+	const MaterialAggregation* forwardAggregate = material->getAggregation("forward").get();
+	// Use material
+	material->use();
+
+	forwardAggregate->pushParametersToGPU(renderDatas);
+
+	//TODO RENDERING
+	// Push globals to GPU
+	//pushGlobalsToGPU(*material);
+
+	// For each material instance...
+	int texCount = 0;
+	for (auto& item : m_container)
+	{
+		const MaterialType* materialInstance = item.first;
+
+		// Push internals to GPU
+		materialInstance->pushInternalsToGPU(texCount);
+
+		// For each drawable...
+		for (auto& drawable : item.second)
+		{
+			// Push externals to GPU
+			static_cast<const IBatchableWith<MaterialType>* const>(drawable)->setExternalsOf(*materialInstance, projection, view);
+			//pushExternalsToPGU(*materialInstance, *drawable, projection, view);
+
+			// Draw the drawable
+			drawable->draw();
+		}
+
+		texCount = 0;
+	}
+}
+
 
 /////////////////////////////////////////////
 

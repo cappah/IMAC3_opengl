@@ -93,10 +93,10 @@ private:
 
 	//special components : 
 	//terrain : 
-	Terrain m_terrain;
+	//Terrain m_terrain;
 
 	//skybox : 
-	Skybox m_skybox;
+	//Skybox m_skybox;
 
 	//Renderables :
 	Octree<IRenderableComponent, AABB> m_renderables;
@@ -166,8 +166,8 @@ public:
 	void setAreOctreesVisible(bool value);
 	void setIsDebugPhysicVisible(bool value);
 
-	Terrain& getTerrain();
-	Skybox& getSkybox();
+	//Terrain& getTerrain();
+	//Skybox& getSkybox();
 	PathManager& getPathManager();
 	Renderer& getRenderer();
 	Physic::PhysicManager& getPhysicManager();
@@ -186,5 +186,6 @@ public:
 
 	void onViewportResized(const glm::vec2& newSize);
 
+	void drawUI();
 };
 

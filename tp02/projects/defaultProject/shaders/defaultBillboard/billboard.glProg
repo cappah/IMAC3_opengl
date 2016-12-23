@@ -1,8 +1,7 @@
 {
-    "vertex" : "billboard.vert",
-    "fragment" : "billboard.frag",
-    "geometry" : "",
-    "programType" : "custom",
-    "pipelineType" : "transparent",
+    "pipelineHandling" : ["deferred", "forward"],
+    "baseMaterial" : "billboard",
+    "deferred" : {"vertex" : "billboard.vert", "fragment" : "billboard.frag", "geometry" : ""},
+    "forward" : {"vertex" : "transparent.vert", "fragment" : "transparent.frag", "geometry" : ""}, //TODO
     "internalShaderParameters" : []
 }

@@ -107,6 +107,20 @@ public:
 
 /////////////////////////////////////////
 
+class WorldPropertiesTool
+{
+private:
+	Scene* m_currentScene;
+
+public:
+	WorldPropertiesTool();
+	void setScene(Scene* scene);
+	Scene* getScene() const;
+	void drawUI();
+};
+
+/////////////////////////////////////////
+
 class DebugDrawRenderer
 {
 private:

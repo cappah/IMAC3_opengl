@@ -35,11 +35,12 @@ uniform sampler2D Emissive;
 uniform float SpecularPower;
 uniform float EmissiveMultiplier;
 uniform vec3 EmissiveColor;
+uniform vec3 TintColor;
 
 void main()
 {
 
-        outColor = vec4( texture(Diffuse, In.TexCoord).rgb, texture(Specular, In.TexCoord).r );
+        outColor = vec4( texture(Diffuse, In.TexCoord).rgb * TintColor.rgb, texture(Specular, In.TexCoord).r );
         outHighValues = vec4(texture(Emissive, In.TexCoord).rgb * EmissiveColor.rgb * vec3(EmissiveMultiplier), 1.0);
 
 	vec3 bumpNormal = texture(Bump, In.TexCoord).rgb;

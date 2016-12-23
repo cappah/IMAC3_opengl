@@ -1,8 +1,8 @@
 {
+    "pipelineHandling" : "custom",
+    "baseMaterial" : "custom",
     "vertex" : "lightPass.vert",
     "fragment" : "lightPass_spotLight.frag",
     "geometry" : "",
-    "programType" : "custom",
-    "pipelineType" : "opaque",
     "internalShaderParameters" : []
 }

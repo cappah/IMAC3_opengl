@@ -1,9 +1,9 @@
 {
+    "pipelineHandling" : "custom",
+    "baseMaterial" : "custom",
     "vertex" : "flares.vert",
     "fragment" : "flares.frag",
     "geometry" : "flares.geom",
-    "programType" : "custom",
-    "pipelineType" : "opaque",
     "internalShaderParameters" : [
         {"type" : "texture", "name" : "MainFlare", "default" : "default" },
         {"type" : "texture", "name" : "TrailFlare", "default" : "default" },

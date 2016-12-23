@@ -456,7 +456,7 @@ void Project::edit()
 
 
 		// Check for errors
-		checkError("End loop");
+		CHECK_GL_ERROR("End loop");
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -1136,14 +1136,14 @@ void Project::initDefaultAssets()
 	Texture* specularTexture = new Texture(FileHandler::CompletePath("textures/spnza_bricks_a_spec.tga"));
 	Texture* bumpTexture = new Texture(FileHandler::CompletePath("textures/spnza_bricks_a_normal.png"));
 
-	Texture* grassTextureDiffuse = new Texture(FileHandler::CompletePath("textures/grass/grass01.png"), true);
+	Texture* grassTextureDiffuse = new Texture(FileHandler::CompletePath("textures/grass/grass01.png"));
 	grassTextureDiffuse->textureWrapping_u = GL_CLAMP_TO_EDGE;
 	grassTextureDiffuse->textureWrapping_v = GL_CLAMP_TO_EDGE;
 
 	Texture* texSkyRight = new Texture(FileHandler::CompletePath("textures/skyboxes/right.png"));
 	Texture* texSkyLeft = new Texture(FileHandler::CompletePath("textures/skyboxes/left.png"));
 	Texture* texSkyTop = new Texture(FileHandler::CompletePath("textures/skyboxes/top.png"));
-	Texture* texSkyBottom = new Texture(FileHandler::CompletePath("textures/skyboxes/bottom.png"));
+	Texture* texSkyBottom = new Texture(FileHandler::CompletePath("textures/skyboxes/top.png"));
 	Texture* texSkyFront = new Texture(FileHandler::CompletePath("textures/skyboxes/front.png"));
 	Texture* texSkyBack = new Texture(FileHandler::CompletePath("textures/skyboxes/back.png"));
 

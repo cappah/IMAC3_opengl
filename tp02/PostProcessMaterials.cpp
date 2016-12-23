@@ -7,16 +7,21 @@ MaterialBlur::MaterialBlur()
 MaterialBlur::MaterialBlur(const ShaderProgram& shaderProgram)
 	: Material(shaderProgram)
 {
-	setExternalParameters(shaderProgram.getExternalParameters());
+	setExternalParameters();
 }
 
-void MaterialBlur::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+MaterialBlur::MaterialBlur(const ShaderProgram & shaderProgram, const FileHandler::CompletePath & completePath)
+	: Material(shaderProgram, completePath)
+{
+	setExternalParameters();
+}
+
+void MaterialBlur::setExternalParameters()
 {
 	m_uniformPassId = MaterialHelper::getUniform(m_glProgramId, "PassId");
 	m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
 
-	if (!checkError("Uniforms"))
-		PRINT_ERROR("error in texture initialization.")
+	CHECK_GL_ERROR("error in texture initialization.");
 }
 
 void MaterialBlur::glUniform_passId(int passId)
@@ -40,18 +45,23 @@ MaterialBloom::MaterialBloom()
 MaterialBloom::MaterialBloom(const ShaderProgram& shaderProgram)
 	: Material(shaderProgram)
 {
-	setExternalParameters(shaderProgram.getExternalParameters());
+	setExternalParameters();
 }
 
-void MaterialBloom::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+MaterialBloom::MaterialBloom(const ShaderProgram & shaderProgram, const FileHandler::CompletePath & completePath)
+	: Material(shaderProgram, completePath)
+{
+	setExternalParameters();
+}
+
+void MaterialBloom::setExternalParameters()
 {
 	m_uniformExposure = MaterialHelper::getUniform(m_glProgramId, "Exposure");
 	m_uniformGamma = MaterialHelper::getUniform(m_glProgramId, "Gamma");
 	m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
 	m_uniformTextureBlur = MaterialHelper::getUniform(m_glProgramId, "TextureBlur");
 
-	if (!checkError("Uniforms"))
-		PRINT_ERROR("error in texture initialization.")
+	CHECK_GL_ERROR("error in texture initialization.");
 }
 
 void MaterialBloom::glUniform_Texture(int textureId)
@@ -84,16 +94,21 @@ MaterialAdd::MaterialAdd()
 MaterialAdd::MaterialAdd(const ShaderProgram & shaderProgram)
 	: Material(shaderProgram)
 {
-	setExternalParameters(shaderProgram.getExternalParameters());
+	setExternalParameters();
 }
 
-void MaterialAdd::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+MaterialAdd::MaterialAdd(const ShaderProgram & shaderProgram, const FileHandler::CompletePath & completePath)
+	: Material(shaderProgram, completePath)
+{
+	setExternalParameters();
+}
+
+void MaterialAdd::setExternalParameters()
 {
 	m_uniformTexture01 = MaterialHelper::getUniform(m_glProgramId, "Texture01");
 	m_uniformTexture02 = MaterialHelper::getUniform(m_glProgramId, "Texture02");
 
-	if (!checkError("Uniforms"))
-		PRINT_ERROR("error in texture initialization.")
+	CHECK_GL_ERROR("error in texture initialization.");
 }
 
 void MaterialAdd::glUniform_Texture01(int textureId)
@@ -116,16 +131,21 @@ MaterialFlares::MaterialFlares()
 MaterialFlares::MaterialFlares(const ShaderProgram & shaderProgram)
 	: Material(shaderProgram)
 {
-	setExternalParameters(shaderProgram.getExternalParameters());
+	setExternalParameters();
 }
 
-void MaterialFlares::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+MaterialFlares::MaterialFlares(const ShaderProgram & shaderProgram, const FileHandler::CompletePath & completePath)
+	: Material(shaderProgram, completePath)
+{
+	setExternalParameters();
+}
+
+void MaterialFlares::setExternalParameters()
 {
 	m_uniformVP = MaterialHelper::getUniform(m_glProgramId, "VP");
 	m_uniformDepth = MaterialHelper::getUniform(m_glProgramId, "Depth");
 
-	if (!checkError("Uniforms"))
-		PRINT_ERROR("error in texture initialization.")
+	CHECK_GL_ERROR("error in texture initialization.");
 }
 
 void MaterialFlares::glUniform_VP(const glm::mat4 & VP) const
@@ -146,10 +166,16 @@ MaterialSSAO::MaterialSSAO()
 MaterialSSAO::MaterialSSAO(const ShaderProgram & shaderProgram)
 	: Material(shaderProgram)
 {
-	setExternalParameters(shaderProgram.getExternalParameters());
+	setExternalParameters();
 }
 
-void MaterialSSAO::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+MaterialSSAO::MaterialSSAO(const ShaderProgram & shaderProgram, const FileHandler::CompletePath & completePath)
+	: Material(shaderProgram, completePath)
+{
+	setExternalParameters();
+}
+
+void MaterialSSAO::setExternalParameters()
 {
 	m_uniformNormals = MaterialHelper::getUniform(m_glProgramId, "Normals");
 	m_uniformNoiseTexture = MaterialHelper::getUniform(m_glProgramId, "NoiseTexture");
@@ -158,8 +184,7 @@ void MaterialSSAO::setExternalParameters(const std::vector<std::shared_ptr<Exter
 	m_uniformProjection = MaterialHelper::getUniform(m_glProgramId, "Projection");
 	m_uniformScreenToView = MaterialHelper::getUniform(m_glProgramId, "ScreenToView");
 
-	if (!checkError("Uniforms"))
-		PRINT_ERROR("error in texture initialization.")
+	CHECK_GL_ERROR("error in texture initialization.");
 }
 
 void MaterialSSAO::glUniform_Normals(int texId) const
@@ -200,15 +225,20 @@ MaterialSSAOBlur::MaterialSSAOBlur()
 MaterialSSAOBlur::MaterialSSAOBlur(const ShaderProgram & shaderProgram)
 	: Material(shaderProgram)
 {
-	setExternalParameters(shaderProgram.getExternalParameters());
+	setExternalParameters();
 }
 
-void MaterialSSAOBlur::setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
+MaterialSSAOBlur::MaterialSSAOBlur(const ShaderProgram & shaderProgram, const FileHandler::CompletePath & completePath)
+	: Material(shaderProgram, completePath)
+{
+	setExternalParameters();
+}
+
+void MaterialSSAOBlur::setExternalParameters()
 {
 	m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
 
-	if (!checkError("Uniforms"))
-		PRINT_ERROR("error in texture initialization.")
+	CHECK_GL_ERROR("error in texture initialization.");
 }
 
 void MaterialSSAOBlur::glUniform_Texture(int texId) const

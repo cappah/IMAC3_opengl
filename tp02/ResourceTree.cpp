@@ -231,7 +231,7 @@ void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::
 
 	//create new instance
 	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), materialName, ".mat");
-	Material* newMaterial = getProgramFactory().get(materialModelName)->makeNewMaterialInstance();
+	Material* newMaterial = getProgramFactory().get(materialModelName)->makeNewMaterialInstance(resourceCompletePath);
 	newMaterial->save(resourceFilePath);
 
 	folderTo.addFile<Material>(resourceCompletePath, newMaterial);

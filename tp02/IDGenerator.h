@@ -125,7 +125,7 @@ public:
 
 	void freeID(ID& id)
 	{
-		assert(m_used.size() < id.index && m_generation.size() < id.index);
+		assert(m_used.size() > id.index && m_generation.size() > id.index);
 		m_used[id.index] = false;
 	}
 };

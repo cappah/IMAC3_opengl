@@ -11,7 +11,8 @@ private:
 public:
 	MaterialBlur();
 	MaterialBlur(const ShaderProgram& shaderProgram);
-	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+	MaterialBlur(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath);
+	void setExternalParameters() override;
 	void glUniform_passId(int passId);
 	void glUniform_Texture(int textureId);
 };
@@ -27,7 +28,8 @@ private:
 public:
 	MaterialBloom();
 	MaterialBloom(const ShaderProgram& shaderProgram);
-	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+	MaterialBloom(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath);
+	void setExternalParameters() override;
 	void glUniform_Texture(int textureId);
 	void glUniform_TextureBlur(int textureId);
 	void glUniform_Exposure(float exposure);
@@ -43,7 +45,8 @@ private:
 public:
 	MaterialAdd();
 	MaterialAdd(const ShaderProgram& shaderProgram);
-	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+	MaterialAdd(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath);
+	void setExternalParameters() override;
 	void glUniform_Texture01(int textureId);
 	void glUniform_Texture02(int textureId);
 };
@@ -57,7 +60,8 @@ private:
 public:
 	MaterialFlares();
 	MaterialFlares(const ShaderProgram& shaderProgram);
-	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+	MaterialFlares(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath);
+	void setExternalParameters() override;
 	void glUniform_VP(const glm::mat4& VP) const;
 	void glUniform_Depth(int textureId) const;
 
@@ -77,7 +81,8 @@ private:
 public:
 	MaterialSSAO();
 	MaterialSSAO(const ShaderProgram& shaderProgram);
-	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+	MaterialSSAO(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath);
+	void setExternalParameters() override;
 	void glUniform_Normals(int texId) const;
 	void glUniform_NoiseTexture(int texId) const;
 	void glUniform_Kernel(const std::vector<glm::vec3>& kernel) const;
@@ -94,6 +99,7 @@ private:
 public:
 	MaterialSSAOBlur();
 	MaterialSSAOBlur(const ShaderProgram& shaderProgram);
-	void setExternalParameters(const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters) override;
+	MaterialSSAOBlur(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath);
+	void setExternalParameters() override;
 	void glUniform_Texture(int texId) const;
 };

@@ -181,7 +181,7 @@ namespace Physic {
 		return m_physicWorld;
 	}
 
-	void PhysicManager::update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters)
+	void PhysicManager::update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, /*Terrain& terrain,*/ std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters)
 	{
 		//update bullet internal physic :
 		m_physicWorld->stepSimulation(Application::get().getFixedDeltaTime(), 10);
@@ -203,7 +203,7 @@ namespace Physic {
 		}
 
 		//update terrain : 
-		terrain.updatePhysic(deltaTime, windZones);
+		//terrain.updatePhysic(deltaTime, windZones);
 
 		//update particles : 
 		for (int i = 0; i < particleEmitters.size(); i++)
@@ -213,7 +213,7 @@ namespace Physic {
 	}
 
 
-	void PhysicManager::update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters, bool updateRigidbodies)
+	void PhysicManager::update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags,/* Terrain& terrain, */std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters, bool updateRigidbodies)
 	{
 		if (updateRigidbodies) {
 			//update bullet internal physic :
@@ -235,7 +235,7 @@ namespace Physic {
 		}
 
 		//update terrain : 
-		terrain.updatePhysic(deltaTime, windZones);
+		//terrain.updatePhysic(deltaTime, windZones);
 
 		//update particles : 
 		for (int i = 0; i < particleEmitters.size(); i++)

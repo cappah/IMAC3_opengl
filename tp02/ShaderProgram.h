@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 #include <memory>
 #include <istream>
 #include <glew/glew.h>
@@ -12,46 +13,53 @@ class InternalShaderParameterBase;
 class ExternalShaderParameterBase;
 class Material;
 
-
-enum PipelineTypes
+namespace Rendering
 {
-	OPAQUE_PIPILINE,
-	TRANSPARENT_PIPELINE,
-	REFLEXIVE_PIPELINE,
-	WATER_PIPELINE,
-	COUNT
-};
 
-static std::vector<std::string> PipelineTypesToString = {
-	"opaque",
-	"transparent",
-	"reflexive",
-	"water",
-};
+	enum class BaseMaterialType
+	{
+		OBJECT_3D = 0,
+		BILLBOARD,
+		PARTICLE,
+		CUSTOM,
+		COUNT
+	};
 
-enum ShaderProgramType {
-	CUSTOM = 0,
-	LIT,
-	UNLIT,
-};
+	static std::vector<std::string> BaseMaterialTypeToString = {
+		"object3D",
+		"billboard",
+		"particle",
+		"custom",
+	};
 
-static std::vector<std::string> ShaderProgramTypes = { 
-	"custom",
-	"lit",
-	"unlit",
-};
+	enum class PipelineType
+	{
+		DEFERRED_PIPILINE = 0,
+		FORWARD_PIPELINE,
+		CUSTOM_PIPELINE,
+		COUNT
+	};
+
+	static std::vector<std::string> PipelineTypesToString = {
+		"deferred",
+		"forward",
+		"custom",
+	};
+}
 
 
 struct ShaderProgram : public Resource
 {
-	GLuint id;
+	std::unordered_map<Rendering::PipelineType, GLuint> ids;
 
 private:
-	ShaderProgramType m_programType;
-	PipelineTypes m_pipelineType;
+	//ShaderProgramType m_programType;
+	//Rendering::Rendering::PipelineType m_pipelineType;
+	std::vector<Rendering::PipelineType> m_pipelineHandlingTypes;
+	Rendering::BaseMaterialType m_baseMaterialType;
 
 	std::vector<std::shared_ptr<InternalShaderParameterBase>> m_internalShaderParameters;
-	std::vector<std::shared_ptr<ExternalShaderParameterBase>> m_externalShaderParameters;
+	//std::vector<std::shared_ptr<ExternalShaderParameterBase>> m_externalShaderParameters;
 
 	std::vector<Material*> m_materialRefs;
 
@@ -66,24 +74,30 @@ public:
 	void load(const FileHandler::CompletePath& path);
 	//void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);
 	//void load(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath);
-	void load(const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName);
+	void load(Rendering::PipelineType pipelineType, const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName);
+
+	bool implementPipeline(Rendering::PipelineType pipelineType) const;
+	int getImplementedPipelineCount() const;
+	Rendering::PipelineType getImplementedPipeline(int idx) const;
+	GLuint getProgramId(Rendering::PipelineType pipelineType) const;
 
 
+	Material* makeNewMaterialInstance(const FileHandler::CompletePath& completePath);
+	std::shared_ptr<Material> makeSharedMaterialInstance(const FileHandler::CompletePath& completePath);
 	//make a new material from this shaderProgram (warning : internaly use "new", you have to deal with deletion)
 	Material* makeNewMaterialInstance();
 	//make a new material from this shaderProgram (use shared ptr for automatic deletion)
 	std::shared_ptr<Material> makeSharedMaterialInstance();
 	//fill material datas from this shaderProgram
-	void LoadMaterialInstance(Material* material);
+	void LoadMaterialInstance(Material* material) const;
 
 	void addMaterialRef(Material* ref);
 	void removeMaterialRef(Material* ref);
 
 	const std::vector<std::shared_ptr<InternalShaderParameterBase>>& getInternalParameters() const;
-	const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& getExternalParameters() const;
+	//const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& getExternalParameters() const;
 
-	ShaderProgramType getType() const;
-	PipelineTypes getPipelineType() const;
+	Rendering::BaseMaterialType getBaseMaterialType() const;
 
 	//Not copyable
 	ShaderProgram(const ShaderProgram& other) = delete;

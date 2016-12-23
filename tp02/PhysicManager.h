@@ -138,8 +138,8 @@ namespace Physic {
 
 		btDiscreteDynamicsWorld* getBulletDynamicSimulation() const;
 
-		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters);
-		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, Terrain& terrain, std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters, bool updateRigidbodies);
+		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, /*Terrain& terrain,*/ std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters);
+		void update(float deltaTime, const BaseCamera& camera, std::vector<Flag*>& flags, /*Terrain& terrain,*/ std::vector<WindZone*>& windZones, std::vector<ParticleEmitter*>& particleEmitters, bool updateRigidbodies);
 		void physicLateUpdate();
 		bool onCollisionBegin( btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0, int partId0, int index0, const btCollisionObjectWrapper* colObj1, int partId1, int index1);
 
