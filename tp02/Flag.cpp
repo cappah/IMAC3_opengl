@@ -1083,7 +1083,7 @@ namespace Physic {
 		return m_castShadows;
 	}
 
-	void Flag::setExternalsOf(const MaterialLit & material, const glm::mat4 & projection, const glm::mat4 & view) const
+	void Flag::setExternalsOf(const MaterialLit & material, const glm::mat4 & projection, const glm::mat4 & view, int* texId) const
 	{
 		// Transform matrices
 		material.setUniformModelMatrix(getModelMatrix());

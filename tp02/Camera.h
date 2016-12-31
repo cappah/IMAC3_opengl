@@ -17,8 +17,10 @@
 #include "IRenderableComponent.h"
 #include "RenderBatch.h"
 #include "PostProcess.h"
+#include "IDGenerator.h"
 
 class Skybox;
+class ReflectivePlane;
 
 struct BaseCamera
 {
@@ -52,6 +54,7 @@ protected:
 	std::shared_ptr<Skybox> m_skybox;
 	ClearMode m_clearMode;
 
+	glm::vec2 m_viewportSize;
 
 public:
 	enum CameraMode { PERSPECTIVE, ORTHOGRAPHIC };
@@ -68,7 +71,9 @@ public:
 
 	ClearMode getClearMode() const;
 	const glm::vec4& getClearColor() const;
+	std::shared_ptr<Skybox> getSkybox() const;
 	void renderSkybox() const;
+	const glm::vec2& getViewportSize() const;
 
 	//virtual void setTranslationLocal(glm::vec3 pos) = 0;
 	//virtual void translateLocal(glm::vec3 pos) = 0;
@@ -170,7 +175,7 @@ public:
 	//virtual float getFar() const override;
 	//virtual float getAspect() const override;
 
-	void updateProjection();
+	virtual void updateProjection() override;
 
 	virtual void save(Json::Value& rootComponent) const override;
 	virtual void load(const Json::Value& rootComponent) override;
@@ -179,8 +184,10 @@ public:
 REFLEXION_CPP(Camera)
 REFLEXION_InheritFrom(Camera, Component)
 
-class CameraEditor final : public BaseCamera
+class CameraEditor final : public BaseCamera, public Object
 {
+	REFLEXION_HEADER(CameraEditor)
+
 private:
 	float radius;
 	float theta;
@@ -236,7 +243,7 @@ public:
 	void updateTransform();
 	void setFPSMode(bool fpsMode);
 
-	void updateProjection();
+	virtual void updateProjection() override;
 
 	virtual void updateScreenSize(float screenWidth, float screenHeight) override;
 	virtual void setPerspectiveInfos(float fovy, float aspect, float near = 0.1f, float = 100.f) override;
@@ -259,6 +266,35 @@ public:
 	//virtual float getAspect() const override;
 
 };
+
+REFLEXION_CPP(CameraEditor)
+REFLEXION_InheritFrom(CameraEditor, BaseCamera)
+
+struct ReflectionCamera : public BaseCamera, public Object
+{
+	REFLEXION_HEADER(ReflectionCamera)
+
+private:
+	GlHelper::Renderbuffer m_stencilBuffer;
+	MaterialSimple3DDraw* m_materialSimple3Ddraw;
+
+public:
+	ReflectionCamera();
+
+	void setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera);
+
+	virtual void updateScreenSize(float screenWidth, float screenHeight) override;
+	virtual void setPerspectiveInfos(float fovy, float aspect, float camNear = 0.1f, float camFar = 100.f) override;
+	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) override;
+	virtual void setCameraMode(CameraMode cameraMode) override;
+	virtual void updateProjection() override;
+
+	void renderFrame(const Texture& _texture, const ReflectivePlane& _reflectivePlane);
+};
+
+REFLEXION_CPP(ReflectionCamera)
+REFLEXION_InheritFrom(ReflectionCamera, Object)
+
 
 
 /*

@@ -86,7 +86,7 @@ inline void RenderBatch<MaterialType>::render(const glm::mat4& projection, const
 		for (auto& drawable : item.second)
 		{
 			// Push externals to GPU
-			static_cast<const IBatchableWith<MaterialType>* const>(drawable)->setExternalsOf(*materialInstance, projection, view);
+			static_cast<const IBatchableWith<MaterialType>* const>(drawable)->setExternalsOf(*materialInstance, projection, view, &texCount);
 			//pushExternalsToPGU(*materialInstance, *drawable, projection, view);
 
 			// Draw the drawable
@@ -124,7 +124,7 @@ inline void RenderBatch<MaterialType>::renderForward(const glm::mat4& projection
 		for (auto& drawable : item.second)
 		{
 			// Push externals to GPU
-			static_cast<const IBatchableWith<MaterialType>* const>(drawable)->setExternalsOf(*materialInstance, projection, view);
+			static_cast<const IBatchableWith<MaterialType>* const>(drawable)->setExternalsOf(*materialInstance, projection, view, &texCount);
 			//pushExternalsToPGU(*materialInstance, *drawable, projection, view);
 
 			// Draw the drawable

@@ -15,10 +15,25 @@ private:
 
 public:
 
+	Renderbuffer()
+		: m_internalFormat(0)
+	{
+		glGenRenderbuffers(1, &m_glId);
+	}
+
 	Renderbuffer(float width, float height, GLenum internalFormat)
 		: m_internalFormat(internalFormat)
 	{
 		glGenRenderbuffers(1, &m_glId);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_glId);
+		glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, width, height);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	}
+
+	void init(float width, float height, GLenum internalFormat)
+	{
+		m_internalFormat = internalFormat;
+
 		glBindRenderbuffer(GL_RENDERBUFFER, m_glId);
 		glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, width, height);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);

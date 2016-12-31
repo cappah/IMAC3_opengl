@@ -7,11 +7,16 @@
 #include "EditorTools.h" 
 #include "RenderBatch.h"
 #include "BatchableWith.h"
+#include "ReflectivePlane.h"
+#include "Materials.h"
 
 Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight)  
 {
 
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
+
+	////////////////////// INIT SIMPLE_3D_DRAW MATERIAL ////////////////////////
+	m_materialSimple3Ddraw.init(*getProgramFactory().get("simple3DDraw"));
 
 	////////////////////// INIT QUAD MESH ////////////////////////
 	m_renderDatas.quadMesh.setMeshDatas(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2, GL_STATIC_DRAW);
@@ -250,9 +255,34 @@ void Renderer::lightCullingPass(BaseCamera & camera, std::vector<PointLight*>& p
 		m_renderDatas.directionalLightRenderDatas.push_back(DirectionalLightRenderDatas(directional));
 }
 
+void Renderer::renderReflection(ReflectionCamera& camera, const ReflectivePlane& reflectivePlane, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
+{
+	glClearColor(0, 0, 0, 0);
+
+	// Cull lights
+	lightCullingPass(camera, pointLights, directionalLights, spotLights, debugDrawer);
+
+	// Render dynamic shadows
+	shadowPass(camera, debugDrawer);
+
+	// Render scene
+	renderLightedScene(camera, debugDrawer);
+
+	// No post process for now for reflective camera
+	camera.renderFrame(m_renderDatas.lightPassHDRColor, reflectivePlane);
+}
+
 void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
 {
 	glClearColor(0, 0, 0, 0);
+
+	// Make sure we clear the stencil buffer
+	m_lightPassBuffer.bind();
+	glStencilMask(0xFF);
+	glClearStencil(1);
+	glClear(GL_STENCIL_BUFFER_BIT);
+	glStencilMask(0x00);
+	m_lightPassBuffer.unbind();
 
 	// Cull lights
 	lightCullingPass(camera, pointLights, directionalLights, spotLights, debugDrawer);
@@ -320,8 +350,10 @@ void Renderer::renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* d
 	////////////////////////////////////////////////////////////////////////
 
 	m_lightPassBuffer.bind();
+
 	if (camera.getClearMode() == BaseCamera::ClearMode::SKYBOX)
 		camera.renderSkybox();
+
 	m_lightPassBuffer.unbind();
 
 	////////////////////////////////////////////////////////////////////////
@@ -628,7 +660,9 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 	m_lightPassBuffer.bind();
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	lightPass(cameraPosition, cameraForward, view);
+
 	m_lightPassBuffer.unbind();
 	///// end light pass
 }

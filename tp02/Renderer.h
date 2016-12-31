@@ -19,6 +19,7 @@
 #include "RenderDatas.h"
 
 class DebugDrawRenderer;
+class ReflectivePlane;
 
 //struct LightCullingInfo
 //{
@@ -48,6 +49,8 @@ private:
 
 	// Render datas :
 	RenderDatas m_renderDatas;
+
+	MaterialSimple3DDraw m_materialSimple3Ddraw;
 
 	// Lighting materials :
 	std::shared_ptr<MaterialPointLight> m_pointLightMaterial;
@@ -93,6 +96,8 @@ public:
 	void lightCullingPass(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
 	// Compute shadow maps
 	void shadowPass(const BaseCamera& camera, DebugDrawRenderer* debugDrawer = nullptr);
+	// Render the scene through a reflective camera. Practically the same as render() but doesn't render post processing.
+	void renderReflection(ReflectionCamera& camera, const ReflectivePlane& reflectivePlane, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer);
 	// Main render function. Will render the sene into a camera texture.
 	void render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
 	// Render the scene with lights.

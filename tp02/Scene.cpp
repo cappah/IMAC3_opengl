@@ -13,11 +13,14 @@
 #include "Behavior.h"
 #include "Animator.h"
 #include "CharacterController.h"
+#include "ReflectivePlane.h"
 
 #include "OctreeDrawer.h"
 #include "PhysicManager.h"
 #include "SceneAccessor.h"
 #include "EditorTools.h"
+#include "IDGenerator.h"
+#include "Object.h"
 
 
 Scene::Scene(Renderer* renderer, const std::string& sceneName) 
@@ -45,6 +48,7 @@ Scene::Scene(Renderer* renderer, const std::string& sceneName)
 	m_componentMapping[Collider::staticClassId()] = &m_colliders;
 	// Others :
 	m_componentMapping[MeshRenderer::staticClassId()] = &m_meshRenderers;
+	m_componentMapping[ReflectivePlane::staticClassId()] = &m_reflectivePlanes;
 	m_componentMapping[Physic::Flag::staticClassId()] = &m_flags;
 	m_componentMapping[Physic::ParticleEmitter::staticClassId()] = &m_particleEmitters;
 	//m_componentMapping[PathPoint::getClassId()] = m_pathManager; //TODO CORE
@@ -158,6 +162,33 @@ void Scene::removeFromRenderables(IRenderableComponent* renderable)
 	m_renderables.remove(renderable, renderable->getDrawable(0).getVisualBoundingBox());
 }
 
+void Scene::clearReflectivePlanes()
+{
+	for (auto& reflectivePlane : m_reflectivePlanes)
+	{
+		reflectivePlane->clearCameras();
+	}
+}
+
+void Scene::setupReflectivePlanes()
+{
+	for (auto& camera : m_cameras)
+	{
+		for (auto& reflectivePlane : m_reflectivePlanes)
+		{
+			reflectivePlane->addAndSetupCamera(camera->getObjectID(), *camera);
+		}
+	}
+}
+
+void Scene::setupReflectivePlanes(const ID& id, const BaseCamera& camera)
+{
+	for (auto& reflectivePlane : m_reflectivePlanes)
+	{
+		reflectivePlane->addAndSetupCamera(id, camera);
+	}
+}
+
 void Scene::computeCulling()
 {
 	for (auto& camera : m_cameras)
@@ -172,18 +203,36 @@ void Scene::computeCullingForSingleCamera(BaseCamera& camera)
 	camera.computeCulling(m_renderables);
 }
 
-void Scene::render(BaseCamera& camera)
+void Scene::render()
 {
-	//[DEPRECATED]
-	//m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, nullptr);
-	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights);
+	// Render reflexion on reflective planes : 
+	for (auto& reflective : m_reflectivePlanes)
+	{
+		for (auto& it = reflective->getCameraIteratorBegin(); it != reflective->getCameraIteratorEnd(); it++)
+		{
+			m_renderer->renderReflection(*it->second, *reflective, m_pointLights, m_directionalLights, m_spotLights, nullptr);
+		}
+	}
+
+	// Render scene through cameras
+	for (auto& camera : m_cameras)
+	{
+		m_renderer->render(*camera, m_pointLights, m_directionalLights, m_spotLights);
+	}
 }
 
 void Scene::renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer)
 {
-	//[DEPRECATED]
-	//m_renderer->render(camera, m_meshRenderers, m_pointLights, m_directionalLights, m_spotLights, m_terrain, m_skybox, m_flags, m_billboards, m_particleEmitters, &debugDrawer);
+	// Render reflexion on reflective planes :
+	for (auto& reflective : m_reflectivePlanes)
+	{
+		for (auto& it = reflective->getCameraIteratorBegin(); it != reflective->getCameraIteratorEnd(); it++)
+		{
+			m_renderer->renderReflection(*it->second, *reflective, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer);
+		}
+	}
 
+	// Render scene :
 	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer); 
 	m_renderer->transferDepthTo(camera.getFrameBuffer(), m_renderer->getViewportRenderSize());
 

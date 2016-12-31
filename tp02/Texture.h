@@ -147,6 +147,8 @@ namespace GlHelper{
 	void makeNormalTexture(Texture& texture, float width, float height);
 	//make a basic depth texture with GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT
 	void makeDepthTexture(Texture& texture, float width, float height);
+	//make a basic depth texture with GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT
+	void makeDepthStencilTexture(Texture& texture, float width, float height);
 	//make a basic depth texture with GL_RED, GL_RGB, GL_FLOAT
 	void makeRedTexture(Texture& texture, float width, float height);
 }

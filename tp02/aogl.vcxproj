@@ -275,6 +275,7 @@
     <ClCompile Include="PostProcessMaterials.cpp" />
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="ReflectivePlane.cpp" />
     <ClCompile Include="Reflexion.cpp" />
     <ClCompile Include="RenderBatch.cpp" />
     <ClCompile Include="BatchableWith.cpp" />
@@ -376,6 +377,7 @@
     <ClInclude Include="PostProcessMaterials.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="ReflectivePlane.h" />
     <ClInclude Include="Reflexion.h" />
     <ClInclude Include="RenderBatch.h" />
     <ClInclude Include="BatchableWith.h" />

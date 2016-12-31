@@ -14,11 +14,14 @@ class Camera;
 class Behavior;
 class Animator;
 class CharacterController;
+class ReflectivePlane;
 namespace Physic {
 	class Flag;
 	class ParticleEmitter;
 	class WindZone;
 }
+struct ID;
+struct BaseCamera;
 
 #include "PathManager.h"
 #include "LightManager.h"
@@ -63,6 +66,9 @@ private:
 
 	//meshRenderers : 
 	std::vector<MeshRenderer*> m_meshRenderers;
+
+	//reflectivePlane : 
+	std::vector<ReflectivePlane*> m_reflectivePlanes;
 
 	//flag : 
 	std::vector<Physic::Flag*> m_flags;
@@ -132,10 +138,14 @@ public:
 	void addToRenderables(IRenderableComponent* renderable);
 	void removeFromRenderables(IRenderableComponent* renderable);
 
+	void clearReflectivePlanes();
+	void setupReflectivePlanes();
+	void setupReflectivePlanes(const ID& id, const BaseCamera& camera);
+
 	void computeCulling();
 	void computeCullingForSingleCamera(BaseCamera& camera);
 
-	void render(BaseCamera& camera);
+	void render();
 	void renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer);
 	//void renderColliders(const BaseCamera& camera);
 	//void renderDebugLights(const BaseCamera& camera);

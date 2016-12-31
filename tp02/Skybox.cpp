@@ -43,7 +43,11 @@ Skybox::~Skybox()
 
 void Skybox::drawUI()
 {
-	material->drawUI();
+	ResourcePtr<Material> materialQuery = material;
+	if (EditorGUI::ResourceField<Material>("skybox material", materialQuery))
+	{
+		material = materialQuery;
+	}
 }
 
 void Skybox::render(const glm::mat4& projection, const glm::mat4& view)

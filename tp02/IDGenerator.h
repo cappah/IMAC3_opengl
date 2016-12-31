@@ -51,6 +51,16 @@ struct ID : public ISerializable
 	}
 };
 
+template<>
+struct std::hash<ID>
+{
+	std::size_t operator()(const ID& key) const
+	{
+		return std::hash<int>()(key.index);
+	}
+};
+
+
 template<typename T>
 class IDGenerator : public ISingleton<IDGenerator<T>>
 {

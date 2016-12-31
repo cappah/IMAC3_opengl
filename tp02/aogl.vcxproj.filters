@@ -223,6 +223,9 @@
     <ClCompile Include="SceneAccessor.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="ReflectivePlane.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -492,6 +495,9 @@
     </ClInclude>
     <ClInclude Include="RenderDatas.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="ReflectivePlane.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

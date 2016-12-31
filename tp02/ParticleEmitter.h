@@ -15,6 +15,7 @@
 #include "SerializeUtils.h"
 #include "ResourcePointer.h"
 #include "IRenderableComponent.h"
+#include "IDrawable.h"
 
 namespace Physic{
 
@@ -123,7 +124,7 @@ namespace Physic{
 		virtual const glm::mat4& getModelMatrix() const override;
 		virtual bool castShadows() const override;
 
-		virtual void setExternalsOf(const MaterialParticlesCPU& material, const glm::mat4& projection, const glm::mat4& view) const override;
+		virtual void setExternalsOf(const MaterialParticlesCPU& material, const glm::mat4& projection, const glm::mat4& view, int* texId = nullptr) const override;
 
 		virtual void onAfterComponentAddedToScene(Scene & scene) override;
 		virtual void onBeforeComponentErasedFromScene(Scene & scene) override;

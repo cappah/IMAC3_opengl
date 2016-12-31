@@ -196,6 +196,9 @@ void ResourceFactory<Material>::initDefaults()
 
 	newMat = new MaterialBlit(*getProgramFactory().get("blit"));
 	addDefaultResource("blit", newMat);
+
+	newMat = new MaterialSimple3DDraw(*getProgramFactory().get("simple3DDraw"));
+	addDefaultResource("simple3DDraw", newMat);
 }
 
 //Mesh

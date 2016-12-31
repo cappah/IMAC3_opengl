@@ -869,6 +869,14 @@ namespace GlHelper {
 		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	}
 
+	void makeDepthStencilTexture(Texture& texture, float width, float height)
+	{
+		texture.resizeTexture(width, height);
+		texture.setTextureParameters(GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT, false);
+		texture.setTextureMinMaxFilters(GL_NEAREST, GL_NEAREST);
+		texture.setTextureWrapping(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	}
+
 	void makeRedTexture(Texture& texture, float width, float height)
 	{
 		texture.resizeTexture(width, height);

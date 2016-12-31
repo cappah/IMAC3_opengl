@@ -6,6 +6,7 @@
 #include "Texture.h"
 #include "BatchableWith.h"
 #include "IRenderableComponent.h"
+#include "IDrawable.h"
 
 class Billboard : public Component, public IRenderableComponent, public IBatchableWith<MaterialBillboard>
 {
@@ -54,7 +55,7 @@ public:
 	virtual const glm::mat4& getModelMatrix() const override;
 	virtual bool castShadows() const override;
 
-	virtual void setExternalsOf(const MaterialBillboard& material, const glm::mat4& projection, const glm::mat4& view) const;
+	virtual void setExternalsOf(const MaterialBillboard& material, const glm::mat4& projection, const glm::mat4& view, int* texId = nullptr) const;
 
 	virtual void onAfterComponentAddedToScene(Scene & scene) override;
 	virtual void onBeforeComponentErasedFromScene(Scene & scene) override;

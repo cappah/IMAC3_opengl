@@ -17,7 +17,7 @@
 #include <sstream>
 #include <iostream>
 
-class BaseCamera;
+struct BaseCamera;
 #include "Point.h"
 #include "Link.h"
 

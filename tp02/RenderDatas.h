@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Lights.h"
+#include "FrameBuffer.h"
 
 struct RenderDatas
 {
@@ -13,6 +14,7 @@ struct RenderDatas
 	Texture lightPassHDRColor;
 	Texture lightPassDepth;
 	Texture lightPassHighValues;
+	//GlHelper::Renderbuffer lightPassStencilBuffer;
 
 	Texture gPassColorTexture;
 	Texture gPassNormalTexture;

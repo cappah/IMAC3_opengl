@@ -21,6 +21,7 @@ namespace Rendering
 		OBJECT_3D = 0,
 		BILLBOARD,
 		PARTICLE,
+		REFLECTION,
 		CUSTOM,
 		COUNT
 	};
@@ -29,6 +30,7 @@ namespace Rendering
 		"object3D",
 		"billboard",
 		"particle",
+		"reflection",
 		"custom",
 	};
 

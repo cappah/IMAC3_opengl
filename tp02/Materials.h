@@ -1462,3 +1462,90 @@ public:
 		GlHelper::pushParameterToGPU(m_uniformDeltaTime, deltaTime);
 	}
 };
+
+class MaterialSimple3DDraw final : public Material
+{
+private:
+	GLuint m_uniformMVP;
+
+public:
+	MaterialSimple3DDraw()
+		: Material()
+	{}
+
+	MaterialSimple3DDraw(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters();
+	}
+
+	MaterialSimple3DDraw(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath)
+		: Material(shaderProgram, completePath)
+	{
+		setExternalParameters();
+	}
+
+	void setExternalParameters() override
+	{
+		m_uniformMVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+
+		CHECK_GL_ERROR("error in material initialization.");
+	}
+
+	void glUniform_MVP(const glm::mat4& mvp)
+	{
+		GlHelper::pushParameterToGPU(m_uniformMVP, mvp);
+	}
+};
+
+class MaterialReflection final : public BatchableMaterial<MaterialReflection, Material>
+{
+private:
+	GLuint m_uniformMVP;
+	GLuint m_uniformReflectionTexture;
+
+	//std::unordered_map<std::string, GLuint> m_externals;
+
+public:
+	MaterialReflection()
+		: BatchableMaterial<MaterialReflection, Material>()
+	{}
+
+	MaterialReflection(const ShaderProgram& shaderProgram)
+		: BatchableMaterial<MaterialReflection, Material>(shaderProgram)
+	{
+		setExternalParameters();
+	}
+
+	MaterialReflection(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath)
+		: BatchableMaterial<MaterialReflection, Material>(shaderProgram, completePath)
+	{
+		setExternalParameters();
+	}
+
+	void setExternalParameters() override
+	{
+		//m_externals["MVP"] = MaterialHelper::getUniform(m_glProgramId, "MVP");
+
+		m_uniformMVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+		m_uniformReflectionTexture = MaterialHelper::getUniform(m_glProgramId, "ReflectionTexture");
+
+		CHECK_GL_ERROR("error in material initialization.");
+	}
+
+	//template<typename T>
+	//void pushExternalUniform(std::string name, const T& value)
+	//{
+	//	GlHelper::pushParameterToGPU(m_externals[name], value);
+	//}
+
+	void glUniform_MVP(const glm::mat4& mvp) const
+	{
+		GlHelper::pushParameterToGPU(m_uniformMVP, mvp);
+	}
+
+	void glUniform_ReflectionTexture(int texId) const
+	{
+		GlHelper::pushParameterToGPU(m_uniformReflectionTexture, texId);
+	}
+};

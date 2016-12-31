@@ -157,6 +157,6 @@ public:
 	virtual bool castShadows() const override;
 	const Mesh* getMeshPtr() const;
 
-	void setExternalsOf(const Material3DObject& material, const glm::mat4& projection, const glm::mat4& view) const override;
+	void setExternalsOf(const Material3DObject& material, const glm::mat4& projection, const glm::mat4& view, int* texId = nullptr) const override;
 
 };

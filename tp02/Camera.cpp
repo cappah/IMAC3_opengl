@@ -6,6 +6,7 @@
 #include "Entity.h"
 #include "Factories.h"
 #include "Skybox.h"
+#include "ReflectivePlane.h"
 
 BaseCamera::BaseCamera()
 	: m_position(0, 0, -1)
@@ -86,6 +87,8 @@ void BaseCamera::onViewportResized(const glm::vec2& newSize)
 	m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);
 	m_frameBuffer.checkIntegrity();
 	m_frameBuffer.unbind();
+
+	m_viewportSize = newSize;
 }
 
 void BaseCamera::renderFrame(const Texture& texture)
@@ -130,10 +133,20 @@ const glm::vec4 & BaseCamera::getClearColor() const
 	return m_clearColor;
 }
 
+std::shared_ptr<Skybox> BaseCamera::getSkybox() const
+{
+	return m_skybox;
+}
+
 void BaseCamera::renderSkybox() const
 {
 	assert(m_skybox);
 	m_skybox->render(m_projectionMatrix, m_viewMatrix);
+}
+
+const glm::vec2 & BaseCamera::getViewportSize() const
+{
+	return m_viewportSize;
 }
 
 
@@ -272,6 +285,8 @@ void Camera::drawInInspector(Scene& scene)
 		m_clearMode = (ClearMode)(currentClearMode);
 		if (previousClearMode == ClearMode::SKYBOX && m_clearMode == ClearMode::COLOR)
 			m_skybox.reset();
+		else if (previousClearMode == ClearMode::COLOR && m_clearMode == ClearMode::SKYBOX)
+			m_skybox = std::make_shared<Skybox>();
 	}
 	if (m_clearMode == ClearMode::COLOR)
 	{
@@ -577,6 +592,8 @@ void CameraEditor::onViewportResized(const glm::vec2 & newSize)
 	m_frameBuffer.attachRenderBuffer(&m_depthBuffer, GL_DEPTH_ATTACHMENT);
 	m_frameBuffer.checkIntegrity();
 	m_frameBuffer.unbind();
+
+	m_viewportSize = newSize;
 }
 
 void CameraEditor::drawUI()
@@ -810,6 +827,120 @@ void CameraEditor::setOrthographicInfos(float left, float right, float bottom, f
 void CameraEditor::setCameraMode(CameraMode cameraMode)
 {
 	//nothing
+}
+
+//////////////////////////////////////////////////////////////
+
+ReflectionCamera::ReflectionCamera()
+	: Object()
+	, m_stencilBuffer(400, 400, GL_STENCIL_INDEX8)
+{
+	m_materialSimple3Ddraw = static_cast<MaterialSimple3DDraw*>(getMaterialFactory().getDefault("simple3DDraw"));
+
+	m_frameBuffer.bind();
+	m_frameBuffer.attachRenderBuffer(&m_stencilBuffer, GL_STENCIL_ATTACHMENT);
+	m_frameBuffer.checkIntegrity();
+	m_frameBuffer.unbind();
+}
+
+void ReflectionCamera::setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera)
+{
+	if (camera.getViewportSize() != m_viewportSize)
+	{
+		m_viewportSize = camera.getViewportSize();
+
+		m_frameBuffer.bind();
+		m_frameBuffer.detachRenderBuffer(GL_STENCIL_ATTACHMENT);
+		m_stencilBuffer.resize(m_viewportSize.x, m_viewportSize.y);
+		m_frameBuffer.attachRenderBuffer(&m_stencilBuffer, GL_STENCIL_ATTACHMENT);
+		m_frameBuffer.checkIntegrity();
+		m_frameBuffer.unbind();
+	}
+
+	m_aspect = camera.getAspect();
+	m_clearColor = camera.getClearColor();
+	m_clearMode = camera.getClearMode();
+	m_fovy = camera.getFOV();
+	m_skybox = camera.getSkybox();
+	m_zFar = camera.getFar();
+	m_zNear = camera.getNear();
+
+	m_projectionMatrix = camera.getProjectionMatrix();
+
+	m_position = - glm::dot((camera.getCameraPosition() - planePosition), planeNormal) * planeNormal;
+	m_forward = glm::reflect(camera.getCameraForward(), planeNormal);
+	const glm::vec3 center = m_position + m_forward;
+
+	glm::vec3 up = glm::dot(m_forward, glm::vec3(0, 1, 0)) > 0.9f ? glm::vec3(0, -1, 0) : glm::vec3(0, 1, 0);
+	glm::vec3 right = glm::normalize(glm::cross(m_forward, up));
+	up = glm::normalize(glm::cross(right, m_forward));
+
+	m_viewMatrix = glm::lookAt(m_position, center, up);
+}
+
+void ReflectionCamera::updateScreenSize(float screenWidth, float screenHeight)
+{
+	assert(false && "use setupFromCamera() instead.");
+}
+
+void ReflectionCamera::setPerspectiveInfos(float fovy, float aspect, float camNear, float camFar)
+{
+	assert(false && "use setupFromCamera() instead.");
+}
+
+void ReflectionCamera::setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar)
+{
+	assert(false && "use setupFromCamera() instead.");
+}
+
+void ReflectionCamera::setCameraMode(CameraMode cameraMode)
+{
+	assert(false && "use setupFromCamera() instead.");
+}
+
+void ReflectionCamera::updateProjection()
+{
+	assert(false && "use setupFromCamera() instead.");
+}
+
+void ReflectionCamera::renderFrame(const Texture & _texture, const ReflectivePlane & _reflectivePlane)
+{
+	m_frameBuffer.bind();
+
+	glStencilMask(0xFF);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glDepthMask(GL_FALSE);
+	glStencilFunc(GL_NEVER, 0, 0xFF);
+	glStencilOp(GL_INCR, GL_KEEP, GL_KEEP);
+	glClear(GL_STENCIL_BUFFER_BIT);
+
+	m_materialSimple3Ddraw->use();
+	m_materialSimple3Ddraw->glUniform_MVP(getProjectionMatrix() * getViewMatrix() * _reflectivePlane.getModelMatrix());
+	_reflectivePlane.draw();
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glDepthMask(GL_TRUE);
+	glStencilMask(0x00);
+
+	glEnable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
+	glStencilFunc(GL_EQUAL, 1, 0xFF);
+	
+	//glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
+	glClear(GL_COLOR_BUFFER_BIT);
+	//if (m_clearMode == BaseCamera::ClearMode::SKYBOX)
+	//	renderSkybox();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, _texture.glId);
+	m_material->use();
+	m_material->setUniformBlitTexture(0);
+	m_quadMesh->draw();
+
+	m_frameBuffer.unbind();
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 }
 
 //////////////////////////////////

@@ -14,7 +14,7 @@
 #include "Lights.h"
 
 class RenderDatas;
-class BaseCamera;
+struct BaseCamera;
 class DebugDrawRenderer;
 
 struct ShadowMap

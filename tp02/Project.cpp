@@ -352,14 +352,20 @@ void Project::edit()
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		//get main camera : 
-		BaseCamera& currentCamera = editor.getCamera();
+		CameraEditor& currentEditorCamera = editor.getCamera();
+
+		scene->clearReflectivePlanes();
+		scene->setupReflectivePlanes();
+		if (!editor.getIsPlaying())
+			scene->setupReflectivePlanes(currentEditorCamera.getObjectID(), currentEditorCamera);
+
 		scene->computeCulling();
 		//add culling for editor camera if we use it
 		if(!editor.getIsPlaying())
-			scene->computeCullingForSingleCamera(currentCamera);
+			scene->computeCullingForSingleCamera(currentEditorCamera);
 
 		//Physics : 
-		scene->updatePhysic(Application::get().getFixedDeltaTime(), currentCamera, editor.getIsPlaying());
+		scene->updatePhysic(Application::get().getFixedDeltaTime(), currentEditorCamera, editor.getIsPlaying());
 
 		//check if window has been resized by user
 		if (Application::get().getWindowResize())
@@ -380,7 +386,7 @@ void Project::edit()
 		//renderer.render(camera, entities);
 		if (editor.getIsPlaying())
 		{
-			scene->render(currentCamera);
+			scene->render();
 		}
 		else
 		{
@@ -397,10 +403,10 @@ void Project::edit()
 			//scene->renderDebugPhysic(currentCamera);
 			//CHECK_GL_ERROR("");
 
-			DebugDrawer::render(currentCamera);
+			DebugDrawer::render(currentEditorCamera);
 			DebugDrawer::clear();
 
-			editor.renderGizmo(currentCamera);
+			editor.renderGizmo(currentEditorCamera);
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO : movethis ?

@@ -517,7 +517,7 @@ void Octree<ItemType, spatialKeyType>::add(ItemType * item, const spatialKeyType
 {
 	m_root->add(item, spatialKey, 0, m_maxDepth);
 }
-
+ 
 template<typename ItemType, typename spatialKeyType>
 void Octree<ItemType, spatialKeyType>::remove(ItemType * item, const spatialKeyType& spatialKey)
 {

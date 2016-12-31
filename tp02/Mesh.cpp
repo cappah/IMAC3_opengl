@@ -632,7 +632,7 @@ const Mesh * SubMesh::getMeshPtr() const
 	return m_meshPtr;
 }
 
-void SubMesh::setExternalsOf(const Material3DObject& material, const glm::mat4& projection, const glm::mat4& view) const
+void SubMesh::setExternalsOf(const Material3DObject& material, const glm::mat4& projection, const glm::mat4& view, int* texId) const
 {
 	// Transform matrices
 	material.setUniformModelMatrix(getModelMatrix());

@@ -13,7 +13,7 @@ template<typename MaterialType>
 class IBatchableWith : public IDrawable
 {
 public:
-	virtual void setExternalsOf(const MaterialType& material, const glm::mat4& projection, const glm::mat4& view) const = 0;
+	virtual void setExternalsOf(const MaterialType& material, const glm::mat4& projection, const glm::mat4& view, int* texId = nullptr) const = 0;
 };
 
 //class SubMeshLitRenderBatch : public RenderBatch<SubMesh, MaterialLit>

@@ -288,6 +288,8 @@ Material* ShaderProgram::makeNewMaterialInstance(const FileHandler::CompletePath
 		return new MaterialBillboard(*this, completePath);
 	case Rendering::BaseMaterialType::PARTICLE:
 		return new MaterialParticlesCPU(*this, completePath);
+	case Rendering::BaseMaterialType::REFLECTION:
+		return new MaterialReflection(*this, completePath);
 	default:
 		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;
@@ -304,6 +306,8 @@ std::shared_ptr<Material> ShaderProgram::makeSharedMaterialInstance(const FileHa
 		return std::make_shared<MaterialBillboard>(*this, completePath);
 	case Rendering::BaseMaterialType::PARTICLE:
 		return std::make_shared<MaterialParticlesCPU>(*this, completePath);
+	case Rendering::BaseMaterialType::REFLECTION:
+		return std::make_shared<MaterialReflection>(*this, completePath);
 	default:
 		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;
@@ -321,6 +325,8 @@ Material* ShaderProgram::makeNewMaterialInstance()
 		return new MaterialBillboard(*this);
 	case Rendering::BaseMaterialType::PARTICLE:
 		return new MaterialParticlesCPU(*this);
+	case Rendering::BaseMaterialType::REFLECTION:
+		return new MaterialReflection(*this);
 	default:
 		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;
@@ -337,6 +343,8 @@ std::shared_ptr<Material> ShaderProgram::makeSharedMaterialInstance()
 		return std::make_shared<MaterialBillboard>(*this);
 	case Rendering::BaseMaterialType::PARTICLE:
 		return std::make_shared<MaterialParticlesCPU>(*this);
+	case Rendering::BaseMaterialType::REFLECTION:
+		return std::make_shared<MaterialReflection>(*this);
 	default:
 		std::cout << "warning : we are trying to build a custom material from its program !";
 		return nullptr;
@@ -381,6 +389,12 @@ Material* makeNewMaterialInstance(const FileHandler::CompletePath& path)
 	case Rendering::BaseMaterialType::PARTICLE:
 	{
 		Material* newMaterial = new MaterialParticlesCPU();
+		newMaterial->load(root);
+		return newMaterial;
+	}
+	case Rendering::BaseMaterialType::REFLECTION:
+	{
+		Material* newMaterial = new MaterialReflection();
 		newMaterial->load(root);
 		return newMaterial;
 	}

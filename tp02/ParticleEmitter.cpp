@@ -356,7 +356,7 @@ namespace Physic {
 		return false; // Can't cast shadow for now.
 	}
 
-	void ParticleEmitter::setExternalsOf(const MaterialParticlesCPU & material, const glm::mat4 & projection, const glm::mat4 & view) const
+	void ParticleEmitter::setExternalsOf(const MaterialParticlesCPU & material, const glm::mat4 & projection, const glm::mat4 & view, int* texId) const
 	{
 		glm::mat4 VP = projection * view;
 		glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
