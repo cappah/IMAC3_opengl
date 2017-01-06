@@ -199,6 +199,11 @@ bool Billboard::castShadows() const
 	return false; // For now, a billboard can't cast shadows.
 }
 
+const Billboard * Billboard::getAsBillboardIfPossible() const
+{
+	return this;
+}
+
 void Billboard::setExternalsOf(const MaterialBillboard & material, const glm::mat4 & projection, const glm::mat4 & view, int* texId) const
 {
 	glm::mat4 MVP = projection * view;

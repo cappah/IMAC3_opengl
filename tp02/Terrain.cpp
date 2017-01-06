@@ -471,7 +471,7 @@ Terrain::Terrain(float width, float height, float depth, int subdivision, glm::v
 			m_currentMaterialToDrawIdx(-1), m_drawRadius(1), //draw material properties
 			m_maxGrassDensity(1.f), m_grassDensity(0), m_grassLayoutDelta(0.3f), //draw grass properties
 			m_terrainFbo(0), m_materialLayoutsFBO(0),//fbos
-			m_material(*getProgramFactory().get("terrain")), m_terrainMaterial(*getProgramFactory().get("terrainEdition")), m_drawOnTextureMaterial(*getProgramFactory().get("drawOnTexture")), //matertials
+			m_material(*getProgramFactory().getDefault("terrain")), m_terrainMaterial(*getProgramFactory().getDefault("terrainEdition")), m_drawOnTextureMaterial(*getProgramFactory().getDefault("drawOnTexture")), //matertials
 			m_quadMesh(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2) , // mesh
 			m_noiseTexture(1024, 1024, glm::vec4(0.f,0.f,0.f,255.f)), m_terrainDiffuse(1024, 1024), //textures
 			m_terrainBump(1024, 1024), m_terrainSpecular(1024, 1024), m_drawMatTexture(1024, 1024),

@@ -54,6 +54,7 @@ public:
 	virtual void draw() const override;
 	virtual const glm::mat4& getModelMatrix() const override;
 	virtual bool castShadows() const override;
+	virtual const Billboard* getAsBillboardIfPossible() const override;
 
 	virtual void setExternalsOf(const MaterialBillboard& material, const glm::mat4& projection, const glm::mat4& view, int* texId = nullptr) const;
 

@@ -123,6 +123,7 @@ namespace Physic{
 		virtual void draw() const override;
 		virtual const glm::mat4& getModelMatrix() const override;
 		virtual bool castShadows() const override;
+		virtual const Physic::ParticleEmitter* getAsParticleEmiterIfPossible() const override;
 
 		virtual void setExternalsOf(const MaterialParticlesCPU& material, const glm::mat4& projection, const glm::mat4& view, int* texId = nullptr) const override;
 

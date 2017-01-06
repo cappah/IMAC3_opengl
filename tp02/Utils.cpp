@@ -300,7 +300,33 @@ int check_link_error(GLuint program)
 	return 0;
 }
 
+void fillShaderStream(std::stringstream& stream, const FileHandler::CompletePath& shaderPath)
+{
+	FileHandler::CompletePath path(shaderPath);
+	std::ifstream file;
+	file.open(path.toString());
+	if (file)
+	{
+		stream << file.rdbuf();
+		file.close();
+	}
+}
 
+GLuint compile_shader_from_string(GLenum shaderType, const std::string& source)
+{
+	GLuint shaderObject = glCreateShader(shaderType);
+	const char * sc[1] = { source.c_str() };
+	glShaderSource(shaderObject,
+		1,
+		sc,
+		NULL);
+	glCompileShader(shaderObject);
+	check_compile_error(shaderObject, sc);
+	delete[] sc;
+	return shaderObject;
+}
+
+// WARNING : Only use this function inside compile_shader_from_file.
 GLuint compile_shader(GLenum shaderType, const char * sourceBuffer, int bufferSize)
 {
 	GLuint shaderObject = glCreateShader(shaderType);

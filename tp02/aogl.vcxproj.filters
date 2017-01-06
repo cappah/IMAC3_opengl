@@ -226,6 +226,15 @@
     <ClCompile Include="ReflectivePlane.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="MaterialAggregation.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialHelper.cpp">
+      <Filter>Utils\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialVisualScripting.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -498,6 +507,15 @@
     </ClInclude>
     <ClInclude Include="ReflectivePlane.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialAggregation.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialHelper.h">
+      <Filter>Utils\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialVisualScripting.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -24,6 +24,8 @@
 #include "ShaderProgram.h"
 #include "FileHandler.h"
 #include "Resource.h"
+#include "MaterialHelper.h"
+#include "MaterialAggregation.h"
 
 class IRenderBatch;
 struct RenderDatas;
@@ -35,25 +37,6 @@ static const unsigned int MAX_POINT_LIGHT_COUNT = 10;
 static const unsigned int MAX_SPOT_LIGHT_COUNT = 10;
 static const unsigned int MAX_DIRECTIONAL_LIGHT_COUNT = 5;
 
-//Helpers :
-namespace MaterialHelper {
-
-	GLuint getUniform(GLuint programId, const std::string& uniformName);
-	std::vector<GLuint> getUniforms(GLuint programId, const std::string& uniformName, int count);
-	GLuint getUniformStruct(GLuint programId, const std::string& uniformName, int index, const std::string& memberName);
-	GLuint findUniform(const std::string& uniformName, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
-	std::vector<GLuint> findUniforms(const std::string& uniformName, int count, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters);
-
-}
-
-class MaterialAggregation
-{
-public:
-	virtual void initParameters(GLuint programID) = 0;
-	virtual void pushParametersToGPU(const RenderDatas& renderDatas) const = 0;
-};
-
-
 //Materials :
 class Material : public Resource, public ISerializable
 {
@@ -62,10 +45,12 @@ protected:
 	Rendering::PipelineType m_pipelineType;
 	std::vector<std::shared_ptr<InternalShaderParameterBase>> m_internalParameters;
 
-	std::string m_glProgramName; //a key to found the program this material is based on.
-	const ShaderProgram* m_programPtr;
+	ResourcePtr<ShaderProgram> m_programPtr;
+	//std::string m_glProgramName; //a key to found the program this material is based on.
+	//const ShaderProgram* m_programPtr;
 
 	std::unordered_map<std::string, std::shared_ptr<MaterialAggregation>> m_aggregations;
+	std::unordered_map<std::string, std::shared_ptr<PerInstanceMaterialAggregation>> m_perInstanceAggregations;
 
 public:
 	Material();
@@ -73,18 +58,20 @@ public:
 	Material(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath);
 	virtual ~Material();
 
-	void changePipeline(Rendering::PipelineType pipelineType);
-	void addAggregation(const std::string& key, std::shared_ptr<MaterialAggregation> aggregation);
-	void removeAggregation(const std::string& key);
-	const std::shared_ptr<MaterialAggregation> getAggregation(const std::string& key) const;
+	//void changePipeline(Rendering::PipelineType pipelineType);
+	//void addAggregation(const std::string& key, std::shared_ptr<MaterialAggregation> aggregation);
+	//void removeAggregation(const std::string& key);
+	//const std::shared_ptr<MaterialAggregation> getAggregation(const std::string& key) const;
 
 	//init internal params. Should be called in constructor, or just after construction.
 	void initInternalParameters();
 	virtual void init(const FileHandler::CompletePath& path, const ID& id) override;
 	void init(const ShaderProgram& shaderProgram);
 	void drawUI();
+	void pushGlobalsToGPU(const RenderDatas& renderDatas) const;
 	void pushInternalsToGPU(int& boundTextureCount) const;
-	virtual void setExternalParameters(/*const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters*/) = 0;
+	void pushExternalsToGPU(const IDrawable& drawable, const RenderDatas& renderDatas, int& boundTextureCount) const;
+	virtual void setExternalParameters(/*const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters*/) { };
 	void use() const;
 	void use();
 	GLuint getGLId() const;

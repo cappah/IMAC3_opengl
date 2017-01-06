@@ -258,7 +258,10 @@
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Lights.cpp" />
     <ClCompile Include="Link.cpp" />
+    <ClCompile Include="MaterialAggregation.cpp" />
+    <ClCompile Include="MaterialHelper.cpp" />
     <ClCompile Include="Materials.cpp" />
+    <ClCompile Include="MaterialVisualScripting.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
     <ClCompile Include="MotionState.cpp" />
@@ -359,7 +362,10 @@
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Link.h" />
+    <ClInclude Include="MaterialAggregation.h" />
+    <ClInclude Include="MaterialHelper.h" />
     <ClInclude Include="Materials.h" />
+    <ClInclude Include="MaterialVisualScripting.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="MotionState.h" />

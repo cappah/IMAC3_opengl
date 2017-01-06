@@ -627,6 +627,15 @@ bool SubMesh::castShadows() const
 	return m_castShadow;
 }
 
+Skeleton * SubMesh::getSkeletonIfPossible() const
+{
+	if (m_meshPtr != nullptr && m_meshPtr->getIsSkeletalMesh())
+	{
+		return m_meshPtr->getSkeleton();
+	}
+	return nullptr;
+}
+
 const Mesh * SubMesh::getMeshPtr() const
 {
 	return m_meshPtr;

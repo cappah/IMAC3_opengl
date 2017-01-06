@@ -356,6 +356,11 @@ namespace Physic {
 		return false; // Can't cast shadow for now.
 	}
 
+	const Physic::ParticleEmitter * ParticleEmitter::getAsParticleEmiterIfPossible() const
+	{
+		return this;
+	}
+
 	void ParticleEmitter::setExternalsOf(const MaterialParticlesCPU & material, const glm::mat4 & projection, const glm::mat4 & view, int* texId) const
 	{
 		glm::mat4 VP = projection * view;

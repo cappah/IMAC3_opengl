@@ -220,18 +220,37 @@ void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, Resour
 	FileHandler::copyPastFile(from_, to_); //NOT_SAFE
 }
 
-void ResourceTree::addNewMaterialTo(const std::string& materialName, const std::string& materialModelName, ResourceFolder& folderTo)
+void ResourceTree::addNewShaderProgramTo(const std::string& shaderProgramName, ResourceFolder& folderTo)
 {
-	assert(getProgramFactory().contains(materialModelName)); //we can't add a second resource with the same name
-	if (!getProgramFactory().contains(materialModelName))
+	assert(getProgramFactory().containsDefault(shaderProgramName)); //we can't add a second resource with the same name
+	if (!getProgramFactory().containsDefault(shaderProgramName))
 		return;
 
 	//We create and save the new resource
-	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath().toString(), materialName, ".mat");
+	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath().toString(), shaderProgramName, ".glProg");
 
 	//create new instance
-	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), materialName, ".mat");
-	Material* newMaterial = getProgramFactory().get(materialModelName)->makeNewMaterialInstance(resourceCompletePath);
+	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), shaderProgramName, ".glProg");
+	ShaderProgram* newShaderProgram = new ShaderProgram();
+	newShaderProgram->save(resourceFilePath);
+
+	folderTo.addFile<ShaderProgram>(resourceCompletePath, newShaderProgram);
+}
+
+void ResourceTree::addNewMaterialTo(const std::string& newMaterialName, ResourceFile& shaderProgramFile, ResourceFolder& folderTo)
+{
+	assert(shaderProgramFile.getType() == ResourceType::PROGRAME);
+
+	assert(getProgramFactory().containsDefault(newMaterialName)); //we can't add a second resource with the same name
+	if (!getProgramFactory().containsDefault(newMaterialName))
+		return;
+
+	//We create and save the new resource
+	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath().toString(), newMaterialName, ".mat");
+
+	//create new instance
+	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), newMaterialName, ".mat");
+	Material* newMaterial = new Material(*static_cast<ShaderProgram*>(shaderProgramFile.getPointedResource()));//static_cast<ShaderProgram*>(shaderProgramFile.getPointedResource())->makeNewMaterialInstance(resourceCompletePath); //getProgramFactory().getDefault(materialModelName)->makeNewMaterialInstance(resourceCompletePath);
 	newMaterial->save(resourceFilePath);
 
 	folderTo.addFile<Material>(resourceCompletePath, newMaterial);
@@ -651,6 +670,11 @@ void ResourceTreeView::displayModales()
 			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
 				ResourceTree::deleteResourceFrom(*m_fileWeRightClicOn, *m_folderWeRightClicOn);
 		}
+		// Show per resource right click mouse UI
+		if (m_fileWeRightClicOn != nullptr)
+		{
+			m_fileWeRightClicOn->getPointedResource()->drawRightClicContextMenu();
+		}
 		else
 			ImGui::EndPopup();
 	}
@@ -753,10 +777,10 @@ void ResourceTreeView::displayModales()
 	//pop up to add resource :
 	if (ImGui::BeginPopup("AddResourcePopUp"))
 	{
-		if (ImGui::Button("Material."))
+		if (ImGui::Button("ShaderProgram."))
 		{
 			ImGui::EndPopup();
-			ImGui::Ext::openStackingPopUp("ChooseMaterialPopUp");
+			ImGui::Ext::openStackingPopUp("AddShaderProgramPopUp");
 		}
 		else if (ImGui::Button("CubeTexture."))
 		{
@@ -768,14 +792,14 @@ void ResourceTreeView::displayModales()
 	}
 
 	//PopUp to choose a material :
-	if (ImGui::BeginPopup("ChooseMaterialPopUp"))
-	{
-		popUpToChooseMaterial();
-	}
-
 	if (ImGui::BeginPopup("AddMaterialPopUp"))
 	{
 		popUpToAddMaterial();
+	}
+
+	if (ImGui::BeginPopup("AddShaderProgramPopUp"))
+	{
+		popUpToAddShaderProgram();
 	}
 
 	//PopUp to add new cubeTexture :
@@ -919,14 +943,14 @@ void ResourceTreeView::popUpToChooseMaterial()
 
 	for (auto& it = getProgramFactory().resourceBegin(); it != getProgramFactory().resourceEnd(); it++)
 	{
-		const std::string matName = it->first;
+		const std::string matName = it->first.getFilename();
 		const std::string btnLabel = matName + "##" + std::to_string(tmpProgramIdx++);
 
 		if (ImGui::Button(btnLabel.data()))
 		{
-			m_chooseMaterialName = matName;
+			//m_chooseMaterialName = matName;
 			ImGui::EndPopup();
-			ImGui::Ext::openStackingPopUp("AddMaterialPopUp");
+			ImGui::Ext::openStackingPopUp("AddShaderProgramPopUp");
 			shouldEndPopup = false;
 		}
 		//else
@@ -937,9 +961,36 @@ void ResourceTreeView::popUpToChooseMaterial()
 		ImGui::EndPopup();
 }
 
+void ResourceTreeView::popUpToAddShaderProgram()
+{
+	//assert(!m_chooseShderProgram.empty());
+
+	m_uiString.resize(100);
+	ImGui::InputText("##shaderProgramName", &m_uiString[0], 100);
+	assert(m_folderWeRightClicOn != nullptr);
+	if (!m_folderWeRightClicOn->hasFile(ResourceFileKey(ResourceType::MATERIAL, m_uiString)))
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("Validate##AddShaderProgram") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
+		{
+			if (m_folderWeRightClicOn != nullptr)
+			{
+				ResourceTree::addNewShaderProgramTo(m_uiString, *m_folderWeRightClicOn);
+			}
+			m_folderWeRightClicOn = nullptr;
+			ImGui::CloseCurrentPopup();
+		}
+	}
+	else
+	{
+		ImGui::TextColored(ImVec4(255, 0, 0, 255), "A file with the same name already exists.");
+	}
+	ImGui::EndPopup();
+}
+
 void ResourceTreeView::popUpToAddMaterial()
 {
-	assert(!m_chooseMaterialName.empty());
+	//assert(!m_chooseShderProgram.empty());
 
 	m_uiString.resize(100);
 	ImGui::InputText("##materialName", &m_uiString[0], 100);
@@ -951,7 +1002,7 @@ void ResourceTreeView::popUpToAddMaterial()
 		{
 			if (m_folderWeRightClicOn != nullptr)
 			{
-				ResourceTree::addNewMaterialTo(m_uiString, m_chooseMaterialName, *m_folderWeRightClicOn);
+				ResourceTree::addNewMaterialTo(m_uiString, *m_fileWeRightClicOn, *m_folderWeRightClicOn);
 			}
 			m_folderWeRightClicOn = nullptr;
 			ImGui::CloseCurrentPopup();

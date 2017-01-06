@@ -184,10 +184,10 @@ LightManager::LightManager()
 	, directionalShadowMapViewportFar(100.f)
 {
 	//////////////////// shadow pass shader ////////////////////////
-	shadowPassMaterial = std::make_shared<MaterialShadowPass>(*getProgramFactory().get("shadowPass"));
+	shadowPassMaterial = std::make_shared<MaterialShadowPass>(*getProgramFactory().getDefault("shadowPass"));
 
 	//////////////////// omnidirectional shadow pass shader ////////////////////////
-	shadowPassOmniMaterial = std::make_shared<MaterialShadowPassOmni>(*getProgramFactory().get("shadowPassOmni"));
+	shadowPassOmniMaterial = std::make_shared<MaterialShadowPassOmni>(*getProgramFactory().getDefault("shadowPassOmni"));
 }
 
 void LightManager::setShadowMapCount(LightType lightType, unsigned int count)

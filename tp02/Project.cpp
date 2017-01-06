@@ -1194,7 +1194,7 @@ void Project::initDefaultAssets()
 
 	// materials : 
 	//MaterialLit* defaultMaterial = new MaterialLit(programObject_gPass, getTextureFactory().get("default"), getTextureFactory().get("default"), getTextureFactory().get("default"), 50);
-	MaterialLit* brickMaterial = new MaterialLit(*getProgramFactory().get("lit"));//new MaterialLit(getProgramFactory().getDefault("defaultLit")->id /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
+	MaterialLit* brickMaterial = new MaterialLit(*getProgramFactory().getDefault("lit"));//new MaterialLit(getProgramFactory().getDefault("defaultLit")->id /*programObject_gPass*/, diffuseTexture, specularTexture, bumpTexture, 50);
 	brickMaterial->setInternalData<Texture>("Diffuse", getTextureFactory().getDefault("brickDiffuse"));
 	brickMaterial->setInternalData<Texture>("Bump", getTextureFactory().getDefault("brickBump"));
 	brickMaterial->setInternalData<Texture>("Specular", getTextureFactory().getDefault("brickSpecular"));

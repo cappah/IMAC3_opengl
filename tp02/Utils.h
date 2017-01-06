@@ -20,6 +20,7 @@
 struct BaseCamera;
 #include "Point.h"
 #include "Link.h"
+#include "FileHandler.h"
 
 
 #define ENUM_MASK_IMPLEMENTATION(T)\
@@ -51,6 +52,8 @@ void assimpMat4ToglmMat4(const aiMatrix4x4 & aiMat, glm::mat4& glMat);
 // Shader utils
 int check_link_error(GLuint program);
 int check_compile_error(GLuint shader, const char ** sourceBuffer);
+void fillShaderStream(std::stringstream& stream, const FileHandler::CompletePath& shaderPath);
+GLuint compile_shader_from_string(GLenum shaderType, const std::string& source);
 GLuint compile_shader(GLenum shaderType, const char * sourceBuffer, int bufferSize);
 GLuint compile_shader_from_file(GLenum shaderType, const char * fileName);
 

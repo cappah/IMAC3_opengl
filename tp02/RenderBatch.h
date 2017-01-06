@@ -17,7 +17,7 @@ protected:
 public:
 	virtual void add(const IDrawable* drawable, const Material* material) = 0;
 	virtual void clear() = 0;
-	virtual void render(const glm::mat4& projection, const glm::mat4& view) const = 0;
+	virtual void render(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const = 0;
 	virtual void renderForward(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const = 0;
 	const std::vector<const IDrawable*>& getDrawables() const
 	{
@@ -37,7 +37,7 @@ protected:
 public:
 	void add(const IDrawable* drawable, const Material* material) override;
 	void clear() override;
-	void render(const glm::mat4& projection, const glm::mat4& view) const override;
+	void render(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const override;
 	void renderForward(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const override;
 };
 
@@ -62,7 +62,7 @@ inline void RenderBatch<MaterialType>::clear()
 }
 
 template<typename MaterialType>
-inline void RenderBatch<MaterialType>::render(const glm::mat4& projection, const glm::mat4& view) const
+inline void RenderBatch<MaterialType>::render(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const
 {
 	const MaterialType* material = m_container.begin()->first;
 
@@ -72,6 +72,7 @@ inline void RenderBatch<MaterialType>::render(const glm::mat4& projection, const
 	//TODO RENDERING
 	// Push globals to GPU
 	//pushGlobalsToGPU(*material);
+	material->pushGlobalsToGPU(renderDatas);
 
 	// For each material instance...
 	int texCount = 0;
@@ -86,7 +87,8 @@ inline void RenderBatch<MaterialType>::render(const glm::mat4& projection, const
 		for (auto& drawable : item.second)
 		{
 			// Push externals to GPU
-			static_cast<const IBatchableWith<MaterialType>* const>(drawable)->setExternalsOf(*materialInstance, projection, view, &texCount);
+			//static_cast<const IBatchableWith<MaterialType>* const>(drawable)->setExternalsOf(*materialInstance, projection, view, &texCount);
+			materialInstance->pushExternalsToGPU(drawable, renderDatas, &texCount);
 			//pushExternalsToPGU(*materialInstance, *drawable, projection, view);
 
 			// Draw the drawable

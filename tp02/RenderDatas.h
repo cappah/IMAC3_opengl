@@ -23,6 +23,8 @@ struct RenderDatas
 
 	glm::mat4 screenToView;
 	glm::mat4 VP;
+	const glm::mat4* Projection;
+	const glm::mat4* View;
 
 	//std::vector<PointLight*>* pointLights;
 	//std::vector<DirectionalLight*>* directionalLights;

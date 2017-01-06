@@ -89,168 +89,168 @@ private:
 
 };
 
-
-//Specialization for ShaderProgram
-template<>
-class ResourceFactory<ShaderProgram> : public ISingleton<ResourceFactory<ShaderProgram>>, public ISerializable
-{
-private:
-	std::map<std::string, ID> m_resourceMapping;
-	std::map<ID, ShaderProgram*> m_resourcesFromHashKey;
-	std::map<std::string, ShaderProgram*> m_resources;
-
-public:
-
-	ResourceFactory()
-	{}
-
-	//create the nex resource at given path. tell the resource tree to effectivly add a new file
-	//void createNewResource(const FileHandler::CompletePath& path);
-	//add a resource which have already been created/loaded by the resource tree
-	void addResourceSoft(const FileHandler::CompletePath& path)
-	{
-		std::string name = path.getFilename();
-
-		if (m_resources.find(name) != m_resources.end())
-			return;
-
-		ID newID = IDGenerator<Resource>::instance().lockID();
-		ShaderProgram* newResource = new ShaderProgram(path);
-		newResource->init(path, newID);
-
-		m_resources[name] = newResource;
-		m_resourceMapping[name] = newID;
-		m_resourcesFromHashKey[newID] = newResource;
-		//m_resourceMapping[name] = ++s_resourceCount;
-		//m_resourcesFromHashKey[s_resourceCount] = newResource;
-		
-	}
-	void addResourceForce(const std::string& name, ShaderProgram* value)
-	{
-		m_resources[name] = value;
-		ID newID = IDGenerator<Resource>::instance().lockID();
-		m_resourceMapping[name] = newID;
-		m_resourcesFromHashKey[newID] = value;
-	}
-	void erase(const std::string& name)
-	{
-		if (m_resources.find(name) == m_resources.end())
-			return;
-
-		ID resourceID = m_resourceMapping[name];
-		delete m_resources[name];
-
-		m_resources.erase(name);
-		m_resourceMapping.erase(name);
-		m_resourcesFromHashKey.erase(resourceID);
-	}
-	ShaderProgram* get(const std::string& name)
-	{
-		return m_resources[name];
-	}
-	bool contains(const std::string& name)
-	{
-		return m_resources.find(name) != m_resources.end();
-	}
-	ShaderProgram* getRaw(const ID& hashKey)
-	{
-		return m_resourcesFromHashKey[hashKey];
-	}
-	bool contains(const ID& hashKey)
-	{
-		return m_resourcesFromHashKey.find(hashKey) != m_resourcesFromHashKey.end();
-	}
-	ID getHashKeyForResource(const std::string& name) const
-	{
-		return m_resourceMapping.at(name);
-	}
-
-	//load all programs which are in "[projectPath]/shaders/"
-	void initDefaults()
-	{
-		FileHandler::Path shadersPath = FileHandler::Path(Project::getShaderFolderPath());
-		loadAllPrograms(shadersPath, FileHandler::Path(shadersPath.back()));
-	}
-
-	//add all programs recursivly to the ShaderProgram factory 
-	//void loadAllPrograms(const FileHandler::Path& shaderFolderPath)
-	//{
-	//	std::vector<std::string> dirNames;
-	//	FileHandler::getAllDirNames(shaderFolderPath, dirNames);
-
-	//	for (auto& dirName : dirNames)
-	//	{
-	//		loadAllPrograms(FileHandler::Path(shaderFolderPath.toString() + "/" + dirName), FileHandler::Path(dirName));
-	//	}
-	//}
-	void loadAllPrograms(const FileHandler::Path& absolutePath, const FileHandler::Path& relativePath)
-	{
-		std::vector<std::string> dirNames;
-		FileHandler::getAllDirNames(absolutePath, dirNames);
-
-		for (auto& dirName : dirNames)
-		{
-			loadAllPrograms(FileHandler::Path(absolutePath.toString() + "/" + dirName), FileHandler::Path(relativePath.toString() + "/" + dirName) );
-		}
-
-		std::vector<std::string> fileNames;
-		FileHandler::getAllFileNames(absolutePath, fileNames);
-		std::string outExtention;
-
-		for (auto& fileNameAndExtention : fileNames)
-		{
-			//We only add files that engine understand
-			FileHandler::getExtentionFromExtendedFilename(fileNameAndExtention, outExtention);
-			if (FileHandler::getFileTypeFromExtention(outExtention) == FileHandler::FileType::SHADER_PROGRAM)
-			{
-				FileHandler::CompletePath shaderPath(relativePath.toString() + "/" + fileNameAndExtention);
-				addResourceSoft(shaderPath);
-			}
-		}
-	}
-	void clear()
-	{
-		for (auto& it = m_resources.begin(); it != m_resources.end(); it++)
-		{
-			ShaderProgram* resource = it->second;
-			delete resource;
-		}
-
-		m_resources.clear();
-	}
-
-	virtual void save(Json::Value & entityRoot) const override
-	{
-		//no need to save these resources
-	}
-	virtual void load(const Json::Value & entityRoot) override
-	{
-		//no need to load these resources
-	}
-
-	std::map<std::string, ShaderProgram*>::iterator resourceBegin()
-	{
-		return m_resources.begin();
-	}
-	std::map<std::string, ShaderProgram*>::iterator resourceEnd()
-	{
-		return m_resources.end();
-	}
-
-	SINGLETON_IMPL(ResourceFactory);
-
-private:
-	void addResourceForce(const std::string& name, const ID& hashKey)
-	{
-		ShaderProgram* newResource = new ShaderProgram();
-		newResource->init(name, hashKey);
-
-		m_resources[name] = newResource;
-		m_resourceMapping[name] = hashKey;
-		m_resourcesFromHashKey[hashKey] = newResource;
-	}
-
-};
+//
+////Specialization for ShaderProgram
+//template<>
+//class ResourceFactory<ShaderProgram> : public ISingleton<ResourceFactory<ShaderProgram>>, public ISerializable
+//{
+//private:
+//	std::map<std::string, ID> m_resourceMapping;
+//	std::map<ID, ShaderProgram*> m_resourcesFromHashKey;
+//	std::map<std::string, ShaderProgram*> m_resources;
+//
+//public:
+//
+//	ResourceFactory()
+//	{}
+//
+//	//create the nex resource at given path. tell the resource tree to effectivly add a new file
+//	//void createNewResource(const FileHandler::CompletePath& path);
+//	//add a resource which have already been created/loaded by the resource tree
+//	void addResourceSoft(const FileHandler::CompletePath& path)
+//	{
+//		std::string name = path.getFilename();
+//
+//		if (m_resources.find(name) != m_resources.end())
+//			return;
+//
+//		ID newID = IDGenerator<Resource>::instance().lockID();
+//		ShaderProgram* newResource = new ShaderProgram(path);
+//		newResource->init(path, newID);
+//
+//		m_resources[name] = newResource;
+//		m_resourceMapping[name] = newID;
+//		m_resourcesFromHashKey[newID] = newResource;
+//		//m_resourceMapping[name] = ++s_resourceCount;
+//		//m_resourcesFromHashKey[s_resourceCount] = newResource;
+//		
+//	}
+//	void addResourceForce(const std::string& name, ShaderProgram* value)
+//	{
+//		m_resources[name] = value;
+//		ID newID = IDGenerator<Resource>::instance().lockID();
+//		m_resourceMapping[name] = newID;
+//		m_resourcesFromHashKey[newID] = value;
+//	}
+//	void erase(const std::string& name)
+//	{
+//		if (m_resources.find(name) == m_resources.end())
+//			return;
+//
+//		ID resourceID = m_resourceMapping[name];
+//		delete m_resources[name];
+//
+//		m_resources.erase(name);
+//		m_resourceMapping.erase(name);
+//		m_resourcesFromHashKey.erase(resourceID);
+//	}
+//	ShaderProgram* get(const std::string& name)
+//	{
+//		return m_resources[name];
+//	}
+//	bool contains(const std::string& name)
+//	{
+//		return m_resources.find(name) != m_resources.end();
+//	}
+//	ShaderProgram* getRaw(const ID& hashKey)
+//	{
+//		return m_resourcesFromHashKey[hashKey];
+//	}
+//	bool contains(const ID& hashKey)
+//	{
+//		return m_resourcesFromHashKey.find(hashKey) != m_resourcesFromHashKey.end();
+//	}
+//	ID getHashKeyForResource(const std::string& name) const
+//	{
+//		return m_resourceMapping.at(name);
+//	}
+//
+//	//load all programs which are in "[projectPath]/shaders/"
+//	void initDefaults()
+//	{
+//		FileHandler::Path shadersPath = FileHandler::Path(Project::getShaderFolderPath());
+//		loadAllPrograms(shadersPath, FileHandler::Path(shadersPath.back()));
+//	}
+//
+//	//add all programs recursivly to the ShaderProgram factory 
+//	//void loadAllPrograms(const FileHandler::Path& shaderFolderPath)
+//	//{
+//	//	std::vector<std::string> dirNames;
+//	//	FileHandler::getAllDirNames(shaderFolderPath, dirNames);
+//
+//	//	for (auto& dirName : dirNames)
+//	//	{
+//	//		loadAllPrograms(FileHandler::Path(shaderFolderPath.toString() + "/" + dirName), FileHandler::Path(dirName));
+//	//	}
+//	//}
+//	void loadAllPrograms(const FileHandler::Path& absolutePath, const FileHandler::Path& relativePath)
+//	{
+//		std::vector<std::string> dirNames;
+//		FileHandler::getAllDirNames(absolutePath, dirNames);
+//
+//		for (auto& dirName : dirNames)
+//		{
+//			loadAllPrograms(FileHandler::Path(absolutePath.toString() + "/" + dirName), FileHandler::Path(relativePath.toString() + "/" + dirName) );
+//		}
+//
+//		std::vector<std::string> fileNames;
+//		FileHandler::getAllFileNames(absolutePath, fileNames);
+//		std::string outExtention;
+//
+//		for (auto& fileNameAndExtention : fileNames)
+//		{
+//			//We only add files that engine understand
+//			FileHandler::getExtentionFromExtendedFilename(fileNameAndExtention, outExtention);
+//			if (FileHandler::getFileTypeFromExtention(outExtention) == FileHandler::FileType::SHADER_PROGRAM)
+//			{
+//				FileHandler::CompletePath shaderPath(relativePath.toString() + "/" + fileNameAndExtention);
+//				addResourceSoft(shaderPath);
+//			}
+//		}
+//	}
+//	void clear()
+//	{
+//		for (auto& it = m_resources.begin(); it != m_resources.end(); it++)
+//		{
+//			ShaderProgram* resource = it->second;
+//			delete resource;
+//		}
+//
+//		m_resources.clear();
+//	}
+//
+//	virtual void save(Json::Value & entityRoot) const override
+//	{
+//		//no need to save these resources
+//	}
+//	virtual void load(const Json::Value & entityRoot) override
+//	{
+//		//no need to load these resources
+//	}
+//
+//	std::map<std::string, ShaderProgram*>::iterator resourceBegin()
+//	{
+//		return m_resources.begin();
+//	}
+//	std::map<std::string, ShaderProgram*>::iterator resourceEnd()
+//	{
+//		return m_resources.end();
+//	}
+//
+//	SINGLETON_IMPL(ResourceFactory);
+//
+//private:
+//	void addResourceForce(const std::string& name, const ID& hashKey)
+//	{
+//		ShaderProgram* newResource = new ShaderProgram();
+//		newResource->init(name, hashKey);
+//
+//		m_resources[name] = newResource;
+//		m_resourceMapping[name] = hashKey;
+//		m_resourcesFromHashKey[hashKey] = newResource;
+//	}
+//
+//};
 
 
 
@@ -549,6 +549,10 @@ void ResourceFactory<Material>::initDefaults();
 template<>
 void ResourceFactory<Mesh>::initDefaults();
 
+
+//ShderPrograms
+void ResourceFactory<ShaderProgram>::initDefaults();
+
 //Animations : nothing by default
 
 //Init helper
@@ -704,280 +708,3 @@ bool ResourceField(const std::string& label, ResourcePtr<T>& resourcePtr)
 	return isTextEdited;
 }
 }
-
-
-//
-//
-//class ProgramFactory : public ISerializable
-//{
-//
-//private:
-//	std::map<std::string, GLuint> m_programs;
-//	std::map<std::string, GLuint> m_defaults;
-//
-//public:
-//	void add(const std::string& name, GLuint programId);
-//	GLuint get(const std::string& name);
-//	bool contains(const std::string& name);
-//	void drawUI();
-//	void clear();
-//	//std::map<std::string, GLuint>::iterator begin() { return m_programs.begin(); }
-//	//std::map<std::string, GLuint>::iterator end() { return m_programs.end(); };
-//
-//	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(const Json::Value & entityRoot) override;
-//
-//
-//	// singleton implementation :
-//private:
-//	ProgramFactory();
-//
-//public:
-//	inline static ProgramFactory& get()
-//	{
-//		static ProgramFactory instance;
-//
-//		return instance;
-//	}
-//
-//
-//	ProgramFactory(const ProgramFactory& other) = delete;
-//	void operator=(const ProgramFactory& other) = delete;
-//
-//};
-//
-//
-////////////////////////////////////////
-//
-//class TextureFactory : public ISerializable
-//{
-//
-//private:
-//	std::map<std::string, Texture*> m_textures;
-//
-//	//for UI : 
-//	char name[20];
-//	char path[50];
-//
-//public:
-//	void add(const std::string& name, const std::string& path);
-//	void add(const std::string& name, Texture* texture);
-//	Texture* get(const std::string& name);
-//	bool contains(const std::string& name);
-//	void drawUI();
-//	void clear();
-//	//std::map<std::string, Texture*>::iterator begin() { return m_textures.begin(); }
-//	//std::map<std::string, Texture*>::iterator end() { return m_textures.end(); };
-//
-//	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(const Json::Value & entityRoot) override;
-//
-//	// singleton implementation :
-//private:
-//	TextureFactory();
-//
-//public:
-//	inline static TextureFactory& get()
-//	{
-//		static TextureFactory instance;
-//
-//		return instance;
-//	}
-//
-//
-//	TextureFactory(const TextureFactory& other) = delete;
-//	void operator=(const TextureFactory& other) = delete;
-//};
-//
-/////////////////////////////////
-//
-//
-//class CubeTextureFactory : public ISerializable
-//{
-//
-//private:
-//	std::map<std::string, CubeTexture*> m_textures;
-//
-//	//for UI : 
-//	char name[20];
-//	char paths[6][50];
-//
-//public:
-//	void add(const std::string& name, const std::vector<std::string>& paths);
-//	void add(const std::string& name, CubeTexture* textureId);
-//	CubeTexture* get(const std::string& name);
-//	bool contains(const std::string& name);
-//	void drawUI();
-//	void clear();
-//	//std::map<std::string, CubeTexture*>::iterator begin() { return m_textures.begin(); }
-//	//std::map<std::string, CubeTexture*>::iterator end() { return m_textures.end(); };
-//
-//	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(const Json::Value & entityRoot) override;
-//
-//	// singleton implementation :
-//private:
-//	CubeTextureFactory();
-//
-//public:
-//	inline static CubeTextureFactory& get()
-//	{
-//		static CubeTextureFactory instance;
-//
-//		return instance;
-//	}
-//
-//
-//	CubeTextureFactory(const CubeTextureFactory& other) = delete;
-//	void operator=(const CubeTextureFactory& other) = delete;
-//};
-//
-//
-//
-/////////////////////////////////
-//
-//class MeshFactory : public ISerializable
-//{
-//
-//private:
-//	std::map<std::string, Mesh*> m_meshes;
-//
-//	//for UI : 
-//	char name[20];
-//	char path[50];
-//
-//	std::vector<std::string> m_defaults;
-//
-//public:
-//	void add(const std::string& name, Mesh* mesh);
-//	void add(const std::string& name, const std::string& path);
-//	Mesh* get(const std::string& name);
-//	bool contains(const std::string& name);
-//	void drawUI();
-//	void clear();
-//	//std::map<std::string, Mesh*>::iterator begin() { return m_meshes.begin(); }
-//	//std::map<std::string, Mesh*>::iterator end() { return m_meshes.end(); };
-//
-//	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(const Json::Value & entityRoot) override;
-//
-//	// singleton implementation :
-//private:
-//	MeshFactory();
-//
-//public:
-//	inline static MeshFactory& get()
-//	{
-//		static MeshFactory instance;
-//
-//		return instance;
-//	}
-//
-//
-//	MeshFactory(const MeshFactory& other) = delete;
-//	void operator=(const MeshFactory& other) = delete;
-//};
-//
-//
-//
-//
-/////////////////////////////////
-//
-//class SkeletalAnimationFactory : public ISerializable
-//{
-//
-//private:
-//	std::map<std::string, std::map<std::string, SkeletalAnimation*>> m_animations;
-//
-//	//for UI : 
-//	char name[20];
-//	char path[50];
-//
-//public:
-//	void add(const std::string& meshName, const std::string& animationName, SkeletalAnimation* animation);
-//	SkeletalAnimation* get(const std::string& meshName, const std::string& animationName);
-//	bool contains(const std::string& meshName, const std::string& animationName);
-//	void drawUI();
-//	std::map<std::string, std::map<std::string, SkeletalAnimation*>>::iterator clear(const std::string& meshName);
-//	void clear();
-//	//TODO : begin() et end()
-//
-//	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(const Json::Value & entityRoot) override;
-//
-//	// singleton implementation :
-//private:
-//	SkeletalAnimationFactory();
-//
-//public:
-//	inline static SkeletalAnimationFactory& get()
-//	{
-//		static SkeletalAnimationFactory instance;
-//
-//		return instance;
-//	}
-//
-//	SkeletalAnimationFactory(const SkeletalAnimationFactory& other) = delete;
-//	void operator=(const SkeletalAnimationFactory& other) = delete;
-//};
-//
-//////////////////////////////////
-//
-//class MaterialFactory : public ISerializable
-//{
-//
-//private:
-//	std::map<std::string, Material*> m_materials;
-//
-//	//for UI : 
-//	char name[20];
-//
-//	std::vector<std::string> m_defaults;
-//
-//public:
-//	void add(const std::string& name, Material* material);
-//	template<typename T>
-//	T* get(const std::string& name);
-//	template<typename T>
-//	bool contains(const std::string& name);
-//	void drawUI();
-//	void clear();
-//	//std::map<std::string, Material*>::iterator begin() { return m_materials.begin(); }
-//	//std::map<std::string, Material*>::iterator end() { return m_materials.end(); };
-//
-//	virtual void save(Json::Value & entityRoot) const override;
-//	virtual void load(const Json::Value & entityRoot) override;
-//
-//	// singleton implementation :
-//private:
-//	MaterialFactory();
-//
-//public:
-//	inline static MaterialFactory& get()
-//	{
-//		static MaterialFactory instance;
-//
-//		return instance;
-//	}
-//
-//
-//	MaterialFactory(const MaterialFactory& other) = delete;
-//	void operator=(const MaterialFactory& other) = delete;
-//};
-//
-//template<typename T>
-//T* MaterialFactory::get(const std::string& name)
-//{
-//	assert(m_materials.find(name) != m_materials.end());
-//
-//	assert(dynamic_cast<T*>(m_materials[name]) == m_materials[name]);
-//	return static_cast<T*>(m_materials[name]);
-//}
-//
-//template<typename T>
-//bool MaterialFactory::contains(const std::string& name)
-//{
-//	auto findResult = m_materials.find(name);
-//	return ( findResult != m_materials.end() && dynamic_cast<T*>(findResult->second));
-//}
-//

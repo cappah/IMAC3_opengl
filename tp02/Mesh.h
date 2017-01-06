@@ -150,12 +150,14 @@ public:
 	void setModelMatrix(const glm::mat4& modelMatrix);
 	void setAABB(const AABB& aabb);
 
+	const Mesh* getMeshPtr() const;
+
 	// Herited from IDrawable
 	const AABB & getVisualBoundingBox() const override;
 	void draw() const override;
 	virtual const glm::mat4& getModelMatrix() const override;
 	virtual bool castShadows() const override;
-	const Mesh* getMeshPtr() const;
+	Skeleton* getSkeletonIfPossible() const override;
 
 	void setExternalsOf(const Material3DObject& material, const glm::mat4& projection, const glm::mat4& view, int* texId = nullptr) const override;
 

@@ -141,6 +141,11 @@ public:
 
 	void drawIconeInResourceTree();
 	void drawUIOnHovered();
+
+	Resource* getPointedResource() const
+	{
+		return m_pointedResource;
+	}
 };
 
 class ResourceFolder
@@ -578,7 +583,9 @@ public :
 	static void moveResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
 	static void copyResourceTo(const ResourceFile& resourceFileToMove, ResourceFolder& folderFrom, ResourceFolder& folderTo);
 
-	static void addNewMaterialTo(const std::string& materialName, const std::string& ShaderProgramName, ResourceFolder& folderTo);
+	static void addNewMaterialTo(const std::string& newMaterialName, ResourceFile& shaderProgramFile, ResourceFolder& folderTo);
+	//static void addNewMaterialTo(const std::string& materialName, const std::string& ShaderProgramName, ResourceFolder& folderTo); //DEPRECATED
+	static void addNewShaderProgramTo(const std::string& shaderProgramName, ResourceFolder& folderTo);
 	static void addNewCubeTextureTo(const std::string& textureName, ResourceFolder& folderTo);
 	static void addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo);
 
@@ -605,7 +612,7 @@ private:
 	std::string m_uiString;
 	ResourceFolder* m_folderWeRightClicOn;
 	ResourceFile* m_fileWeRightClicOn;
-	std::string m_chooseMaterialName;
+	//std::string m_chooseMaterialName;
 
 	bool m_isMovingItemFolder;
 	bool m_shouldMoveFileOrFolder;
@@ -632,6 +639,7 @@ public:
 	void popUpToAddFolder();
 	void popUpToAddCubeTexture();
 	void popUpToChooseMaterial();
+	void popUpToAddShaderProgram();
 	void popUpToAddMaterial();
 
 	//save / load functions :

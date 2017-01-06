@@ -37,7 +37,7 @@ PostProcessManager::PostProcessManager()
 	m_finalFB.unbind();
 
 	////////////////////// INIT BLIT MATERIAL ////////////////////////
-	m_materialBlit.init(*getProgramFactory().get("blit"));
+	m_materialBlit.init(*getProgramFactory().getDefault("blit"));
 }
 
 void PostProcessManager::onViewportResized(float width, float height)
@@ -240,9 +240,9 @@ float BloomPostProcessOperationData::getGamma() const
 BloomPostProcessOperation::BloomPostProcessOperation(const std::string& operationName)
 	: PostProcessOperation(operationName)
 {
-	m_materialBlur = std::make_shared<MaterialBlur>(*getProgramFactory().get("blur"));
-	m_materialBloom = std::make_shared<MaterialBloom>(*getProgramFactory().get("bloom"));
-	m_materialAdd = std::make_shared<MaterialAdd>(*getProgramFactory().get("add"));
+	m_materialBlur = std::make_shared<MaterialBlur>(*getProgramFactory().getDefault("blur"));
+	m_materialBloom = std::make_shared<MaterialBloom>(*getProgramFactory().getDefault("bloom"));
+	m_materialAdd = std::make_shared<MaterialAdd>(*getProgramFactory().getDefault("add"));
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -411,7 +411,7 @@ REGISTER_POST_PROCESS(FlaresPostProcessOperation, FlaresPostProcessOperationData
 FlaresPostProcessOperationData::FlaresPostProcessOperationData(const std::string & operationName)
 	: PostProcessOperationData(operationName)
 {
-	m_materialFlares.init(*getProgramFactory().get("flares"));
+	m_materialFlares.init(*getProgramFactory().getDefault("flares"));
 }
 
 
@@ -428,7 +428,7 @@ const MaterialFlares & FlaresPostProcessOperationData::getMaterial() const
 FlaresPostProcessOperation::FlaresPostProcessOperation(const std::string & operationName)
 	: PostProcessOperation(operationName)
 {
-	m_materialAdd = std::make_shared<MaterialAdd>(*getProgramFactory().get("add"));
+	m_materialAdd = std::make_shared<MaterialAdd>(*getProgramFactory().getDefault("add"));
 
 	GlHelper::makeFloatColorTexture(m_flaresTexture, 400, 400);
 	m_flaresTexture.initGL();
@@ -702,7 +702,7 @@ REGISTER_POST_PROCESS(SSAOPostProcessOperation, SSAOPostProcessOperationData, "s
 SSAOPostProcessOperationData::SSAOPostProcessOperationData(const std::string & operationName)
 	: PostProcessOperationData(operationName)
 {
-	m_materialSSAO.init(*getProgramFactory().get("ssao"));
+	m_materialSSAO.init(*getProgramFactory().getDefault("ssao"));
 }
 
 void SSAOPostProcessOperationData::drawUI()
@@ -762,7 +762,7 @@ SSAOPostProcessOperation::SSAOPostProcessOperation(const std::string & operation
 	m_ssaoFB.unbind();
 
 	///////////////////////// INIT BLUR MATERIAL ////////////////////////////
-	m_materialBlur.init(*getProgramFactory().get("ssaoBlur"));
+	m_materialBlur.init(*getProgramFactory().getDefault("ssaoBlur"));
 }
 
 void SSAOPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera & camera, GlHelper::Framebuffer & finalFB, Texture & finalTexture, RenderDatas& renderDatas, DebugDrawRenderer * debugDrawer)

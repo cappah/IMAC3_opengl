@@ -6,63 +6,6 @@
 #include "RenderDatas.h"
 
 ////////////////////////////////////////////////////
-/////BEGIN : Helpers
-namespace MaterialHelper {
-
-	GLuint getUniform(GLuint programId, const std::string& uniformName)
-	{
-		return glGetUniformLocation(programId, uniformName.data());
-	}
-
-	std::vector<GLuint> getUniforms(GLuint programId, const std::string& uniformName, int count)
-	{
-		std::vector<GLuint> outUniformIds;
-		std::string name = uniformName + "[0]";;
-
-		for (int i = 0; i < count; i++)
-		{
-			name[name.size() - 2] = std::to_string(i)[0];
-			outUniformIds.push_back(glGetUniformLocation(programId, name.data()));
-		}
-		return outUniformIds;
-	}
-
-	GLuint getUniformStruct(GLuint programId, const std::string& uniformName, int index, const std::string& memberName)
-	{
-		std::string name = uniformName + "[" + std::to_string(index) + "]." + memberName;
-		return glGetUniformLocation(programId, name.data());
-	}
-
-	GLuint findUniform(const std::string& uniformName, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-	{
-		auto& found = std::find_if(externalParameters.begin(), externalParameters.end(), [uniformName](const std::shared_ptr<ExternalShaderParameterBase>& item) { return item->getName() == uniformName; });
-		assert(found != externalParameters.end());
-		if (found != externalParameters.end())
-			return (*found)->getUniformId();
-		else
-			return 0;
-	}
-
-	std::vector<GLuint> findUniforms(const std::string& uniformName, int count, const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters)
-	{
-		std::vector<GLuint> foundUniforms;
-
-
-		auto& found = std::find_if(externalParameters.begin(), externalParameters.end(), [uniformName](const std::shared_ptr<ExternalShaderParameterBase>& item) { return item->getName() == uniformName; });
-		assert(found != externalParameters.end());
-		if (found != externalParameters.end())
-			(*found)->getUniformIds(foundUniforms);
-
-		return foundUniforms;
-	}
-
-}
-
-/////END : Helpers
-////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////
 /////BEGIN : Material
 
 Material::Material()
@@ -94,100 +37,120 @@ Material::Material()
 //}
 
 Material::Material(const ShaderProgram& shaderProgram)
-	: m_glProgramName(shaderProgram.getName())
+	//: m_glProgramName(shaderProgram.getName())
 {
 	m_programPtr = &shaderProgram;
+	assert(m_programPtr.isValid());
 
-	assert(shaderProgram.getImplementedPipelineCount() > 0);
-	m_pipelineType = shaderProgram.getImplementedPipeline(0);
-	m_glProgramId = shaderProgram.getProgramId(m_pipelineType);
+	//assert(shaderProgram.getImplementedPipelineCount() > 0);
+	//m_pipelineType = shaderProgram.getImplementedPipeline(0);
+
+	m_glProgramId = shaderProgram.getProgramId(/*m_pipelineType*/);
 
 	for (auto shaderParameter : shaderProgram.getInternalParameters())
 	{
 		m_internalParameters.push_back(shaderParameter->clone());
 	}
 
+	m_aggregations.clear();
+	m_aggregations = shaderProgram.getAggregations();
+	m_perInstanceAggregations.clear();
+	m_perInstanceAggregations = shaderProgram.getPerInstanceAggregation();
+
 	initInternalParameters();
-	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+	m_programPtr->addMaterialRef(this);
+	//getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 	//setExternalParameters(shaderProgram.getExternalParameters());
 }
 
 Material::Material(const ShaderProgram & shaderProgram, const FileHandler::CompletePath & completePath)
 	: Resource(completePath)
-	, m_glProgramName(shaderProgram.getName())
+	//, m_glProgramName(shaderProgram.getName())
 {
 	m_programPtr = &shaderProgram;
+	assert(m_programPtr.isValid());
 
-	assert(shaderProgram.getImplementedPipelineCount() > 0);
-	m_pipelineType = shaderProgram.getImplementedPipeline(0);
-	m_glProgramId = shaderProgram.getProgramId(m_pipelineType);
+	//assert(shaderProgram.getImplementedPipelineCount() > 0);
+	//m_pipelineType = shaderProgram.getImplementedPipeline(0);
+
+	m_glProgramId = shaderProgram.getProgramId(/*m_pipelineType*/);
 
 	for (auto shaderParameter : shaderProgram.getInternalParameters())
 	{
 		m_internalParameters.push_back(shaderParameter->clone());
 	}
 
+	m_aggregations.clear();
+	m_aggregations = shaderProgram.getAggregations();
+	m_perInstanceAggregations.clear();
+	m_perInstanceAggregations = shaderProgram.getPerInstanceAggregation();
+
 	initInternalParameters();
-	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+	m_programPtr->addMaterialRef(this);
+	//getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 }
 
 Material::~Material()
 {
-	if (m_glProgramName != "")
+	if (m_programPtr.isValid())
 	{
-		auto shaderProgramRef = getProgramFactory().get(m_glProgramName);
-		if(shaderProgramRef != nullptr)
-			shaderProgramRef->removeMaterialRef(this);
+		m_programPtr->removeMaterialRef(this);
 	}
+	//if (m_glProgramName != "")
+	//{
+	//	auto shaderProgramRef = getProgramFactory().get(m_glProgramName);
+	//	if(shaderProgramRef != nullptr)
+	//		shaderProgramRef->removeMaterialRef(this);
+	//}
 }
 
-void Material::changePipeline(Rendering::PipelineType pipelineType)
-{
-	ShaderProgram* currentProgram = getProgramFactory().get(m_glProgramName);
-	assert(currentProgram != nullptr);
-	if (currentProgram->implementPipeline(pipelineType))
-	{
-		m_glProgramId = currentProgram->getProgramId(pipelineType);
+//void Material::changePipeline(Rendering::PipelineType pipelineType)
+//{
+//	ShaderProgram* currentProgram = m_programPtr.get(); //getProgramFactory().get(m_glProgramName);
+//	assert(currentProgram != nullptr);
+//	if (currentProgram->implementPipeline(pipelineType))
+//	{
+//		m_glProgramId = currentProgram->getProgramId(pipelineType);
+//
+//		// Refresh parameters GLIds : 
+//		// Internals :
+//		for (auto& parameter : m_internalParameters)
+//		{
+//			parameter->init(m_glProgramId);
+//		}
+//		// Externals :
+//		setExternalParameters();
+//
+//		m_pipelineType = pipelineType;
+//
+//		// Special case for forward pipeline
+//		if (pipelineType == Rendering::PipelineType::FORWARD_PIPELINE)
+//		{
+//			auto newAggregate = std::make_shared<MaterialAggregationForward>();
+//			newAggregate->initParameters(m_glProgramId);
+//			addAggregation("forward", newAggregate);
+//		}
+//		else
+//		{
+//			removeAggregation("forward");
+//		}
+//	}
+//}
 
-		// Refresh parameters GLIds : 
-		// Internals :
-		for (auto& parameter : m_internalParameters)
-		{
-			parameter->init(m_glProgramId);
-		}
-		// Externals :
-		setExternalParameters();
-
-		m_pipelineType = pipelineType;
-
-		// Special case for forward pipeline
-		if (pipelineType == Rendering::PipelineType::FORWARD_PIPELINE)
-		{
-			auto newAggregate = std::make_shared<MaterialAggregationForward>();
-			newAggregate->initParameters(m_glProgramId);
-			addAggregation("forward", newAggregate);
-		}
-		else
-		{
-			removeAggregation("forward");
-		}
-	}
-}
-
-void Material::addAggregation(const std::string & key, std::shared_ptr<MaterialAggregation> aggregation)
-{
-	m_aggregations[key] = aggregation;
-}
-
-void Material::removeAggregation(const std::string & key)
-{
-	m_aggregations.erase(key);
-}
-
-const std::shared_ptr<MaterialAggregation> Material::getAggregation(const std::string& key) const
-{
-	return m_aggregations.at(key);
-}
+//void Material::addAggregation(const std::string & key, std::shared_ptr<MaterialAggregation> aggregation)
+//{
+//	m_aggregations[key] = aggregation;
+//}
+//
+//void Material::removeAggregation(const std::string & key)
+//{
+//	m_aggregations.erase(key);
+//}
+//
+//const std::shared_ptr<MaterialAggregation> Material::getAggregation(const std::string& key) const
+//{
+//	return m_aggregations.at(key);
+//}
 
 void Material::initInternalParameters()
 {
@@ -220,10 +183,11 @@ void Material::init(const FileHandler::CompletePath& path, const ID& id)
 void Material::init(const ShaderProgram & shaderProgram)
 {
 	m_programPtr = &shaderProgram;
+	assert(m_programPtr.isValid());
 
-	assert(shaderProgram.getImplementedPipelineCount() > 0);
-	m_pipelineType = shaderProgram.getImplementedPipeline(0);
-	m_glProgramId = shaderProgram.getProgramId(m_pipelineType);
+	//assert(shaderProgram.getImplementedPipelineCount() > 0);
+	//m_pipelineType = shaderProgram.getImplementedPipeline(0);
+	m_glProgramId = shaderProgram.getProgramId(/*m_pipelineType*/);
 
 
 	m_internalParameters.clear();
@@ -231,28 +195,42 @@ void Material::init(const ShaderProgram & shaderProgram)
 	{
 		m_internalParameters.push_back(shaderParameter->clone());
 	}
-	m_glProgramName = shaderProgram.getName();
+	//m_glProgramName = shaderProgram.getName();
+
+	m_aggregations.clear();
+	m_aggregations = shaderProgram.getAggregations();
+	m_perInstanceAggregations.clear();
+	m_perInstanceAggregations = shaderProgram.getPerInstanceAggregation();
 
 	initInternalParameters();
-	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+	m_programPtr->addMaterialRef(this);
+	//getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 	//setExternalParameters(shaderProgram.getExternalParameters());
 }
 
 void Material::drawUI()
 {
-	if (m_programPtr->implementPipeline(Rendering::PipelineType::FORWARD_PIPELINE) && m_programPtr->implementPipeline(Rendering::PipelineType::DEFERRED_PIPILINE))
-	{
-		int currentPipelineIdx = (m_pipelineType == Rendering::PipelineType::FORWARD_PIPELINE ? 0 : 1);
-		if (ImGui::Combo("pipeline", &currentPipelineIdx, "forward\0deferred\0"))
-		{
-			Rendering::PipelineType newPipelineType = currentPipelineIdx == 0 ? Rendering::PipelineType::FORWARD_PIPELINE : Rendering::PipelineType::DEFERRED_PIPILINE;
-			changePipeline(newPipelineType);
-		}
-	}
+	//if (m_programPtr->implementPipeline(Rendering::PipelineType::FORWARD_PIPELINE) && m_programPtr->implementPipeline(Rendering::PipelineType::DEFERRED_PIPILINE))
+	//{
+	//	int currentPipelineIdx = (m_pipelineType == Rendering::PipelineType::FORWARD_PIPELINE ? 0 : 1);
+	//	if (ImGui::Combo("pipeline", &currentPipelineIdx, "forward\0deferred\0"))
+	//	{
+	//		Rendering::PipelineType newPipelineType = currentPipelineIdx == 0 ? Rendering::PipelineType::FORWARD_PIPELINE : Rendering::PipelineType::DEFERRED_PIPILINE;
+	//		changePipeline(newPipelineType);
+	//	}
+	//}
 
 	for (auto& parameter : m_internalParameters)
 	{
 		parameter->drawUI();
+	}
+}
+
+void Material::pushGlobalsToGPU(const RenderDatas & renderDatas) const
+{
+	for (auto aggregation : m_aggregations)
+	{
+		aggregation.second->pushParametersToGPU(renderDatas);
 	}
 }
 
@@ -261,6 +239,14 @@ void Material::pushInternalsToGPU(int& boundTextureCount) const
 	for (auto& parameter : m_internalParameters)
 	{
 		parameter->pushToGPU(boundTextureCount);
+	}
+}
+
+void Material::pushExternalsToGPU(const IDrawable & drawable, const RenderDatas & renderDatas, int & boundTextureCount) const
+{
+	for (auto perInstanceAggregation : m_perInstanceAggregations)
+	{
+		perInstanceAggregation.second->pushParametersToGPU(drawable, renderDatas, boundTextureCount);
 	}
 }
 
@@ -313,9 +299,10 @@ void Material::save(Json::Value & entityRoot) const
 	// Pipeline type : 
 	entityRoot["pipelineType"] = Rendering::PipelineTypesToString[(int)m_pipelineType];
 
-	// Program name :
-	entityRoot["shaderProgramName"] = m_glProgramName;
-	assert(getProgramFactory().contains(m_glProgramName));
+	//// Program name :
+	//entityRoot["shaderProgramName"] = m_glProgramName;
+	//assert(getProgramFactory().contains(m_glProgramName));
+	m_programPtr.save(entityRoot["shaderProgramPtr"]);
 
 	// Internal parameters :
 	entityRoot["internalParametersCount"] = m_internalParameters.size();
@@ -334,15 +321,19 @@ void Material::load(const Json::Value & entityRoot)
 	assert(foundItPipelineType != Rendering::PipelineTypesToString.end());
 	int foundIdxPipelineType = foundItPipelineType - Rendering::PipelineTypesToString.begin();
 	m_pipelineType = (Rendering::PipelineType)foundIdxPipelineType;
-
-	// Program name : 
-	m_glProgramName = entityRoot.get("shaderProgramName", "").asString();
-	assert(m_glProgramName != "");
-
-	// Init from shader program : 
-	m_programPtr = getProgramFactory().get(m_glProgramName);
-	assert(m_programPtr != nullptr);
+	
+	m_programPtr.load(entityRoot["shaderProgramPtr"]);
+	assert(m_programPtr.isValid());
 	m_programPtr->LoadMaterialInstance(this);
+
+	//// Program name : 
+	//m_glProgramName = entityRoot.get("shaderProgramName", "").asString();
+	//assert(m_glProgramName != "");
+
+	//// Init from shader program : 
+	//m_programPtr = getProgramFactory().get(m_glProgramName);
+	//assert(m_programPtr != nullptr);
+	//m_programPtr->LoadMaterialInstance(this);
 
 	// Internal parameters : 
 	int internalParameterSavedCount = entityRoot.get("internalParametersCount", 0).asInt();
@@ -361,7 +352,8 @@ void Material::load(const Json::Value & entityRoot)
 		PRINT_ERROR("error in material loading : internal parameter count mismatch. You may have added or remove parameters from a .glProg.");
 
 	// Add ref to shader program :
-	getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+	m_programPtr->addMaterialRef(this);
+	//getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 }
 
 void Material::save(const FileHandler::CompletePath& path) const

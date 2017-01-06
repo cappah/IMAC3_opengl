@@ -16,7 +16,7 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
 
 	////////////////////// INIT SIMPLE_3D_DRAW MATERIAL ////////////////////////
-	m_materialSimple3Ddraw.init(*getProgramFactory().get("simple3DDraw"));
+	m_materialSimple3Ddraw.init(*getProgramFactory().getDefault("simple3DDraw"));
 
 	////////////////////// INIT QUAD MESH ////////////////////////
 	m_renderDatas.quadMesh.setMeshDatas(GL_TRIANGLES, (Mesh::USE_INDEX | Mesh::USE_VERTICES), 2, GL_STATIC_DRAW);
@@ -26,11 +26,11 @@ Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_pa
 
 	//////////////////// MAKE NEW LIGHTING MATERIALS ///////////////////
 
-	m_pointLightMaterial = std::make_shared<MaterialPointLight>(*getProgramFactory().get("pointLight"));
+	m_pointLightMaterial = std::make_shared<MaterialPointLight>(*getProgramFactory().getDefault("pointLight"));
 	CHECK_GL_ERROR("uniforms");
-	m_directionalLightMaterial = std::make_shared<MaterialDirectionalLight>(*getProgramFactory().get("directionalLight"));
+	m_directionalLightMaterial = std::make_shared<MaterialDirectionalLight>(*getProgramFactory().getDefault("directionalLight"));
 	CHECK_GL_ERROR("uniforms");
-	m_spotLightMaterial = std::make_shared<MaterialSpotLight>(*getProgramFactory().get("spotLight"));
+	m_spotLightMaterial = std::make_shared<MaterialSpotLight>(*getProgramFactory().getDefault("spotLight"));
 	CHECK_GL_ERROR("uniforms");
 
 	//////////////////// INITIALIZE G BUFFER ///////////////////
@@ -323,6 +323,8 @@ void Renderer::renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* d
 	const glm::mat4& projection = camera.getProjectionMatrix();
 	const glm::mat4& view = camera.getViewMatrix();
 
+	m_renderDatas.Projection = &projection;
+	m_renderDatas.View = &view;
 	m_renderDatas.VP = projection * view;
 	m_renderDatas.screenToView = glm::transpose(glm::inverse(projection));
 	///////// END : Update matrices
@@ -390,7 +392,7 @@ void Renderer::gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaq
 	// Render batches (meshes and flags for now)
 	for (auto& renderBatch : opaqueRenderBatches)
 	{
-		renderBatch.second->render(projection, view);
+		renderBatch.second->render(projection, view, m_renderDatas);
 	}
 	
 	// TODO RENDERING
