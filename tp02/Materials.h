@@ -26,23 +26,17 @@
 #include "Resource.h"
 #include "MaterialHelper.h"
 #include "MaterialAggregation.h"
+#include "MaterialConfig.h"
 
 class IRenderBatch;
 struct RenderDatas;
-
-//Statics :
-
-static const unsigned int MAX_BONE_COUNT = 100;
-static const unsigned int MAX_POINT_LIGHT_COUNT = 10;
-static const unsigned int MAX_SPOT_LIGHT_COUNT = 10;
-static const unsigned int MAX_DIRECTIONAL_LIGHT_COUNT = 5;
 
 //Materials :
 class Material : public Resource, public ISerializable
 {
 protected:
 	GLuint m_glProgramId;
-	Rendering::PipelineType m_pipelineType;
+	//Rendering::PipelineType m_pipelineType;
 	std::vector<std::shared_ptr<InternalShaderParameterBase>> m_internalParameters;
 
 	ResourcePtr<ShaderProgram> m_programPtr;
@@ -556,8 +550,8 @@ public:
 class Material3DObject : public BatchableMaterial<Material3DObject, Material> //public Material
 {
 private:
-	//GLuint uniform_MVP;
-	//GLuint uniform_normalMatrix;
+	GLuint uniform_MVP;
+	GLuint uniform_normalMatrix;
 	GLuint uniform_ModelMatrix;
 	GLuint uniform_ViewMatrix;
 	GLuint uniform_ProjectionMatrix;
@@ -586,8 +580,8 @@ public:
 
 	void setExternalParameters() override
 	{
-		/*uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
-		uniform_normalMatrix = MaterialHelper::getUniform(m_glProgramId, "NormalMatrix");*/
+		uniform_MVP = MaterialHelper::getUniform(m_glProgramId, "MVP");
+		uniform_normalMatrix = MaterialHelper::getUniform(m_glProgramId, "NormalMatrix");
 		uniform_ModelMatrix = MaterialHelper::getUniform(m_glProgramId, "ModelMatrix");
 		uniform_ViewMatrix = MaterialHelper::getUniform(m_glProgramId, "ViewMatrix");
 		uniform_ProjectionMatrix = MaterialHelper::getUniform(m_glProgramId, "ProjectionMatrix");
@@ -597,14 +591,14 @@ public:
 		CHECK_GL_ERROR("error in material initialization.");
 	}
 
-	//void setUniform_MVP(const glm::mat4& mvp) const
-	//{
-	//	GlHelper::pushParameterToGPU(uniform_MVP, mvp);
-	//}
-	//void setUniform_normalMatrix(const glm::mat4& normalMatrix) const
-	//{
-	//	GlHelper::pushParameterToGPU(uniform_normalMatrix, normalMatrix);
-	//}
+	void setUniform_MVP(const glm::mat4& mvp) const
+	{
+		GlHelper::pushParameterToGPU(uniform_MVP, mvp);
+	}
+	void setUniform_normalMatrix(const glm::mat4& normalMatrix) const
+	{
+		GlHelper::pushParameterToGPU(uniform_normalMatrix, normalMatrix);
+	}
 	void setUniformModelMatrix(const glm::mat4& modelMatrix) const
 	{
 		GlHelper::pushParameterToGPU(uniform_ModelMatrix, modelMatrix);
@@ -647,47 +641,6 @@ public:
 	{
 
 	}
-
-};
-
-
-class MaterialAggregationForward : public MaterialAggregation
-{
-protected:
-	// Lighting
-	GLuint uniform_PointLight_position[MAX_POINT_LIGHT_COUNT];
-	GLuint uniform_PointLight_color[MAX_POINT_LIGHT_COUNT];
-	GLuint uniform_PointLight_intensity[MAX_POINT_LIGHT_COUNT];
-
-	GLuint uniform_SpotLight_position[MAX_SPOT_LIGHT_COUNT];
-	GLuint uniform_SpotLight_direction[MAX_SPOT_LIGHT_COUNT];
-	GLuint uniform_SpotLight_color[MAX_SPOT_LIGHT_COUNT];
-	GLuint uniform_SpotLight_intensity[MAX_SPOT_LIGHT_COUNT];
-	GLuint uniform_SpotLight_angle[MAX_SPOT_LIGHT_COUNT];
-
-	GLuint uniform_DirectionalLight_direction[MAX_DIRECTIONAL_LIGHT_COUNT];
-	GLuint uniform_DirectionalLight_color[MAX_DIRECTIONAL_LIGHT_COUNT];
-	GLuint uniform_DirectionalLight_intensity[MAX_DIRECTIONAL_LIGHT_COUNT];
-
-	GLuint uniform_PointLightCount;
-	GLuint uniform_SpotLightCount;
-	GLuint uniform_DirectionalLightCount;
-
-	// Transform
-	GLuint uniform_ScreenToView; // mat4
-
-public:
-	void initParameters(GLuint programID) override;
-	void pushParametersToGPU(const RenderDatas& renderDatas) const override;
-
-private:
-	void setUniformPointLight(int index, const glm::vec3& position, const glm::vec3& color, float intensity) const;
-	void setUniformSpotLight(int index, const glm::vec3& position, const glm::vec3& direction, float angle, const glm::vec3& color, float intensity) const;
-	void setUniformDirectionalLight(int index, const glm::vec3& direction, const glm::vec3& color, float intensity) const;
-	void setUniformPointLightCount(int count) const;
-	void setUniformSpotLightCount(int count) const;
-	void setUniformDirectionalLightCount(int count) const;
-	void setUniformScreenToView(const glm::mat4& screenToView) const;
 
 };
 

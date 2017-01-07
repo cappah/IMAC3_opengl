@@ -1,0 +1,7 @@
+{
+	"materialPipeline" : "custom",
+	"materialType" : "default",
+	"materialUsage" : "mesh",
+	"usedWithReflection" : false,
+	"usedWithSkeleton" : false
+}

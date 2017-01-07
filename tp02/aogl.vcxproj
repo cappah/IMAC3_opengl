@@ -363,6 +363,7 @@
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Link.h" />
     <ClInclude Include="MaterialAggregation.h" />
+    <ClInclude Include="MaterialConfig.h" />
     <ClInclude Include="MaterialHelper.h" />
     <ClInclude Include="Materials.h" />
     <ClInclude Include="MaterialVisualScripting.h" />

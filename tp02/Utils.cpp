@@ -322,7 +322,7 @@ GLuint compile_shader_from_string(GLenum shaderType, const std::string& source)
 		NULL);
 	glCompileShader(shaderObject);
 	check_compile_error(shaderObject, sc);
-	delete[] sc;
+	//delete[] sc; //TODO : LEAK
 	return shaderObject;
 }
 

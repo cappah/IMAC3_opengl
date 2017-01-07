@@ -11,16 +11,24 @@
 #include "ShaderParameters.h"
 #include "EditorNodes.h"
 
+class ShaderProgram;
+
 namespace MVS {
 
-enum NodeType {
+class NodeManager;
+struct Node;
+struct Link;
+struct Input;
+struct Output;
+
+enum class NodeType {
 	OPERATOR,
 	PARAMETER,
 	FUNCTION,
 	FINAL,
 };
 
-enum ParameterType {
+enum class ParameterType {
 	FLOAT,
 	FLOAT2,
 	FLOAT3,
@@ -28,7 +36,7 @@ enum ParameterType {
 	TEXTURE,
 };
 
-enum FlowType {
+enum class FlowType {
 	UNDEFINED = 0,
 	FLOAT = 1,
 	FLOAT2,
@@ -42,80 +50,6 @@ struct CompilationErrorCheck
 	std::string errorMsg;
 };
 
-void formatAndOutputResult(std::stringstream& stream, const Output& output, FlowType desiredType, CompilationErrorCheck& errorCheck)
-{
-	if (desiredType == output.outputType)
-	{
-		stream << output.valueStr;
-	}
-	else if (desiredType == FlowType::FLOAT)
-	{
-		if (output.outputType == FlowType::FLOAT2)
-		{
-			stream << "vec2(" << output.valueStr << ',' << output.valueStr << ')';
-		}
-		else if (output.outputType == FlowType::FLOAT3)
-		{
-			stream << "vec3(" << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ')';
-		}
-		else if (output.outputType == FlowType::FLOAT3)
-		{
-			stream << "vec3(" << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ')';
-		}
-	}
-	else if (desiredType == FlowType::FLOAT2)
-	{
-		if (output.outputType == FlowType::FLOAT)
-		{
-			stream << output.valueStr << '.r';
-		}
-		else
-		{
-			errorCheck.errorMsg = "incompatible types.";
-			errorCheck.compilationFailed = true;
-			assert(false && "incompatible types.");
-		}
-	}
-	else if (desiredType == FlowType::FLOAT3)
-	{
-		if (output.outputType == FlowType::FLOAT)
-		{
-			stream << output.valueStr << '.r';
-		}
-		else if (output.outputType == FlowType::FLOAT2)
-		{
-			stream << output.valueStr << '.rg';
-		}
-		else
-		{
-			errorCheck.errorMsg = "incompatible types.";
-			errorCheck.compilationFailed = true;
-			assert(false && "incompatible types.");
-		}
-	}
-	else if (desiredType == FlowType::FLOAT4)
-	{
-		if (output.outputType == FlowType::FLOAT)
-		{
-			stream << output.valueStr << '.r';
-		}
-		else if (output.outputType == FlowType::FLOAT2)
-		{
-			stream << output.valueStr << '.rg';
-		}
-		else if (output.outputType == FlowType::FLOAT3)
-		{
-			stream << output.valueStr << '.rgb';
-		}
-		else
-		{
-			errorCheck.errorMsg = "incompatible types.";
-			errorCheck.compilationFailed = true;
-			assert(false && "incompatible types.");
-		}
-	}
-}
-
 struct Input
 {
 	std::string name;
@@ -123,36 +57,14 @@ struct Input
 	int outputIdx;
 	FlowType desiredType;
 
-	Input(const std::string& _name, FlowType _desiredType)
-		: name(_name), desiredType(_desiredType)
-	{}
+	Node* parentNode;
+	Link* link;
+	glm::vec2 position;
 
-	void resolveUndeterminedTypes(FlowType _desiredType)
-	{
-		assert(_desiredType != FlowType::UNDEFINED);
-		if(desiredType == FlowType::UNDEFINED)
-			desiredType = _desiredType;
-
-		if (nodePtr != nullptr)
-		{
-			if (nodePtr->outputs[outputIdx]->outputType == FlowType::UNDEFINED)
-				nodePtr->outputs[outputIdx]->outputType = _desiredType;
-
-			nodePtr->resolveUndeterminedTypes();
-		}
-	}
-
-	void compile(std::stringstream& stream, CompilationErrorCheck& errorCheck)
-	{
-		nodePtr->compile(errorCheck);
-		formatAndOutputResult(stream, nodePtr->outputs[outputIdx], desiredType, errorCheck);
-	}
-
-	void linkToOutput(Node* _nodePtr, int _outputIdx)
-	{
-		nodePtr = _nodePtr;
-		outputIdx = _outputIdx;
-	}
+	Input(Node* _parentNode, const std::string& _name, FlowType _desiredType);
+	void resolveUndeterminedTypes(FlowType _desiredType);
+	void compile(std::stringstream& stream, CompilationErrorCheck& errorCheck);
+	void linkToOutput(Node* _nodePtr, int _outputIdx);
 };
 
 struct Output
@@ -161,16 +73,19 @@ struct Output
 	FlowType outputType;
 	std::string valueStr;
 
-	Output(const std::string& _name, FlowType _outputType)
-		: name(_name)
-		, outputType(_outputType)
-	{}
+	Node* parentNode;
+	Link* link;
+	glm::vec2 position;
+
+	Output(Node* _parentNode, const std::string& _name, FlowType _outputType);
 };
+
+void formatAndOutputResult(std::stringstream& stream, const Output& output, FlowType desiredType, CompilationErrorCheck& errorCheck);
 
 #define INHERIT_FROM_NODE(RealNodeType)\
 virtual std::shared_ptr<Node> cloneShared() override\
 {\
-	return std::make_shared<RealNodeType>(this);\
+	return std::make_shared<RealNodeType>(*this);\
 }
 
 struct Node 
@@ -186,80 +101,75 @@ struct Node
 
 	virtual void compile(CompilationErrorCheck& errorCheck) = 0;
 
-	Node()
-		: type(NodeType::FUNCTION)
-		, name("default")
-	{
-		nodeID = IDGenerator<MVS::Node>::instance().lockID();
-	}
+	Node();
+	Node(NodeType _type, const std::string& _name);
 
-	Node(NodeType _type, const std::string& _name)
-		: type(_type)
-		, name(_name)
-	{
-		nodeID = IDGenerator<MVS::Node>::instance().lockID();
-	}
-
-	void resolveUndeterminedTypes()
-	{
-		for (auto input : inputs)
-		{
-			if(input->desiredType == FlowType::UNDEFINED && outputs.size() > 0)
-				input->resolveUndeterminedTypes(outputs[0]->outputType);
-			else if(input->desiredType != FlowType::UNDEFINED)
-				input->resolveUndeterminedTypes(input->desiredType);
-		}
-	}
-
+	void resolveUndeterminedTypes();
 	virtual std::shared_ptr<Node> cloneShared() = 0;
+	
+	void save(Json::Value& root) const;
+	void load(const Json::Value& root);
 
-	void save(Json::Value& root) const
-	{
-		root["name"] = name;
-		root["type"] = (int)type;
-		nodeID.save(root["id"]);
-	}
-	void load(const Json::Value& root)
-	{
-		//name = root["name"].asString();
-		nodeID.load(root["id"]);
-	}
-
-	void drawUI();
-
-	void setPosition(const glm::vec2& pos)
-	{
-		position = pos;
-	}
-
-	const glm::vec2& getPosition() const
-	{
-		return position;
-	}
+	void drawUI(NodeManager& manager);
+	void setPosition(const glm::vec2& pos);
+	const glm::vec2& getPosition() const;
 };
 
 struct Link
 {
-	ID leftNodeID;
-	ID rightNodeID;
+	ID inputNodeID;
+	int inputIdx;
+	ID outputNodeID;
+	int outputIdx;
 
-	Node* leftNodePtr;
-	Node* rightNodePtr;
+	Output* input;
+	Input* output;
 
-	void save(Json::Value& root) const
-	{
-		leftNodeID.save(root["leftNodeID"]);
-		rightNodeID.save(root["rightNodeID"]);
-	}
-	void load(const Json::Value& root)
-	{
-		leftNodeID.load(root["leftNodeID"]);
-		rightNodeID.load(root["rightNodeID"]);
-	}
+	Link(Output* _input, Input* _output);
 
-	void drawUI();
+	void save(Json::Value& root) const;
+	void load(const Json::Value& root);
+
+	void drawUI(NodeManager& manager);
 };
 
+class NodeFactory : public ISingleton<NodeFactory>
+{
+	SINGLETON_IMPL(NodeFactory);
+
+private:
+	std::unordered_map<std::string, std::shared_ptr<Node>> m_container;
+
+public:
+
+	NodeFactory()
+	{}
+
+	bool registerNode(const std::string& nodeName, std::shared_ptr<Node> node)
+	{
+		m_container[nodeName] = node;
+		return true;
+	}
+
+	std::shared_ptr<Node> getSharedNodeInstance(const std::string& nodeName)
+	{
+		assert(m_container.find(nodeName) != m_container.end());
+
+		return m_container[nodeName]->cloneShared();
+	}
+
+	std::unordered_map<std::string, std::shared_ptr<Node>>::const_iterator begin() const
+	{
+		return m_container.begin();
+	}
+
+	std::unordered_map<std::string, std::shared_ptr<Node>>::const_iterator end() const
+	{
+		return m_container.end();
+	}
+};
+
+#define REGISTER_NODE(NodeName, NodeType) static bool initialized##NodeType = NodeFactory::instance().registerNode(NodeName, std::make_shared<NodeType>());
 
 struct FinalNode : public Node
 {
@@ -268,11 +178,11 @@ struct FinalNode : public Node
 	FinalNode()
 		: Node(NodeType::FINAL, "result")
 	{
-		inputs.push_back(std::make_shared<Input>("Diffuse", FlowType::FLOAT3));
-		inputs.push_back(std::make_shared<Input>("Specular", FlowType::FLOAT));
-		inputs.push_back(std::make_shared<Input>("Emissive", FlowType::FLOAT3));
-		inputs.push_back(std::make_shared<Input>("Normals", FlowType::FLOAT3));
-		inputs.push_back(std::make_shared<Input>("SpecularPower", FlowType::FLOAT));
+		inputs.push_back(std::make_shared<Input>(this, "Diffuse", FlowType::FLOAT3));
+		inputs.push_back(std::make_shared<Input>(this, "Specular", FlowType::FLOAT));
+		inputs.push_back(std::make_shared<Input>(this, "Emissive", FlowType::FLOAT3));
+		inputs.push_back(std::make_shared<Input>(this, "Normals", FlowType::FLOAT3));
+		inputs.push_back(std::make_shared<Input>(this, "SpecularPower", FlowType::FLOAT));
 	}
 
 	void compile(CompilationErrorCheck& errorCheck)
@@ -405,12 +315,12 @@ struct ParameterNode : public BaseParameterNode
 			stream << "uniform ";
 		}
 
-		stream << "float " << parameterName << " = " << shaderParameter.valueAsString() << ';';
+		stream << Utils::typeAsString<T>() << " " << parameterName << " = " << shaderParameter.valueAsString() << ';';
 	}
 };
 
 template<>
-void ParameterNode<Texture>::defineParameter(std::stringstream& stream, CompilationErrorCheck& errorCheck)
+inline void ParameterNode<Texture>::defineParameter(std::stringstream& stream, CompilationErrorCheck& errorCheck)
 {
 	// Texture type is always uniform
 	stream << "uniform ";
@@ -422,15 +332,15 @@ void ParameterNode<Texture>::defineParameter(std::stringstream& stream, Compilat
 //// BEGIN : Parameters
 
 template<>
-ParameterNode<float>::ParameterNode()
+inline ParameterNode<float>::ParameterNode()
 	: BaseParameterNode("scalar")
 	, shaderParameter(name, true, 0.f, EditorGUI::FieldDisplayType::DEFAULT)
 {
-	outputs.push_back(std::make_shared<Output>("x", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "x", FlowType::FLOAT));
 }
 
 template<>
-void ParameterNode<float>::compile(CompilationErrorCheck& errorCheck)
+inline void ParameterNode<float>::compile(CompilationErrorCheck& errorCheck)
 {
 	outputs[0]->valueStr = parameterName;
 }
@@ -438,17 +348,17 @@ void ParameterNode<float>::compile(CompilationErrorCheck& errorCheck)
 /////////////
 
 template<>
-ParameterNode<glm::vec2>::ParameterNode()
+inline ParameterNode<glm::vec2>::ParameterNode()
 	: BaseParameterNode("vector2")
 	, shaderParameter(name, true, glm::vec2(0, 0), EditorGUI::FieldDisplayType::DEFAULT)
 {
-	outputs.push_back(std::make_shared<Output>("rg", FlowType::FLOAT2));
-	outputs.push_back(std::make_shared<Output>("r", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("g", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "rg", FlowType::FLOAT2));
+	outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
 }
 
 template<>
-void ParameterNode<glm::vec2>::compile(CompilationErrorCheck& errorCheck)
+inline void ParameterNode<glm::vec2>::compile(CompilationErrorCheck& errorCheck)
 {
 	outputs[0]->valueStr = parameterName;
 	outputs[1]->valueStr = parameterName + ".r";
@@ -458,18 +368,18 @@ void ParameterNode<glm::vec2>::compile(CompilationErrorCheck& errorCheck)
 /////////////
 
 template<>
-ParameterNode<glm::vec3>::ParameterNode()
+inline ParameterNode<glm::vec3>::ParameterNode()
 	: BaseParameterNode("vector3")
 	, shaderParameter(name, true, glm::vec3(0,0,0), EditorGUI::FieldDisplayType::DEFAULT)
 {
-	outputs.push_back(std::make_shared<Output>("rgb", FlowType::FLOAT3));
-	outputs.push_back(std::make_shared<Output>("r", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("g", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("b", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "rgb", FlowType::FLOAT3));
+	outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "b", FlowType::FLOAT));
 }
 
 template<>
-void ParameterNode<glm::vec3>::compile(CompilationErrorCheck& errorCheck)
+inline void ParameterNode<glm::vec3>::compile(CompilationErrorCheck& errorCheck)
 {
 	outputs[0]->valueStr = parameterName;
 	outputs[1]->valueStr = parameterName + ".r";
@@ -480,19 +390,19 @@ void ParameterNode<glm::vec3>::compile(CompilationErrorCheck& errorCheck)
 /////////////
 
 template<>
-ParameterNode<glm::vec4>::ParameterNode()
+inline ParameterNode<glm::vec4>::ParameterNode()
 	: BaseParameterNode("vector4")
 	, shaderParameter(name, true, glm::vec4(0, 0, 0, 0), EditorGUI::FieldDisplayType::DEFAULT)
 {
-	outputs.push_back(std::make_shared<Output>("rgba", FlowType::FLOAT4));
-	outputs.push_back(std::make_shared<Output>("r", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("g", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("b", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("a", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "rgba", FlowType::FLOAT4));
+	outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "b", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "a", FlowType::FLOAT));
 }
 
 template<>
-void ParameterNode<glm::vec4>::compile(CompilationErrorCheck& errorCheck)
+inline void ParameterNode<glm::vec4>::compile(CompilationErrorCheck& errorCheck)
 {
 	outputs[0]->valueStr = parameterName;
 	outputs[1]->valueStr = parameterName + ".r";
@@ -504,21 +414,21 @@ void ParameterNode<glm::vec4>::compile(CompilationErrorCheck& errorCheck)
 /////////////
 
 template<>
-ParameterNode<Texture>::ParameterNode()
+inline ParameterNode<Texture>::ParameterNode()
 	: BaseParameterNode("texture")
 	, shaderParameter(name, true, ResourcePtr<Texture>(), EditorGUI::FieldDisplayType::DEFAULT)
 {
-	inputs.push_back(std::make_shared<Input>("texCoords", FlowType::FLOAT2));
+	inputs.push_back(std::make_shared<Input>(this, "texCoords", FlowType::FLOAT2));
 
-	outputs.push_back(std::make_shared<Output>("rgba", FlowType::FLOAT4));
-	outputs.push_back(std::make_shared<Output>("r", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("g", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("b", FlowType::FLOAT));
-	outputs.push_back(std::make_shared<Output>("a", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "rgba", FlowType::FLOAT4));
+	outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "b", FlowType::FLOAT));
+	outputs.push_back(std::make_shared<Output>(this, "a", FlowType::FLOAT));
 }
 
 template<>
-void ParameterNode<Texture>::compile(CompilationErrorCheck& errorCheck)
+inline void ParameterNode<Texture>::compile(CompilationErrorCheck& errorCheck)
 {
 	std::stringstream textureCoords;
 	inputs[0]->compile(textureCoords, errorCheck);
@@ -547,12 +457,14 @@ struct OperatorNodeAdd : public OperatorNode
 	OperatorNodeAdd()
 		: OperatorNode("add", "+")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("add", OperatorNodeAdd)
 
 struct OperatorNodeMinus : public OperatorNode
 {
@@ -561,12 +473,14 @@ struct OperatorNodeMinus : public OperatorNode
 	OperatorNodeMinus()
 		: OperatorNode("minus", "-")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("minus", OperatorNodeMinus)
 
 struct OperatorNodeMultiply : public OperatorNode
 {
@@ -575,12 +489,14 @@ struct OperatorNodeMultiply : public OperatorNode
 	OperatorNodeMultiply()
 		: OperatorNode("multiply", "*")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("multiply", OperatorNodeMultiply)
 
 struct OperatorNodeDivide : public OperatorNode
 {
@@ -589,12 +505,14 @@ struct OperatorNodeDivide : public OperatorNode
 	OperatorNodeDivide()
 		: OperatorNode("divide", "/")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("divide", OperatorNodeDivide)
 
 //// END : Operators
 //////////////////////////////////////////////////////////////
@@ -611,12 +529,14 @@ struct FunctionNodeDot : public FunctionNode
 	FunctionNodeDot()
 		: FunctionNode("dot", "dot")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("dot", FunctionNodeDot)
 
 struct FunctionNodeCross : public FunctionNode
 {
@@ -625,12 +545,14 @@ struct FunctionNodeCross : public FunctionNode
 	FunctionNodeCross()
 		: FunctionNode("cross", "cross")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::FLOAT3));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::FLOAT3));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::FLOAT3));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::FLOAT3));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::FLOAT3));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT3));
 	}
 };
+
+REGISTER_NODE("cross", FunctionNodeCross)
 
 struct FunctionNodeNormalize : public FunctionNode
 {
@@ -639,11 +561,13 @@ struct FunctionNodeNormalize : public FunctionNode
 	FunctionNodeNormalize()
 		: FunctionNode("normalize", "normalize")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("normalize", FunctionNodeNormalize)
 
 struct FunctionNodeDistance : public FunctionNode
 {
@@ -652,12 +576,14 @@ struct FunctionNodeDistance : public FunctionNode
 	FunctionNodeDistance()
 		: FunctionNode("distance", "distance")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("distance", FunctionNodeDistance)
 
 struct FunctionNodeLength : public FunctionNode
 {
@@ -666,11 +592,13 @@ struct FunctionNodeLength : public FunctionNode
 	FunctionNodeLength()
 		: FunctionNode("length", "length")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("length", FunctionNodeLength)
 
 struct FunctionNodeMin : public FunctionNode
 {
@@ -679,12 +607,14 @@ struct FunctionNodeMin : public FunctionNode
 	FunctionNodeMin()
 		: FunctionNode("minimum", "min")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("minimum", FunctionNodeMin)
 
 struct FunctionNodeMax : public FunctionNode
 {
@@ -693,12 +623,14 @@ struct FunctionNodeMax : public FunctionNode
 	FunctionNodeMax()
 		: FunctionNode("maximum", "max")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("maximum", FunctionNodeMax)
 
 struct FunctionNodeMod : public FunctionNode
 {
@@ -707,12 +639,14 @@ struct FunctionNodeMod : public FunctionNode
 	FunctionNodeMod()
 		: FunctionNode("modulo", "mod")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
-		inputs.push_back(std::make_shared<Input>("b", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("modulo", FunctionNodeMod)
 
 struct FunctionNodeCos : public FunctionNode
 {
@@ -721,11 +655,13 @@ struct FunctionNodeCos : public FunctionNode
 	FunctionNodeCos()
 		: FunctionNode("cosine", "cos")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("cosine", FunctionNodeCos)
 
 struct FunctionNodeSin : public FunctionNode
 {
@@ -734,11 +670,13 @@ struct FunctionNodeSin : public FunctionNode
 	FunctionNodeSin()
 		: FunctionNode("sine", "sin")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("sine", FunctionNodeSin)
 
 struct FunctionNodeTan : public FunctionNode
 {
@@ -747,50 +685,16 @@ struct FunctionNodeTan : public FunctionNode
 	FunctionNodeTan()
 		: FunctionNode("tangent", "tan")
 	{
-		inputs.push_back(std::make_shared<Input>("a", FlowType::UNDEFINED));
+		inputs.push_back(std::make_shared<Input>(this, "a", FlowType::UNDEFINED));
 
-		outputs.push_back(std::make_shared<Output>("r", FlowType::UNDEFINED));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::UNDEFINED));
 	}
 };
+
+REGISTER_NODE("tangent", FunctionNodeTan)
 
 //// END : Functions
 //////////////////////////////////////////////////////////////
-
-class NodeFactory : public ISingleton<NodeFactory>
-{
-	SINGLETON_IMPL(NodeFactory);
-
-private:
-	std::unordered_map<std::string, std::shared_ptr<Node>> m_container;
-
-public:
-
-	bool registerNode(const std::string& nodeName, std::shared_ptr<Node> node)
-	{
-		m_container[nodeName] = node;
-		return true;
-	}
-
-	std::shared_ptr<Node> getSharedNodeInstance(const std::string& nodeName)
-	{
-		assert(m_container.find(nodeName) != m_container.end());
-
-		return m_container[nodeName]->cloneShared();
-	}
-
-	std::unordered_map<std::string, std::shared_ptr<Node>>::const_iterator& begin() const
-	{
-		return m_container.begin();
-	}
-
-	std::unordered_map<std::string, std::shared_ptr<Node>>::const_iterator& end() const
-	{
-		return m_container.end();
-	}
-};
-
-#define REGISTER_NODE(NodeName, NodeType) static bool initialized##NodeType = NodeFactory::instance().registerNode(NodeName, std::make_shared<NodeType>());
-
 
 class NodeManager : public EditorFrame
 {
@@ -803,46 +707,46 @@ private:
 	std::string m_compileResult;
 	bool m_lastCompilationSucceeded;
 
+	ShaderProgram* m_programPtr;
+
+	glm::vec2 m_dragAnchorPos;
+	bool m_isDraggingNode;
+	Node* m_draggedNode;
+	bool m_isDraggingLink;
+	Link* m_draggedLink;
+	bool m_canResetDragLink;
+
 public:
-	void compile()
-	{
-		CompilationErrorCheck errorCheck;
-		internalResolveUndeterminedTypes();
-		internalDefineParameters(m_compileStream, errorCheck);
-		internalCompile(errorCheck);
-		if (errorCheck.compilationFailed)
-			m_lastCompilationSucceeded = false;
-		else
-		{
-			m_compileStream << m_finalOutput->outputs[0]->valueStr;
-			m_compileResult = m_compileStream.str();
-		}
-	}
+	NodeManager(ShaderProgram* programPtr);
+	~NodeManager();
+
+	void compile();
 
 	Node* getNode(const ID& id) const;
 	void save(Json::Value& root) const;
 	void load(const Json::Value& root);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
 
+	bool isDraggingNode() const;
+	void setIsDraggingNode(bool state);
+	void setDragAnchorPos(const glm::vec2& position);
+	const glm::vec2& getDragAnchorPos() const;
+	Node* getDraggedNode() const;
+	void setDraggedNode(Node* node);
+	void setIsDraggingLink(bool state);
+	bool getIsDraggingLink() const;
+	void setDraggedLink(Link* link);
+	Link* getDraggedLink() const;
+	void setCanResetDragLink(bool state);
+
+	void addLink(std::shared_ptr<Link> link);
+	void removeLink(Link* link);
+
 private:
 
-	void internalResolveUndeterminedTypes()
-	{
-		m_finalOutput->resolveUndeterminedTypes();
-	}
-
-	void internalDefineParameters(std::stringstream& compileStream, CompilationErrorCheck& errorCheck)
-	{
-		for (auto node : m_parameterNodes)
-		{
-			node->defineParameter(compileStream, errorCheck);
-		}
-	}
-
-	void internalCompile(CompilationErrorCheck& errorCheck)
-	{
-		m_finalOutput->compile(errorCheck);
-	}
+	void internalResolveUndeterminedTypes();
+	void internalDefineParameters(std::stringstream& compileStream, CompilationErrorCheck& errorCheck);
+	void internalCompile(CompilationErrorCheck& errorCheck);
 };
 
 

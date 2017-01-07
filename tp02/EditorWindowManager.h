@@ -38,6 +38,7 @@ public:
 	void removeWindow(EditorWindow* modal);
 	void removeWindow(int windowId);
 	std::shared_ptr<EditorWindow> getWindow(int windowId) const;
+	void addWindowAsynchrone(std::shared_ptr<EditorFrame> windowFrame);
 	void addWindowAsynchrone(std::shared_ptr<EditorNode> windowNode);
 
 	void displayModals(Project& project, Editor& editor);

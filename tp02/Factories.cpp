@@ -371,7 +371,7 @@ void loadAllPrograms(ResourceFactory<ShaderProgram>* programFactory, const FileH
 		if (FileHandler::getFileTypeFromExtention(outExtention) == FileHandler::FileType::SHADER_PROGRAM)
 		{
 			FileHandler::CompletePath shaderPath(relativePath.toString() + "/" + fileNameAndExtention);
-			ShaderProgram* newShaderProgram = new ShaderProgram(shaderPath);
+			ShaderProgram* newShaderProgram = new ShaderProgram(shaderPath, Rendering::MaterialType::INTERNAL);
 			ID newID = IDGenerator<Resource>::instance().lockID();
 			newShaderProgram->init(shaderPath, newID);
 			programFactory->addDefaultResource(shaderPath.getFilename(), newShaderProgram);
@@ -481,7 +481,7 @@ ResourceType getResourceType<Material>()
 template<>
 ResourceType getResourceType<ShaderProgram>()
 {
-	return ResourceType::PROGRAME;
+	return ResourceType::SHADER_PROGRAM;
 }
 
 ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
@@ -500,6 +500,8 @@ ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
 		return ResourceType::NONE; //TODO sound
 	case FileHandler::MATERIAL:
 		return ResourceType::MATERIAL;
+	case FileHandler::SHADER_PROGRAM:
+		return ResourceType::SHADER_PROGRAM;
 	default:
 		break;
 	}
@@ -513,9 +515,9 @@ Resource* getResourceFromTypeAndCompletePath(ResourceType resourceType, const Fi
 		PRINT_WARNING("Your are trying to use getResourceFromTypeAndCompletePath() on an unknown resource type. It will return null");
 		return nullptr;
 		break;
-	case PROGRAME:
-		PRINT_WARNING("Your are trying to use getResourceFromTypeAndCompletePath() on ShaderProgram. It will return null");
-		return nullptr;
+	case SHADER_PROGRAM:
+		//PRINT_WARNING("Your are trying to use getResourceFromTypeAndCompletePath() on ShaderProgram. It will return null");
+		return getResourceFactory<ShaderProgram>().get(completePath);
 		break;
 	case TEXTURE:
 		return getResourceFactory<Texture>().get(completePath);
@@ -546,9 +548,6 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 	{
 	case NONE:
 		break;
-	case PROGRAME:
-		getResourceFactory<ShaderProgram>().addResourceSoft(completePath);
-		break;
 	case TEXTURE:
 		getResourceFactory<Texture>().addResourceSoft(completePath);
 		break;
@@ -563,6 +562,9 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 		break;
 	case MATERIAL:
 		getResourceFactory<Material>().addResourceSoft(completePath);
+		break;
+	case SHADER_PROGRAM:
+		getResourceFactory<ShaderProgram>().addResourceSoft(completePath);
 		break;
 	default:
 		break;
@@ -579,9 +581,10 @@ void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, c
 	{
 	case NONE:
 		break;
-	case PROGRAME:
+	case SHADER_PROGRAM:
 		//getResourceFactory<ShaderProgram>().changeResourceKey(oldResourcePath, newResourcePath);
-		std::cout << "warning : can't edit shaderProgram factory ! in : renameResourceInFactory()"<<std::endl;
+		//std::cout << "warning : can't edit shaderProgram factory ! in : renameResourceInFactory()"<<std::endl;
+		getResourceFactory<ShaderProgram>().changeResourceKey(oldResourcePath, newResourcePath);
 		break;
 	case TEXTURE:
 		getResourceFactory<Texture>().changeResourceKey(oldResourcePath, newResourcePath);
@@ -611,9 +614,10 @@ void removeResourceFromFactory(const FileHandler::CompletePath& resourcePath)
 	{
 	case NONE:
 		break;
-	case PROGRAME:
+	case SHADER_PROGRAM:
 		//getResourceFactory<ShaderProgram>().erase(resourcePath);
-		std::cout << "warning : can't edit shaderProgram factory ! in : renameResourceInFactory()" << std::endl;
+		//std::cout << "warning : can't edit shaderProgram factory ! in : renameResourceInFactory()" << std::endl;
+		getResourceFactory<ShaderProgram>().erase(resourcePath);
 		break;
 	case TEXTURE:
 		getResourceFactory<Texture>().erase(resourcePath);

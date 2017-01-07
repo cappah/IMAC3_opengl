@@ -517,6 +517,9 @@
     <ClInclude Include="MaterialVisualScripting.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="MaterialConfig.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

@@ -11,12 +11,12 @@
 enum ResourceType
 {
 	NONE,
-	PROGRAME,
 	TEXTURE,
 	CUBE_TEXTURE,
 	MESH,
 	SKELETAL_ANIMATION,
 	MATERIAL,
+	SHADER_PROGRAM,
 };
 
 //static unsigned int s_resourceCount = 0;

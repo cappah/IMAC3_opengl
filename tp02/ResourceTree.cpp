@@ -222,8 +222,8 @@ void ResourceTree::copyResourceTo(const ResourceFile& resourceFileToMove, Resour
 
 void ResourceTree::addNewShaderProgramTo(const std::string& shaderProgramName, ResourceFolder& folderTo)
 {
-	assert(getProgramFactory().containsDefault(shaderProgramName)); //we can't add a second resource with the same name
-	if (!getProgramFactory().containsDefault(shaderProgramName))
+	assert(!folderTo.hasFile(ResourceFileKey(ResourceType::SHADER_PROGRAM, shaderProgramName)));
+	if (folderTo.hasFile(ResourceFileKey(ResourceType::SHADER_PROGRAM, shaderProgramName)))
 		return;
 
 	//We create and save the new resource
@@ -231,7 +231,7 @@ void ResourceTree::addNewShaderProgramTo(const std::string& shaderProgramName, R
 
 	//create new instance
 	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), shaderProgramName, ".glProg");
-	ShaderProgram* newShaderProgram = new ShaderProgram();
+	ShaderProgram* newShaderProgram = new ShaderProgram(resourceCompletePath, Rendering::MaterialType::DEFAULT);
 	newShaderProgram->save(resourceFilePath);
 
 	folderTo.addFile<ShaderProgram>(resourceCompletePath, newShaderProgram);
@@ -239,7 +239,7 @@ void ResourceTree::addNewShaderProgramTo(const std::string& shaderProgramName, R
 
 void ResourceTree::addNewMaterialTo(const std::string& newMaterialName, ResourceFile& shaderProgramFile, ResourceFolder& folderTo)
 {
-	assert(shaderProgramFile.getType() == ResourceType::PROGRAME);
+	assert(shaderProgramFile.getType() == ResourceType::SHADER_PROGRAM);
 
 	assert(getProgramFactory().containsDefault(newMaterialName)); //we can't add a second resource with the same name
 	if (!getProgramFactory().containsDefault(newMaterialName))

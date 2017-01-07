@@ -144,6 +144,11 @@ void EditorWindowManager::addWindow(std::shared_ptr<EditorNode> windowNode)
 	}
 }
 
+void EditorWindowManager::addWindowAsynchrone(std::shared_ptr<EditorFrame> windowFrame)
+{
+	m_windowsToAdd.push_back(std::make_shared<EditorNode>(windowFrame));
+}
+
 void EditorWindowManager::addWindowAsynchrone(std::shared_ptr<EditorNode> windowNode)
 {
 	m_windowsToAdd.push_back(windowNode);

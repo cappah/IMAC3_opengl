@@ -20,8 +20,7 @@ out block
 {
         vec2 TexCoord;
         vec3 Position;
-        vec3 Normal;
-        vec4 Color;
+        mat3 TBN;
 } Out;
 
 void main()
@@ -31,9 +30,15 @@ void main()
         vec3 pos = Position;
         vec3 posWorldSpace = Translation + CameraRight * Position.x * Size.x + CameraUp * Position.z * Size.y;
 
+        vec3 tangent = normalize(CameraRight);
+        //calculate TBN matrix :
+        vec3 T = normalize( vec3(vec4(tangent, 0.0)) );
+        vec3 N = normalize( vec3(vec4(Normal, 0.0)) );
+        vec3 B = -cross(T, N);
+        Out.TBN = mat3(B, T, N);
+
         Out.TexCoord = TexCoord;// * TextureRepetition;
         Out.Position = pos;
-        Out.Normal =  Normal;//normalize( vec3(NormalMatrix * vec4(Normal, 0.0)) );
 
         gl_Position = VP * vec4(posWorldSpace, 1.0);
 }

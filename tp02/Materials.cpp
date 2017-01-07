@@ -10,7 +10,7 @@
 
 Material::Material()
 	: m_glProgramId(0)
-	, m_pipelineType(Rendering::PipelineType::CUSTOM_PIPELINE)
+	//, m_pipelineType(Rendering::PipelineType::CUSTOM_PIPELINE)
 {
 
 }
@@ -275,7 +275,9 @@ GLuint Material::getGLId() const
 
 Rendering::PipelineType Material::getPipelineType() const
 {
-	return m_pipelineType;
+	assert(m_programPtr.get() != nullptr);
+	return m_programPtr->getPipelineType();
+	//return m_pipelineType;
 }
 
 void Material::loadFromShaderProgramDatas(GLuint glProgramId, const std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters/*, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters*/)
@@ -297,7 +299,7 @@ void Material::loadFromShaderProgramDatas(GLuint glProgramId, const std::vector<
 void Material::save(Json::Value & entityRoot) const
 {
 	// Pipeline type : 
-	entityRoot["pipelineType"] = Rendering::PipelineTypesToString[(int)m_pipelineType];
+	//entityRoot["pipelineType"] = Rendering::PipelineTypesToString[(int)m_pipelineType];
 
 	//// Program name :
 	//entityRoot["shaderProgramName"] = m_glProgramName;
@@ -317,10 +319,10 @@ void Material::save(Json::Value & entityRoot) const
 void Material::load(const Json::Value & entityRoot)
 {
 	// Pipeline type : 
-	auto foundItPipelineType = std::find(Rendering::PipelineTypesToString.begin(), Rendering::PipelineTypesToString.end(), entityRoot.get("pipelineType", "").asString());
-	assert(foundItPipelineType != Rendering::PipelineTypesToString.end());
-	int foundIdxPipelineType = foundItPipelineType - Rendering::PipelineTypesToString.begin();
-	m_pipelineType = (Rendering::PipelineType)foundIdxPipelineType;
+	//auto foundItPipelineType = std::find(Rendering::PipelineTypesToString.begin(), Rendering::PipelineTypesToString.end(), entityRoot.get("pipelineType", "").asString());
+	//assert(foundItPipelineType != Rendering::PipelineTypesToString.end());
+	//int foundIdxPipelineType = foundItPipelineType - Rendering::PipelineTypesToString.begin();
+	//m_pipelineType = (Rendering::PipelineType)foundIdxPipelineType;
 	
 	m_programPtr.load(entityRoot["shaderProgramPtr"]);
 	assert(m_programPtr.isValid());

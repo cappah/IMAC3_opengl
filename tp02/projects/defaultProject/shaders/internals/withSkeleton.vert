@@ -1,4 +1,9 @@
 
+#define BONE_IDS	 4
+#define BONE_WEIGHTS     5
+
+const unsigned int MAX_BONE_COUNT = 100;
+
 uniform mat4 BonesTransform[MAX_BONE_COUNT];
 uniform bool UseSkeleton = false;
 

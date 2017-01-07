@@ -680,7 +680,8 @@ void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBat
 
 	for (auto& renderBatch : transparentRenderBatches)
 	{
-		renderBatch.second->renderForward(projection, view, m_renderDatas);
+		//renderBatch.second->renderForward(projection, view, m_renderDatas);
+		renderBatch.second->render(projection, view, m_renderDatas);
 	}
 	
 	//glDepthMask(GL_TRUE);

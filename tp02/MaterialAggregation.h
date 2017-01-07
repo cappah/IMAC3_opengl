@@ -4,6 +4,7 @@
 #include "glew/glew.h"
 #include "glm/common.hpp"
 #include "IDrawable.h"
+#include "MaterialConfig.h"
 
 class RenderDatas;
 
@@ -21,7 +22,7 @@ public:
 	virtual void pushParametersToGPU(const IDrawable& drawable, const RenderDatas& renderDatas, int& boundTextureCount) const = 0;
 };
 
-class MaterialAggregationWithSkeleton
+class MaterialAggregationWithSkeleton : public PerInstanceMaterialAggregation
 {
 private:
 	std::vector<GLuint> uniform_bonesTransform;
@@ -37,7 +38,7 @@ private:
 };
 
 
-class MaterialAggregationMesh
+class MaterialAggregationMesh : public PerInstanceMaterialAggregation
 {
 private:
 	GLuint uniform_ModelMatrix;
@@ -55,7 +56,7 @@ private:
 };
 
 
-class MaterialAggregationBillboard
+class MaterialAggregationBillboard : public PerInstanceMaterialAggregation
 {
 private:
 	GLuint uniform_MVP;
@@ -81,7 +82,7 @@ private:
 };
 
 
-class MaterialAggregationParticles
+class MaterialAggregationParticles : public PerInstanceMaterialAggregation
 {
 private:
 	GLuint m_uniformVP;
@@ -100,3 +101,44 @@ private:
 	void setUniformCameraUp(const glm::vec3& camUp) const;
 };
 
+///////////////////////////////////////////////////////////////
+
+class MaterialAggregationForward : public MaterialAggregation
+{
+protected:
+	// Lighting
+	GLuint uniform_PointLight_position[MAX_POINT_LIGHT_COUNT];
+	GLuint uniform_PointLight_color[MAX_POINT_LIGHT_COUNT];
+	GLuint uniform_PointLight_intensity[MAX_POINT_LIGHT_COUNT];
+
+	GLuint uniform_SpotLight_position[MAX_SPOT_LIGHT_COUNT];
+	GLuint uniform_SpotLight_direction[MAX_SPOT_LIGHT_COUNT];
+	GLuint uniform_SpotLight_color[MAX_SPOT_LIGHT_COUNT];
+	GLuint uniform_SpotLight_intensity[MAX_SPOT_LIGHT_COUNT];
+	GLuint uniform_SpotLight_angle[MAX_SPOT_LIGHT_COUNT];
+
+	GLuint uniform_DirectionalLight_direction[MAX_DIRECTIONAL_LIGHT_COUNT];
+	GLuint uniform_DirectionalLight_color[MAX_DIRECTIONAL_LIGHT_COUNT];
+	GLuint uniform_DirectionalLight_intensity[MAX_DIRECTIONAL_LIGHT_COUNT];
+
+	GLuint uniform_PointLightCount;
+	GLuint uniform_SpotLightCount;
+	GLuint uniform_DirectionalLightCount;
+
+	// Transform
+	GLuint uniform_ScreenToView; // mat4
+
+public:
+	void initParameters(GLuint programID) override;
+	void pushParametersToGPU(const RenderDatas& renderDatas) const override;
+
+private:
+	void setUniformPointLight(int index, const glm::vec3& position, const glm::vec3& color, float intensity) const;
+	void setUniformSpotLight(int index, const glm::vec3& position, const glm::vec3& direction, float angle, const glm::vec3& color, float intensity) const;
+	void setUniformDirectionalLight(int index, const glm::vec3& direction, const glm::vec3& color, float intensity) const;
+	void setUniformPointLightCount(int count) const;
+	void setUniformSpotLightCount(int count) const;
+	void setUniformDirectionalLightCount(int count) const;
+	void setUniformScreenToView(const glm::mat4& screenToView) const;
+
+};

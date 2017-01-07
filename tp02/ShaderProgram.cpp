@@ -19,9 +19,9 @@ ShaderProgram::ShaderProgram()
 {
 }
 
-ShaderProgram::ShaderProgram(const FileHandler::CompletePath& path)
+ShaderProgram::ShaderProgram(const FileHandler::CompletePath& path, Rendering::MaterialType type)
 	: Resource(path)
-	, m_materialType(Rendering::MaterialType::INTERNAL)
+	, m_materialType(type)
 	, m_usedWithReflections(false)
 	, m_usedWithSkeleton(false)
 	, m_pipeline(Rendering::PipelineType::CUSTOM_PIPELINE)
@@ -60,15 +60,41 @@ GLuint ShaderProgram::getProgramId() const
 
 void ShaderProgram::compile()
 {
-	GLuint newProgramId = makeGLProgram();
+	m_programId = makeGLProgram();
+	makeMaterialAggregates();
+}
 
+void ShaderProgram::compile(const std::string& computeShaderParameters)
+{
+	m_computeShaderParameterFunction = computeShaderParameters;
+	m_programId = makeGLProgram();
+	makeMaterialAggregates();
+}
+
+void ShaderProgram::resetNodeManagerPtr()
+{
+	m_nodeManagerRef.reset();
+}
+
+void ShaderProgram::init(const FileHandler::CompletePath& path, const ID& id)
+{
+	Resource::init(path, id);
+
+	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
+
+	load(absolutePath);
+}
+
+void ShaderProgram::makeMaterialAggregates()
+{
 	m_perInstanceAggregations.clear();
 	m_aggregations.clear();
 
 	if (m_pipeline == Rendering::PipelineType::FORWARD_PIPELINE)
 	{
 		auto aggregation = std::make_shared<MaterialAggregationForward>();
-		aggregation->initParameters(newProgramId);
+		aggregation->initParameters(m_programId);
 		m_aggregations["forward"] = aggregation;
 	}
 	else if (m_pipeline == Rendering::PipelineType::DEFERRED_PIPILINE)
@@ -79,7 +105,7 @@ void ShaderProgram::compile()
 	if (m_usedWithSkeleton)
 	{
 		auto aggregation = std::make_shared<MaterialAggregationWithSkeleton>();
-		aggregation->initParameters(newProgramId);
+		aggregation->initParameters(m_programId);
 		m_perInstanceAggregations["skeleton"] = aggregation;
 	}
 	else
@@ -99,31 +125,21 @@ void ShaderProgram::compile()
 	if (m_usage == Rendering::MaterialUsage::MESH)
 	{
 		auto aggregation = std::make_shared<MaterialAggregationMesh>();
-		aggregation->initParameters(newProgramId);
+		aggregation->initParameters(m_programId);
 		m_perInstanceAggregations["mesh"] = aggregation;
 	}
 	else if (m_usage == Rendering::MaterialUsage::BILLBOARD)
 	{
 		auto aggregation = std::make_shared<MaterialAggregationBillboard>();
-		aggregation->initParameters(newProgramId);
+		aggregation->initParameters(m_programId);
 		m_perInstanceAggregations["billboard"] = aggregation;
 	}
 	if (m_usage == Rendering::MaterialUsage::PARTICLES)
 	{
 		auto aggregation = std::make_shared<MaterialAggregationParticles>();
-		aggregation->initParameters(newProgramId);
+		aggregation->initParameters(m_programId);
 		m_perInstanceAggregations["particles"] = aggregation;
 	}
-}
-
-void ShaderProgram::init(const FileHandler::CompletePath& path, const ID& id)
-{
-	Resource::init(path, id);
-
-	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
-	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
-
-	load(absolutePath);
 }
 
 void ShaderProgram::load(const FileHandler::CompletePath& path)
@@ -166,13 +182,13 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 	//m_baseMaterialType = (Rendering::BaseMaterialType)foundIdxBaseMaterial;
 
 	// Material Type
-	auto foundItMaterialType = std::find(Rendering::MaterialTypeToString.begin(), Rendering::MaterialTypeToString.end(), root.get("materialType", "").asString());
+	auto foundItMaterialType = std::find(Rendering::MaterialTypeToString.begin(), Rendering::MaterialTypeToString.end(), root.get("materialType", "internal").asString());
 	assert(foundItMaterialType != Rendering::MaterialTypeToString.end());
 	int foundIdxMaterialType = foundItMaterialType - Rendering::MaterialTypeToString.begin();
 	m_materialType = (Rendering::MaterialType)foundIdxMaterialType;
 
-	m_usage = (Rendering::MaterialUsage)root.get("materialUsage", 0).asInt();
-	m_pipeline = (Rendering::PipelineType)root.get("materialPipeline", 0).asInt();
+	m_usage = Utils::stringToEnum<Rendering::MaterialUsage>(root.get("materialUsage", "custom").asString(), Rendering::MaterialUsageToString);
+	m_pipeline = Utils::stringToEnum<Rendering::PipelineType>(root.get("materialPipeline", "custom").asString(), Rendering::PipelineTypesToString);
 	m_usedWithReflections = root.get("usedWithReflection", false).asBool();
 	m_usedWithSkeleton = root.get("usedWithSkeleton", false).asBool();
 
@@ -201,6 +217,8 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 
 	if (m_materialType == Rendering::MaterialType::DEFAULT)
 	{
+		m_computeShaderParameterFunction = root.get("computeShaderParameterFunction", "").asString();
+
 		m_programId = makeGLProgram();
 	}
 	else if (m_materialType == Rendering::MaterialType::INTERNAL)
@@ -213,6 +231,8 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 	}
 	else
 		assert(false && "Wrong material type !");
+
+	makeMaterialAggregates();
 
 	// Internal parameters
 	Json::Value internalShaderParameters = root["internalShaderParameters"];
@@ -261,11 +281,13 @@ void ShaderProgram::save(const FileHandler::CompletePath & path)
 	Json::Value root;
 
 	// Material Type
-	root["materialType"] = Rendering::MaterialTypeToString[(int)m_materialType];
-	root["materialUsage"] = Rendering::MaterialUsageToString[(int)m_usage];
-	root["materialPipeline"] = Rendering::PipelineTypesToString[(int)m_pipeline];
+	root["materialType"] = Utils::enumToString(m_materialType, Rendering::MaterialTypeToString);
+	root["materialUsage"] = Utils::enumToString(m_usage, Rendering::MaterialUsageToString);
+	root["materialPipeline"] = Utils::enumToString(m_pipeline, Rendering::PipelineTypesToString);
 	root["usedWithReflection"] = m_usedWithReflections;
 	root["usedWithSkeleton"] = m_usedWithSkeleton;
+	// Compilation result
+	root["computeShaderParameterFunction"] = m_computeShaderParameterFunction;
 
 	if (m_materialType == Rendering::MaterialType::DEFAULT)
 	{
@@ -359,7 +381,7 @@ GLuint ShaderProgram::makeGLProgramForInternal(const FileHandler::CompletePath& 
 
 	glLinkProgram(programObject);
 	if (check_link_error(programObject) < 0)
- 		exit(1);
+		assert(false && "error in shader code.");
 
 	//check uniform errors : 
 	ASSERT_GL_ERROR("error in shader program compilation.");
@@ -451,11 +473,19 @@ GLuint ShaderProgram::makeGLProgram()
 	// Fragment shader : 
 	fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "header.frag");
 
-	///// Temporary and hard coded, must be replaced by shader visual scripting : 
-	const FileHandler::CompletePath& fragmentAbsolutePath(internalShaderFolderPath + "/" + "defaultComputeShaderParams.frag");
-	std::string computeParamsFragmentShaderPath = fragmentAbsolutePath.toString();
-	fillShaderStream(fragmentShaderStream, computeParamsFragmentShaderPath);
-	///////////
+	if (m_computeShaderParameterFunction == "")
+		fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "defaultComputeShaderParams.vert");
+	else
+		fillShaderStream(fragmentShaderStream, m_computeShaderParameterFunction);
+
+	if (m_usedWithReflections)
+	{
+		fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "withReflection.vert");
+	}
+	else
+	{
+		fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "withoutReflection.vert");
+	}
 
 	if (m_pipeline == Rendering::PipelineType::FORWARD_PIPELINE)
 	{
@@ -470,20 +500,11 @@ GLuint ShaderProgram::makeGLProgram()
 	fillShaderStream(vertexShaderStream, internalShaderFolderPath + "header.vert");
 	if (m_usedWithSkeleton)
 	{
-		fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "withSkeleton.vert");
+		fillShaderStream(vertexShaderStream, internalShaderFolderPath + "withSkeleton.vert");
 	}
 	else
 	{
-		fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "withoutSkeleton.vert");
-	}
-
-	if (m_usedWithReflections)
-	{
-		fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "withReflection.vert");
-	}
-	else
-	{
-		fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "withoutReflection.vert");
+		fillShaderStream(vertexShaderStream, internalShaderFolderPath + "withoutSkeleton.vert");
 	}
 
 	if (m_usage == Rendering::MaterialUsage::MESH)
@@ -514,7 +535,7 @@ GLuint ShaderProgram::makeGLProgram(const std::string & vertexShaderContent, con
 
 	glLinkProgram(programObject);
 	if (check_link_error(programObject) < 0)
-		exit(1);
+		assert(false && "error in shader code.");
 
 	//check uniform errors : 
 	ASSERT_GL_ERROR("error in shader program compilation.");
@@ -585,58 +606,57 @@ Rendering::MaterialType ShaderProgram::getMaterialType() const
 	return m_materialType;
 }
 
-bool getMaterialUsageItem()
+Rendering::PipelineType ShaderProgram::getPipelineType() const
 {
-
+	return m_pipeline;
 }
 
 void ShaderProgram::drawInInspector(Scene & scene)
 {
-	bool dirty = false;
-
-	if (ImGui::Combo("material usage", (int*)&m_usage, [](void* data, int idx, const char** out_text) {
+	int currentItemUsage = (int)m_usage;
+	if (ImGui::Combo("material usage", &currentItemUsage, [](void* data, int idx, const char** out_text) {
 		if (Rendering::MaterialUsageToString.size() > idx) {
 			*out_text = Rendering::MaterialUsageToString[idx].c_str(); return true;
 		}
 		else return false;
 	}, nullptr, (int)Rendering::MaterialUsageToString.size()))
 	{
-		m_usage = (Rendering::MaterialUsage)m_usage;
-		dirty = true;
+		m_usage = (Rendering::MaterialUsage)currentItemUsage;
+		m_needRecompilation = true;
 	}
 
-	if (ImGui::Combo("material pipeline", (int*)&m_pipeline, [](void* data, int idx, const char** out_text) {
+	int currentItemPipeline = (int)m_pipeline;
+	if (ImGui::Combo("material pipeline", &currentItemPipeline, [](void* data, int idx, const char** out_text) {
 		if (Rendering::PipelineTypesToString.size() > idx) {
 			*out_text = Rendering::PipelineTypesToString[idx].c_str(); return true;
 		}
 		else return false;
 	}, nullptr, (int)Rendering::PipelineTypesToString.size()))
 	{
-		m_pipeline = (Rendering::PipelineType)m_usage;
-		dirty = true;
+		m_pipeline = (Rendering::PipelineType)currentItemPipeline;
+		m_needRecompilation = true;
 	}
 
 	if (ImGui::Checkbox("used with reflections", &m_usedWithReflections))
 	{
-		dirty = true;
+		m_needRecompilation = true;
 	}
 
 	if (ImGui::Checkbox("used with skeleton", &m_usedWithSkeleton))
 	{
-		dirty = true;
+		m_needRecompilation = true;
 	}
 
 	if (ImGui::Button("Edit"))
 	{
 		// If the edit window isn't opened
-		if (!m_nodeManagerRef)
+		if (m_nodeManagerRef.expired() || m_nodeManagerRef.use_count() == 0)
 		{
-			// Node manager creation
-			m_nodeManagerRef = std::make_shared<MVS::NodeManager>();
-
-			// Node manager loading
+			// Node manager creation and loading
+			assert(!Project::isPathPointingInsideProjectFolder(m_completePath)); //path should be relative
+			FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(m_completePath);
 			std::ifstream stream;
-			stream.open(m_completePath.toString());
+			stream.open(absolutePath.toString());
 			if (!stream.is_open())
 			{
 				std::cout << "error, can't load shader program at path : " << m_completePath.toString() << std::endl;
@@ -644,15 +664,17 @@ void ShaderProgram::drawInInspector(Scene & scene)
 			}
 			Json::Value root;
 			stream >> root;
-			m_nodeManagerRef->load(root["MVS"]);
+
+			auto newNodeManager = std::make_shared<MVS::NodeManager>(this);
+			m_nodeManagerRef = newNodeManager;
+			m_nodeManagerRef.lock()->load(root["MVS"]);
 
 			// We open the window which will display the node manager
-			m_nodeManagerRef = std::make_shared<MVS::NodeManager>();
-			Editor::instance().getWindowManager()->addWindow(m_nodeManagerRef);
+			Editor::instance().getWindowManager()->addWindowAsynchrone(newNodeManager);
 		}
 	}
 
-	if (dirty)
+	if (m_needRecompilation)
 	{
 		if (ImGui::Button("Compile"))
 		{

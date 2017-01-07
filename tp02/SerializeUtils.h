@@ -16,6 +16,80 @@
 #include "jsoncpp/json/json.h"
 #include "ErrorHandler.h"
 
+// Type or value to string
+
+namespace Utils {
+
+template<typename T>
+inline std::string valueAsString(const T& value)
+{
+	// Assume it is a vector by default
+
+	std::stringstream ss;
+
+	ss << "vec";
+	ss << value.length();
+	ss << '(';
+	for (int i = 0; i < value.length(); i++)
+	{
+		ss << std::to_string(value[i]);
+		if (i < value.length() - 1)
+			ss << ", ";
+	}
+	ss << ')';
+
+	return ss.str();
+}
+
+template<>
+inline std::string valueAsString(const float& value)
+{
+	return std::to_string(value);
+}
+
+template<>
+inline std::string valueAsString(const int& value)
+{
+	return std::to_string(value);
+}
+
+template<typename T>
+inline std::string typeAsString()
+{
+	// Assume it is a vector by default
+	T value;
+	std::stringstream ss;
+	ss << "vec";
+	ss << value.length();
+
+	return ss.str();
+}
+
+template<>
+inline std::string typeAsString<float>()
+{
+	return "float";
+}
+
+template<typename EnumType>
+EnumType stringToEnum(const std::string& enumAsString, std::vector<std::string>& enumToStringArray)
+{
+	auto foundEnumAsString = std::find(enumToStringArray.begin(), enumToStringArray.end(), enumAsString);
+	assert(foundEnumAsString != enumToStringArray.end());
+	int foundIdxEnumAsString = foundEnumAsString - enumToStringArray.begin();
+	return (EnumType)foundIdxEnumAsString;
+}
+
+template<typename EnumType>
+const std::string& enumToString(EnumType _enum, std::vector<std::string>& enumToStringArray)
+{
+	int enumAsInt = (int)_enum;
+	assert(enumAsInt >= 0 && enumAsInt < enumToStringArray.size());
+	return enumToStringArray[enumAsInt];
+}
+
+}
+
 
 //for serialization : 
 

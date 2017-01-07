@@ -447,7 +447,7 @@ size_t getFileNameAndExtentionFromExtendedFilename(const std::string& extendedFi
 
 FileType getFileTypeFromExtention(const std::string& extention)
 {
-	assert(extention.find_first_of("/\\_,;") == std::string::npos);
+	assert(extention.find_first_of("/\\,;") == std::string::npos);
 
 	if (extention == ".jpg" || extention == ".jpeg" || extention == ".png" || extention == ".bmp" || extention == ".tga")
 	{
@@ -475,7 +475,8 @@ FileType getFileTypeFromExtention(const std::string& extention)
 	}
 	else
 	{
-		PRINT_WARNING("L'extention : " << extention << " n'est pas prix en charge.")
+		PRINT_WARNING("L'extention : " + extention + " n'est pas prix en charge.");
+		//assert(false && "Wrong extention");
 		return FileType::NONE;
 	}
 }

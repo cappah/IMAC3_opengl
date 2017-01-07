@@ -34,6 +34,7 @@ namespace Rendering
 
 	enum class MaterialUsage
 	{
+		CUSTOM,
 		MESH,
 		BILLBOARD,
 		PARTICLES,
@@ -41,6 +42,7 @@ namespace Rendering
 	};
 
 	static std::vector<std::string> MaterialUsageToString = {
+		"custom",
 		"mesh",
 		"billboard",
 		"particles",
@@ -109,24 +111,31 @@ private:
 	std::string m_geometryShaderName;
 
 	// A pointer to the NodeManager (i.e : the material editing window) associated with this material.
-	std::shared_ptr<MVS::NodeManager> m_nodeManagerRef;
+	std::weak_ptr<MVS::NodeManager> m_nodeManagerRef;
+
+	std::string m_computeShaderParameterFunction;
+	bool m_needRecompilation;
 
 public:
 	ShaderProgram();
-	ShaderProgram(const FileHandler::CompletePath& path);
+	ShaderProgram(const FileHandler::CompletePath& path, Rendering::MaterialType type);
 	//ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);
 	//ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath);
 
 	const std::unordered_map<std::string, std::shared_ptr<MaterialAggregation>>& getAggregations() const;
 	const std::unordered_map<std::string, std::shared_ptr<PerInstanceMaterialAggregation>>& getPerInstanceAggregation() const;
 	GLuint getProgramId() const;
-	void compile();
+	void compile(); // DEPRECATED
+	void compile(const std::string& computeShaderParameters);
+
+	void resetNodeManagerPtr();
 
 	void init(const FileHandler::CompletePath& path, const ID& id) override;
 
 	void load(const FileHandler::CompletePath& path);
 	void save(const FileHandler::CompletePath& path);
 
+	void makeMaterialAggregates();
 	GLuint makeGLProgramForInternal(const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName);
 	//GLuint makeGLProgram(const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName);
 	GLuint makeGLProgramForDefault(const FileHandler::CompletePath& shaderFolderPath, const std::string& fragmentShaderName);
@@ -157,6 +166,7 @@ public:
 	//const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& getExternalParameters() const;
 
 	Rendering::MaterialType getMaterialType() const;
+	Rendering::PipelineType getPipelineType() const;
 
 	virtual void drawInInspector(Scene & scene) override;
 

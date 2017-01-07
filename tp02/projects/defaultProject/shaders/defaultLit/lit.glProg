@@ -1,8 +1,13 @@
 {
-    "pipelineHandling" : ["deferred", "forward"],
-    "baseMaterial" : "object3D",
-    "deferred" : {"vertex" : "aogl.vert", "fragment" : "aogl_gPass.frag", "geometry" : ""},
-    "forward" : {"vertex" : "transparent.vert", "fragment" : "transparent.frag", "geometry" : ""},
+    //"pipelineHandling" : ["deferred", "forward"],
+    //"baseMaterial" : "object3D",
+    //"deferred" : {"vertex" : "aogl.vert", "fragment" : "aogl_gPass.frag", "geometry" : ""},
+    //"forward" : {"vertex" : "transparent.vert", "fragment" : "transparent.frag", "geometry" : ""},
+    "materialPipeline" : "deferred",
+    "materialUsage" : "mesh",
+    "vertex" : "aogl.vert",
+    "fragment" : "aogl_gPass.frag",
+    "geometry" : "",
     "internalShaderParameters" : [
         {"type" : "texture", "name" : "Diffuse", "default" : "default" },
         {"type" : "float4", "name" : "TintColor", "default" : [1.0, 1.0, 1.0, 1.0], "displayType" : "color"},

@@ -39,6 +39,12 @@ public:
 	}
 
 	virtual std::shared_ptr<InternalShaderParameterBase> clone() = 0;
+
+	virtual std::string valueAsString() const
+	{
+		assert(false && "the value can't be represented as a string.");
+		return "";
+	}
 };
 
 //The ShaderParameter interface. 
@@ -244,6 +250,12 @@ public:
 	{
 		return std::make_shared<InternalShaderParameter<T, ShaderParameter::IsNotArray>>(*this);
 	}
+
+	virtual std::string valueAsString() const override
+	{
+		return Utils::valueAsString(m_data);
+	}
+
 };
 
 //array version isn't editable for now
