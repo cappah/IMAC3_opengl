@@ -10,7 +10,9 @@
 
 #include "ShaderParameters.h"
 #include "EditorNodes.h"
+#include "MeshVisualizer.h"
 
+class Mesh;
 class ShaderProgram;
 
 namespace MVS {
@@ -26,6 +28,13 @@ enum class NodeType {
 	PARAMETER,
 	FUNCTION,
 	FINAL,
+};
+
+static std::vector<std::string> NodeTypeToString = {
+	"operator",
+	"parameter",
+	"function",
+	"final",
 };
 
 enum class ParameterType {
@@ -48,12 +57,16 @@ struct CompilationErrorCheck
 {
 	bool compilationFailed;
 	std::string errorMsg;
+
+	CompilationErrorCheck()
+		: compilationFailed(false)
+		, errorMsg("")
+	{}
 };
 
 struct Input
 {
 	std::string name;
-	Node* nodePtr;
 	int outputIdx;
 	FlowType desiredType;
 
@@ -64,7 +77,6 @@ struct Input
 	Input(Node* _parentNode, const std::string& _name, FlowType _desiredType);
 	void resolveUndeterminedTypes(FlowType _desiredType);
 	void compile(std::stringstream& stream, CompilationErrorCheck& errorCheck);
-	void linkToOutput(Node* _nodePtr, int _outputIdx);
 };
 
 struct Output
@@ -98,11 +110,15 @@ struct Node
 	std::vector<std::shared_ptr<Output>> outputs;
 
 	glm::vec2 position;
+	glm::vec2 size;
 
+	virtual void defineParameter(std::stringstream& stream, CompilationErrorCheck& errorCheck);
 	virtual void compile(CompilationErrorCheck& errorCheck) = 0;
 
-	Node();
 	Node(NodeType _type, const std::string& _name);
+	Node();
+	Node(const Node& other);
+	Node& operator=(const Node& other);
 
 	void resolveUndeterminedTypes();
 	virtual std::shared_ptr<Node> cloneShared() = 0;
@@ -111,6 +127,7 @@ struct Node
 	void load(const Json::Value& root);
 
 	void drawUI(NodeManager& manager);
+	virtual void drawUIParameters() {}
 	void setPosition(const glm::vec2& pos);
 	const glm::vec2& getPosition() const;
 };
@@ -138,7 +155,7 @@ class NodeFactory : public ISingleton<NodeFactory>
 	SINGLETON_IMPL(NodeFactory);
 
 private:
-	std::unordered_map<std::string, std::shared_ptr<Node>> m_container;
+	std::vector<std::shared_ptr<Node>> m_container;
 
 public:
 
@@ -147,37 +164,59 @@ public:
 
 	bool registerNode(const std::string& nodeName, std::shared_ptr<Node> node)
 	{
-		m_container[nodeName] = node;
+		if (std::find_if(m_container.begin(), m_container.end(), [&nodeName](const std::shared_ptr<Node>& item) { return item->name == nodeName; }) != m_container.end())
+			return false;
+
+		auto it = std::lower_bound(m_container.begin(), m_container.end(), node, [](const std::shared_ptr<Node>& itemA, const std::shared_ptr<Node>& itemB) { return (int)itemA->type > (int)itemB->type; });
+		m_container.insert(it, node);
 		return true;
 	}
 
 	std::shared_ptr<Node> getSharedNodeInstance(const std::string& nodeName)
 	{
-		assert(m_container.find(nodeName) != m_container.end());
+		assert(std::find_if(m_container.begin(), m_container.end(), [&nodeName](const std::shared_ptr<Node>& item) { return item->name == nodeName; }) != m_container.end());
 
-		return m_container[nodeName]->cloneShared();
+		auto foundIt = std::find_if(m_container.begin(), m_container.end(), [&nodeName](const std::shared_ptr<Node>& item) { return item->name == nodeName; });
+		return (*foundIt)->cloneShared();
 	}
 
-	std::unordered_map<std::string, std::shared_ptr<Node>>::const_iterator begin() const
+	std::vector<std::shared_ptr<Node>>::const_iterator begin() const
 	{
 		return m_container.begin();
 	}
 
-	std::unordered_map<std::string, std::shared_ptr<Node>>::const_iterator end() const
+	std::vector<std::shared_ptr<Node>>::const_iterator end() const
 	{
 		return m_container.end();
 	}
 };
 
-#define REGISTER_NODE(NodeName, NodeType) static bool initialized##NodeType = NodeFactory::instance().registerNode(NodeName, std::make_shared<NodeType>());
+#define REGISTER_NODE(NodeName, NodeType) const static bool initialized##NodeType = NodeFactory::instance().registerNode(NodeName, std::make_shared<NodeType>());
+#define REGISTER_TEMPLATED_NODE(NodeName, NodeType, templateType, uniqueName) const static bool initialized##uniqueName = NodeFactory::instance().registerNode(NodeName, std::make_shared<NodeType<templateType>>());
 
 struct FinalNode : public Node
 {
+private:
+	glm::vec3 defaultDiffuse;
+	float defaultSpecular;
+	glm::vec3 defaultEmissive;
+	glm::vec3 defaultNormals;
+	float defaultSpecularPower;
+
+public:
+	std::string finalValueStr;
+
 	INHERIT_FROM_NODE(FinalNode)
 
 	FinalNode()
 		: Node(NodeType::FINAL, "result")
 	{
+		defaultDiffuse = glm::vec3(1, 1, 1);
+		defaultSpecular = 0.5f;
+		defaultEmissive = glm::vec3(0, 0, 0);
+		defaultNormals = glm::vec3(0, 0, 1);
+		defaultSpecularPower = 0.5f;
+
 		inputs.push_back(std::make_shared<Input>(this, "Diffuse", FlowType::FLOAT3));
 		inputs.push_back(std::make_shared<Input>(this, "Specular", FlowType::FLOAT));
 		inputs.push_back(std::make_shared<Input>(this, "Emissive", FlowType::FLOAT3));
@@ -188,33 +227,59 @@ struct FinalNode : public Node
 	void compile(CompilationErrorCheck& errorCheck)
 	{
 		std::stringstream paramDiffuseStream;
-		inputs[0]->compile(paramDiffuseStream, errorCheck);
+		if (inputs[0]->link != nullptr)
+			inputs[0]->compile(paramDiffuseStream, errorCheck);
+		else
+			paramDiffuseStream << "vec3(" << defaultDiffuse.x << ", " << defaultDiffuse.y << ", " << defaultDiffuse.z << ")";
 
 		std::stringstream paramSpecularStream;
-		inputs[1]->compile(paramSpecularStream, errorCheck);
+		if (inputs[1]->link != nullptr)
+			inputs[1]->compile(paramSpecularStream, errorCheck);
+		else
+			paramSpecularStream << defaultSpecular;
 
 		std::stringstream paramEmissiveStream;
-		inputs[2]->compile(paramEmissiveStream, errorCheck);
+		if (inputs[2]->link != nullptr)
+			inputs[2]->compile(paramEmissiveStream, errorCheck);
+		else
+			paramEmissiveStream << "vec3(" << defaultEmissive.x << ", " << defaultEmissive.y << ", " << defaultEmissive.z << ")";
 
-		std::stringstream paramNormalstextureStream;
-		inputs[3]->compile(paramNormalstextureStream, errorCheck);
+		std::stringstream paramNormalsStream;
+		if (inputs[3]->link != nullptr)
+			inputs[3]->compile(paramNormalsStream, errorCheck);
+		else
+			paramNormalsStream << "vec3(" << defaultNormals.x << ", " << defaultNormals.y << ", " << defaultNormals.z << ")";
 
 		std::stringstream paramSpecularPowerStream;
-		inputs[4]->compile(paramSpecularPowerStream, errorCheck);
+		if (inputs[4]->link != nullptr)
+			inputs[4]->compile(paramSpecularPowerStream, errorCheck);
+		else
+			paramSpecularPowerStream << defaultSpecularPower;
 
 
 		std::stringstream nodeCompileResult;
 
-		nodeCompileResult << "void computeShaderParameters(inout vec3 paramDiffuse, inout vec3 paramNormals, inout float paramSpecular, inout float paramSpecularPower, inout vec3 paramEmissive)";
-		nodeCompileResult << '{';
-		nodeCompileResult << "paramDiffuse = " << paramDiffuseStream.str();
-		nodeCompileResult << "paramSpecular = " << paramSpecularStream.str();
-		nodeCompileResult << "paramEmissive = " << paramEmissiveStream.str();
-		nodeCompileResult << "paramNormalstexture = " << paramNormalstextureStream.str();
-		nodeCompileResult << "paramSpecularPower = " << paramSpecularPowerStream.str();
-		nodeCompileResult << '}';
+		defineParameter(nodeCompileResult, errorCheck);
 
-		outputs[0]->valueStr = nodeCompileResult.str();
+		nodeCompileResult << "void computeShaderParameters(inout vec3 paramDiffuse, inout vec3 paramNormals, inout float paramSpecular, inout float paramSpecularPower, inout vec3 paramEmissive)\n";
+		nodeCompileResult << "{\n";
+		nodeCompileResult << "paramDiffuse = " << paramDiffuseStream.str() << ";\n";
+		nodeCompileResult << "paramSpecular = " << paramSpecularStream.str() << ";\n";
+		nodeCompileResult << "paramEmissive = " << paramEmissiveStream.str() << ";\n";
+		nodeCompileResult << "paramNormals = " << paramNormalsStream.str() << ";\n";
+		nodeCompileResult << "paramSpecularPower = " << paramSpecularPowerStream.str() << ";\n";
+		nodeCompileResult << "}\n";
+
+		finalValueStr = nodeCompileResult.str();
+	}
+
+	virtual void drawUIParameters() override
+	{
+		ImGui::InputFloat3("defaultDiffuse", &defaultDiffuse[0]);
+		ImGui::InputFloat("defaultSpecular", &defaultSpecular);
+		ImGui::InputFloat3("defaultEmissive", &defaultEmissive[0]);
+		ImGui::InputFloat3("defaultNormals", &defaultNormals[0]);
+		ImGui::InputFloat("defaultSpecularPower", &defaultSpecularPower);
 	}
 };
 
@@ -287,15 +352,18 @@ struct OperatorNode : public Node
 
 struct BaseParameterNode : public Node
 {
-	ParameterType type;
+	char parameterNameForUI[100];
 	std::string parameterName;
 	bool isUniform;
 
 	BaseParameterNode(const std::string& _nodeName)
 		: Node(NodeType::PARAMETER, _nodeName)
-	{}
+		, parameterName("default")
+	{
+		parameterNameForUI[0] = '\0';
+	}
 
-	virtual void defineParameter(std::stringstream& stream, CompilationErrorCheck& errorCheck) = 0;
+	virtual const InternalShaderParameterBase* getInternalParameter() const = 0;
 };
 
 template <typename T>
@@ -315,7 +383,23 @@ struct ParameterNode : public BaseParameterNode
 			stream << "uniform ";
 		}
 
-		stream << Utils::typeAsString<T>() << " " << parameterName << " = " << shaderParameter.valueAsString() << ';';
+		stream << Utils::typeAsString<T>() << " " << parameterName << " = " << shaderParameter.valueAsString() << ";\n";
+	}
+
+	virtual const InternalShaderParameterBase* getInternalParameter() const override
+	{
+		return &shaderParameter;
+	}
+
+	virtual void drawUIParameters() override
+	{
+		if (ImGui::InputText("ParameterName", parameterNameForUI, 100))
+		{
+			parameterName = parameterNameForUI;
+			if(parameterName.find_first_of('\0') != std::string::npos)
+				parameterName = parameterName.substr();
+		}
+		shaderParameter.drawUI();
 	}
 };
 
@@ -325,7 +409,7 @@ inline void ParameterNode<Texture>::defineParameter(std::stringstream& stream, C
 	// Texture type is always uniform
 	stream << "uniform ";
 
-	stream << "sampler2D " << parameterName << ';';
+	stream << "sampler2D " << parameterName << ";\n";
 }
 
 //////////////////////////////////////////////////////////////
@@ -344,6 +428,8 @@ inline void ParameterNode<float>::compile(CompilationErrorCheck& errorCheck)
 {
 	outputs[0]->valueStr = parameterName;
 }
+
+REGISTER_TEMPLATED_NODE("scalar", ParameterNode, float, ParameterFloat)
 
 /////////////
 
@@ -364,6 +450,8 @@ inline void ParameterNode<glm::vec2>::compile(CompilationErrorCheck& errorCheck)
 	outputs[1]->valueStr = parameterName + ".r";
 	outputs[2]->valueStr = parameterName + ".g";
 }
+
+REGISTER_TEMPLATED_NODE("vector2", ParameterNode, glm::vec2, ParameterVec2)
 
 /////////////
 
@@ -386,6 +474,8 @@ inline void ParameterNode<glm::vec3>::compile(CompilationErrorCheck& errorCheck)
 	outputs[2]->valueStr = parameterName + ".g";
 	outputs[3]->valueStr = parameterName + ".b";
 }
+
+REGISTER_TEMPLATED_NODE("vector3", ParameterNode, glm::vec3, ParameterVec3)
 
 /////////////
 
@@ -410,6 +500,8 @@ inline void ParameterNode<glm::vec4>::compile(CompilationErrorCheck& errorCheck)
 	outputs[3]->valueStr = parameterName + ".b";
 	outputs[4]->valueStr = parameterName + ".a";
 }
+
+REGISTER_TEMPLATED_NODE("vector4", ParameterNode, glm::vec4, ParameterVec4)
 
 /////////////
 
@@ -441,6 +533,8 @@ inline void ParameterNode<Texture>::compile(CompilationErrorCheck& errorCheck)
 	outputs[3]->valueStr = core.str() + ".b";    //texture(parameterName, texCoords).b
 	outputs[4]->valueStr = core.str() + ".a";    //texture(parameterName, texCoords).a
 }
+
+REGISTER_TEMPLATED_NODE("texture", ParameterNode, Texture, ParameterTexture)
 
 //// END : Parameters
 //////////////////////////////////////////////////////////////
@@ -696,14 +790,14 @@ REGISTER_NODE("tangent", FunctionNodeTan)
 //// END : Functions
 //////////////////////////////////////////////////////////////
 
-class NodeManager : public EditorFrame
+class NodeManager
 {
 private:
-	Node* m_finalOutput;
+	FinalNode* m_finalOutput;
 	std::vector < std::shared_ptr<Node> > m_allNodes;
 	std::vector< std::shared_ptr<Link> > m_allLinks;
 	std::vector<BaseParameterNode*> m_parameterNodes;
-	std::stringstream m_compileStream;
+	//std::stringstream m_compileStream;
 	std::string m_compileResult;
 	bool m_lastCompilationSucceeded;
 
@@ -715,6 +809,11 @@ private:
 	bool m_isDraggingLink;
 	Link* m_draggedLink;
 	bool m_canResetDragLink;
+	std::vector<Node*> m_selectedNodes;
+	bool m_isSelectingNodes;
+	bool m_isHoverridingANode;
+
+	MeshVisualizer m_meshVisualizer;
 
 public:
 	NodeManager(ShaderProgram* programPtr);
@@ -725,7 +824,7 @@ public:
 	Node* getNode(const ID& id) const;
 	void save(Json::Value& root) const;
 	void load(const Json::Value& root);
-	void drawContent(Project& project, EditorModal* parentWindow) override;
+	void drawUI(Renderer& renderer);
 
 	bool isDraggingNode() const;
 	void setIsDraggingNode(bool state);
@@ -738,14 +837,18 @@ public:
 	void setDraggedLink(Link* link);
 	Link* getDraggedLink() const;
 	void setCanResetDragLink(bool state);
+	void setSelectedNode(Node* node);
+	bool isSelectingNode(Node* node) const;
+	void setIsHoverridingANode(bool state);
 
 	void addLink(std::shared_ptr<Link> link);
 	void removeLink(Link* link);
+	void removeNode(Node* node);
 
 private:
 
 	void internalResolveUndeterminedTypes();
-	void internalDefineParameters(std::stringstream& compileStream, CompilationErrorCheck& errorCheck);
+	//void internalDefineParameters(std::stringstream& compileStream, CompilationErrorCheck& errorCheck);
 	void internalCompile(CompilationErrorCheck& errorCheck);
 };
 

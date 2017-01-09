@@ -7,11 +7,12 @@
 
 #include "ResourcePointer.h"
 #include "Texture.h"
+#include "ICloneable.h"
 
 
 //The ShaderParameter interface. 
 //A ShaderParameter is an abstraction of a data which can be send to gpu.
-class InternalShaderParameterBase : public ISerializable
+class InternalShaderParameterBase : public ISerializable, public ICloneable<InternalShaderParameterBase>
 {
 protected:
 	std::string m_name;
@@ -37,8 +38,6 @@ public:
 	{
 		assert(0 && "error, invalid getter function.");
 	}
-
-	virtual std::shared_ptr<InternalShaderParameterBase> clone() = 0;
 
 	virtual std::string valueAsString() const
 	{
@@ -246,14 +245,18 @@ public:
 		outData = (void*)(&m_data);
 	}
 
-	virtual std::shared_ptr<InternalShaderParameterBase> clone()
-	{
-		return std::make_shared<InternalShaderParameter<T, ShaderParameter::IsNotArray>>(*this);
-	}
-
 	virtual std::string valueAsString() const override
 	{
 		return Utils::valueAsString(m_data);
+	}
+
+	virtual InternalShaderParameterBase* clone() const override
+	{
+		return new InternalShaderParameter<T, ShaderParameter::IsNotArray>(*this);
+	}
+	virtual std::shared_ptr<InternalShaderParameterBase> cloneShared() const override
+	{
+		return std::make_shared<InternalShaderParameter<T, ShaderParameter::IsNotArray>>(*this);
 	}
 
 };
@@ -316,7 +319,11 @@ public:
 		outData = (void*)(&m_data);
 	}
 
-	virtual std::shared_ptr<InternalShaderParameterBase> clone()
+	virtual InternalShaderParameterBase* clone() const override
+	{
+		return new InternalShaderParameter<T, ShaderParameter::IsArray>(*this);
+	}
+	virtual std::shared_ptr<InternalShaderParameterBase> cloneShared() const override
 	{
 		return std::make_shared<InternalShaderParameter<T, ShaderParameter::IsArray>>(*this);
 	}
@@ -343,7 +350,11 @@ public:
 	void load(const Json::Value & entityRoot) override;
 	void setData(const void* data) override;
 	void getData(void* outData) override;
-	virtual std::shared_ptr<InternalShaderParameterBase> clone()
+	virtual InternalShaderParameterBase* clone() const override
+	{
+		return new InternalShaderParameter<Texture, ShaderParameter::IsNotArray>(*this);
+	}
+	virtual std::shared_ptr<InternalShaderParameterBase> cloneShared() const override
 	{
 		return std::make_shared<InternalShaderParameter<Texture, ShaderParameter::IsNotArray>>(*this);
 	}
@@ -368,7 +379,11 @@ public:
 	void load(const Json::Value & entityRoot) override;
 	void setData(const void* data) override;
 	void getData(void* outData) override;
-	virtual std::shared_ptr<InternalShaderParameterBase> clone()
+	virtual InternalShaderParameterBase* clone() const override
+	{
+		return new InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>(*this);
+	}
+	virtual std::shared_ptr<InternalShaderParameterBase> cloneShared() const override
 	{
 		return std::make_shared<InternalShaderParameter<CubeTexture, ShaderParameter::IsNotArray>>(*this);
 	}

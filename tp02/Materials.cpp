@@ -49,7 +49,7 @@ Material::Material(const ShaderProgram& shaderProgram)
 
 	for (auto shaderParameter : shaderProgram.getInternalParameters())
 	{
-		m_internalParameters.push_back(shaderParameter->clone());
+		m_internalParameters.push_back(shaderParameter->cloneShared());
 	}
 
 	m_aggregations.clear();
@@ -77,7 +77,7 @@ Material::Material(const ShaderProgram & shaderProgram, const FileHandler::Compl
 
 	for (auto shaderParameter : shaderProgram.getInternalParameters())
 	{
-		m_internalParameters.push_back(shaderParameter->clone());
+		m_internalParameters.push_back(shaderParameter->cloneShared());
 	}
 
 	m_aggregations.clear();
@@ -193,7 +193,7 @@ void Material::init(const ShaderProgram & shaderProgram)
 	m_internalParameters.clear();
 	for (auto shaderParameter : shaderProgram.getInternalParameters())
 	{
-		m_internalParameters.push_back(shaderParameter->clone());
+		m_internalParameters.push_back(shaderParameter->cloneShared());
 	}
 	//m_glProgramName = shaderProgram.getName();
 
@@ -206,6 +206,29 @@ void Material::init(const ShaderProgram & shaderProgram)
 	m_programPtr->addMaterialRef(this);
 	//getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 	//setExternalParameters(shaderProgram.getExternalParameters());
+}
+
+void Material::setAggregates(std::unordered_map<std::string, std::shared_ptr<MaterialAggregation>>& aggregations)
+{
+	m_aggregations.clear();
+	m_aggregations = aggregations;
+}
+
+void Material::setPerInstanceAggregates(std::unordered_map<std::string, std::shared_ptr<PerInstanceMaterialAggregation>>& perInstanceAggregations)
+{
+	m_perInstanceAggregations.clear();
+	m_perInstanceAggregations = perInstanceAggregations;
+}
+
+void Material::setProgramId(GLuint programId)
+{
+	m_glProgramId = programId;
+}
+
+void Material::setinternalParameters(std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalShaderParameters)
+{
+	m_internalParameters.clear();
+	m_internalParameters = internalShaderParameters;
 }
 
 void Material::drawUI()
@@ -290,7 +313,7 @@ void Material::loadFromShaderProgramDatas(GLuint glProgramId, const std::vector<
 	m_glProgramId = glProgramId;
 	for (auto shaderParameter : internalParameters)
 	{
-		m_internalParameters.push_back(shaderParameter->clone());
+		m_internalParameters.push_back(shaderParameter->cloneShared());
 	}
 
 	//setExternalParameters(externalParameters);

@@ -13,6 +13,7 @@
 class IRenderBatch
 {
 protected: 
+	GLuint m_programId;
 	std::vector<const IDrawable*> m_drawables;
 public:
 	virtual void add(const IDrawable* drawable, const Material* material) = 0;
@@ -23,6 +24,10 @@ public:
 	{
 		return m_drawables;
 	}
+	GLuint getProgramId() const
+	{
+		return m_programId;
+	}
 };
 
 //////////////////////////////////////////////
@@ -30,8 +35,7 @@ public:
 template<typename MaterialType>
 class RenderBatch : public IRenderBatch
 {
-protected:
-	GLuint m_programId;
+protected:	
 	std::map<const MaterialType*, std::vector<const IDrawable*>> m_container;
 
 public:
@@ -48,6 +52,11 @@ template<typename MaterialType>
 inline void RenderBatch<MaterialType>::add(const IDrawable * drawable, const Material * material)
 {
 	assert(drawable != nullptr && material != nullptr);
+
+	if (m_container.size() > 0)
+		assert(material->getGLId() == m_programId);
+	else
+		m_programId = material->getGLId();
 
 	m_container[static_cast<const MaterialType*>(material)].push_back(drawable);
 
@@ -140,8 +149,13 @@ inline void RenderBatch<MaterialType>::render(const glm::mat4& projection, const
 
 /////////////////////////////////////////////
 
+inline std::shared_ptr<IRenderBatch> Material::makeSharedRenderBatch() const
+{
+	return std::make_shared<RenderBatch<Material>>();
+}
+
 template<typename BatchMaterialType, typename ParentMaterialType>
-inline std::shared_ptr<IRenderBatch> BatchableMaterial<BatchMaterialType, ParentMaterialType>::MakeSharedRenderBatch() const
+inline std::shared_ptr<IRenderBatch> BatchableMaterial<BatchMaterialType, ParentMaterialType>::makeSharedRenderBatch() const
 {
 	return std::make_shared<RenderBatch<BatchMaterialType>>();
 }

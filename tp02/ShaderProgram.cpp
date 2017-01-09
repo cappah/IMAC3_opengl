@@ -7,6 +7,7 @@
 #include "ResourceTree.h"
 #include "Editor.h"
 #include "MaterialVisualScripting.h"
+#include "EditorFrames.h"
 
 
 ShaderProgram::ShaderProgram()
@@ -28,6 +29,8 @@ ShaderProgram::ShaderProgram(const FileHandler::CompletePath& path, Rendering::M
 	, m_usage(Rendering::MaterialUsage::MESH)
 	//, id(0)
 {
+	if(m_materialType != Rendering::MaterialType::INTERNAL)
+		m_nodeManager = std::make_shared<MVS::NodeManager>(this);
 }
 
 //ShaderProgram::ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath)
@@ -69,11 +72,18 @@ void ShaderProgram::compile(const std::string& computeShaderParameters)
 	m_computeShaderParameterFunction = computeShaderParameters;
 	m_programId = makeGLProgram();
 	makeMaterialAggregates();
+	for (auto material : m_materialRefs)
+	{
+		material->setAggregates(m_aggregations);
+		material->setPerInstanceAggregates(m_perInstanceAggregations);
+		material->setProgramId(m_programId);
+		material->setinternalParameters(m_internalShaderParameters);
+	}
 }
 
 void ShaderProgram::resetNodeManagerPtr()
 {
-	m_nodeManagerRef.reset();
+	m_nodeManager.reset();
 }
 
 void ShaderProgram::init(const FileHandler::CompletePath& path, const ID& id)
@@ -248,6 +258,12 @@ void ShaderProgram::load(const FileHandler::CompletePath& path)
 		m_internalShaderParameters.push_back(newParameter);
 	}
 
+	if (m_materialType != Rendering::MaterialType::INTERNAL)
+		m_nodeManager = std::make_shared<MVS::NodeManager>(this);
+
+	if(m_nodeManager)
+		m_nodeManager->load(root["MVS"]);
+
 	// External parameters
 	/*Json::Value externalShaderParameters = root["externalShaderParameters"];
 	int externalShaderParameterCount = externalShaderParameters.size();
@@ -301,6 +317,9 @@ void ShaderProgram::save(const FileHandler::CompletePath & path)
 	}*/
 	else
 		assert(false && "Wrong material type !");
+
+	assert(m_nodeManager);
+	m_nodeManager->save(root["MVS"]);
 
 	// Internal parameters
 	//root["internalShaderParameters"] = Json::Value(Json::arrayValue);
@@ -476,7 +495,7 @@ GLuint ShaderProgram::makeGLProgram()
 	if (m_computeShaderParameterFunction == "")
 		fillShaderStream(fragmentShaderStream, internalShaderFolderPath + "defaultComputeShaderParams.vert");
 	else
-		fillShaderStream(fragmentShaderStream, m_computeShaderParameterFunction);
+		fragmentShaderStream << m_computeShaderParameterFunction;
 
 	if (m_usedWithReflections)
 	{
@@ -582,7 +601,7 @@ void ShaderProgram::LoadMaterialInstance(Material* material) const
 
 void ShaderProgram::addMaterialRef(Material* ref)
 {
-	if (std::find(m_materialRefs.begin(), m_materialRefs.end(), ref) != m_materialRefs.end())
+	if (std::find(m_materialRefs.begin(), m_materialRefs.end(), ref) == m_materialRefs.end())
 		m_materialRefs.push_back(ref);
 }
 
@@ -596,6 +615,15 @@ const std::vector<std::shared_ptr<InternalShaderParameterBase>>& ShaderProgram::
 	return m_internalShaderParameters;
 }
 
+void ShaderProgram::setInternalParameters(std::vector<std::shared_ptr<InternalShaderParameterBase>>& internals)
+{
+	m_internalShaderParameters.clear();
+	for (auto internalParam : internals)
+	{
+		m_internalShaderParameters.push_back(internalParam->cloneShared());
+	}
+}
+
 //const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& ShaderProgram::getExternalParameters() const
 //{
 //	return m_externalShaderParameters;
@@ -606,71 +634,145 @@ Rendering::MaterialType ShaderProgram::getMaterialType() const
 	return m_materialType;
 }
 
+Rendering::MaterialUsage ShaderProgram::getMaterialUsage() const
+{
+	return m_usage;
+}
+
 Rendering::PipelineType ShaderProgram::getPipelineType() const
 {
 	return m_pipeline;
 }
 
-void ShaderProgram::drawInInspector(Scene & scene)
+bool ShaderProgram::getUsedWithReflections() const
+{
+	return m_usedWithReflections;
+}
+
+bool ShaderProgram::getUsedWithSkeletons() const
+{
+	return m_usedWithSkeleton;
+}
+
+void ShaderProgram::setMaterialUsage(Rendering::MaterialUsage usage)
+{
+	m_usage = usage;
+	m_needRecompilation = true;
+}
+
+void ShaderProgram::setPipelineType(Rendering::PipelineType pipeline)
+{
+	m_pipeline = pipeline;
+	m_needRecompilation = true;
+}
+
+void ShaderProgram::setUsedWithReflections(bool state)
+{
+	m_usedWithReflections = state;
+	m_needRecompilation = true;
+}
+
+void ShaderProgram::setUsedWithSkeletons(bool state)
+{
+	m_usedWithSkeleton = state;
+	m_needRecompilation = true;
+}
+
+bool ShaderProgram::drawUIMaterialUsage()
 {
 	int currentItemUsage = (int)m_usage;
 	if (ImGui::Combo("material usage", &currentItemUsage, [](void* data, int idx, const char** out_text) {
-		if (Rendering::MaterialUsageToString.size() > idx) {
-			*out_text = Rendering::MaterialUsageToString[idx].c_str(); return true;
+		if (Rendering::MaterialUsageToString.size() > idx + 1) {
+			*out_text = Rendering::MaterialUsageToString[idx].c_str();
+			return true;
 		}
 		else return false;
-	}, nullptr, (int)Rendering::MaterialUsageToString.size()))
+	}, nullptr, (int)Rendering::MaterialUsageToString.size() - 1))
 	{
 		m_usage = (Rendering::MaterialUsage)currentItemUsage;
 		m_needRecompilation = true;
+		return true;
 	}
 
+	return false;
+}
+
+bool ShaderProgram::drawUIPipelineType()
+{
 	int currentItemPipeline = (int)m_pipeline;
 	if (ImGui::Combo("material pipeline", &currentItemPipeline, [](void* data, int idx, const char** out_text) {
-		if (Rendering::PipelineTypesToString.size() > idx) {
+		if (Rendering::PipelineTypesToString.size() > idx + 1) {
 			*out_text = Rendering::PipelineTypesToString[idx].c_str(); return true;
 		}
 		else return false;
-	}, nullptr, (int)Rendering::PipelineTypesToString.size()))
+	}, nullptr, (int)Rendering::PipelineTypesToString.size() - 1))
 	{
 		m_pipeline = (Rendering::PipelineType)currentItemPipeline;
 		m_needRecompilation = true;
+		return true;
 	}
 
+	return false;
+}
+
+bool ShaderProgram::drawUIUsedWithReflections()
+{
 	if (ImGui::Checkbox("used with reflections", &m_usedWithReflections))
 	{
 		m_needRecompilation = true;
+		return true;
 	}
+	return false;
+}
 
+bool ShaderProgram::drawUIUsedWithSkeleton()
+{
 	if (ImGui::Checkbox("used with skeleton", &m_usedWithSkeleton))
 	{
 		m_needRecompilation = true;
+		return true;
 	}
+	return false;
+}
+
+void ShaderProgram::drawInInspector(Scene & scene)
+{
+	assert(m_nodeManager);
+
+	drawUIMaterialUsage();
+	drawUIPipelineType();
+	drawUIUsedWithReflections();
+	drawUIUsedWithSkeleton();
 
 	if (ImGui::Button("Edit"))
 	{
 		// If the edit window isn't opened
-		if (m_nodeManagerRef.expired() || m_nodeManagerRef.use_count() == 0)
+		//if (m_nodeManagerRef.expired() || m_nodeManagerRef.use_count() == 0)
+		//{
+		//	// Node manager creation and loading
+		//	assert(!Project::isPathPointingInsideProjectFolder(m_completePath)); //path should be relative
+		//	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(m_completePath);
+		//	std::ifstream stream;
+		//	stream.open(absolutePath.toString());
+		//	if (!stream.is_open())
+		//	{
+		//		std::cout << "error, can't load shader program at path : " << m_completePath.toString() << std::endl;
+		//		return;
+		//	}
+		//	Json::Value root;
+		//	stream >> root;
+
+		//	auto newNodeManager = std::make_shared<MVS::NodeManager>(this);
+		//	m_nodeManagerRef = newNodeManager;
+		//	m_nodeManagerRef.lock()->load(root["MVS"]);
+
+		//	// We open the window which will display the node manager
+		//	Editor::instance().getWindowManager()->addWindowAsynchrone(newNodeManager);
+		//}
+
+		if (m_nodeManagerEditorFrameRef.expired() || m_nodeManagerEditorFrameRef.use_count() == 0)
 		{
-			// Node manager creation and loading
-			assert(!Project::isPathPointingInsideProjectFolder(m_completePath)); //path should be relative
-			FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(m_completePath);
-			std::ifstream stream;
-			stream.open(absolutePath.toString());
-			if (!stream.is_open())
-			{
-				std::cout << "error, can't load shader program at path : " << m_completePath.toString() << std::endl;
-				return;
-			}
-			Json::Value root;
-			stream >> root;
-
-			auto newNodeManager = std::make_shared<MVS::NodeManager>(this);
-			m_nodeManagerRef = newNodeManager;
-			m_nodeManagerRef.lock()->load(root["MVS"]);
-
-			// We open the window which will display the node manager
-			Editor::instance().getWindowManager()->addWindowAsynchrone(newNodeManager);
+			Editor::instance().getWindowManager()->addWindowAsynchrone(std::make_shared<MVSEditorFrame>(m_nodeManager.get()));
 		}
 	}
 
@@ -683,12 +785,14 @@ void ShaderProgram::drawInInspector(Scene & scene)
 	}
 }
 
-void ShaderProgram::drawRightClicContextMenu()
+bool ShaderProgram::drawRightClicContextMenu(std::string& popupToOpen)
 {
 	if (ImGui::Button("create material from this program."))
 	{
-		ImGui::OpenPopup("AddMaterialPopUp");
+		popupToOpen = "AddMaterialPopUp";
+		return true;
 	}
+	return false;
 }
 //
 //Material* ShaderProgram::makeNewMaterialInstance(const FileHandler::CompletePath& completePath)
@@ -727,7 +831,6 @@ void ShaderProgram::drawRightClicContextMenu()
 //	}
 //}
 //
-//
 //Material* ShaderProgram::makeNewMaterialInstance()
 //{
 //	switch (m_baseMaterialType)
@@ -763,7 +866,7 @@ void ShaderProgram::drawRightClicContextMenu()
 //		return nullptr;
 //	}
 //}
-//
+
 //Material* makeNewMaterialInstance(const FileHandler::CompletePath& path)
 //{
 //	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative

@@ -1,5 +1,6 @@
 #include "MaterialVisualScripting.h"
 #include "ShaderProgram.h"
+#include "Factories.h"
 
 namespace MVS {
 
@@ -14,22 +15,26 @@ void formatAndOutputResult(std::stringstream& stream, const Output& output, Flow
 	{
 		if (output.outputType == FlowType::FLOAT2)
 		{
-			stream << "vec2(" << output.valueStr << ',' << output.valueStr << ')';
+			stream << ".rr";
 		}
 		else if (output.outputType == FlowType::FLOAT3)
 		{
-			stream << "vec3(" << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ')';
+			stream << ".rrr";
 		}
-		else if (output.outputType == FlowType::FLOAT3)
+		else if (output.outputType == FlowType::FLOAT4)
 		{
-			stream << "vec3(" << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ')';
+			stream << ".rrrr";
 		}
 	}
 	else if (desiredType == FlowType::FLOAT2)
 	{
 		if (output.outputType == FlowType::FLOAT)
 		{
-			stream << output.valueStr << '.r';
+			stream << "vec2(" << output.valueStr << ',' << output.valueStr << ')';
+		}
+		else if (output.outputType == FlowType::FLOAT3 || output.outputType == FlowType::FLOAT4)
+		{
+			stream << output.valueStr << ".rg";
 		}
 		else
 		{
@@ -42,11 +47,11 @@ void formatAndOutputResult(std::stringstream& stream, const Output& output, Flow
 	{
 		if (output.outputType == FlowType::FLOAT)
 		{
-			stream << output.valueStr << '.r';
+			stream << "vec3(" << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ')';
 		}
-		else if (output.outputType == FlowType::FLOAT2)
+		else if (output.outputType == FlowType::FLOAT4)
 		{
-			stream << output.valueStr << '.rg';
+			stream << output.valueStr << ".rgb";
 		}
 		else
 		{
@@ -59,15 +64,7 @@ void formatAndOutputResult(std::stringstream& stream, const Output& output, Flow
 	{
 		if (output.outputType == FlowType::FLOAT)
 		{
-			stream << output.valueStr << '.r';
-		}
-		else if (output.outputType == FlowType::FLOAT2)
-		{
-			stream << output.valueStr << '.rg';
-		}
-		else if (output.outputType == FlowType::FLOAT3)
-		{
-			stream << output.valueStr << '.rgb';
+			stream << "vec3(" << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ',' << output.valueStr << ')';
 		}
 		else
 		{
@@ -95,25 +92,26 @@ void Input::resolveUndeterminedTypes(FlowType _desiredType)
 	if (desiredType == FlowType::UNDEFINED)
 		desiredType = _desiredType;
 
-	if (nodePtr != nullptr)
+	if (link != nullptr)
 	{
-		if (nodePtr->outputs[outputIdx]->outputType == FlowType::UNDEFINED)
-			nodePtr->outputs[outputIdx]->outputType = _desiredType;
+		Output* linkedOutput = link->input;
+		assert(linkedOutput != nullptr);
+		if (linkedOutput->outputType == FlowType::UNDEFINED)
+			linkedOutput->outputType = _desiredType;
 
-		nodePtr->resolveUndeterminedTypes();
+		linkedOutput->parentNode->resolveUndeterminedTypes();
 	}
 }
 
 void Input::compile(std::stringstream& stream, CompilationErrorCheck& errorCheck)
 {
-	nodePtr->compile(errorCheck);
-	formatAndOutputResult(stream, *nodePtr->outputs[outputIdx], desiredType, errorCheck);
-}
-
-void Input::linkToOutput(Node* _nodePtr, int _outputIdx)
-{
-	nodePtr = _nodePtr;
-	outputIdx = _outputIdx;
+	if (link != nullptr)
+	{
+		Output* linkedOutput = link->input;
+		assert(linkedOutput != nullptr);
+		linkedOutput->parentNode->compile(errorCheck);
+		formatAndOutputResult(stream, *linkedOutput, desiredType, errorCheck);
+	}
 }
 
 //// END : Input
@@ -175,18 +173,74 @@ void Link::drawUI(NodeManager& manager)
 ///////////////////////////////////////////
 //// BEGIN : Node
 
-Node::Node()
-	: type(NodeType::FUNCTION)
-	, name("default")
+void Node::defineParameter(std::stringstream & stream, CompilationErrorCheck & errorCheck)
 {
-	nodeID = IDGenerator<MVS::Node>::instance().lockID();
+	for (auto input : inputs)
+	{
+		Link* link = input->link;
+		if (link != nullptr)
+		{
+			Output* output = link->input;
+			assert(output != nullptr);
+			output->parentNode->defineParameter(stream, errorCheck);
+		}
+	}
 }
 
 Node::Node(NodeType _type, const std::string& _name)
 	: type(_type)
 	, name(_name)
+	, size(200, 120)
 {
 	nodeID = IDGenerator<MVS::Node>::instance().lockID();
+}
+
+Node::Node()
+	: Node(NodeType::FUNCTION, "default")
+{
+}
+
+Node::Node(const Node & other)
+	: type(other.type)
+	, name(other.name)
+	, nodeID(other.nodeID)
+	, position(other.position)
+	, size(other.size)
+{
+	//Deep copy
+	for (auto otherInput : other.inputs)
+	{
+		inputs.push_back(std::make_shared<Input>(*otherInput));
+		inputs.back()->parentNode = this; // /!\ Don't norget to change the parent node !
+	}
+
+	for (auto otherOutput : other.outputs)
+	{
+		outputs.push_back(std::make_shared<Output>(*otherOutput));
+		outputs.back()->parentNode = this; // /!\ Don't norget to change the parent node !
+	}
+}
+
+Node & Node::operator=(const Node & other)
+{
+	type = other.type;
+	name = other.name;
+	nodeID = other.nodeID;
+	position = other.position;
+	size = other.size;
+
+	//Deep copy
+	for (auto otherInput : other.inputs)
+	{
+		inputs.push_back(std::make_shared<Input>(*otherInput));
+	}
+
+	for (auto otherOutput : other.outputs)
+	{
+		outputs.push_back(std::make_shared<Output>(*otherOutput));
+	}
+
+	return *this;
 }
 
 void Node::resolveUndeterminedTypes()
@@ -205,11 +259,14 @@ void Node::save(Json::Value& root) const
 	root["name"] = name;
 	root["type"] = (int)type;
 	nodeID.save(root["id"]);
+	root["position"][0] = position.x;
+	root["position"][1] = position.y;
 }
 void Node::load(const Json::Value& root)
 {
 	//name = root["name"].asString();
 	nodeID.load(root["id"]);
+	position = glm::vec2(root["position"][0].asFloat(), root["position"][1].asFloat());
 }
 
 void Node::drawUI(NodeManager& manager)
@@ -218,25 +275,21 @@ void Node::drawUI(NodeManager& manager)
 	//ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(20, 5));
 
 	ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-	ImVec2 size(200, 100);
 	ImVec2 recMin(cursorPos.x + position.x, cursorPos.y + position.y);
 	ImVec2 recMax(cursorPos.x + position.x + size.x, cursorPos.y + position.y + size.y);
 
 	ImGui::SetCursorScreenPos(recMin);
-	ImGui::BeginChild(name.c_str(), size, true);
+	const bool showBorders = (manager.isSelectingNode(this));
+	ImGui::BeginChild(name.c_str(), ImVec2(size.x, size.y), showBorders);
 
+	bool needToCheckIsDraginfNode = false;
 	ImGui::GetWindowDrawList()->AddRectFilled(recMin, recMax, ImColor(0.4f, 0.4f, 0.4f, 1.f), 0.4f);
-	if (ImGui::IsMouseHoveringRect(recMin, recMax) && ImGui::IsMouseDragging(0))
+	if (ImGui::IsMouseHoveringRect(recMin, recMax) && ImGui::IsMouseClicked(0) && !DragAndDropManager::isDragAndDropping())// && ImGui::IsMouseDragging(0))
 	{
-		if (!manager.isDraggingNode() && !manager.getIsDraggingLink())
-		{
-			manager.setIsDraggingNode(true);
-			manager.setDragAnchorPos(glm::vec2(ImGui::GetMousePos().x - position.x, ImGui::GetMousePos().y - position.y));
-			manager.setDraggedNode(this);
-		}
+		needToCheckIsDraginfNode = true;
 	}
 
-	ImVec2 inputsPosition(recMin.x + 12.f, recMin.y + 50.f);
+	ImVec2 inputsPosition(recMin.x + 12.f, recMin.y + 20.f);
 	for (auto input : inputs)
 	{
 		ImGui::PushID(input->name.c_str());
@@ -259,6 +312,7 @@ void Node::drawUI(NodeManager& manager)
 					else
 					{
 						auto newLink = std::make_shared<Link>(nullptr, input.get());
+						input->link = newLink.get();
 						manager.addLink(newLink);
 						manager.setDraggedLink(newLink.get());
 					}
@@ -267,34 +321,38 @@ void Node::drawUI(NodeManager& manager)
 				{
 					Link* link = manager.getDraggedLink();
 					link->output = input.get();
+					input->link = link;
 					manager.setIsDraggingLink(false);
 					manager.setDraggedLink(nullptr);
 				}
 			}
 		}
 		if (ImGui::IsItemHovered())
+		{
+			needToCheckIsDraginfNode = false;
 			manager.setCanResetDragLink(false);
+		}
 		ImGui::SameLine();
 		ImGui::Text(input->name.c_str());
 
 		//ImGui::GetWindowDrawList()->AddCircleFilled(outputsPosition, 10.f, ImColor(0.3f, 0.3f, 0.3f, 1.0f), 8);
 		//ImGui::GetWindowDrawList()->AddText(ImVec2(outputsPosition.x - 12.f, outputsPosition.y), ImColor(0.8f, 0.8f, 0.8f, 1.0f), output->name.c_str());
-		input->position.x = inputsPosition.x; // ImGui::GetCursorScreenPos().x; // outputsPosition.x + 10;
-		input->position.y = inputsPosition.y; // ImGui::GetCursorScreenPos().y; // outputsPosition.y + 10;
+		input->position.x = inputsPosition.x + 5; // ImGui::GetCursorScreenPos().x; // outputsPosition.x + 10;
+		input->position.y = inputsPosition.y + 5; // ImGui::GetCursorScreenPos().y; // outputsPosition.y + 10;
 
 		inputsPosition.y += 20.f;
 
 		ImGui::PopID();
 	}
 
-	ImVec2 outputsPosition(recMax.x - 20.f, recMin.y + 50.f);
+	ImVec2 outputsPosition(recMax.x - 30.f, recMin.y + 20.f);
 	for (auto output : outputs)
 	{
 		ImGui::PushID(output->name.c_str());
 
 		ImVec2 textSize = ImGui::CalcTextSize(output->name.c_str());
-		outputsPosition.x = recMax.x - textSize.x - 20.f;
-		ImGui::SetCursorScreenPos(ImVec2(outputsPosition.x - textSize.x, outputsPosition.y));
+		outputsPosition.x = recMax.x - textSize.x - 30.f;
+		ImGui::SetCursorScreenPos(ImVec2(outputsPosition.x, outputsPosition.y));
 		ImGui::Text(output->name.c_str());
 		ImGui::SameLine();
 		if (ImGui::RadioButton("##output", true))
@@ -313,6 +371,7 @@ void Node::drawUI(NodeManager& manager)
 					else
 					{
 						auto newLink = std::make_shared<Link>(output.get(), nullptr);
+						output->link = newLink.get();
 						manager.addLink(newLink);
 						manager.setDraggedLink(newLink.get());
 					}
@@ -321,26 +380,48 @@ void Node::drawUI(NodeManager& manager)
 				{
 					Link* link = manager.getDraggedLink();
 					link->input = output.get();
+					output->link = link;
 					manager.setIsDraggingLink(false);
 					manager.setDraggedLink(nullptr);
 				}
 			}
 		}
 		if (ImGui::IsItemHovered())
+		{
+			needToCheckIsDraginfNode = false;
 			manager.setCanResetDragLink(false);
+		}
 		//ImGui::GetWindowDrawList()->AddCircleFilled(outputsPosition, 10.f, ImColor(0.3f, 0.3f, 0.3f, 1.0f), 8);
 		//ImGui::GetWindowDrawList()->AddText(ImVec2(outputsPosition.x - 12.f, outputsPosition.y), ImColor(0.8f, 0.8f, 0.8f, 1.0f), output->name.c_str());
-		output->position.x = outputsPosition.x; //ImGui::GetCursorScreenPos().x; // outputsPosition.x + 10;
-		output->position.y = outputsPosition.y; //ImGui::GetCursorScreenPos().y; // outputsPosition.y + 10;
+		output->position.x = outputsPosition.x + 5; //ImGui::GetCursorScreenPos().x; // outputsPosition.x + 10;
+		output->position.y = outputsPosition.y + 5; //ImGui::GetCursorScreenPos().y; // outputsPosition.y + 10;
 
 		outputsPosition.y += 20.f;
 
 		ImGui::PopID();
 	}
 
+	if (needToCheckIsDraginfNode)
+	{
+		if (!manager.isDraggingNode() && !manager.getIsDraggingLink())
+		{
+			manager.setIsDraggingNode(true);
+			manager.setDragAnchorPos(glm::vec2(ImGui::GetMousePos().x - position.x, ImGui::GetMousePos().y - position.y));
+			manager.setDraggedNode(this);
+		}
+	}
+
 	ImGui::SetCursorScreenPos(recMin);
 	ImGui::Text(name.c_str());
 	ImGui::Separator();
+
+	if (ImGui::IsMouseHoveringWindow())
+	{
+		manager.setIsHoverridingANode(true);
+
+		if(ImGui::IsMouseReleased(0) && !manager.getIsDraggingLink())
+			manager.setSelectedNode(this);
+	}
 
 	ImGui::EndChild();
 	ImGui::SetCursorScreenPos(cursorPos);
@@ -366,14 +447,20 @@ const glm::vec2& Node::getPosition() const
 //// BEGIN : NodeManager
 
 NodeManager::NodeManager(ShaderProgram* programPtr)
-	: EditorFrame("MaterialVisualScripting")
-	, m_programPtr(programPtr)
+	: m_programPtr(programPtr)
 	, m_draggedNode(nullptr)
 	, m_isDraggingNode(false)
 	, m_dragAnchorPos(0, 0)
 	, m_draggedLink(nullptr)
 	, m_isDraggingLink(false)
-{}
+{
+	//auto newFinalNode = std::make_shared<FinalNode>();
+	//m_allNodes.push_back(newFinalNode);
+	//m_finalOutput = newFinalNode.get();
+
+	// Init Mesh Visualizer
+	m_meshVisualizer.setMesh(getMeshFactory().getDefault("cube"));
+}
 
 NodeManager::~NodeManager()
 {
@@ -385,19 +472,35 @@ NodeManager::~NodeManager()
 
 void NodeManager::compile()
 {
+	//m_compileStream.clear();
+	//m_compileStream.str(std::string());
+
 	CompilationErrorCheck errorCheck;
 	internalResolveUndeterminedTypes();
-	internalDefineParameters(m_compileStream, errorCheck);
+	//internalDefineParameters(m_compileStream, errorCheck);
 	internalCompile(errorCheck);
 	if (errorCheck.compilationFailed)
 		m_lastCompilationSucceeded = false;
 	else
 	{
-		m_compileStream << m_finalOutput->outputs[0]->valueStr;
-		m_compileResult = m_compileStream.str();
+		//m_compileStream << m_finalOutput->finalValueStr;
+		//m_compileResult = m_compileStream.str();
+		m_compileResult = m_finalOutput->finalValueStr;
 
+		// Send new uniforms to the shader program
+		std::vector<std::shared_ptr<InternalShaderParameterBase>> m_internalParameters;
+		for (auto parameter : m_parameterNodes)
+		{
+			m_internalParameters.push_back(parameter->getInternalParameter()->cloneShared());
+		}
+		m_programPtr->setInternalParameters(m_internalParameters);
+
+		// Compile the shader program
 		m_programPtr->compile(m_compileResult);
 	}
+
+	// For Mesh Visualizer
+	m_meshVisualizer.setMaterial(std::make_shared<Material>(*m_programPtr));
 }
 
 void NodeManager::internalResolveUndeterminedTypes()
@@ -405,13 +508,10 @@ void NodeManager::internalResolveUndeterminedTypes()
 	m_finalOutput->resolveUndeterminedTypes();
 }
 
-void NodeManager::internalDefineParameters(std::stringstream& compileStream, CompilationErrorCheck& errorCheck)
-{
-	for (auto node : m_parameterNodes)
-	{
-		node->defineParameter(compileStream, errorCheck);
-	}
-}
+//void NodeManager::internalDefineParameters(std::stringstream& compileStream, CompilationErrorCheck& errorCheck)
+//{
+//	m_finalOutput->defineParameter(compileStream, errorCheck);
+//}
 
 void NodeManager::internalCompile(CompilationErrorCheck& errorCheck)
 {
@@ -472,9 +572,15 @@ void NodeManager::load(const Json::Value& root)
 		}
 		else if (nodeType == NodeType::FINAL)
 		{
-			m_finalOutput = newNode.get();
+			m_finalOutput = static_cast<FinalNode*>(newNode.get()); //TODO : Make it safer
 		}
-
+	}
+	// Make sur we have at least an output node
+	if (m_finalOutput == nullptr)
+	{
+		auto newFinalNode = std::make_shared<FinalNode>();
+		m_allNodes.push_back(newFinalNode);
+		m_finalOutput = newFinalNode.get();
 	}
 
 	// Load links
@@ -496,8 +602,14 @@ void NodeManager::load(const Json::Value& root)
 	}
 }
 
-void NodeManager::drawContent(Project& project, EditorModal* parentWindow)
+void NodeManager::drawUI(Renderer& renderer)
 {
+	const float bottomHeight = 200;
+	const float bottomLeftWidth = ImGui::GetWindowWidth() * 0.3;
+	const float bottomMiddleWidth = ImGui::GetWindowWidth() * 0.4;
+	const float bottomRightWidth = ImGui::GetWindowWidth() * 0.3;
+
+	ImGui::BeginChild("##nodeContent", ImVec2(0, ImGui::GetWindowHeight() - bottomHeight));
 	for (auto node : m_allNodes)
 	{
 		node->drawUI(*this);
@@ -508,34 +620,132 @@ void NodeManager::drawContent(Project& project, EditorModal* parentWindow)
 		link->drawUI(*this);
 	}
 
-	if (ImGui::IsMouseClicked(1))
+	// Move all nodes
+	if (ImGui::IsMouseHoveringWindow() && ImGui::IsKeyDown(GLFW_KEY_SPACE) && ImGui::IsMouseDown(0) && !m_isHoverridingANode && !DragAndDropManager::isDragAndDropping())
+	{
+		ImVec2 deltaDrag = ImGui::GetMouseDragDelta(0);
+		for (auto node : m_allNodes)
+		{
+			node->position.x += deltaDrag.x;
+			node->position.y += deltaDrag.y;
+		}
+		ImGui::ResetMouseDragDelta(0);
+	}
+	// Select multiple nodes
+	else if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseDown(0) && !m_isDraggingLink && !m_isDraggingNode && !DragAndDropManager::isDragAndDropping())
+	{
+		ImVec2 deltaDrag = ImGui::GetMouseDragDelta(0);
+		ImVec2 mousePos = ImGui::GetMousePos();
+		if (!m_isSelectingNodes)
+		{
+			m_dragAnchorPos = glm::vec2(mousePos.x, mousePos.y);
+			m_isSelectingNodes = true;
+		}
+		ImVec2 a(std::min(m_dragAnchorPos.x, mousePos.x), std::min(mousePos.y, m_dragAnchorPos.y));
+		ImVec2 b(std::max(m_dragAnchorPos.x, mousePos.x), std::max(mousePos.y, m_dragAnchorPos.y));
+		ImGui::GetWindowDrawList()->AddRect(a, b, ImColor(1.f, 1.f, 0.f, 1.f));
+
+		for (auto node : m_allNodes)
+		{
+			bool selected = false;
+			if ((node->position.x >= a.x && node->position.x <= b.x)
+				&& (node->position.y >= a.y && node->position.y <= b.y))
+				selected = true;
+			else if ((node->position.x + node->size.x >= a.x && node->position.x + node->size.x <= b.x)
+				&& (node->position.y + node->size.y >= a.y && node->position.y + node->size.y <= b.y))
+				selected = true;
+
+			if (selected)
+			{
+				if(std::find(m_selectedNodes.begin(), m_selectedNodes.end(), node.get()) == m_selectedNodes.end())
+					m_selectedNodes.push_back(node.get());
+			}
+			else
+			{
+				m_selectedNodes.erase(std::remove_if(m_selectedNodes.begin(), m_selectedNodes.end(), [&node](const Node* item) { return item == node.get(); }), m_selectedNodes.end());
+			}
+		}
+	}
+
+	// Add a new node
+	if (ImGui::IsMouseReleased(1) && !m_isHoverridingANode && ImGui::IsWindowHovered())
 	{
 		ImGui::OpenPopup("selectNodePopUp");
 	}
-
 	if (ImGui::BeginPopup("selectNodePopUp"))
 	{
+		int currentType = -1;
 		for (auto it = NodeFactory::instance().begin(); it != NodeFactory::instance().end(); it++)
 		{
-			if (ImGui::Button(it->first.c_str()))
+			if (currentType != (int)(*it)->type)
 			{
-				auto newNode = it->second->cloneShared();
+				ImGui::Text(NodeTypeToString[(int)(*it)->type].c_str());
+				currentType = (int)(*it)->type;
+			}
+
+			if (ImGui::Button((*it)->name.c_str()))
+			{
+				auto newNode = (*it)->cloneShared();
 
 				const glm::vec2 nodePosition(ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 				newNode->setPosition(nodePosition);
 
 				m_allNodes.push_back(newNode);
+
+				ImGui::CloseCurrentPopup();
 			}
 		}
 
 		ImGui::EndPopup();
 	}
 
+	// Delete nodes
+	if (!m_selectedNodes.empty() && ImGui::IsKeyPressed(GLFW_KEY_DELETE) && !m_isDraggingLink)
+	{
+		for (int i = 0; i < m_selectedNodes.size(); i++)
+		{
+			if (m_selectedNodes[i]->type != NodeType::FINAL)
+			{
+				removeNode(m_selectedNodes[i]);
+
+				setIsDraggingLink(false);
+				setDraggedLink(nullptr);
+				setIsDraggingNode(false);
+				setDraggedNode(nullptr);
+			}
+		}
+		m_selectedNodes.clear();
+	}
+
+	// Drag nodes
 	if (isDraggingNode() && m_draggedNode != nullptr)
 	{
-		glm::vec2 dragDelta(ImGui::GetMousePos().x - m_dragAnchorPos.x, ImGui::GetMousePos().y - m_dragAnchorPos.y);
-		m_draggedNode->setPosition(dragDelta);
+		ImVec2 deltaDrag = ImGui::GetMouseDragDelta(0);
+		//glm::vec2 dragDelta(ImGui::GetMousePos().x - m_dragAnchorPos.x, ImGui::GetMousePos().y - m_dragAnchorPos.y);
+		m_draggedNode->position.x += deltaDrag.x;
+		m_draggedNode->position.y += deltaDrag.y;
+
+		bool canDragSelection = false;
+		for (auto node : m_selectedNodes)
+		{
+			if (m_draggedNode == node)
+				canDragSelection = true;
+		}
+		if (canDragSelection)
+		{
+			for (auto node : m_selectedNodes)
+			{
+				if (node == m_draggedNode)
+					continue;
+
+				node->position.x += deltaDrag.x;
+				node->position.y += deltaDrag.y;
+			}
+		}
+
+		ImGui::ResetMouseDragDelta(0);
 	}
+	// Drag links
 	else if (m_isDraggingLink && m_draggedLink != nullptr)
 	{
 		if (m_draggedLink->input == nullptr && m_draggedLink->output != nullptr)
@@ -558,10 +768,16 @@ void NodeManager::drawContent(Project& project, EditorModal* parentWindow)
 		}
 	}
 
-	if (ImGui::IsMouseReleased(0) && m_isDraggingNode)
+	if (ImGui::IsMouseReleased(0))
 	{
-		setIsDraggingNode(false);
-		setDraggedNode(nullptr);
+		if (m_isDraggingNode)
+		{
+			setIsDraggingNode(false);
+			setDraggedNode(nullptr);
+		}
+
+		if(m_isSelectingNodes)
+			m_isSelectingNodes = false;
 	}
 
 	if (ImGui::IsMouseClickedAnyButton() && m_isDraggingLink && m_canResetDragLink)
@@ -574,7 +790,51 @@ void NodeManager::drawContent(Project& project, EditorModal* parentWindow)
 		setIsDraggingLink(false);
 		setDraggedLink(nullptr);
 	}
+
+	if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClickedAnyButton() && !m_isHoverridingANode)
+	{
+		m_selectedNodes.clear();
+	}
+
 	m_canResetDragLink = true;
+	m_isHoverridingANode = false;
+
+	ImGui::EndChild();
+
+	//////////////////////////////////////
+
+	ImGui::BeginChild("##bottomWindow", ImVec2(0, bottomHeight - 8), true);
+
+	ImGui::BeginChild("##parameters", ImVec2(bottomLeftWidth, 0), true);
+	if (m_selectedNodes.size() == 1)
+	{
+		m_selectedNodes[0]->drawUIParameters();
+	}
+	ImGui::EndChild();
+	ImGui::SameLine();
+
+	ImGui::BeginChild("##option", ImVec2(bottomMiddleWidth, 0), true);
+	assert(m_programPtr != nullptr);
+	bool needRecompilation = false;
+	needRecompilation |= m_programPtr->drawUIMaterialUsage();
+	needRecompilation |= m_programPtr->drawUIPipelineType();
+	needRecompilation |= m_programPtr->drawUIUsedWithReflections();
+	needRecompilation |= m_programPtr->drawUIUsedWithSkeleton();
+
+	if (ImGui::Button("Compile"))
+	{
+		compile();
+	}
+
+	ImGui::EndChild();
+	ImGui::SameLine();
+
+	ImGui::BeginChild("##result", ImVec2(bottomRightWidth - 8, 0), true);
+	m_meshVisualizer.render(renderer);
+	m_meshVisualizer.drawUI();
+	ImGui::EndChild();
+
+	ImGui::EndChild();
 }
 
 bool NodeManager::isDraggingNode() const
@@ -632,6 +892,22 @@ void NodeManager::setCanResetDragLink(bool state)
 	m_canResetDragLink = state;
 }
 
+void NodeManager::setSelectedNode(Node * node)
+{
+	m_selectedNodes.clear();
+	m_selectedNodes.push_back(node);
+}
+
+bool NodeManager::isSelectingNode(Node* node) const
+{
+	return std::find(m_selectedNodes.begin(), m_selectedNodes.end(), node) != m_selectedNodes.end();
+}
+
+void NodeManager::setIsHoverridingANode(bool state)
+{
+	m_isHoverridingANode = state;
+}
+
 void NodeManager::addLink(std::shared_ptr<Link> link)
 {
 	m_allLinks.push_back(link);
@@ -639,7 +915,41 @@ void NodeManager::addLink(std::shared_ptr<Link> link)
 
 void NodeManager::removeLink(Link * link)
 {
+	if (link->input != nullptr && link->input->parentNode != nullptr)
+	{
+		link->input->link = nullptr;
+		link->input->parentNode = nullptr;
+
+	}
+	if (link->output != nullptr && link->output->parentNode != nullptr)
+	{
+		link->output->link = nullptr;
+		link->output->parentNode = nullptr;
+	}
+
 	m_allLinks.erase(std::remove_if(m_allLinks.begin(), m_allLinks.end(), [link](const std::shared_ptr<Link>& item) { return item.get() == link; }), m_allLinks.end());
+}
+
+void NodeManager::removeNode(Node * node)
+{
+	for (auto input : node->inputs)
+	{
+		if (input->link != nullptr)
+		{
+			removeLink(input->link);
+		}
+	}
+
+	for (auto output : node->outputs)
+	{
+		if (output->link != nullptr)
+		{
+			removeLink(output->link);
+		}
+	}
+
+	m_allNodes.erase(std::remove_if(m_allNodes.begin(), m_allNodes.end(), [node](const std::shared_ptr<Node>& item) { return item.get() == node; }), m_allNodes.end());
+
 }
 
 //// END : NodeManager

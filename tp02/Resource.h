@@ -37,7 +37,7 @@ public:
 	virtual void drawIconeInResourceTree();
 	virtual void drawUIOnHovered();
 	virtual void drawIconeInResourceField();
-	virtual void drawRightClicContextMenu() {}; // Nothing by default, only override by shder programs
+	virtual bool drawRightClicContextMenu(std::string& popupToOpen) { return false; }; // Nothing by default, only override by shder programs
 
 	// TODO : CORE : Set these to privates : 
 	void addReferenceToThis(IResourcePtr * newPtr);

@@ -25,7 +25,7 @@ layout(location = 3) out vec4 outPositions;
 
 void main()
 {
-        vec4 paramDiffuse;
+        vec3 paramDiffuse;
         vec3 paramEmissive;
         vec3 paramNormals;
         float paramSpecular;

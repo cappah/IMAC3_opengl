@@ -10,7 +10,7 @@
 #include "ReflectivePlane.h"
 #include "Materials.h"
 
-Renderer::Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight)  
+Renderer::Renderer(LightManager* _lightManager)  
 {
 
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
@@ -272,7 +272,7 @@ void Renderer::renderReflection(ReflectionCamera& camera, const ReflectivePlane&
 	camera.renderFrame(m_renderDatas.lightPassHDRColor, reflectivePlane);
 }
 
-void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
+void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, bool useGlobalPostProcess, DebugDrawRenderer* debugDrawer)
 {
 	glClearColor(0, 0, 0, 0);
 
@@ -294,7 +294,7 @@ void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights,
 	renderLightedScene(camera, debugDrawer);
 
 	// Render post process and final render to camera
-	if (camera.getPostProcessProxy().getOperationCount() > 0)
+	if (useGlobalPostProcess && camera.getPostProcessProxy().getOperationCount() > 0)
 	{
 		m_postProcessManager.render(camera, m_renderDatas, debugDrawer);
 		m_postProcessManager.renderResultOnCamera(camera);

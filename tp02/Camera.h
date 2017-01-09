@@ -22,6 +22,18 @@
 class Skybox;
 class ReflectivePlane;
 
+struct OrthographicViewportRect
+{
+	float left;
+	float right;
+	float top;
+	float bottom;
+
+	OrthographicViewportRect()
+		: left(0), right(0), top(0), bottom(0)
+	{}
+};
+
 struct BaseCamera
 {
 public:
@@ -62,6 +74,9 @@ public:
 	BaseCamera();
 
 	virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree);
+	virtual void addRenderBatch(Rendering::PipelineType renderPipelineType, std::shared_ptr<IRenderBatch> renderBatch);
+	virtual void clearRenderBatches();
+	virtual void clearRenderBatches(Rendering::PipelineType renderPipelineType);
 	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(Rendering::PipelineType renderPipelineType) const;
 	virtual const PostProcessProxy& getPostProcessProxy() const;
 	virtual void onViewportResized(const glm::vec2& newSize);
@@ -104,6 +119,26 @@ public:
 	float getNear() const;
 	float getFar() const;
 	float getAspect() const;
+};
+
+class SimpleCamera : public BaseCamera
+{
+private:
+	OrthographicViewportRect m_orthographicViewportRect;
+	CameraMode m_cameraMode;
+
+public:
+	SimpleCamera();
+
+	virtual void updateScreenSize(float screenWidth, float screenHeight) override;
+	virtual void setPerspectiveInfos(float fovy, float aspect, float camNear = 0.1f, float camFar = 100.f) override;
+	virtual void setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar) override;
+	virtual void setCameraMode(CameraMode cameraMode) override;
+	virtual void updateProjection() override;
+
+	void lookAt(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up);
+	void lookAt(const glm::vec3& eye, const glm::vec3& target);
+
 };
 
 class Camera : public Component, public BaseCamera

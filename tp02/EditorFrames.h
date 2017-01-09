@@ -199,3 +199,15 @@ public:
 	SceneEditorFrame(const std::string& name, CameraEditor* camera);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
 };
+
+/////////////////////////////////////////
+
+class MVSEditorFrame : public EditorFrame
+{
+private:
+	MVS::NodeManager* m_content;
+
+public:
+	MVSEditorFrame(MVS::NodeManager* content);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};

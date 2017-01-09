@@ -12,27 +12,27 @@
 ////////////////////////////////
 
 template<typename T>
-class IClonable
+class ICloneable
 {
 public:
-	virtual T* clone() = 0;
-	virtual std::shared_ptr<T> cloneShared() = 0;
+	virtual T* clone() const = 0;
+	virtual std::shared_ptr<T> cloneShared() const = 0;
 };
 
 #define CLONABLE_IMPL(BaseType, Type)\
-	virtual BaseType* clone() override\
+	virtual BaseType* clone() const override\
 	{\
 		auto cloned = new Type();\
 		return cloned;\
 	}\
-	virtual std::shared_ptr<BaseType> cloneShared() override\
+	virtual std::shared_ptr<BaseType> cloneShared() const override\
 	{\
 		auto cloned = std::make_shared<Type>();\
 		return cloned;\
 	}
 
 template<typename T>
-class IClonableWithName
+class ICloneableWithName
 {
 public:
 	virtual T* clone(const std::string& name) = 0;

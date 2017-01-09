@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "PostProcess.h"
 #include "EditorWindowManager.h"
+#include "MaterialVisualScripting.h"
 
 
 SaveSceneAsEditorFrame::SaveSceneAsEditorFrame(EditorWindowManager * windowManager)
@@ -438,4 +439,17 @@ WorldPropertiesEditorFrame::WorldPropertiesEditorFrame(const std::string & name,
 void WorldPropertiesEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
 {
 	m_worldPropertiesTool.lock()->drawUI();
+}
+
+//////////////////////////////
+
+MVSEditorFrame::MVSEditorFrame(MVS::NodeManager * content)
+	: EditorFrame("MaterialVisualScripting")
+	, m_content(content)
+{
+}
+
+void MVSEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
+{
+	m_content->drawUI(project.getActiveScene()->getRenderer());
 }

@@ -235,6 +235,9 @@
     <ClCompile Include="MaterialVisualScripting.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="MeshVisualizer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -471,9 +474,6 @@
     <ClInclude Include="BatchableWith.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="IClonable.h">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
     <ClInclude Include="ICloner.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
@@ -518,6 +518,12 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="MaterialConfig.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="ICloneable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshVisualizer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>

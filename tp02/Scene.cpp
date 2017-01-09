@@ -217,7 +217,7 @@ void Scene::render()
 	// Render scene through cameras
 	for (auto& camera : m_cameras)
 	{
-		m_renderer->render(*camera, m_pointLights, m_directionalLights, m_spotLights);
+		m_renderer->render(*camera, m_pointLights, m_directionalLights, m_spotLights, true);
 	}
 }
 
@@ -233,7 +233,7 @@ void Scene::renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer
 	}
 
 	// Render scene :
-	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer); 
+	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights, true, &debugDrawer); 
 	m_renderer->transferDepthTo(camera.getFrameBuffer(), m_renderer->getViewportRenderSize());
 
 	// Draw debug render :

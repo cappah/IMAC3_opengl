@@ -69,7 +69,7 @@ private:
 	//GLuint shadowTexture;
 
 public:
-	Renderer(LightManager* _lightManager, std::string programGPass_vert_path, std::string programGPass_frag_path, std::string programLightPass_vert_path, std::string programLightPass_frag_path_pointLight, std::string programLightPass_frag_path_directionalLight, std::string programLightPass_frag_path_spotLight);
+	Renderer(LightManager* _lightManager);
 	~Renderer();
 
 	//return the final frame, after all render process
@@ -99,7 +99,7 @@ public:
 	// Render the scene through a reflective camera. Practically the same as render() but doesn't render post processing.
 	void renderReflection(ReflectionCamera& camera, const ReflectivePlane& reflectivePlane, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer);
 	// Main render function. Will render the sene into a camera texture.
-	void render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
+	void render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, bool useGlobalPostProcess = true, DebugDrawRenderer* debugDrawer = nullptr);
 	// Render the scene with lights.
 	void renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* debugDrawer = nullptr);
 	

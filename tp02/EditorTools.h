@@ -10,6 +10,9 @@
 class Entity;
 class Editor;
 class Scene;
+namespace MVS {
+	class NodeManager;
+}
 
 class Viewport
 {

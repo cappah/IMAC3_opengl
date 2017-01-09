@@ -241,8 +241,8 @@ void ResourceTree::addNewMaterialTo(const std::string& newMaterialName, Resource
 {
 	assert(shaderProgramFile.getType() == ResourceType::SHADER_PROGRAM);
 
-	assert(getProgramFactory().containsDefault(newMaterialName)); //we can't add a second resource with the same name
-	if (!getProgramFactory().containsDefault(newMaterialName))
+	assert(!folderTo.hasFile(ResourceFileKey(ResourceType::MATERIAL, newMaterialName)));
+	if (folderTo.hasFile(ResourceFileKey(ResourceType::MATERIAL, newMaterialName)))
 		return;
 
 	//We create and save the new resource
@@ -636,17 +636,22 @@ void ResourceTreeView::displayFoldersRecusivly(ResourceFolder* parentFolder, Res
 
 void ResourceTreeView::displayModales()
 {
+	std::string popupToOpen = "";
+	bool needOpenPopup = false;
+
 	//right clic on file menu display :
 	if (ImGui::BeginPopup("resourceFileContextMenu"))
 	{
 		if (ImGui::Button("Rename file."))
 		{
-			ImGui::EndPopup();
-			ImGui::Ext::openStackingPopUp("RenameFileModale");
+			//ImGui::EndPopup();
+			//ImGui::Ext::openStackingPopUp("RenameFileModale");
+			popupToOpen = "RenameFileModale";
+			needOpenPopup = true;
 		}
 		else if (ImGui::Button("Copy file."))
 		{
-			ImGui::EndPopup();
+			//ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
 			{
 				m_fileWaitingPastPath = m_fileWeRightClicOn->getPath();
@@ -656,7 +661,7 @@ void ResourceTreeView::displayModales()
 		}
 		else if (ImGui::Button("Move file."))
 		{
-			ImGui::EndPopup();
+			//ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
 			{
 				m_fileWaitingPastPath = m_fileWeRightClicOn->getPath();
@@ -666,17 +671,24 @@ void ResourceTreeView::displayModales()
 		}
 		else if (ImGui::Button("Delete file."))
 		{
-			ImGui::EndPopup();
+			//ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
 				ResourceTree::deleteResourceFrom(*m_fileWeRightClicOn, *m_folderWeRightClicOn);
 		}
+
 		// Show per resource right click mouse UI
 		if (m_fileWeRightClicOn != nullptr)
 		{
-			m_fileWeRightClicOn->getPointedResource()->drawRightClicContextMenu();
+			needOpenPopup = m_fileWeRightClicOn->getPointedResource()->drawRightClicContextMenu(popupToOpen);
 		}
-		else
-			ImGui::EndPopup();
+
+		ImGui::EndPopup();
+	}
+
+	if (needOpenPopup)
+	{
+		ImGui::Ext::openStackingPopUp(popupToOpen.c_str());
+		needOpenPopup = false;
 	}
 
 	//right clic on folder menu display :
@@ -684,17 +696,21 @@ void ResourceTreeView::displayModales()
 	{
 		if (ImGui::Button("Rename folder."))
 		{
-			ImGui::EndPopup();
-			ImGui::Ext::openStackingPopUp("RenameFolderModale");
+			//ImGui::EndPopup();
+			//ImGui::Ext::openStackingPopUp("RenameFolderModale");
+			needOpenPopup = true;
+			popupToOpen = "RenameFolderModale";
 		}
 		else if (ImGui::Button("Add folder."))
 		{
-			ImGui::EndPopup();
-			ImGui::Ext::openStackingPopUp("AddFolderModale");
+			//ImGui::EndPopup();
+			//ImGui::Ext::openStackingPopUp("AddFolderModale");
+			needOpenPopup = true;
+			popupToOpen = "AddFolderModale";
 		}
 		else if (ImGui::Button("Copy folder."))
 		{
-			ImGui::EndPopup();
+			//ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr)
 			{
 				m_folderWaitingPastPath = m_folderWeRightClicOn->getPath();
@@ -704,7 +720,7 @@ void ResourceTreeView::displayModales()
 		}
 		else if (ImGui::Button("Move folder."))
 		{
-			ImGui::EndPopup();
+			//ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr)
 			{
 				m_folderWaitingPastPath = m_folderWeRightClicOn->getPath();
@@ -714,7 +730,7 @@ void ResourceTreeView::displayModales()
 		}
 		else if (m_isMovingItemFolder == true && m_folderWeRightClicOn != nullptr && ImGui::Button("Past folder."))
 		{
-			ImGui::EndPopup();
+			//ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr)
 			{
 				ResourceFolder* folderToMoveOrCopy = m_model->getSubFolder(m_folderWaitingPastPath);
@@ -729,7 +745,7 @@ void ResourceTreeView::displayModales()
 		}
 		else if (m_isMovingItemFolder == false && m_fileWeRightClicOn != nullptr && ImGui::Button("Past file."))
 		{
-			ImGui::EndPopup();
+			//ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr && m_fileWeRightClicOn != nullptr)
 			{
 				ResourceFile* fileToMoveOrCopy = m_model->getFile(m_fileWaitingPastPath);
@@ -744,7 +760,7 @@ void ResourceTreeView::displayModales()
 		}
 		else if (ImGui::Button("Delete folder."))
 		{
-			ImGui::EndPopup();
+			//ImGui::EndPopup();
 			if (m_folderWeRightClicOn != nullptr)
 			{
 				ResourceFolder* parentFolder = m_model->getSubFolder(m_folderWeRightClicOn->getParentFolderPath());
@@ -755,11 +771,19 @@ void ResourceTreeView::displayModales()
 		}
 		else if (ImGui::Button("Add resource."))
 		{
-			ImGui::EndPopup();
-			ImGui::Ext::openStackingPopUp("AddResourcePopUp");
+			//ImGui::EndPopup();
+			//ImGui::Ext::openStackingPopUp("AddResourcePopUp");
+			needOpenPopup = true;
+			popupToOpen = "AddResourcePopUp";
 		}
-		else
-			ImGui::EndPopup();
+
+		ImGui::EndPopup();
+	}
+
+	if (needOpenPopup)
+	{
+		ImGui::Ext::openStackingPopUp(popupToOpen.c_str());
+		needOpenPopup = false;
 	}
 
 	//pop up to rename file :
@@ -779,16 +803,26 @@ void ResourceTreeView::displayModales()
 	{
 		if (ImGui::Button("ShaderProgram."))
 		{
-			ImGui::EndPopup();
-			ImGui::Ext::openStackingPopUp("AddShaderProgramPopUp");
+			//ImGui::EndPopup();
+			//ImGui::Ext::openStackingPopUp("AddShaderProgramPopUp");
+			needOpenPopup = true;
+			popupToOpen = "AddShaderProgramPopUp";
 		}
 		else if (ImGui::Button("CubeTexture."))
 		{
-			ImGui::EndPopup();
-			ImGui::Ext::openStackingPopUp("AddCubeTexturePopUp");
+			//ImGui::EndPopup();
+			//ImGui::Ext::openStackingPopUp("AddCubeTexturePopUp");
+			needOpenPopup = true;
+			popupToOpen = "AddCubeTexturePopUp";
 		}
-		else
-			ImGui::EndPopup();
+
+		ImGui::EndPopup();
+	}
+
+	if (needOpenPopup)
+	{
+		ImGui::Ext::openStackingPopUp(popupToOpen.c_str());
+		needOpenPopup = false;
 	}
 
 	//PopUp to choose a material :

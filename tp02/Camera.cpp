@@ -56,12 +56,30 @@ void BaseCamera::computeCulling(const Octree<IRenderableComponent, AABB>& octree
 			}
 			else
 			{
-				auto newRenderBatch = visibleComponent->getDrawableMaterial(i).MakeSharedRenderBatch();
+				auto newRenderBatch = visibleComponent->getDrawableMaterial(i).makeSharedRenderBatch();
 				newRenderBatch->add(&visibleComponent->getDrawable(i), &visibleComponent->getDrawableMaterial(i));
 				m_renderBatches[renderPipelineTypeAsInt][visibleComponent->getDrawableMaterial(i).getGLId()] = newRenderBatch;
 			}
 		}
 	}
+}
+
+void BaseCamera::addRenderBatch(Rendering::PipelineType renderPipelineType, std::shared_ptr<IRenderBatch> renderBatch)
+{
+	m_renderBatches[static_cast<int>(renderPipelineType)][renderBatch->getProgramId()] = renderBatch;
+}
+
+void BaseCamera::clearRenderBatches()
+{
+	for (int i = 0; i < static_cast<int>(Rendering::PipelineType::COUNT); i++)
+	{
+		m_renderBatches[i].clear();
+	}
+}
+
+void BaseCamera::clearRenderBatches(Rendering::PipelineType renderPipelineType)
+{
+	m_renderBatches[static_cast<int>(renderPipelineType)].clear();
 }
 
 const std::map<GLuint, std::shared_ptr<IRenderBatch>>& BaseCamera::getRenderBatches(Rendering::PipelineType renderPipelineType) const
@@ -370,7 +388,7 @@ void Camera::updateScreenSize(float screenWidth, float screenHeight)
 }
 
 void Camera::setPerspectiveInfos(float fovy, float aspect, float zNear, float zFar)
-{
+{	
 	m_fovy = fovy;
 	m_aspect = aspect;
 	m_zNear = zNear;
@@ -1187,3 +1205,70 @@ return camera;
 }
 
 */
+
+///////////////////////
+
+SimpleCamera::SimpleCamera()
+	: m_cameraMode(CameraMode::PERSPECTIVE)
+{
+	updateProjection();
+	m_viewMatrix = glm::lookAt(glm::vec3(-10, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+}
+
+void SimpleCamera::updateScreenSize(float screenWidth, float screenHeight)
+{
+	m_aspect = screenWidth / screenHeight;
+
+	//TODO 
+	//also resize orthographic frustum ?
+
+	updateProjection();
+}
+
+void SimpleCamera::setPerspectiveInfos(float fovy, float aspect, float camNear, float camFar)
+{
+	m_fovy = fovy;
+	m_aspect = aspect;
+	m_zNear = camNear;
+	m_zFar = camFar;
+
+	updateProjection();
+}
+
+void SimpleCamera::setOrthographicInfos(float left, float right, float bottom, float top, float zNear, float zFar)
+{
+	m_orthographicViewportRect.left = left;
+	m_orthographicViewportRect.right = right;
+	m_orthographicViewportRect.top = top;
+	m_orthographicViewportRect.bottom = bottom;
+	m_zNear = zNear;
+	m_zFar = zFar;
+
+	updateProjection();
+}
+
+void SimpleCamera::setCameraMode(CameraMode cameraMode)
+{
+	m_cameraMode = cameraMode;
+	updateProjection();
+}
+
+void SimpleCamera::updateProjection()
+{
+	if (m_cameraMode == CameraMode::PERSPECTIVE)
+		m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
+	else
+		m_projectionMatrix = glm::ortho(m_orthographicViewportRect.left, m_orthographicViewportRect.right, m_orthographicViewportRect.bottom, m_orthographicViewportRect.top, m_zNear, m_zFar);
+}
+
+void SimpleCamera::lookAt(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up)
+{
+	m_viewMatrix = glm::lookAt(eye, target, up);
+	m_forward = glm::normalize(target - eye);
+	m_position = eye;
+}
+
+void SimpleCamera::lookAt(const glm::vec3& eye, const glm::vec3& target)
+{
+	m_viewMatrix = glm::lookAt(eye, target, glm::vec3(0, 1, 0));
+}

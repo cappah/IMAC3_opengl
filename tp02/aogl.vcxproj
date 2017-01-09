@@ -264,6 +264,7 @@
     <ClCompile Include="MaterialVisualScripting.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
+    <ClCompile Include="MeshVisualizer.cpp" />
     <ClCompile Include="MotionState.cpp" />
     <ClCompile Include="Octree.cpp" />
     <ClCompile Include="OctreeDrawer.cpp" />
@@ -348,7 +349,7 @@
     <ClInclude Include="GlHelper.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="IAsynchronousCommand.h" />
-    <ClInclude Include="IClonable.h" />
+    <ClInclude Include="ICloneable.h" />
     <ClInclude Include="ICloner.h" />
     <ClInclude Include="IDGenerator.h" />
     <ClInclude Include="IDrawable.h" />
@@ -369,6 +370,7 @@
     <ClInclude Include="MaterialVisualScripting.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="MeshVisualizer.h" />
     <ClInclude Include="MotionState.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Octree.h" />

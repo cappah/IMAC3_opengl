@@ -135,14 +135,17 @@ vec3 computeDirectionalLight(sDirectionalLight light, vec3 p, vec3 n,  vec3 diff
 
 void main(void)
 {
-    vec3 n = texture(Bump, In.TexCoord).rgb;
-    n = normalize(n * 2.0 - 1.0);
-    n = normalize(In.TBN * n);
-
     float depth = gl_FragDepth;
-    vec4 diffuse = texture(Diffuse, In.TexCoord).rgba * TintColor;
-    vec3 specular = texture(Specular, In.TexCoord).rrr;
-    float specularPower = SpecularPower;
+    vec3 paramDiffuse;
+    vec3 paramEmissive;
+    vec3 paramNormals;
+    float paramSpecular;
+    float paramSpecularPower;
+
+    computeShaderParameters(paramDiffuse, paramNormals, paramSpecular, paramSpecularPower, paramEmissive);
+
+    paramNormals = normalize(paramNormals * 2.0 - 1.0);
+    paramNormals = normalize(In.TBN * paramNormals);
 
     // Convert texture coordinates into screen space coordinates
     vec2 xy = In.TexCoord * 2.0 -1.0;
@@ -151,25 +154,25 @@ void main(void)
     // Divide by w
     vec3 p = vec3(wP.xyz / wP.w);
 
-    vec3 ambient = 0.2 * diffuse.rgb;
-    vec4 color = vec4(ambient, diffuse.a);
+    vec3 ambient = 0.2 * paramDiffuse.rgb;
+    vec4 color = vec4(ambient, paramDiffuse.a);
 
     int pointLightCount = min(MaxPointLightCount, PointLightCount);
     for(int i = 0; i < pointLightCount; ++i)
     {
-        color.rgb += computePointLight( PointLight[i], p, n, diffuse.rgb, specular, specularPower * 100 ) / pointLightCount;
+        color.rgb += computePointLight( PointLight[i], p, paramNormals, diffuse.rgb, paramSpecular, paramSpecularPower * 100 ) / pointLightCount;
     }
 
     int spotLightCount = min(MaxSpotLightCount, SpotLightCount);
     for(int i = 0; i < spotLightCount ; ++i)
     {
-        color.rgb += computeSpotLight( SpotLight[i], p, n, diffuse.rgb, specular, specularPower * 100 ) / spotLightCount;
+        color.rgb += computeSpotLight( SpotLight[i], p, paramNormals, paramDiffuse.rgb, paramSpecular, paramSpecularPower * 100 ) / spotLightCount;
     }
 
     int directionalLightCount = min(MaxDirectionalLightCount, DirectionalLightCount);
     for(int i = 0; i < directionalLightCount; ++i)
     {
-        color.rgb += computeDirectionalLight( DirectionalLight[i], p, n, diffuse.rgb, specular, specularPower * 100 ) / directionalLightCount;
+        color.rgb += computeDirectionalLight( DirectionalLight[i], p, paramNormals, paramDiffuse.rgb, paramSpecular, paramSpecularPower * 100 ) / directionalLightCount;
     }
 
     Color = vec4(color.rgb, color.a * ceil(1.0 - depth)); // Transparency at infinity

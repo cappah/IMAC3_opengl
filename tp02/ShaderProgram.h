@@ -14,12 +14,16 @@ class InternalShaderParameterBase;
 class ExternalShaderParameterBase;
 class Material;
 class ResourceTreeView;
+class EditorFrame;
+
 namespace MVS {
 	class NodeManager;
 }
 
 namespace Rendering
 {
+	// WARNING : custom enum value must always be at the end of [...]ToString arrays !
+
 	enum class MaterialType
 	{
 		INTERNAL,
@@ -34,18 +38,18 @@ namespace Rendering
 
 	enum class MaterialUsage
 	{
-		CUSTOM,
 		MESH,
 		BILLBOARD,
 		PARTICLES,
+		CUSTOM,
 		COUNT
 	};
 
 	static std::vector<std::string> MaterialUsageToString = {
-		"custom",
 		"mesh",
 		"billboard",
 		"particles",
+		"custom",
 	};
 
 	enum class BaseMaterialType
@@ -110,8 +114,10 @@ private:
 	std::string m_fragmentShaderName;
 	std::string m_geometryShaderName;
 
-	// A pointer to the NodeManager (i.e : the material editing window) associated with this material.
-	std::weak_ptr<MVS::NodeManager> m_nodeManagerRef;
+	// A pointer to the NodeManager associated with this material.
+	std::shared_ptr<MVS::NodeManager> m_nodeManager;
+	// A pointed to the window displaying the NodeManager
+	std::weak_ptr<EditorFrame> m_nodeManagerEditorFrameRef;
 
 	std::string m_computeShaderParameterFunction;
 	bool m_needRecompilation;
@@ -163,15 +169,30 @@ public:
 	void removeMaterialRef(Material* ref);
 
 	const std::vector<std::shared_ptr<InternalShaderParameterBase>>& getInternalParameters() const;
+	void setInternalParameters(std::vector<std::shared_ptr<InternalShaderParameterBase>>& internals);
 	//const std::vector<std::shared_ptr<ExternalShaderParameterBase>>& getExternalParameters() const;
 
 	Rendering::MaterialType getMaterialType() const;
+	Rendering::MaterialUsage getMaterialUsage() const;
 	Rendering::PipelineType getPipelineType() const;
+	bool getUsedWithReflections() const;
+	bool getUsedWithSkeletons() const;
+
+	void setMaterialUsage(Rendering::MaterialUsage usage);
+	void setPipelineType(Rendering::PipelineType pipeline);
+	void setUsedWithReflections(bool state);
+	void setUsedWithSkeletons(bool state);
+
+	bool drawUIMaterialUsage();
+	bool drawUIPipelineType();
+	bool drawUIUsedWithReflections();
+	bool drawUIUsedWithSkeleton();
 
 	virtual void drawInInspector(Scene & scene) override;
 
+
 	// We have to display a option to create material instance based on this shaderProgram.
-	virtual void drawRightClicContextMenu() override;
+	virtual bool drawRightClicContextMenu(std::string& popupToOpen) override;
 
 	//Not copyable
 	ShaderProgram(const ShaderProgram& other) = delete;

@@ -61,6 +61,12 @@ public:
 	void initInternalParameters();
 	virtual void init(const FileHandler::CompletePath& path, const ID& id) override;
 	void init(const ShaderProgram& shaderProgram);
+
+	void setAggregates(std::unordered_map<std::string, std::shared_ptr<MaterialAggregation>>& aggregations);
+	void setPerInstanceAggregates(std::unordered_map<std::string, std::shared_ptr<PerInstanceMaterialAggregation>>& perInstanceAggregations);
+	void setProgramId(GLuint programId);
+	void setinternalParameters(std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalShaderParameters);
+
 	void drawUI();
 	void pushGlobalsToGPU(const RenderDatas& renderDatas) const;
 	void pushInternalsToGPU(int& boundTextureCount) const;
@@ -96,11 +102,7 @@ public:
 
 	virtual void drawInInspector(Scene & scene) override;
 
-	virtual std::shared_ptr<IRenderBatch> MakeSharedRenderBatch() const
-	{
-		assert(false && "You can't use this material in RenderBatch !");
-		return nullptr;
-	}
+	virtual std::shared_ptr<IRenderBatch> makeSharedRenderBatch() const;
 };
 
 template<typename BatchMaterialType, typename ParentMaterialType>
@@ -119,7 +121,7 @@ public:
 		: ParentMaterialType(shaderProgram, completePath)
 	{}
 
-	std::shared_ptr<IRenderBatch> MakeSharedRenderBatch() const override;
+	std::shared_ptr<IRenderBatch> makeSharedRenderBatch() const override;
 };
 
 //engine materials : 
