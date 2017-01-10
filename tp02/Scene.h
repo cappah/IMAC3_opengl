@@ -127,6 +127,14 @@ private:
 
 	std::shared_ptr<SceneAccessor> m_accessor;
 
+	// Icones :
+	Texture* m_pointLightIcone;
+	Texture* m_directionalLightIcone;
+	Texture* m_spotLightIcone;
+	Texture* m_particleEmitterIcone;
+	Mesh* m_iconeMesh;
+	MaterialBillboard* m_iconeMaterial;
+
 public:
 	Scene(Renderer* renderer, const std::string& sceneName = "defaultScene");
 	~Scene();
@@ -147,6 +155,7 @@ public:
 
 	void render();
 	void renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer);
+	void renderIcones(CameraEditor& camera);
 	//void renderColliders(const BaseCamera& camera);
 	//void renderDebugLights(const BaseCamera& camera);
 	//void renderPaths(const BaseCamera& camera);

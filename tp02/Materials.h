@@ -991,27 +991,27 @@ public:
 	}
 	void setUniformScale(const glm::vec2& scale) const
 	{
-		GlHelper::pushParameterToGPU(uniform_MVP, scale);
+		GlHelper::pushParameterToGPU(uniform_Scale, scale);
 	}
 	void setUniformTranslation(const glm::vec3& translation) const
 	{
-		GlHelper::pushParameterToGPU(uniform_MVP, translation);
+		GlHelper::pushParameterToGPU(uniform_Translation, translation);
 	}
 	void setUniformTexture(int texId) const
 	{
-		GlHelper::pushParameterToGPU(uniform_MVP, texId);
+		GlHelper::pushParameterToGPU(uniform_Texture, texId);
 	}
 	void setUniformCameraRight(const glm::vec3& camRight) const
 	{
-		GlHelper::pushParameterToGPU(uniform_MVP, camRight);
+		GlHelper::pushParameterToGPU(uniform_CameraRight, camRight);
 	}
 	void setUniformCameraUp(const glm::vec3& camUp) const
 	{
-		GlHelper::pushParameterToGPU(uniform_MVP, camUp);
+		GlHelper::pushParameterToGPU(uniform_CameraUp, camUp);
 	}
 	void setUniformColor(const glm::vec4& color) const
 	{
-		GlHelper::pushParameterToGPU(uniform_MVP, color);
+		GlHelper::pushParameterToGPU(uniform_Color, color);
 	}
 };
 

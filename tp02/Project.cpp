@@ -55,6 +55,7 @@ FileHandler::Path Project::m_assetFolderPath = FileHandler::Path();
 FileHandler::Path Project::m_shaderFolderPath = FileHandler::Path();
 FileHandler::Path Project::m_scenesFolderPath = FileHandler::Path();
 FileHandler::Path Project::m_projectInfosFolderPath = FileHandler::Path();
+FileHandler::Path Project::m_engineResourcesFolderPath = FileHandler::Path();
 
 /////////////////////////////////////
 
@@ -146,6 +147,8 @@ void Project::open(const std::string & projectName, const FileHandler::Path & pr
 	assert(FileHandler::directoryExists(m_scenesFolderPath));
 	m_projectInfosFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/projectInfos/");
 	assert(FileHandler::directoryExists(m_projectInfosFolderPath));
+	m_engineResourcesFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/engineResources/");
+	assert(FileHandler::directoryExists(m_engineResourcesFolderPath));
 
 	//we have to set projectPath before calling initProject
 	initProject(); //init systems and resources
@@ -175,6 +178,8 @@ void Project::open()
 	assert(FileHandler::directoryExists(m_scenesFolderPath));
 	m_projectInfosFolderPath = FileHandler::Path(m_projectPath.toString() + "/projectInfos/");
 	assert(FileHandler::directoryExists(m_projectInfosFolderPath));
+	m_engineResourcesFolderPath = FileHandler::Path(m_projectPath.toString() + "/engineResources/");
+	assert(FileHandler::directoryExists(m_engineResourcesFolderPath));
 
 	//we have to set projectPath before calling initProject
 	initProject(); //init systems and resources
@@ -780,6 +785,11 @@ const FileHandler::Path& Project::getShaderFolderPath()
 const FileHandler::Path & Project::getScenesFolderPath()
 {
 	return m_scenesFolderPath;
+}
+
+const FileHandler::Path & Project::getEngineResourcesFolderPath()
+{
+	return m_engineResourcesFolderPath;
 }
 
 FileHandler::CompletePath Project::getAbsolutePathFromRelativePath(const FileHandler::CompletePath& relativeCompletePath)

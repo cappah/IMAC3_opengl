@@ -21,6 +21,7 @@
 #include "EditorTools.h"
 #include "IDGenerator.h"
 #include "Object.h"
+#include "Factories.h"
 
 
 Scene::Scene(Renderer* renderer, const std::string& sceneName) 
@@ -62,6 +63,14 @@ Scene::Scene(Renderer* renderer, const std::string& sceneName)
 
 	//// END : Component container mapping
 	//////////////////////////////////////////////
+
+	m_pointLightIcone = getTextureFactory().getDefault("pointLightIcone");
+	m_directionalLightIcone = getTextureFactory().getDefault("directionalLightIcone");
+	m_spotLightIcone = getTextureFactory().getDefault("spotLightIcone");
+	m_particleEmitterIcone = getTextureFactory().getDefault("particleEmitterIcone");
+	m_iconeMesh = getMeshFactory().getDefault("plane");
+
+	m_iconeMaterial = static_cast<MaterialBillboard*>(getMaterialFactory().getDefault("billboard"));
 }
 
 Scene::~Scene()
@@ -239,6 +248,8 @@ void Scene::renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer
 	// Draw debug render :
 	camera.getFrameBuffer().bind();
 
+	renderIcones(camera);
+
 	if (m_areCollidersVisible)
 		m_renderer->debugDrawColliders(camera, m_entities);
 
@@ -260,6 +271,59 @@ void Scene::renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer
 
 	camera.getFrameBuffer().unbind();
 }
+
+void Scene::renderIcones(CameraEditor& camera)
+{
+	const glm::mat4& view = camera.getViewMatrix();
+
+	glm::vec3 CameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
+	glm::vec3 CameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
+
+	m_iconeMaterial->use();
+
+	m_iconeMaterial->setUniformCameraRight(CameraRight);
+	m_iconeMaterial->setUniformCameraUp(CameraUp);
+	m_iconeMaterial->setUniformColor(glm::vec4(1,1,1,1));
+	m_iconeMaterial->setUniformMVP(camera.getProjectionMatrix() * view);
+	m_iconeMaterial->setUniformScale(glm::vec2(0.2, 0.2));
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_pointLightIcone->glId);
+	m_iconeMaterial->setUniformTexture(0);
+	for (auto pointLight : m_pointLights)
+	{
+		m_iconeMaterial->setUniformTranslation(pointLight->position);
+		m_iconeMesh->draw();
+	}
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_directionalLightIcone->glId);
+	m_iconeMaterial->setUniformTexture(0);
+	for (auto directionalLight : m_directionalLights)
+	{
+		m_iconeMaterial->setUniformTranslation(directionalLight->position);
+		m_iconeMesh->draw();
+	}
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_spotLightIcone->glId);
+	m_iconeMaterial->setUniformTexture(0);
+	for (auto spotLight : m_spotLights)
+	{
+		m_iconeMaterial->setUniformTranslation(spotLight->position);
+		m_iconeMesh->draw();
+	}
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_particleEmitterIcone->glId);
+	m_iconeMaterial->setUniformTexture(0);
+	for (auto particleEmitter : m_particleEmitters)
+	{
+		m_iconeMaterial->setUniformTranslation(particleEmitter->entity()->getTranslation());
+		m_iconeMesh->draw();
+	}
+}
+
 //
 //void Scene::renderColliders(const BaseCamera & camera)
 //{

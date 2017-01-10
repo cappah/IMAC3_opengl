@@ -56,6 +56,7 @@ private:
 	static FileHandler::Path m_shaderFolderPath;
 	static FileHandler::Path m_scenesFolderPath;
 	static FileHandler::Path m_projectInfosFolderPath;
+	static FileHandler::Path m_engineResourcesFolderPath;
 
 	//For ui : 
 	char m_newSceneName[30];
@@ -127,6 +128,7 @@ public:
 	static const FileHandler::Path& getAssetsFolderPath();
 	static const FileHandler::Path& getShaderFolderPath();
 	static const FileHandler::Path& getScenesFolderPath();
+	static const FileHandler::Path& getEngineResourcesFolderPath();
 	static FileHandler::CompletePath getAbsolutePathFromRelativePath(const FileHandler::CompletePath& relativeCompletePath);
 	static FileHandler::Path getAbsolutePathFromRelativePath(const FileHandler::Path& relativePath);
 	static bool isPathPointingInsideProjectFolder(const FileHandler::Path& path);

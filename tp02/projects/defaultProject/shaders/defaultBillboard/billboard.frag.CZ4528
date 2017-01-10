@@ -16,5 +16,5 @@ void main()
 {
 	//no lighting for the moment 
 
-        FragColor = texture2D(Texture, In.TexCoord) * Color;
+        FragColor = vec4(1,0,0,1);//texture2D(Texture, In.TexCoord) * Color;
 }

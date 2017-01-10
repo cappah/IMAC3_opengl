@@ -28,6 +28,7 @@ enum class NodeType {
 	PARAMETER,
 	FUNCTION,
 	FINAL,
+	CUSTOM,
 };
 
 static std::vector<std::string> NodeTypeToString = {
@@ -93,6 +94,8 @@ struct Output
 };
 
 void formatAndOutputResult(std::stringstream& stream, const Output& output, FlowType desiredType, CompilationErrorCheck& errorCheck);
+
+void printDefaultValue(std::stringstream& nodeCompileResult, FlowType desiredType);
 
 #define INHERIT_FROM_NODE(RealNodeType)\
 virtual std::shared_ptr<Node> cloneShared() override\
@@ -305,7 +308,14 @@ struct FunctionNode : public Node
 		int idx = 0;
 		for (auto input : inputs)
 		{
-			input->compile(nodeCompileResult, errorCheck);
+			if (input->link != nullptr)
+			{
+				input->compile(nodeCompileResult, errorCheck);
+			}
+			else
+			{
+				printDefaultValue(nodeCompileResult, input->desiredType);
+			}
 			if (idx < inputs.size() - 1)
 				nodeCompileResult << ',';
 			idx++;
@@ -316,6 +326,15 @@ struct FunctionNode : public Node
 	}
 
 
+};
+
+struct CustomNode : public Node
+{
+		CustomNode(const std::string& _nodeName)
+	: Node(NodeType::CUSTOM, _nodeName)
+	{
+
+	}
 };
 
 struct OperatorNode : public Node
@@ -339,7 +358,14 @@ struct OperatorNode : public Node
 		int idx = 0;
 		for (auto input : inputs)
 		{
-			input->compile(nodeCompileResult, errorCheck);
+			if (input->link != nullptr)
+			{
+				input->compile(nodeCompileResult, errorCheck);
+			}
+			else
+			{
+				printDefaultValue(nodeCompileResult, input->desiredType);
+			}
 			if (idx < inputs.size() - 1)
 				nodeCompileResult << operatorStr;
 			idx++;
@@ -379,9 +405,9 @@ struct ParameterNode : public BaseParameterNode
 	{
 		// Print [uniform] type name;
 		if (isUniform)
-		{
 			stream << "uniform ";
-		}
+		else
+			stream << "const ";
 
 		stream << Utils::typeAsString<T>() << " " << parameterName << " = " << shaderParameter.valueAsString() << ";\n";
 	}
@@ -539,7 +565,30 @@ REGISTER_TEMPLATED_NODE("texture", ParameterNode, Texture, ParameterTexture)
 //// END : Parameters
 //////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////
+//// BEGIN : Customs
 
+struct TexCoordsNode final : public CustomNode
+{
+	INHERIT_FROM_NODE(TexCoordsNode)
+
+	TexCoordsNode()
+		: CustomNode("TexCoords")
+	{
+		outputs.push_back(std::make_shared<Output>(this, "rg", FlowType::FLOAT2));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+	}
+	void compile(CompilationErrorCheck& errorCheck) override
+	{
+		outputs[0]->valueStr = "In.TexCoord";
+		outputs[1]->valueStr = "In.TexCoord.r";
+		outputs[2]->valueStr = "In.TexCoord.g";
+	}
+};
+
+//// BEGIN : Customs
+//////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 //// BEGIN : Operators

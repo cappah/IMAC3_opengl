@@ -75,6 +75,29 @@ void formatAndOutputResult(std::stringstream& stream, const Output& output, Flow
 	}
 }
 
+void printDefaultValue(std::stringstream & nodeCompileResult, FlowType desiredType)
+{
+	switch (desiredType)
+	{
+	case MVS::FlowType::UNDEFINED:
+		break;
+	case MVS::FlowType::FLOAT:
+		nodeCompileResult << "0.f";
+		break;
+	case MVS::FlowType::FLOAT2:
+		nodeCompileResult << "vec2(0.f, 0.f)";
+		break;
+	case MVS::FlowType::FLOAT3:
+		nodeCompileResult << "vec3(0.f, 0.f, 0.f)";
+		break;
+	case MVS::FlowType::FLOAT4:
+		nodeCompileResult << "vec4(0.f, 0.f, 0.f, 0.f)";
+		break;
+	default:
+		break;
+	}
+}
+
 
 ///////////////////////////////////////////
 //// BEGIN : Input

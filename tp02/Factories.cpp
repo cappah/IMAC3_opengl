@@ -148,6 +148,27 @@ void ResourceFactory<Texture>::initDefaults()
 	newTex = new Texture(glm::vec3(255, 255, 255));
 	newTex->initGL();
 	addDefaultResource("defaultEmissive", newTex);
+
+	// Engine resources :
+	FileHandler::CompletePath pointLightsIconePath(Project::getEngineResourcesFolderPath().toString() + "/textures/" + "pointLightIcone.png");
+	newTex = new Texture(pointLightsIconePath);
+	newTex->initGL();
+	addDefaultResource("pointLightIcone", newTex);
+
+	FileHandler::CompletePath directionalLightsIconePath(Project::getEngineResourcesFolderPath().toString() + "/textures/" + "directionalLightIcone.png");
+	newTex = new Texture(directionalLightsIconePath);
+	newTex->initGL();
+	addDefaultResource("directionalLightIcone", newTex);
+
+	FileHandler::CompletePath spotLightsIconePath(Project::getEngineResourcesFolderPath().toString() + "/textures/" + "spotLightIcone.png");
+	newTex = new Texture(spotLightsIconePath);
+	newTex->initGL();
+	addDefaultResource("spotLightIcone", newTex);
+
+	FileHandler::CompletePath particleEmitterIconePath(Project::getEngineResourcesFolderPath().toString() + "/textures/" + "particleEmitterIcone.png");
+	newTex = new Texture(particleEmitterIconePath);
+	newTex->initGL();
+	addDefaultResource("particleEmitterIcone", newTex);
 }
 
 
