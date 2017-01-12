@@ -178,6 +178,11 @@ public:
 		return m_rawPtr;
 	}
 
+	bool operator==(const ResourcePtr<T>& other) const
+	{
+		return m_rawPtr == other.m_rawPtr;
+	}
+
 	bool isValid() const override
 	{
 		return m_rawPtr != nullptr && m_resourceHashKey.isValid();
@@ -195,6 +200,7 @@ public:
 
 	virtual void save(Json::Value & entityRoot) const override
 	{
+		entityRoot["isValid"] = isValid();
 		entityRoot["isDefaultResource"] = m_isDefaultResource;
 		m_resourceHashKey.save(entityRoot["resourceHashKey"]);
 	}

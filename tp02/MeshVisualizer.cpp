@@ -3,18 +3,35 @@
 
 
 MeshVisualizer::MeshVisualizer()
+	: m_viewportSize(400, 400)
+	, m_cameraDistance(1.f)
+	, m_cameraTarget(0.f, 0.f, 0.f)
+	, m_cameraPhi(glm::pi<float>()*0.5f)
+	, m_cameraTheta(glm::pi<float>()*0.5f)
 {
-	GlHelper::makeColorTexture(m_renderTex, 400, 400);
-	m_frameBuffer.bind();
-	m_frameBuffer.attachTexture(&m_renderTex, GL_COLOR_ATTACHMENT0);
-	m_frameBuffer.checkIntegrity();
-	m_frameBuffer.unbind();
+	m_camera.onViewportResized(m_viewportSize);
+
+	m_pointLights.push_back(new PointLight(10, glm::vec3(1, 1, 1), glm::vec3(3, 3, 3)));
+
+	DirectionalLight* newDirLight = new DirectionalLight(1.f, glm::vec3(1, 1, 1), glm::vec3(-1, -1, 0));
+	newDirLight->setCastShadows(false);
+	newDirLight->position = glm::vec3(0, 2, 0);
+	m_directionalLights.push_back(newDirLight);
+
+	newDirLight = new DirectionalLight(1.f, glm::vec3(1, 1, 1), glm::vec3(1, 1, 0));
+	newDirLight->setCastShadows(false);
+	newDirLight->position = glm::vec3(0, 2, 0);
+	m_directionalLights.push_back(newDirLight);
 }
 
 MeshVisualizer::~MeshVisualizer()
 {
 	for (int i = 0; i < m_pointLights.size(); i++)
 		delete m_pointLights[i];
+	for (int i = 0; i < m_directionalLights.size(); i++)
+		delete m_directionalLights[i];
+	for (int i = 0; i < m_spotLights.size(); i++)
+		delete m_spotLights[i];
 }
 
 void MeshVisualizer::setMesh(Mesh * mesh)
@@ -59,37 +76,40 @@ void MeshVisualizer::setMaterial(std::shared_ptr<Material> material)
 void MeshVisualizer::render(Renderer& renderer)
 {
 	//TODO : refactor
-	std::vector<DirectionalLight*> m_directionalLights;
-	std::vector<SpotLight*> m_spotLights;
 
 	renderer.render(m_camera, m_pointLights, m_directionalLights, m_spotLights, false, nullptr);
 }
 
 void MeshVisualizer::rotateCamera(float x, float y)
 {
-	m_cameraPhi += y;
-	m_cameraTheta += x;
-
-	glm::vec3 eye(glm::cos(m_cameraTheta) * glm::sin(m_cameraPhi), glm::sin(m_cameraTheta) * glm::cos(m_cameraPhi), glm::sin(m_cameraTheta));
-
-	m_camera.lookAt(eye, m_cameraTarget);
+	m_cameraTheta += x * 0.01;
+	m_cameraPhi += y * 0.01;
+	updateCameraView();
 }
 
 void MeshVisualizer::panCamera(float x, float y)
 {
-	m_cameraTarget.x += x;
-	m_cameraTarget.y += y;
-
-	glm::vec3 eye(glm::cos(m_cameraTheta) * glm::sin(m_cameraPhi), glm::sin(m_cameraTheta) * glm::cos(m_cameraPhi), glm::sin(m_cameraTheta));
-
-	m_camera.lookAt(eye, m_cameraTarget);
+	m_cameraTarget.x += x * 0.05;
+	m_cameraTarget.y += y * 0.05;
+	updateCameraView();
 }
 
 void MeshVisualizer::drawUI()
 {
-	const ImVec2 availContent = ImGui::GetContentRegionAvail();
-	ImGui::ImageButton((void*)m_camera.getFinalFrame()->glId, ImVec2(availContent.x - 8, availContent.y - 8) /*ImVec2(100, 100)*/, ImVec2(1, 0), ImVec2(0, 1));
+	ImVec2 availContent = ImGui::GetContentRegionAvail();
+	availContent.x -= 8.f;
+	availContent.y -= 8.f;
+
+	if (glm::abs(availContent.x - m_viewportSize.x) > 0.1f || glm::abs(availContent.y - m_viewportSize.y) > 0.1f)
+	{
+		m_viewportSize.x = availContent.x;
+		m_viewportSize.y = availContent.y;
+		m_camera.onViewportResized(m_viewportSize);
+	}
+
+	ImGui::ImageButton((void*)m_camera.getFinalFrame()->glId, ImVec2(availContent.x, availContent.y) /*ImVec2(100, 100)*/, ImVec2(0, 1), ImVec2(1, 0));
 	m_isSelected = ImGui::IsItemActive();
+	bool isItemHovered = ImGui::IsItemHovered();
 
 	ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
 	if (m_isSelected && (dragDelta.x * dragDelta.x + dragDelta.y * dragDelta.y > 0.01f))
@@ -100,4 +120,38 @@ void MeshVisualizer::drawUI()
 			rotateCamera(dragDelta.x, dragDelta.y);
 		ImGui::ResetMouseDragDelta(0);
 	}
+	ImGuiIO& io = ImGui::GetIO();
+	float mouseWheel = io.MouseWheel;
+	if (isItemHovered && (mouseWheel > 0.1f || mouseWheel < -0.1f))
+	{
+		m_cameraDistance += (mouseWheel*0.1f);
+		if (m_cameraDistance < 0.01f)
+			m_cameraDistance = 0.01f;
+		updateCameraView();
+	}
+
+	if (isItemHovered)
+	{
+		ImGui::BeginTooltip();
+		ImGui::Text("Phi : %f, Theta : %f.\n CameraTarget : (%f, %f).\n CameraDistance : %f.\n CameraEye : (%f, %f, %f).\n CameraUp : (%f, %f, %f)."
+			, m_cameraPhi, m_cameraTheta, m_cameraTarget.x, m_cameraTarget.y, m_cameraDistance, m_cameraEye.x, m_cameraEye.y, m_cameraEye.z, m_cameraUp.x, m_cameraUp.y, m_cameraUp.z);
+		ImGui::EndTooltip();
+	}
+}
+
+void MeshVisualizer::updateCameraView()
+{
+	//glm::vec3 forward(glm::cos(m_cameraTheta) * glm::sin(m_cameraPhi), glm::cos(m_cameraPhi), glm::sin(m_cameraTheta) * glm::sin(m_cameraPhi));
+	glm::vec3 forward(glm::cos(m_cameraTheta), 0, glm::sin(m_cameraTheta));
+	forward *= -1;
+	forward = glm::normalize(forward);
+	m_cameraEye = m_cameraTarget - forward * m_cameraDistance;
+
+	m_cameraUp = glm::vec3(0.f, m_cameraPhi < glm::pi<float>() ? 1.f : -1.f, 0.f);
+	glm::vec3 right = glm::normalize(glm::cross(forward, m_cameraUp));
+	m_cameraUp = glm::normalize(glm::cross(right, forward));
+
+	m_camera.lookAt(m_cameraEye, m_cameraTarget, m_cameraUp);
+
+	//m_camera.lookAt(glm::vec3(-2, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 }

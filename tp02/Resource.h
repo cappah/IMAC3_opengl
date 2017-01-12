@@ -24,9 +24,12 @@ protected:
 public:
 	Resource();
 	virtual ~Resource();
-	Resource(const FileHandler::CompletePath& completePath);
+	Resource(const FileHandler::CompletePath& completePath, bool isDefaultResource = false);
+
 	virtual void init(const FileHandler::CompletePath& completePath, const ID& id);
-	virtual void loadPointers();
+	virtual void resolvePointersLoading() = 0;
+	virtual void save() = 0;
+
 	const FileHandler::CompletePath& getCompletePath() const;
 	const std::string& getName() const;
 	bool getIsDefaultResource() const;

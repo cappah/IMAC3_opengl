@@ -1,0 +1,9 @@
+{
+	"MVS" : null,
+	"computeShaderParameterFunction" : "",
+    "materialPipeline" : "deferred",
+	"materialType" : "default",
+	"materialUsage" : "mesh",
+	"usedWithReflection" : false,
+	"usedWithSkeleton" : false
+}

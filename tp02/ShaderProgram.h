@@ -41,6 +41,7 @@ namespace Rendering
 		MESH,
 		BILLBOARD,
 		PARTICLES,
+		REFLECTIVE_PLANE,
 		CUSTOM,
 		COUNT
 	};
@@ -49,6 +50,7 @@ namespace Rendering
 		"mesh",
 		"billboard",
 		"particles",
+		"reflective plane",
 		"custom",
 	};
 
@@ -102,13 +104,13 @@ private:
 	Rendering::MaterialType m_materialType;
 	Rendering::MaterialUsage m_usage;
 	Rendering::PipelineType m_pipeline;
-	bool m_usedWithReflections;
+	//bool m_usedWithReflections;
 	bool m_usedWithSkeleton;
 	/*std::vector<Rendering::PipelineType> m_pipelineHandlingTypes;
 	Rendering::BaseMaterialType m_baseMaterialType;*/
 
 	// Pointers to materials using this program.
-	std::vector<Material*> m_materialRefs;
+	std::vector<ResourcePtr<Material>> m_materialRefs;
 
 	std::string m_vertexShaderName;
 	std::string m_fragmentShaderName;
@@ -124,7 +126,7 @@ private:
 
 public:
 	ShaderProgram();
-	ShaderProgram(const FileHandler::CompletePath& path, Rendering::MaterialType type);
+	ShaderProgram(const FileHandler::CompletePath& path, Rendering::MaterialType type, bool isDefaultResource = false);
 	//ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath);
 	//ShaderProgram(const FileHandler::CompletePath& vertexShaderPath, const FileHandler::CompletePath& fragmentShaderPath, const FileHandler::CompletePath& geometryShaderPath);
 
@@ -137,9 +139,11 @@ public:
 	void resetNodeManagerPtr();
 
 	void init(const FileHandler::CompletePath& path, const ID& id) override;
+	void save() override;
+	void resolvePointersLoading() override;
 
-	void load(const FileHandler::CompletePath& path);
-	void save(const FileHandler::CompletePath& path);
+	void load(const Json::Value& root);
+	void save(Json::Value& root) const;
 
 	void makeMaterialAggregates();
 	GLuint makeGLProgramForInternal(const FileHandler::CompletePath& shaderFolderPath, const std::string& vertexShaderName, const std::string& fragmentShaderName, const std::string& geometryShaderName);
@@ -175,17 +179,17 @@ public:
 	Rendering::MaterialType getMaterialType() const;
 	Rendering::MaterialUsage getMaterialUsage() const;
 	Rendering::PipelineType getPipelineType() const;
-	bool getUsedWithReflections() const;
+	//bool getUsedWithReflections() const;
 	bool getUsedWithSkeletons() const;
 
 	void setMaterialUsage(Rendering::MaterialUsage usage);
 	void setPipelineType(Rendering::PipelineType pipeline);
-	void setUsedWithReflections(bool state);
+	//void setUsedWithReflections(bool state);
 	void setUsedWithSkeletons(bool state);
 
 	bool drawUIMaterialUsage();
 	bool drawUIPipelineType();
-	bool drawUIUsedWithReflections();
+	//bool drawUIUsedWithReflections();
 	bool drawUIUsedWithSkeleton();
 
 	virtual void drawInInspector(Scene & scene) override;

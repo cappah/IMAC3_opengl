@@ -60,7 +60,7 @@ public:
 	void pop_front();
 	void format();
 	bool empty() const;
-	std::string back() const;
+	std::string back(int idx = 1) const;
 
 	Path getSubPath(int begin, int count) const;
 

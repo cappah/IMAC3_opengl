@@ -173,10 +173,15 @@ void ReflectivePlane::setActiveCamera(ID cameraID)
 	m_activeCameraID = cameraID;
 }
 
-ReflectionCamera& ReflectivePlane::getCamera(ID cameraID)
+ReflectionCamera& ReflectivePlane::getCamera(ID cameraID) const
 {
 	assert(m_reflexionCameras.find(cameraID) != m_reflexionCameras.end());
-	return *m_reflexionCameras[cameraID];
+	return *m_reflexionCameras.at(cameraID);
+}
+
+ReflectionCamera & ReflectivePlane::getActiveCamera() const
+{
+	return getCamera(m_activeCameraID);
 }
 
 void ReflectivePlane::save(Json::Value & rootComponent) const
@@ -267,4 +272,9 @@ void ReflectivePlane::setExternalsOf(const MaterialReflection& material, const g
 	glBindTexture(GL_TEXTURE_2D, m_reflexionCameras.at(m_activeCameraID)->getFinalFrame()->glId);
 	material.glUniform_ReflectionTexture(*texId);
 	(*texId)++;
+}
+
+const ReflectivePlane * ReflectivePlane::getAsReflectivePlaneIfPossible() const
+{
+	return this;
 }

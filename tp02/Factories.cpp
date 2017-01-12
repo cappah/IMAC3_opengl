@@ -392,7 +392,8 @@ void loadAllPrograms(ResourceFactory<ShaderProgram>* programFactory, const FileH
 		if (FileHandler::getFileTypeFromExtention(outExtention) == FileHandler::FileType::SHADER_PROGRAM)
 		{
 			FileHandler::CompletePath shaderPath(relativePath.toString() + "/" + fileNameAndExtention);
-			ShaderProgram* newShaderProgram = new ShaderProgram(shaderPath, Rendering::MaterialType::INTERNAL);
+			ShaderProgram* newShaderProgram = new ShaderProgram(shaderPath, Rendering::MaterialType::INTERNAL, true);
+			newShaderProgram->getIsDefaultResource();
 			ID newID = IDGenerator<Resource>::instance().lockID();
 			newShaderProgram->init(shaderPath, newID);
 			programFactory->addDefaultResource(shaderPath.getFilename(), newShaderProgram);
@@ -404,7 +405,7 @@ void loadAllPrograms(ResourceFactory<ShaderProgram>* programFactory, const FileH
 void ResourceFactory<ShaderProgram>::initDefaults()
 {
 	FileHandler::Path shadersPath = FileHandler::Path(Project::getShaderFolderPath());
-	loadAllPrograms(this, shadersPath, FileHandler::Path(shadersPath.back()));
+	loadAllPrograms(this, shadersPath, FileHandler::Path(shadersPath.back(2)));
 }
 
 void initAllResourceFactories()
@@ -674,4 +675,33 @@ template<>
 inline const std::string& getResourceExtention<Material>()
 {
 	return ".mat";
+}
+
+void loadResourcesInAllFactories(const Json::Value& rootResources)
+{
+	getMeshFactory().load(rootResources["meshFactory"]);
+	getTextureFactory().load(rootResources["textureFactory"]);
+	getCubeTextureFactory().load(rootResources["cubeTextureFactory"]);
+	getMaterialFactory().load(rootResources["materialFactory"]);
+	getProgramFactory().load(rootResources["programFactory"]);
+
+	resolvePointersLoadingInFactories();
+}
+
+void saveResourcesInAllFactories(Json::Value& rootResources)
+{
+	getMeshFactory().save(rootResources);
+	getTextureFactory().save(rootResources);
+	getCubeTextureFactory().save(rootResources);
+	getMaterialFactory().save(rootResources);
+	getProgramFactory().save(rootResources);
+}
+
+void resolvePointersLoadingInFactories()
+{
+	getMeshFactory().resolvePointersLoading();
+	getTextureFactory().resolvePointersLoading();
+	getCubeTextureFactory().resolvePointersLoading();
+	getMaterialFactory().resolvePointersLoading();
+	getProgramFactory().resolvePointersLoading();
 }

@@ -106,6 +106,7 @@ ResourceTree::ResourceTree(const FileHandler::Path& assetResourcePath)
 	: ResourceFolder(FileHandler::Path("assets"))
 {
 	fillDatasFromExplorerFolder(assetResourcePath);
+	resolvePointersLoadingInFactories();
 }
 
 ResourceFile * ResourceTree::getSelectedResource()
@@ -232,7 +233,8 @@ void ResourceTree::addNewShaderProgramTo(const std::string& shaderProgramName, R
 	//create new instance
 	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), shaderProgramName, ".glProg");
 	ShaderProgram* newShaderProgram = new ShaderProgram(resourceCompletePath, Rendering::MaterialType::DEFAULT);
-	newShaderProgram->save(resourceFilePath);
+	newShaderProgram->setPipelineType(Rendering::PipelineType::DEFERRED_PIPILINE);
+	newShaderProgram->save(/*resourceFilePath*/);
 
 	folderTo.addFile<ShaderProgram>(resourceCompletePath, newShaderProgram);
 }
@@ -250,8 +252,8 @@ void ResourceTree::addNewMaterialTo(const std::string& newMaterialName, Resource
 
 	//create new instance
 	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), newMaterialName, ".mat");
-	Material* newMaterial = new Material(*static_cast<ShaderProgram*>(shaderProgramFile.getPointedResource()));//static_cast<ShaderProgram*>(shaderProgramFile.getPointedResource())->makeNewMaterialInstance(resourceCompletePath); //getProgramFactory().getDefault(materialModelName)->makeNewMaterialInstance(resourceCompletePath);
-	newMaterial->save(resourceFilePath);
+	Material* newMaterial = new Material(*static_cast<ShaderProgram*>(shaderProgramFile.getPointedResource()), resourceCompletePath);//static_cast<ShaderProgram*>(shaderProgramFile.getPointedResource())->makeNewMaterialInstance(resourceCompletePath); //getProgramFactory().getDefault(materialModelName)->makeNewMaterialInstance(resourceCompletePath);
+	newMaterial->save(/*resourceFilePath*/);
 
 	folderTo.addFile<Material>(resourceCompletePath, newMaterial);
 }
@@ -263,8 +265,8 @@ void ResourceTree::addNewCubeTextureTo(const std::string& textureName, ResourceF
 
 	//create new instance
 	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), textureName, ".ctx");
-	CubeTexture* newCubeTexture = new CubeTexture();
-	newCubeTexture->save(resourceFilePath);
+	CubeTexture* newCubeTexture = new CubeTexture(resourceCompletePath);
+	newCubeTexture->save(/*resourceFilePath*/);
 
 	folderTo.addFile<CubeTexture>(resourceCompletePath, newCubeTexture);
 }

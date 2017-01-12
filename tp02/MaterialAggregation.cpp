@@ -4,6 +4,8 @@
 #include "RenderDatas.h"
 #include "Billboard.h"
 #include "ParticleEmitter.h"
+#include "ReflectivePlane.h"
+#include "Camera.h"
 
 void MaterialAggregationWithSkeleton::initParameters(GLuint programID)
 {
@@ -189,4 +191,51 @@ void MaterialAggregationParticles::setUniformCameraRight(const glm::vec3& camRig
 void MaterialAggregationParticles::setUniformCameraUp(const glm::vec3& camUp) const
 {
 	GlHelper::pushParameterToGPU(m_uniformCameraUp, camUp);
+}
+
+////////////////////////////////////
+
+void MaterialAggregationReflectivePlane::initParameters(GLuint programID)
+{
+	uniform_reflectionTexture = MaterialHelper::getUniform(programID, "ReflectionTexture");
+	uniform_ModelMatrix = MaterialHelper::getUniform(programID, "ModelMatrix");
+	uniform_ViewMatrix = MaterialHelper::getUniform(programID, "ViewMatrix");
+	uniform_ProjectionMatrix = MaterialHelper::getUniform(programID, "ProjectionMatrix");
+
+	CHECK_GL_ERROR("error in material initialization.");
+}
+
+void MaterialAggregationReflectivePlane::pushParametersToGPU(const IDrawable& drawable, const RenderDatas& renderDatas, int& boundTextureCount) const
+{
+	const ReflectivePlane* drawableAsReflectivePlane = drawable.getAsReflectivePlaneIfPossible();
+
+	setUniformModelMatrix(drawableAsReflectivePlane->getModelMatrix());
+	setUniformProjectionMatrix(*renderDatas.Projection);
+	setUniformViewMatrix(*renderDatas.View);
+
+	// Reflective texture
+	glActiveTexture(GL_TEXTURE0 + boundTextureCount);
+	glBindTexture(GL_TEXTURE_2D, drawableAsReflectivePlane->getActiveCamera().getFinalFrame()->glId);
+	setUniformReflectionTexture(boundTextureCount);
+	boundTextureCount++;
+}
+
+void MaterialAggregationReflectivePlane::setUniformReflectionTexture(int texUnitId) const
+{
+	GlHelper::pushParameterToGPU(uniform_reflectionTexture, texUnitId);
+}
+
+void MaterialAggregationReflectivePlane::setUniformModelMatrix(const glm::mat4& modelMatrix) const
+{
+	GlHelper::pushParameterToGPU(uniform_ModelMatrix, modelMatrix);
+}
+
+void MaterialAggregationReflectivePlane::setUniformViewMatrix(const glm::mat4& viewMatrix) const
+{
+	GlHelper::pushParameterToGPU(uniform_ViewMatrix, viewMatrix);
+}
+
+void MaterialAggregationReflectivePlane::setUniformProjectionMatrix(const glm::mat4& projectionMatrix) const
+{
+	GlHelper::pushParameterToGPU(uniform_ProjectionMatrix, projectionMatrix);
 }

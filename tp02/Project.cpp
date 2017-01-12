@@ -141,7 +141,7 @@ void Project::open(const std::string & projectName, const FileHandler::Path & pr
 	m_projectPath = FileHandler::Path(projectPath.toString() + "/" + projectName);
 	m_assetFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/assets/");
 	assert(FileHandler::directoryExists(m_assetFolderPath));
-	m_shaderFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/shaders/");
+	m_shaderFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/engineResources/shaders/");
 	assert(FileHandler::directoryExists(m_shaderFolderPath));
 	m_scenesFolderPath = FileHandler::Path(projectPath.toString() + "/" + projectName + "/scenes/");
 	assert(FileHandler::directoryExists(m_scenesFolderPath));
@@ -172,7 +172,7 @@ void Project::open()
 	m_projectPath = FileHandler::Path("project");
 	m_assetFolderPath = FileHandler::Path(m_projectPath.toString() + "/assets/");
 	assert(FileHandler::directoryExists(m_assetFolderPath));
-	m_shaderFolderPath = FileHandler::Path(m_projectPath.toString() + "/shaders/");
+	m_shaderFolderPath = FileHandler::Path(m_projectPath.toString() + "/engineResources/shaders/");
 	assert(FileHandler::directoryExists(m_shaderFolderPath));
 	m_scenesFolderPath = FileHandler::Path(m_projectPath.toString() + "/scenes/");
 	assert(FileHandler::directoryExists(m_scenesFolderPath));
@@ -279,10 +279,7 @@ void Project::loadResources()
 	Json::Value rootResources;
 	streamResources >> rootResources;
 
-	getMeshFactory().load(rootResources["meshFactory"]);
-	getTextureFactory().load(rootResources["textureFactory"]);
-	getCubeTextureFactory().load(rootResources["cubeTextureFactory"]);
-	getMaterialFactory().load(rootResources["materialFactory"]);
+	loadResourcesInAllFactories(rootResources);
 }
 
 void Project::load()

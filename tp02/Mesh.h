@@ -90,7 +90,11 @@ struct Mesh : public Resource
 
 	Mesh(GLenum _primitiveType = GL_TRIANGLES, unsigned int _vbo_usage = (USE_INDEX | USE_VERTICES | USE_UVS | USE_NORMALS), int _coordCountByVertex = 3, GLenum _drawUsage = GL_STATIC_DRAW);
 	Mesh(const FileHandler::CompletePath& _path, const std::string& meshName = "");
+	
 	void init(const FileHandler::CompletePath& path, const ID& id) override;
+	void save() override;
+	void resolvePointersLoading() override;
+
 	void setMeshDatas(GLenum _primitiveType, unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage);
 
 	~Mesh();

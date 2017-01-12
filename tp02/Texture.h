@@ -63,6 +63,8 @@ struct Texture final : public Resource
 	void freeGL();
 
 	void init(const FileHandler::CompletePath& path, const ID& id) override;
+	void save() override;
+	void resolvePointersLoading() override;
 
 	void drawInInspector(Scene & scene) override;
 	void drawIconeInResourceTree() override;
@@ -100,6 +102,7 @@ struct CubeTexture final : public Resource
 	int m_textureUseCounts;
 
 	CubeTexture();
+	CubeTexture(const FileHandler::CompletePath& path);
 	CubeTexture(char r, char g, char b);
 	CubeTexture(const std::vector<ResourcePtr<Texture>>& textures);
 	~CubeTexture();
@@ -122,8 +125,10 @@ struct CubeTexture final : public Resource
 
 	//For saving internal resource
 	void init(const FileHandler::CompletePath& path, const ID& id) override;
-	void load(const FileHandler::CompletePath& path);
-	void save(const FileHandler::CompletePath& path) const;
+	void save() override;
+	void resolvePointersLoading() override;
+	void load(const Json::Value& root);
+	void save(Json::Value& root) const;
 
 	void drawInInspector(Scene & scene) override;
 };

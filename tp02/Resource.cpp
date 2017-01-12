@@ -19,10 +19,10 @@ Resource::~Resource()
 	}
 }
 
-Resource::Resource(const FileHandler::CompletePath& completePath)
+Resource::Resource(const FileHandler::CompletePath& completePath, bool isDefaultResource)
 	: m_completePath(completePath)
 	, m_name(m_completePath.getFilename())
-	, m_isDefaultResource(false)
+	, m_isDefaultResource(isDefaultResource)
 {
 	m_resourceId = IDGenerator<Resource>::instance().lockID();
 }

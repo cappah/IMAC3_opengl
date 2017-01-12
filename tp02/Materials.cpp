@@ -180,6 +180,133 @@ void Material::init(const FileHandler::CompletePath& path, const ID& id)
 	load(root);
 }
 
+void Material::save()
+{
+	assert(!Project::isPathPointingInsideProjectFolder(m_completePath)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(m_completePath);
+
+	std::ofstream stream;
+	stream.open(absolutePath.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load material at path : " << absolutePath.toString() << std::endl;
+		return;
+	}
+	Json::Value root;
+
+	save(root);
+
+	stream << root;
+}
+
+
+void Material::save(Json::Value & entityRoot) const
+{
+	// Pipeline type : 
+	//entityRoot["pipelineType"] = Rendering::PipelineTypesToString[(int)m_pipelineType];
+
+	//// Program name :
+	//entityRoot["shaderProgramName"] = m_glProgramName;
+	//assert(getProgramFactory().contains(m_glProgramName));
+	m_programPtr.save(entityRoot["shaderProgramPtr"]);
+
+	// Internal parameters :
+	entityRoot["internalParametersCount"] = m_internalParameters.size();
+	int parameterIdx = 0;
+	for (auto& parameter : m_internalParameters)
+	{
+		parameter->save(entityRoot["internalParameters"][parameterIdx]);
+		parameterIdx++;
+	}
+}
+
+void Material::load(const Json::Value & entityRoot)
+{
+	// Pipeline type : 
+	//auto foundItPipelineType = std::find(Rendering::PipelineTypesToString.begin(), Rendering::PipelineTypesToString.end(), entityRoot.get("pipelineType", "").asString());
+	//assert(foundItPipelineType != Rendering::PipelineTypesToString.end());
+	//int foundIdxPipelineType = foundItPipelineType - Rendering::PipelineTypesToString.begin();
+	//m_pipelineType = (Rendering::PipelineType)foundIdxPipelineType;
+
+	//m_programPtr.load(entityRoot["shaderProgramPtr"]);
+	//assert(m_programPtr.isValid());
+	//m_programPtr->LoadMaterialInstance(this);
+
+	//// Program name : 
+	//m_glProgramName = entityRoot.get("shaderProgramName", "").asString();
+	//assert(m_glProgramName != "");
+
+	//// Init from shader program : 
+	//m_programPtr = getProgramFactory().get(m_glProgramName);
+	//assert(m_programPtr != nullptr);
+	//m_programPtr->LoadMaterialInstance(this);
+
+	// Internal parameters : 
+	int internalParameterSavedCount = entityRoot.get("internalParametersCount", 0).asInt();
+	// We only try to load internals if there are no mismatch in parameter count.
+	if (internalParameterSavedCount == m_internalParameters.size())
+	{
+		int parameterIdx = 0;
+		for (auto& parameter : m_internalParameters)
+		{
+			parameter->load(entityRoot["internalParameters"][parameterIdx]);
+			parameterIdx++;
+		}
+		initInternalParameters();
+	}
+	else
+		PRINT_ERROR("error in material loading : internal parameter count mismatch. You may have added or remove parameters from a .glProg.");
+
+	// Add ref to shader program :
+	//m_programPtr->addMaterialRef(this);
+	//getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
+}
+
+//
+//void Material::save(const FileHandler::CompletePath& path) const
+//{
+//	//We check that we have the absolute project path
+//	assert(Project::isPathPointingInsideProjectFolder(path));
+//
+//	std::ofstream stream;
+//	stream.open(path.toString());
+//	if (!stream.is_open())
+//	{
+//		std::cout << "error, can't save material at path : " << path.toString() << std::endl;
+//		return;
+//	}
+//	Json::Value root;
+//	save(root);
+//
+//	stream << root;
+//}
+
+void Material::resolvePointersLoading()
+{
+	assert(!Project::isPathPointingInsideProjectFolder(m_completePath)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(m_completePath);
+
+	std::ifstream stream;
+	stream.open(absolutePath.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load material at path : " << absolutePath.toString() << std::endl;
+		return;
+	}
+	Json::Value root;
+	stream >> root;
+
+	/////////////////
+
+	m_programPtr.load(root["shaderProgramPtr"]);
+	assert(m_programPtr.isValid());
+	if (m_programPtr.isValid())
+	{
+		m_programPtr->LoadMaterialInstance(this);
+		m_programPtr->addMaterialRef(this);
+	}
+}
+
 void Material::init(const ShaderProgram & shaderProgram)
 {
 	m_programPtr = &shaderProgram;
@@ -317,86 +444,6 @@ void Material::loadFromShaderProgramDatas(GLuint glProgramId, const std::vector<
 	}
 
 	//setExternalParameters(externalParameters);
-}
-
-void Material::save(Json::Value & entityRoot) const
-{
-	// Pipeline type : 
-	//entityRoot["pipelineType"] = Rendering::PipelineTypesToString[(int)m_pipelineType];
-
-	//// Program name :
-	//entityRoot["shaderProgramName"] = m_glProgramName;
-	//assert(getProgramFactory().contains(m_glProgramName));
-	m_programPtr.save(entityRoot["shaderProgramPtr"]);
-
-	// Internal parameters :
-	entityRoot["internalParametersCount"] = m_internalParameters.size();
-	int parameterIdx = 0;
-	for (auto& parameter : m_internalParameters)
-	{
-		parameter->save(entityRoot["internalParameters"][parameterIdx]);
-		parameterIdx++;
-	}
-}
-
-void Material::load(const Json::Value & entityRoot)
-{
-	// Pipeline type : 
-	//auto foundItPipelineType = std::find(Rendering::PipelineTypesToString.begin(), Rendering::PipelineTypesToString.end(), entityRoot.get("pipelineType", "").asString());
-	//assert(foundItPipelineType != Rendering::PipelineTypesToString.end());
-	//int foundIdxPipelineType = foundItPipelineType - Rendering::PipelineTypesToString.begin();
-	//m_pipelineType = (Rendering::PipelineType)foundIdxPipelineType;
-	
-	m_programPtr.load(entityRoot["shaderProgramPtr"]);
-	assert(m_programPtr.isValid());
-	m_programPtr->LoadMaterialInstance(this);
-
-	//// Program name : 
-	//m_glProgramName = entityRoot.get("shaderProgramName", "").asString();
-	//assert(m_glProgramName != "");
-
-	//// Init from shader program : 
-	//m_programPtr = getProgramFactory().get(m_glProgramName);
-	//assert(m_programPtr != nullptr);
-	//m_programPtr->LoadMaterialInstance(this);
-
-	// Internal parameters : 
-	int internalParameterSavedCount = entityRoot.get("internalParametersCount", 0).asInt();
-	// We only try to load internals if there are no mismatch in parameter count.
-	if (internalParameterSavedCount == m_internalParameters.size())
-	{
-		int parameterIdx = 0;
-		for (auto& parameter : m_internalParameters)
-		{
-			parameter->load(entityRoot["internalParameters"][parameterIdx]);
-			parameterIdx++;
-		}
-		initInternalParameters();
-	}
-	else
-		PRINT_ERROR("error in material loading : internal parameter count mismatch. You may have added or remove parameters from a .glProg.");
-
-	// Add ref to shader program :
-	m_programPtr->addMaterialRef(this);
-	//getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
-}
-
-void Material::save(const FileHandler::CompletePath& path) const
-{
-	//We check that we have the absolute project path
-	assert(Project::isPathPointingInsideProjectFolder(path));
-
-	std::ofstream stream;
-	stream.open(path.toString());
-	if (!stream.is_open())
-	{
-		std::cout << "error, can't save material at path : " << path.toString() << std::endl;
-		return;
-	}
-	Json::Value root;
-	save(root);
-
-	stream << root;
 }
 
 void Material::drawInInspector(Scene & scene)

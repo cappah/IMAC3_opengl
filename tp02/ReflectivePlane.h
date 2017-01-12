@@ -51,7 +51,8 @@ public:
 	std::unordered_map<ID, std::shared_ptr<ReflectionCamera>>::iterator getCameraIteratorBegin();
 	std::unordered_map<ID, std::shared_ptr<ReflectionCamera>>::iterator getCameraIteratorEnd();
 	void setActiveCamera(ID cameraID);
-	ReflectionCamera& getCamera(ID cameraID);
+	ReflectionCamera& getCamera(ID cameraID) const;
+	ReflectionCamera& getActiveCamera() const;
 
 	// Herite from Component
 	virtual void drawInInspector(Scene& scene) override;
@@ -80,5 +81,7 @@ public:
 
 	// Herited from IBatchableWith<Material3DObject>
 	void setExternalsOf(const MaterialReflection& material, const glm::mat4& projection, const glm::mat4& view, int* texId = nullptr) const override;
+
+	virtual const ReflectivePlane* getAsReflectivePlaneIfPossible() const override;
 
 };

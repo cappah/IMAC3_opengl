@@ -1209,7 +1209,8 @@ return camera;
 ///////////////////////
 
 SimpleCamera::SimpleCamera()
-	: m_cameraMode(CameraMode::PERSPECTIVE)
+	: BaseCamera()
+	, m_cameraMode(CameraMode::PERSPECTIVE)
 {
 	updateProjection();
 	m_viewMatrix = glm::lookAt(glm::vec3(-10, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
@@ -1271,4 +1272,6 @@ void SimpleCamera::lookAt(const glm::vec3& eye, const glm::vec3& target, const g
 void SimpleCamera::lookAt(const glm::vec3& eye, const glm::vec3& target)
 {
 	m_viewMatrix = glm::lookAt(eye, target, glm::vec3(0, 1, 0));
+	m_forward = glm::normalize(target - eye);
+	m_position = eye;
 }

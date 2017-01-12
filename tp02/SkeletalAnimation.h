@@ -45,6 +45,14 @@ public:
 			}
 		}
 	}
+	void save() override
+	{
+		assert(false && "TODO");
+	}
+	void resolvePointersLoading() override
+	{
+		//No pointers;
+	}
 
 	float getDurationInTick() const;
 	float getAnimationTime() const;

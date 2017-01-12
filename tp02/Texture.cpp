@@ -184,6 +184,17 @@ void Texture::init(const FileHandler::CompletePath& path, const ID& id)
 	initGL();
 }
 
+void Texture::save()
+{
+	// TODO : metadatas
+	assert(false && "metadatas for textures aren't yet implamented.");
+}
+
+void Texture::resolvePointersLoading()
+{
+	// No pointers.
+}
+
 void Texture::drawInInspector(Scene & scene)
 {
 	Resource::drawInInspector(scene);
@@ -371,6 +382,39 @@ CubeTexture::CubeTexture()
 	: CubeTexture(0, 0, 0)
 {
 
+}
+
+CubeTexture::CubeTexture(const FileHandler::CompletePath& path)
+	: Resource(path)
+	, glId(0)
+	, internalFormat(GL_RGB)
+	, format(GL_RGB)
+	, type(GL_UNSIGNED_BYTE)
+	, generateMipMap(false)
+	, m_textureUseCounts(0)
+	, magFilter(GL_LINEAR)
+	, minFilter(GL_LINEAR)
+	, textureWrapping_s(GL_CLAMP_TO_EDGE)
+	, textureWrapping_t(GL_CLAMP_TO_EDGE)
+	, textureWrapping_r(GL_CLAMP_TO_EDGE)
+	, m_isInitialized(false)
+{
+	comp = 3;
+	w = 1;
+	h = 1;
+
+	for (int i = 0; i < 6; i++)
+	{
+		m_textures[i] = ResourcePtr<Texture>();
+	}
+
+	for (int i = 0; i < 6; i++)
+	{
+		pixels[i] = new unsigned char[3];
+		pixels[i][0] = 0;
+		pixels[i][1] = 0;
+		pixels[i][2] = 0;
+	}
 }
 
 CubeTexture::CubeTexture(char r, char g, char b) 
@@ -667,22 +711,56 @@ void CubeTexture::init(const FileHandler::CompletePath & path, const ID& id)
 	assert(!Project::isPathPointingInsideProjectFolder(path)); //path should be relative
 	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(path);
 
-	load(absolutePath);
-
-	initGL();
-}
-
-void CubeTexture::load(const FileHandler::CompletePath & path)
-{
 	std::ifstream stream;
-	stream.open(path.toString());
+	stream.open(absolutePath.toString());
 	if (!stream.is_open())
 	{
-		std::cout << "error, can't load cube texture at path : " << path.toString() << std::endl;
+		std::cout << "error, can't load cube texture at path : " << absolutePath.toString() << std::endl;
 		return;
 	}
 	Json::Value root;
 	stream >> root;
+
+	load(root);
+
+	initGL();
+}
+
+void CubeTexture::save()
+{
+	assert(!Project::isPathPointingInsideProjectFolder(m_completePath)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(m_completePath);
+
+	std::ofstream stream;
+	stream.open(absolutePath.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load material at path : " << absolutePath.toString() << std::endl;
+		return;
+	}
+	Json::Value root;
+
+	save(root);
+
+	stream << root;
+}
+
+void CubeTexture::resolvePointersLoading()
+{
+	assert(!Project::isPathPointingInsideProjectFolder(m_completePath)); //path should be relative
+	FileHandler::CompletePath absolutePath = Project::getAbsolutePathFromRelativePath(m_completePath);
+
+	std::ifstream stream;
+	stream.open(absolutePath.toString());
+	if (!stream.is_open())
+	{
+		std::cout << "error, can't load material at path : " << absolutePath.toString() << std::endl;
+		return;
+	}
+	Json::Value root;
+	stream >> root;
+
+	/////////////////
 
 	bool allTexturesOk = true;
 	for (int i = 0; i < 6; i++)
@@ -705,6 +783,31 @@ void CubeTexture::load(const FileHandler::CompletePath & path)
 		}
 		PRINT_ERROR("error in cubeTexture loading !")
 	}
+}
+
+void CubeTexture::load(const Json::Value& root)
+{
+	/*bool allTexturesOk = true;
+	for (int i = 0; i < 6; i++)
+	{
+		m_textures[i].load(root["textures"][i]);
+		allTexturesOk &= checkTextureCanBeAdded(m_textures[i]);
+	}
+	if (allTexturesOk)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			setTextureWithoutCheck(i, m_textures[i]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			m_textures[i] = ResourcePtr<Texture>();
+		}
+		PRINT_ERROR("error in cubeTexture loading !")
+	}*/
 
 	internalFormat = root["internalFormat"].asInt();
 	format = root["format"].asInt();
@@ -712,10 +815,8 @@ void CubeTexture::load(const FileHandler::CompletePath & path)
 	generateMipMap = root["generateMipMap"].asBool();
 }
 
-void CubeTexture::save(const FileHandler::CompletePath & path) const
+void CubeTexture::save(Json::Value& root) const
 {
-	Json::Value root;
-
 	root["textures"] = Json::Value(Json::arrayValue);
 	for (int i = 0; i < 6; i++)
 	{
@@ -726,15 +827,6 @@ void CubeTexture::save(const FileHandler::CompletePath & path) const
 	root["format"] = (int)format;
 	root["type"] = (int)type;
 	root["generateMipMap"] = generateMipMap;
-
-	std::ofstream stream;
-	stream.open(path.toString());
-	if (!stream.is_open())
-	{
-		std::cout << "error, can't load cube texture at path : " << path.toString() << std::endl;
-		return;
-	}
-	stream << root;
 }
 
 void CubeTexture::drawInInspector(Scene & scene)

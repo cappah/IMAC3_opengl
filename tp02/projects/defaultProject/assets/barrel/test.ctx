@@ -1,0 +1,57 @@
+{
+	"format" : 6407,
+	"generateMipMap" : false,
+	"internalFormat" : 6407,
+	"textures" : 
+	[
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : -1,
+				"index" : -1
+			}
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : -1,
+				"index" : -1
+			}
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : -1,
+				"index" : -1
+			}
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : -1,
+				"index" : -1
+			}
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : -1,
+				"index" : -1
+			}
+		},
+		{
+			"isDefaultResource" : true,
+			"resourceHashKey" : 
+			{
+				"generation" : -1,
+				"index" : -1
+			}
+		}
+	],
+	"type" : 5121
+}

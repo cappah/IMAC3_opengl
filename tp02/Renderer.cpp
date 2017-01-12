@@ -284,6 +284,11 @@ void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights,
 	glStencilMask(0x00);
 	m_lightPassBuffer.unbind();
 
+	// Clear previous light datas
+	m_renderDatas.directionalLightRenderDatas.clear();
+	m_renderDatas.pointLightRenderDatas.clear();
+	m_renderDatas.spotLightRenderDatas.clear();
+
 	// Cull lights
 	lightCullingPass(camera, pointLights, directionalLights, spotLights, debugDrawer);
 

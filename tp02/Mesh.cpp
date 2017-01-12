@@ -108,6 +108,16 @@ void Mesh::init(const FileHandler::CompletePath & path, const ID& id)
 	initGl();
 }
 
+void Mesh::save()
+{
+	assert(false && "metadatas for meshes aren't yet implemented.");
+}
+
+void Mesh::resolvePointersLoading()
+{
+	// No pointers.
+}
+
 void Mesh::setMeshDatas(GLenum _primitiveType, unsigned int _vbo_usage, int _coordCountByVertex, GLenum _drawUsage)
 {
 	primitiveType = _primitiveType;

@@ -59,8 +59,15 @@ public:
 
 	//init internal params. Should be called in constructor, or just after construction.
 	void initInternalParameters();
-	virtual void init(const FileHandler::CompletePath& path, const ID& id) override;
 	void init(const ShaderProgram& shaderProgram);
+
+	virtual void init(const FileHandler::CompletePath& path, const ID& id) override;
+	virtual void save() override;
+	virtual void resolvePointersLoading() override;
+	//void save(const FileHandler::CompletePath& path) const;
+	// Save and load internal parameters 
+	virtual void save(Json::Value & entityRoot) const override;
+	virtual void load(const Json::Value & entityRoot) override;
 
 	void setAggregates(std::unordered_map<std::string, std::shared_ptr<MaterialAggregation>>& aggregations);
 	void setPerInstanceAggregates(std::unordered_map<std::string, std::shared_ptr<PerInstanceMaterialAggregation>>& perInstanceAggregations);
@@ -93,12 +100,6 @@ public:
 	}
 
 	void loadFromShaderProgramDatas(GLuint glProgramId, const std::vector<std::shared_ptr<InternalShaderParameterBase>>& internalParameters/*, std::vector<std::shared_ptr<ExternalShaderParameterBase>>& externalParameters*/);
-	
-	// Save and load internal parameters 
-	virtual void save(Json::Value & entityRoot) const override;
-	virtual void load(const Json::Value & entityRoot) override;
-
-	void save(const FileHandler::CompletePath& path) const;
 
 	virtual void drawInInspector(Scene & scene) override;
 

@@ -37,6 +37,24 @@ private:
 	void setUniformUseSkeleton(bool useSkeleton) const;
 };
 
+class MaterialAggregationReflectivePlane : public PerInstanceMaterialAggregation
+{
+private:
+	GLuint uniform_reflectionTexture;
+	GLuint uniform_ModelMatrix;
+	GLuint uniform_ViewMatrix;
+	GLuint uniform_ProjectionMatrix;
+
+public:
+	virtual void initParameters(GLuint programID);
+	virtual void pushParametersToGPU(const IDrawable& drawable, const RenderDatas& renderDatas, int& boundTextureCount) const;
+
+private:
+	void setUniformReflectionTexture(int texUnitId) const;
+	void setUniformModelMatrix(const glm::mat4& modelMatrix) const;
+	void setUniformViewMatrix(const glm::mat4& viewMatrix) const;
+	void setUniformProjectionMatrix(const glm::mat4& projectionMatrix) const;
+};
 
 class MaterialAggregationMesh : public PerInstanceMaterialAggregation
 {

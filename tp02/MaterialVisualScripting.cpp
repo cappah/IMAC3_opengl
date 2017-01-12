@@ -73,6 +73,11 @@ void formatAndOutputResult(std::stringstream& stream, const Output& output, Flow
 			assert(false && "incompatible types.");
 		}
 	}
+	// No formating for cusrom desired type
+	else if (desiredType == FlowType::CUSTOM)
+	{
+		stream << output.valueStr;
+	}
 }
 
 void printDefaultValue(std::stringstream & nodeCompileResult, FlowType desiredType)
@@ -147,7 +152,6 @@ Output::Output(Node* _parentNode, const std::string& _name, FlowType _outputType
 	: parentNode(_parentNode)
 	, name(_name)
 	, outputType(_outputType)
-	, link(nullptr)
 {}
 
 //// END : Output
@@ -196,7 +200,7 @@ void Link::drawUI(NodeManager& manager)
 ///////////////////////////////////////////
 //// BEGIN : Node
 
-void Node::defineParameter(std::stringstream & stream, CompilationErrorCheck & errorCheck)
+void Node::defineParameter(std::stringstream & stream, std::vector<std::string>& usedParameterNames, CompilationErrorCheck & errorCheck)
 {
 	for (auto input : inputs)
 	{
@@ -205,7 +209,7 @@ void Node::defineParameter(std::stringstream & stream, CompilationErrorCheck & e
 		{
 			Output* output = link->input;
 			assert(output != nullptr);
-			output->parentNode->defineParameter(stream, errorCheck);
+			output->parentNode->defineParameter(stream, usedParameterNames, errorCheck);
 		}
 	}
 }
@@ -296,6 +300,7 @@ void Node::drawUI(NodeManager& manager)
 {
 	ImGui::PushID(this);
 	//ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(20, 5));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor(0.4, 0.4, 0.4, 1));
 
 	ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 	ImVec2 recMin(cursorPos.x + position.x, cursorPos.y + position.y);
@@ -303,11 +308,12 @@ void Node::drawUI(NodeManager& manager)
 
 	ImGui::SetCursorScreenPos(recMin);
 	const bool showBorders = (manager.isSelectingNode(this));
+
 	ImGui::BeginChild(name.c_str(), ImVec2(size.x, size.y), showBorders);
 
 	bool needToCheckIsDraginfNode = false;
-	ImGui::GetWindowDrawList()->AddRectFilled(recMin, recMax, ImColor(0.4f, 0.4f, 0.4f, 1.f), 0.4f);
-	if (ImGui::IsMouseHoveringRect(recMin, recMax) && ImGui::IsMouseClicked(0) && !DragAndDropManager::isDragAndDropping())// && ImGui::IsMouseDragging(0))
+	//ImGui::GetWindowDrawList()->AddRectFilled(recMin, recMax, ImColor(0.4f, 0.4f, 0.4f, 1.f), 0.4f);
+	if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseHoveringRect(recMin, recMax) && ImGui::IsMouseClicked(0) && !DragAndDropManager::isDragAndDropping())
 	{
 		needToCheckIsDraginfNode = true;
 	}
@@ -330,6 +336,10 @@ void Node::drawUI(NodeManager& manager)
 					Link* link = input->link;
 					if (link != nullptr)
 					{
+						//manager.removeLink(link);
+						//auto newLink = std::make_shared<Link>(nullptr, input.get());
+						link->output->link = nullptr;
+						link->output = nullptr;
 						manager.setDraggedLink(link);
 					}
 					else
@@ -342,6 +352,9 @@ void Node::drawUI(NodeManager& manager)
 				}
 				else
 				{
+					if (input->link != nullptr)
+						manager.removeLink(input->link);
+
 					Link* link = manager.getDraggedLink();
 					link->output = input.get();
 					input->link = link;
@@ -386,24 +399,16 @@ void Node::drawUI(NodeManager& manager)
 				{
 					manager.setIsDraggingLink(true);
 
-					Link* link = output->link;
-					if (link != nullptr)
-					{
-						manager.setDraggedLink(link);
-					}
-					else
-					{
-						auto newLink = std::make_shared<Link>(output.get(), nullptr);
-						output->link = newLink.get();
-						manager.addLink(newLink);
-						manager.setDraggedLink(newLink.get());
-					}
+					auto newLink = std::make_shared<Link>(output.get(), nullptr);
+					output->links.push_back(newLink.get());
+					manager.addLink(newLink);
+					manager.setDraggedLink(newLink.get());
 				}
 				else
 				{
 					Link* link = manager.getDraggedLink();
 					link->input = output.get();
-					output->link = link;
+					output->links.push_back(link);
 					manager.setIsDraggingLink(false);
 					manager.setDraggedLink(nullptr);
 				}
@@ -449,7 +454,7 @@ void Node::drawUI(NodeManager& manager)
 	ImGui::EndChild();
 	ImGui::SetCursorScreenPos(cursorPos);
 
-	//ImGui::PopStyleVar();
+	ImGui::PopStyleVar();
 	ImGui::PopID();
 }
 
@@ -476,6 +481,7 @@ NodeManager::NodeManager(ShaderProgram* programPtr)
 	, m_dragAnchorPos(0, 0)
 	, m_draggedLink(nullptr)
 	, m_isDraggingLink(false)
+	, m_backgroundDecal(0, 0)
 {
 	//auto newFinalNode = std::make_shared<FinalNode>();
 	//m_allNodes.push_back(newFinalNode);
@@ -499,6 +505,7 @@ void NodeManager::compile()
 	//m_compileStream.str(std::string());
 
 	CompilationErrorCheck errorCheck;
+	internalOnBeforeCompilation(errorCheck);
 	internalResolveUndeterminedTypes();
 	//internalDefineParameters(m_compileStream, errorCheck);
 	internalCompile(errorCheck);
@@ -524,6 +531,14 @@ void NodeManager::compile()
 
 	// For Mesh Visualizer
 	m_meshVisualizer.setMaterial(std::make_shared<Material>(*m_programPtr));
+}
+
+void NodeManager::internalOnBeforeCompilation(CompilationErrorCheck & errorCheck)
+{
+	for (auto node : m_allNodes)
+	{
+		node->onBeforeCompile(errorCheck);
+	}
 }
 
 void NodeManager::internalResolveUndeterminedTypes()
@@ -633,11 +648,40 @@ void NodeManager::drawUI(Renderer& renderer)
 	const float bottomRightWidth = ImGui::GetWindowWidth() * 0.3;
 
 	ImGui::BeginChild("##nodeContent", ImVec2(0, ImGui::GetWindowHeight() - bottomHeight));
+
+	// Draw background
+	const ImVec2 windowPos = ImGui::GetWindowPos();
+	const float lineTickness = 1.f;
+	const float spaceBetweenLines = 20;
+	float decalX = glm::mod(m_backgroundDecal.x, spaceBetweenLines) - spaceBetweenLines;
+	float decalY = glm::mod(m_backgroundDecal.y, spaceBetweenLines) - spaceBetweenLines;
+	const float numLinesX = (ImGui::GetWindowWidth() / spaceBetweenLines) + 1;
+	const float numLinesY = (ImGui::GetWindowHeight() / spaceBetweenLines) + 1;
+	const ImColor lineColor(0.5f, 0.5f, 0.5f, 0.7f);
+	for (int i = 0; i < numLinesX + 1; i++)
+	{
+		decalX += (spaceBetweenLines + lineTickness);
+
+		ImVec2 a(windowPos.x + ImGui::GetWindowContentRegionMin().x + decalX, windowPos.y + ImGui::GetWindowContentRegionMin().y - spaceBetweenLines);
+		ImVec2 b(windowPos.x + ImGui::GetWindowContentRegionMin().x + decalX, windowPos.y + ImGui::GetWindowContentRegionMax().y + spaceBetweenLines);
+		ImGui::GetWindowDrawList()->AddLine(a, b, lineColor, lineTickness);
+	}
+	for (int i = 0; i < numLinesY + 1; i++)
+	{
+		decalY += (spaceBetweenLines + lineTickness);
+
+		ImVec2 a(windowPos.x + ImGui::GetWindowContentRegionMin().x, windowPos.y + ImGui::GetWindowContentRegionMin().y + decalY);
+		ImVec2 b(windowPos.x + ImGui::GetWindowContentRegionMax().x, windowPos.y + ImGui::GetWindowContentRegionMin().y + decalY);
+		ImGui::GetWindowDrawList()->AddLine(a, b, lineColor, lineTickness);
+	}
+
+	// Draw nodes
 	for (auto node : m_allNodes)
 	{
 		node->drawUI(*this);
 	}
 
+	// Draw links
 	for (auto link : m_allLinks)
 	{
 		link->drawUI(*this);
@@ -652,6 +696,8 @@ void NodeManager::drawUI(Renderer& renderer)
 			node->position.x += deltaDrag.x;
 			node->position.y += deltaDrag.y;
 		}
+		m_backgroundDecal.x += deltaDrag.x;
+		m_backgroundDecal.y += deltaDrag.y;
 		ImGui::ResetMouseDragDelta(0);
 	}
 	// Select multiple nodes
@@ -693,6 +739,7 @@ void NodeManager::drawUI(Renderer& renderer)
 	// Add a new node
 	if (ImGui::IsMouseReleased(1) && !m_isHoverridingANode && ImGui::IsWindowHovered())
 	{
+		m_newNodePos = ImGui::GetMousePos();
 		ImGui::OpenPopup("selectNodePopUp");
 	}
 	if (ImGui::BeginPopup("selectNodePopUp"))
@@ -706,16 +753,21 @@ void NodeManager::drawUI(Renderer& renderer)
 				currentType = (int)(*it)->type;
 			}
 
-			if (ImGui::Button((*it)->name.c_str()))
+			bool canDisplay = (*it)->type != NodeType::CUSTOM ? true : ((*it)->name != "ReflectionTexture" ? true : (m_programPtr != nullptr && m_programPtr->getMaterialUsage() == Rendering::MaterialUsage::REFLECTIVE_PLANE));
+
+			if (canDisplay)
 			{
-				auto newNode = (*it)->cloneShared();
+				if (ImGui::Button((*it)->name.c_str()))
+				{
+					auto newNode = (*it)->cloneShared();
 
-				const glm::vec2 nodePosition(ImGui::GetMousePos().x, ImGui::GetMousePos().y);
-				newNode->setPosition(nodePosition);
+					const glm::vec2 nodePosition(m_newNodePos.x - windowPos.x/* + m_backgroundDecal.x*/, m_newNodePos.y - windowPos.y/* + m_backgroundDecal.y*/);
+					newNode->setPosition(nodePosition);
 
-				m_allNodes.push_back(newNode);
+					m_allNodes.push_back(newNode);
 
-				ImGui::CloseCurrentPopup();
+					ImGui::CloseCurrentPopup();
+				}
 			}
 		}
 
@@ -839,14 +891,48 @@ void NodeManager::drawUI(Renderer& renderer)
 	ImGui::BeginChild("##option", ImVec2(bottomMiddleWidth, 0), true);
 	assert(m_programPtr != nullptr);
 	bool needRecompilation = false;
-	needRecompilation |= m_programPtr->drawUIMaterialUsage();
+	bool materialUsageChanged = m_programPtr->drawUIMaterialUsage();
+	materialUsageChanged |= needRecompilation;
 	needRecompilation |= m_programPtr->drawUIPipelineType();
-	needRecompilation |= m_programPtr->drawUIUsedWithReflections();
+	//bool drawWithReflectionChanged = m_programPtr->drawUIUsedWithReflections();
+	//needRecompilation |= drawWithReflectionChanged;
+	if (materialUsageChanged)
+	{
+		if (m_programPtr->getMaterialUsage() != Rendering::MaterialUsage::REFLECTIVE_PLANE)
+		{
+			for (auto it = m_allNodes.begin(); it < m_allNodes.end();)
+			{
+				if ((*it)->type == NodeType::CUSTOM && (*it)->name == "ReflectionTexture")
+				{
+					it = removeNode(it);					
+				}
+				else
+					it++;
+			}
+		}
+	}
 	needRecompilation |= m_programPtr->drawUIUsedWithSkeleton();
 
 	if (ImGui::Button("Compile"))
 	{
 		compile();
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("Show textual result"))
+	{
+		ImGui::OpenPopup("ShowResultPopUp");
+	}
+
+	if (ImGui::BeginPopupModal("ShowResultPopUp"))
+	{
+		if (ImGui::Button("close"))
+			ImGui::CloseCurrentPopup();
+
+		ImGui::Text(m_compileResult.c_str());
+
+		ImGui::EndPopup();
 	}
 
 	ImGui::EndChild();
@@ -940,17 +1026,32 @@ void NodeManager::removeLink(Link * link)
 {
 	if (link->input != nullptr && link->input->parentNode != nullptr)
 	{
-		link->input->link = nullptr;
-		link->input->parentNode = nullptr;
-
+		link->input->links.erase(std::remove(link->input->links.begin(), link->input->links.end(), link), link->input->links.end());
 	}
 	if (link->output != nullptr && link->output->parentNode != nullptr)
 	{
 		link->output->link = nullptr;
-		link->output->parentNode = nullptr;
 	}
 
 	m_allLinks.erase(std::remove_if(m_allLinks.begin(), m_allLinks.end(), [link](const std::shared_ptr<Link>& item) { return item.get() == link; }), m_allLinks.end());
+
+	link = nullptr;
+}
+
+std::vector<std::shared_ptr<Link>>::iterator NodeManager::removeLink(std::vector<std::shared_ptr<Link>>::iterator linkIt)
+{
+	if ((*linkIt)->input != nullptr && (*linkIt)->input->parentNode != nullptr)
+	{
+		(*linkIt)->input->links.erase(std::remove((*linkIt)->input->links.begin(), (*linkIt)->input->links.end(), linkIt->get()));
+
+	}
+
+	if ((*linkIt)->output != nullptr && (*linkIt)->output->parentNode != nullptr)
+	{
+		(*linkIt)->output->link = nullptr;
+	}
+
+	return m_allLinks.erase(linkIt);
 }
 
 void NodeManager::removeNode(Node * node)
@@ -965,14 +1066,43 @@ void NodeManager::removeNode(Node * node)
 
 	for (auto output : node->outputs)
 	{
-		if (output->link != nullptr)
+		for (auto it = output->links.begin(); it != output->links.end();)
 		{
-			removeLink(output->link);
+			removeLink(*it);
 		}
 	}
 
 	m_allNodes.erase(std::remove_if(m_allNodes.begin(), m_allNodes.end(), [node](const std::shared_ptr<Node>& item) { return item.get() == node; }), m_allNodes.end());
 
+	node = nullptr;
+}
+
+std::vector<std::shared_ptr<Node>>::iterator NodeManager::removeNode(std::vector<std::shared_ptr<Node>>::iterator nodeIt)
+{
+	for (auto input : (*nodeIt)->inputs)
+	{
+		if (input->link != nullptr)
+		{
+			removeLink(input->link);
+		}
+	}
+
+	for (auto output : (*nodeIt)->outputs)
+	{
+		for (auto it = output->links.begin(); it != output->links.end();)
+		{
+			removeLink(*it);
+		}
+	}
+
+	m_selectedNodes.clear();
+	m_isSelectingNodes = false;
+	m_isDraggingLink = false;
+	m_isDraggingNode = false;
+	m_draggedLink = nullptr;
+	m_draggedNode = nullptr;
+
+	return m_allNodes.erase(nodeIt);
 }
 
 //// END : NodeManager

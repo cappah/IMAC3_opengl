@@ -36,6 +36,7 @@ static std::vector<std::string> NodeTypeToString = {
 	"parameter",
 	"function",
 	"final",
+	"custom",
 };
 
 enum class ParameterType {
@@ -52,6 +53,7 @@ enum class FlowType {
 	FLOAT2,
 	FLOAT3,
 	FLOAT4,
+	CUSTOM,
 };
 
 struct CompilationErrorCheck
@@ -87,7 +89,7 @@ struct Output
 	std::string valueStr;
 
 	Node* parentNode;
-	Link* link;
+	std::vector<Link*> links;
 	glm::vec2 position;
 
 	Output(Node* _parentNode, const std::string& _name, FlowType _outputType);
@@ -115,7 +117,8 @@ struct Node
 	glm::vec2 position;
 	glm::vec2 size;
 
-	virtual void defineParameter(std::stringstream& stream, CompilationErrorCheck& errorCheck);
+	virtual void onBeforeCompile(CompilationErrorCheck& errorCheck) {};
+	virtual void defineParameter(std::stringstream& stream, std::vector<std::string>& usedParameterNames, CompilationErrorCheck& errorCheck);
 	virtual void compile(CompilationErrorCheck& errorCheck) = 0;
 
 	Node(NodeType _type, const std::string& _name);
@@ -229,6 +232,11 @@ public:
 
 	void compile(CompilationErrorCheck& errorCheck)
 	{
+		std::stringstream nodeCompileResult;
+
+		std::vector<std::string> usedParameterNames;
+		defineParameter(nodeCompileResult, usedParameterNames, errorCheck);
+
 		std::stringstream paramDiffuseStream;
 		if (inputs[0]->link != nullptr)
 			inputs[0]->compile(paramDiffuseStream, errorCheck);
@@ -258,11 +266,6 @@ public:
 			inputs[4]->compile(paramSpecularPowerStream, errorCheck);
 		else
 			paramSpecularPowerStream << defaultSpecularPower;
-
-
-		std::stringstream nodeCompileResult;
-
-		defineParameter(nodeCompileResult, errorCheck);
 
 		nodeCompileResult << "void computeShaderParameters(inout vec3 paramDiffuse, inout vec3 paramNormals, inout float paramSpecular, inout float paramSpecularPower, inout vec3 paramEmissive)\n";
 		nodeCompileResult << "{\n";
@@ -380,11 +383,15 @@ struct BaseParameterNode : public Node
 {
 	char parameterNameForUI[100];
 	std::string parameterName;
+	std::string formatedParameterName;
 	bool isUniform;
+	bool nameDefined;
 
 	BaseParameterNode(const std::string& _nodeName)
 		: Node(NodeType::PARAMETER, _nodeName)
-		, parameterName("default")
+		, parameterName("")
+		, formatedParameterName("")
+		, nameDefined(false)
 	{
 		parameterNameForUI[0] = '\0';
 	}
@@ -400,16 +407,33 @@ struct ParameterNode : public BaseParameterNode
 	InternalShaderParameter<T, ShaderParameter::IsNotArray> shaderParameter;
 
 	ParameterNode();
-	virtual void compile(CompilationErrorCheck& errorCheck) override;
-	virtual void defineParameter(std::stringstream& stream, CompilationErrorCheck& errorCheck) override
+	virtual void onBeforeCompile(CompilationErrorCheck& errorCheck) override
 	{
+		nameDefined = false;
+	}
+	virtual void compile(CompilationErrorCheck& errorCheck) override;
+	virtual void defineParameter(std::stringstream& stream, std::vector<std::string>& usedParameterNames, CompilationErrorCheck& errorCheck) override
+	{
+		if (nameDefined)
+			return;
+
 		// Print [uniform] type name;
 		if (isUniform)
 			stream << "uniform ";
 		else
 			stream << "const ";
 
-		stream << Utils::typeAsString<T>() << " " << parameterName << " = " << shaderParameter.valueAsString() << ";\n";
+		formatedParameterName = (parameterName == "" || parameterName == "ReflectionTexture") ? "a" : parameterName;
+		if (std::find(usedParameterNames.begin(), usedParameterNames.end(), formatedParameterName) != usedParameterNames.end())
+		{
+			formatedParameterName += "_";
+			formatedParameterName += std::to_string(usedParameterNames.size());
+		}
+		usedParameterNames.push_back(formatedParameterName);
+
+		stream << Utils::typeAsString<T>() << " " << formatedParameterName << " = " << shaderParameter.valueAsString() << ";\n";
+
+		nameDefined = true;
 	}
 
 	virtual const InternalShaderParameterBase* getInternalParameter() const override
@@ -430,12 +454,20 @@ struct ParameterNode : public BaseParameterNode
 };
 
 template<>
-inline void ParameterNode<Texture>::defineParameter(std::stringstream& stream, CompilationErrorCheck& errorCheck)
+inline void ParameterNode<Texture>::defineParameter(std::stringstream& stream, std::vector<std::string>& usedParameterNames, CompilationErrorCheck& errorCheck)
 {
 	// Texture type is always uniform
 	stream << "uniform ";
 
-	stream << "sampler2D " << parameterName << ";\n";
+	formatedParameterName = (parameterName == "" || parameterName == "ReflectionTexture") ? "a" : parameterName;
+	if (std::find(usedParameterNames.begin(), usedParameterNames.end(), formatedParameterName) != usedParameterNames.end())
+	{
+		formatedParameterName += "_";
+		formatedParameterName += std::to_string(usedParameterNames.size());
+	}
+	usedParameterNames.push_back(formatedParameterName);
+
+	stream << "sampler2D " << formatedParameterName << ";\n";
 }
 
 //////////////////////////////////////////////////////////////
@@ -452,7 +484,7 @@ inline ParameterNode<float>::ParameterNode()
 template<>
 inline void ParameterNode<float>::compile(CompilationErrorCheck& errorCheck)
 {
-	outputs[0]->valueStr = parameterName;
+	outputs[0]->valueStr = formatedParameterName;
 }
 
 REGISTER_TEMPLATED_NODE("scalar", ParameterNode, float, ParameterFloat)
@@ -472,9 +504,9 @@ inline ParameterNode<glm::vec2>::ParameterNode()
 template<>
 inline void ParameterNode<glm::vec2>::compile(CompilationErrorCheck& errorCheck)
 {
-	outputs[0]->valueStr = parameterName;
-	outputs[1]->valueStr = parameterName + ".r";
-	outputs[2]->valueStr = parameterName + ".g";
+	outputs[0]->valueStr = formatedParameterName;
+	outputs[1]->valueStr = formatedParameterName + ".r";
+	outputs[2]->valueStr = formatedParameterName + ".g";
 }
 
 REGISTER_TEMPLATED_NODE("vector2", ParameterNode, glm::vec2, ParameterVec2)
@@ -495,10 +527,10 @@ inline ParameterNode<glm::vec3>::ParameterNode()
 template<>
 inline void ParameterNode<glm::vec3>::compile(CompilationErrorCheck& errorCheck)
 {
-	outputs[0]->valueStr = parameterName;
-	outputs[1]->valueStr = parameterName + ".r";
-	outputs[2]->valueStr = parameterName + ".g";
-	outputs[3]->valueStr = parameterName + ".b";
+	outputs[0]->valueStr = formatedParameterName;
+	outputs[1]->valueStr = formatedParameterName + ".r";
+	outputs[2]->valueStr = formatedParameterName + ".g";
+	outputs[3]->valueStr = formatedParameterName + ".b";
 }
 
 REGISTER_TEMPLATED_NODE("vector3", ParameterNode, glm::vec3, ParameterVec3)
@@ -520,11 +552,11 @@ inline ParameterNode<glm::vec4>::ParameterNode()
 template<>
 inline void ParameterNode<glm::vec4>::compile(CompilationErrorCheck& errorCheck)
 {
-	outputs[0]->valueStr = parameterName;
-	outputs[1]->valueStr = parameterName + ".r";
-	outputs[2]->valueStr = parameterName + ".g";
-	outputs[3]->valueStr = parameterName + ".b";
-	outputs[4]->valueStr = parameterName + ".a";
+	outputs[0]->valueStr = formatedParameterName;
+	outputs[1]->valueStr = formatedParameterName + ".r";
+	outputs[2]->valueStr = formatedParameterName + ".g";
+	outputs[3]->valueStr = formatedParameterName + ".b";
+	outputs[4]->valueStr = formatedParameterName + ".a";
 }
 
 REGISTER_TEMPLATED_NODE("vector4", ParameterNode, glm::vec4, ParameterVec4)
@@ -549,9 +581,13 @@ template<>
 inline void ParameterNode<Texture>::compile(CompilationErrorCheck& errorCheck)
 {
 	std::stringstream textureCoords;
-	inputs[0]->compile(textureCoords, errorCheck);
+	if (inputs[0]->link != nullptr)
+		inputs[0]->compile(textureCoords, errorCheck);
+	else
+		textureCoords << "In.TexCoord";
+
 	std::stringstream core;
-	core << "texture(" << parameterName << "," << textureCoords.str() << ')';
+	core << "texture(" << formatedParameterName << "," << textureCoords.str() << ')';
 
 	outputs[0]->valueStr = core.str() + ".rgba"; //texture(parameterName, texCoords).rgba
 	outputs[1]->valueStr = core.str() + ".r";    //texture(parameterName, texCoords).r
@@ -586,6 +622,182 @@ struct TexCoordsNode final : public CustomNode
 		outputs[2]->valueStr = "In.TexCoord.g";
 	}
 };
+
+REGISTER_NODE("TexCoords", TexCoordsNode)
+
+struct FragCoordsNode final : public CustomNode
+{
+	INHERIT_FROM_NODE(FragCoordsNode)
+
+		FragCoordsNode()
+		: CustomNode("FragCoords")
+	{
+		outputs.push_back(std::make_shared<Output>(this, "rg", FlowType::FLOAT2));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+	}
+	void compile(CompilationErrorCheck& errorCheck) override
+	{
+		outputs[0]->valueStr = "gl_FragCoord.rg";
+		outputs[1]->valueStr = "gl_FragCoord.r";
+		outputs[2]->valueStr = "gl_FragCoord.g";
+	}
+};
+
+REGISTER_NODE("FragCoords", FragCoordsNode)
+
+struct NormalizedPos2DNode final : public CustomNode
+{
+	INHERIT_FROM_NODE(NormalizedPos2DNode)
+
+		NormalizedPos2DNode()
+		: CustomNode("NormalizedPos2D")
+	{
+		outputs.push_back(std::make_shared<Output>(this, "rg", FlowType::FLOAT2));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+	}
+	void compile(CompilationErrorCheck& errorCheck) override
+	{
+		outputs[0]->valueStr = "In.NormalizedPos2D.rg";
+		outputs[1]->valueStr = "In.NormalizedPos2D.r";
+		outputs[2]->valueStr = "In.NormalizedPos2D.g";
+	}
+};
+
+REGISTER_NODE("NormalizedPos2D", NormalizedPos2DNode)
+
+struct ReflectionTextureNode final : public CustomNode
+{
+	INHERIT_FROM_NODE(ReflectionTextureNode)
+
+		ReflectionTextureNode()
+		: CustomNode("ReflectionTexture")
+	{
+		inputs.push_back(std::make_shared<Input>(this, "texCoords", FlowType::FLOAT2));
+
+		outputs.push_back(std::make_shared<Output>(this, "rgb", FlowType::FLOAT3));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "b", FlowType::FLOAT));
+	}
+	void compile(CompilationErrorCheck& errorCheck) override
+	{
+		std::stringstream textureCoords;
+		if (inputs[0]->link != nullptr)
+			inputs[0]->compile(textureCoords, errorCheck);
+		else
+			textureCoords << "In.NormalizedPos2D";
+
+		std::stringstream core;
+		core << "texture(ReflectionTexture, " << textureCoords.str() << ')';
+
+		outputs[0]->valueStr = core.str() + ".rgb";
+		outputs[1]->valueStr = core.str() + ".r";
+		outputs[2]->valueStr = core.str() + ".g";
+		outputs[3]->valueStr = core.str() + ".b";
+	}
+};
+
+REGISTER_NODE("ReflectionTexture", ReflectionTextureNode)
+
+struct BreakVector final : public CustomNode
+{
+	INHERIT_FROM_NODE(BreakVector)
+
+		BreakVector()
+		: CustomNode("BreakVector")
+	{
+		inputs.push_back(std::make_shared<Input>(this, "vec", FlowType::CUSTOM));
+
+		outputs.push_back(std::make_shared<Output>(this, "rgba", FlowType::FLOAT4));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "b", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "a", FlowType::FLOAT));
+	}
+	void compile(CompilationErrorCheck& errorCheck) override
+	{
+		// link != null and we have float or vector type
+		if (inputs[0]->link != nullptr && ((int)inputs[0]->link->input->outputType > 0 && (int)inputs[0]->link->input->outputType < 5))
+		{
+			std::stringstream nodeCompileResult;
+			nodeCompileResult << "vec4(";
+			inputs[0]->compile(nodeCompileResult, errorCheck);
+
+			Output* entry = inputs[0]->link->input;
+			assert(entry != nullptr);
+
+			// float : [float], 0, 0, 0
+			// float2 : [float2], 0, 0
+			// ...
+			for (int i = 0; i < 4 - (int)(entry->outputType); i++)
+			{
+				nodeCompileResult << ", 0";
+			}
+
+			nodeCompileResult << ")";
+
+			outputs[0]->valueStr = nodeCompileResult.str();
+			outputs[1]->valueStr = nodeCompileResult.str() + ".r";
+			outputs[2]->valueStr = nodeCompileResult.str() + ".g";
+			outputs[3]->valueStr = nodeCompileResult.str() + ".b";
+			outputs[4]->valueStr = nodeCompileResult.str() + ".a";
+		}
+		else
+		{
+			outputs[0]->valueStr = "vec4(0,0,0,0)";
+			outputs[1]->valueStr = "0.f";
+			outputs[2]->valueStr = "0.f";
+			outputs[3]->valueStr = "0.f";
+			outputs[4]->valueStr = "0.f";
+		}
+	}
+};
+
+REGISTER_NODE("BreakVector", BreakVector)
+
+struct MakeVec3Node final : public CustomNode
+{
+	INHERIT_FROM_NODE(MakeVec3Node)
+
+		MakeVec3Node()
+		: CustomNode("MakeVec3")
+	{
+		inputs.push_back(std::make_shared<Input>(this, "r", FlowType::FLOAT));
+		inputs.push_back(std::make_shared<Input>(this, "g", FlowType::FLOAT));
+		inputs.push_back(std::make_shared<Input>(this, "b", FlowType::FLOAT));
+
+		outputs.push_back(std::make_shared<Output>(this, "rgb", FlowType::FLOAT3));
+		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
+		outputs.push_back(std::make_shared<Output>(this, "b", FlowType::FLOAT));
+	}
+	void compile(CompilationErrorCheck& errorCheck) override
+	{
+		std::stringstream nodeCompileResult;
+		nodeCompileResult << "vec3(";
+		for (auto input : inputs)
+		{
+			if (input->link != nullptr)
+			{
+				input->compile(nodeCompileResult, errorCheck);
+			}
+			else
+			{
+				printDefaultValue(nodeCompileResult, input->desiredType);
+			}
+		}
+		nodeCompileResult << ")";
+
+		outputs[0]->valueStr = nodeCompileResult.str();
+		outputs[1]->valueStr = nodeCompileResult.str() + ".r";
+		outputs[2]->valueStr = nodeCompileResult.str() + ".g";
+		outputs[3]->valueStr = nodeCompileResult.str() + ".b";
+	}
+};
+
+REGISTER_NODE("MakeVec3", MakeVec3Node)
 
 //// BEGIN : Customs
 //////////////////////////////////////////////////////////////
@@ -861,6 +1073,8 @@ private:
 	std::vector<Node*> m_selectedNodes;
 	bool m_isSelectingNodes;
 	bool m_isHoverridingANode;
+	glm::vec2 m_backgroundDecal;
+	ImVec2 m_newNodePos;
 
 	MeshVisualizer m_meshVisualizer;
 
@@ -892,14 +1106,15 @@ public:
 
 	void addLink(std::shared_ptr<Link> link);
 	void removeLink(Link* link);
+	std::vector<std::shared_ptr<Link>>::iterator NodeManager::removeLink(std::vector<std::shared_ptr<Link>>::iterator linkIt);
 	void removeNode(Node* node);
+	std::vector<std::shared_ptr<Node>>::iterator NodeManager::removeNode(std::vector<std::shared_ptr<Node>>::iterator nodeIt);
 
 private:
-
+	void internalOnBeforeCompilation(CompilationErrorCheck& errorCheck);
 	void internalResolveUndeterminedTypes();
 	//void internalDefineParameters(std::stringstream& compileStream, CompilationErrorCheck& errorCheck);
 	void internalCompile(CompilationErrorCheck& errorCheck);
 };
-
 
 }

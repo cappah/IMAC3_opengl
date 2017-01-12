@@ -76,6 +76,7 @@ public:
 
 	virtual void save(Json::Value & entityRoot) const override;
 	virtual void load(const Json::Value & entityRoot) override;
+	virtual void resolvePointersLoading();
 
 	typename std::map<FileHandler::CompletePath, T*>::iterator resourceBegin();
 	typename std::map<std::string, T*>::iterator defaultResourceBegin();
@@ -459,6 +460,11 @@ void ResourceFactory<T>::save(Json::Value & entityRoot) const
 		getHashKeyForResource(it->first.toString()).save(entityRoot[i]["hashKey"]);
 		i++;
 	}
+
+	for (auto it = m_resources.begin(); it != m_resources.end(); it++)
+	{
+		it->second->save();
+	}
 }
 
 template<typename T>
@@ -486,6 +492,15 @@ void ResourceFactory<T>::load(const Json::Value & entityRoot)
 		{
 			PRINT_ERROR("Error in resourceloading !");
 		}
+	}
+}
+
+template<typename T>
+void ResourceFactory<T>::resolvePointersLoading()
+{
+	for (auto resource : m_resources)
+	{
+		resource.second->resolvePointersLoading();
 	}
 }
 
@@ -613,6 +628,10 @@ const std::string& getResourceExtention()
 template<>
 const std::string& getResourceExtention<Material>();
 
+void loadResourcesInAllFactories(const Json::Value& rootResources);
+void saveResourcesInAllFactories(Json::Value& rootResources);
+void resolvePointersLoadingInFactories();
+
 ////////////////////////////////////////////////
 //// BEGIN : Forwards
 
@@ -621,24 +640,28 @@ const std::string& getResourceExtention<Material>();
 template<typename T>
 void ResourcePtr<T>::load(const Json::Value & entityRoot)
 {
-	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
-	m_resourceHashKey.load(entityRoot.get("resourceHashKey", Json::nullValue));
-	m_rawPtr = m_isDefaultResource ? getResourceFactory<T>().getRawDefault(m_resourceHashKey) : getResourceFactory<T>().getRaw(m_resourceHashKey);
+	bool isValid = entityRoot["isValid"].asBool();
+	if (isValid)
+	{
+		m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
+		m_resourceHashKey.load(entityRoot.get("resourceHashKey", Json::nullValue));
+		m_rawPtr = m_isDefaultResource ? getResourceFactory<T>().getRawDefault(m_resourceHashKey) : getResourceFactory<T>().getRaw(m_resourceHashKey);
 
-	assert(m_rawPtr != nullptr);
-	m_rawPtr->addReferenceToThis(this);
+		assert(m_rawPtr != nullptr);
+		m_rawPtr->addReferenceToThis(this);
+	}
 }
 
-template<>
-inline void ResourcePtr<ShaderProgram>::load(const Json::Value & entityRoot)
-{
-	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
-	m_resourceHashKey.load(entityRoot.get("resourceHashKey", Json::nullValue));
-	m_rawPtr = getResourceFactory<ShaderProgram>().getRaw(m_resourceHashKey);
-
-	assert(m_rawPtr != nullptr);
-	m_rawPtr->addReferenceToThis(this);
-}
+//template<>
+//inline void ResourcePtr<ShaderProgram>::load(const Json::Value & entityRoot)
+//{
+//	m_isDefaultResource = entityRoot["isDefaultResource"].asBool();
+//	m_resourceHashKey.load(entityRoot.get("resourceHashKey", Json::nullValue));
+//	m_rawPtr = getResourceFactory<ShaderProgram>().getRaw(m_resourceHashKey);
+//
+//	assert(m_rawPtr != nullptr);
+//	m_rawPtr->addReferenceToThis(this);
+//}
 
 ///////////////// RESOURCE FIELD /////////////////
 

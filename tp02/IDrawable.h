@@ -4,6 +4,7 @@
 
 class Skeleton;
 class Billboard;
+class ReflectivePlane;
 namespace Physic {
 	class ParticleEmitter;
 }
@@ -18,4 +19,5 @@ public:
 	virtual Skeleton* getSkeletonIfPossible() const { return nullptr; }
 	virtual const Billboard* getAsBillboardIfPossible() const { return nullptr; }
 	virtual const Physic::ParticleEmitter* getAsParticleEmiterIfPossible() const { return nullptr; }
+	virtual const ReflectivePlane* getAsReflectivePlaneIfPossible() const { return nullptr; }
 };

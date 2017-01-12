@@ -153,11 +153,15 @@ bool Path::empty() const
 	return m_data.empty();
 }
 
-std::string Path::back() const
+std::string Path::back(int idx) const
 {
 	assert(m_data.back() == '/');
 
-	size_t cutPos = m_data.find_last_of('/', m_data.size() - 2);
+	size_t cutPos = m_data.find_last_of("/\\", m_data.size() - 2);
+	for (int i = 0; i < idx - 1; i++)
+	{
+		cutPos = m_data.find_last_of("/\\", cutPos - 1);
+	}
 	size_t length = 0;
 	if (cutPos == std::string::npos)
 	{
