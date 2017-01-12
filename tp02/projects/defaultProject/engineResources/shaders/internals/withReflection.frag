@@ -1,5 +1,7 @@
 
-uniform sampler2D ReflexionTexture;
+//in vec3 NormalizedPos2D;
+
+//uniform sampler2D ReflexionTexture;
 
 //void computeReflection(out vec3 outReflection)
 //{

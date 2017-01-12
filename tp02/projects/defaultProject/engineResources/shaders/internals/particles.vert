@@ -21,6 +21,7 @@ out block
         vec2 TexCoord;
         vec3 Position;
         mat3 TBN;
+        vec2 NormalizedPos2D;
 } Out;
 
 void main()
@@ -41,4 +42,8 @@ void main()
         Out.Position = pos;
 
         gl_Position = VP * vec4(posWorldSpace, 1.0);
+        Out.NormalizedPos2D = gl_Position.xy;
+        Out.NormalizedPos2D /= gl_Position.w;
+        Out.NormalizedPos2D += 1.0f;
+        Out.NormalizedPos2D *= 0.5f;
 }

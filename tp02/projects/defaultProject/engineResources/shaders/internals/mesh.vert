@@ -21,12 +21,12 @@ layout(location = NORMAL) in vec3 Normal;
 layout(location = TEXCOORD) in vec2 TexCoord;
 layout(location = TANGENT) in vec3 Tangent;
 
-
 out block
 {
         vec2 TexCoord;
         vec3 Position;
         mat3 TBN;
+        vec2 NormalizedPos2D;
 } Out;
 
 void main()
@@ -48,5 +48,8 @@ void main()
         Out.TBN = mat3(B, T, N);
 
         gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * boneTransform * vec4(Position,1);
-
+        Out.NormalizedPos2D = gl_Position.xy;
+        Out.NormalizedPos2D /= gl_Position.w;
+        Out.NormalizedPos2D += 1.0f;
+        Out.NormalizedPos2D *= 0.5f;
 }
