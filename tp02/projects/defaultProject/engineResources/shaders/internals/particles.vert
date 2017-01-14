@@ -16,6 +16,8 @@ uniform vec3 CameraRight;
 uniform vec3 CameraUp;
 uniform mat4 VP;
 
+uniform vec4 ClipPlane;
+
 out block
 {
         vec2 TexCoord;
@@ -28,9 +30,6 @@ void main()
 {
         Out.Color = Color;
 
-        vec3 pos = Position;
-        vec3 posWorldSpace = Translation + CameraRight * Position.x * Size.x + CameraUp * Position.z * Size.y;
-
         vec3 tangent = normalize(CameraRight);
         //calculate TBN matrix :
         vec3 T = normalize( vec3(vec4(tangent, 0.0)) );
@@ -39,7 +38,10 @@ void main()
         Out.TBN = mat3(B, T, N);
 
         Out.TexCoord = TexCoord;// * TextureRepetition;
-        Out.Position = pos;
+        vec3 posWorldSpace = Translation + CameraRight * Position.x * Size.x + CameraUp * Position.z * Size.y;
+        Out.Position = posWorldSpace; // To view space ?
+
+        gl_ClipDistance[0] = dot(vec4(posWorldSpace, 1.0), ClipPlane);
 
         gl_Position = VP * vec4(posWorldSpace, 1.0);
         Out.NormalizedPos2D = gl_Position.xy;

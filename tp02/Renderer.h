@@ -17,6 +17,7 @@
 
 #include "PostProcess.h"
 #include "RenderDatas.h"
+#include "RenderTarget.h"
 
 class DebugDrawRenderer;
 class ReflectivePlane;
@@ -36,7 +37,9 @@ class Renderer
 
 private:
 	// Viewport size :
-	glm::vec2 m_viewportRenderSize;
+	glm::vec2 m_intermediateViewportSize;
+	glm::vec2 m_targetViewportSize;
+	glm::vec2 m_texClipSize;
 
 	// FrameBuffers :
 	// For G pass :
@@ -73,43 +76,24 @@ public:
 	~Renderer();
 
 	//return the final frame, after all render process
-	const glm::vec2& getViewportRenderSize() const;
+	const glm::vec2& getIntermediateViewportSize() const;
 
 	//update deferred textures used by the FBO when we resize the screen.
-	void onResizeViewport(const glm::vec2& newViewportSize);
+	void onResizeWindow(const glm::vec2& newWindowSize);
 
 	//initialyze buffers for blit quad.
 	//void initPostProcessQuad(std::string programBlit_vert_path, std::string programBlit_frag_path);
 
 	//void initialyzeShadowMapping(std::string progamShadowPass_vert_path, std::string progamShadowPass_frag_path, std::string progamShadowPassOmni_vert_path, std::string progamShadowPassOmni_frag_path, std::string progamShadowPassOmni_geom_path);
 
-	// Utility function to push all light/shadow uniforms to GPU
-	void Renderer::pushPointLightUniforms(PointLightRenderDatas& pointLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
-	// Utility function to push all light/shadow uniforms to GPU
-	void Renderer::pushSpotLightUniforms(SpotLightRenderDatas& spotLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
-	// Utility function to push all light/shadow uniforms to GPU
-	void Renderer::pushDirectionalLightUniforms(DirectionalLightRenderDatas& directionalLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
-
-	// Camera culling for point lights and spot lights
-	void updateCulling(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<PointLightRenderDatas>& pointLightRenderDatas, std::vector<SpotLightRenderDatas>& spotLightRenderDatas);
-	// Apply light culling, and populate lightRenderDatas
-	void lightCullingPass(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
-	// Compute shadow maps
-	void shadowPass(const BaseCamera& camera, DebugDrawRenderer* debugDrawer = nullptr);
 	// Render the scene through a reflective camera. Practically the same as render() but doesn't render post processing.
-	void renderReflection(ReflectionCamera& camera, const ReflectivePlane& reflectivePlane, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer);
+	void renderReflection(ReflectionCamera& camera, RenderTarget& renderTarget, const ReflectivePlane& reflectivePlane, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer);
 	// Main render function. Will render the sene into a camera texture.
-	void render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, bool useGlobalPostProcess = true, DebugDrawRenderer* debugDrawer = nullptr);
-	// Render the scene with lights.
-	void renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* debugDrawer = nullptr);
+	void render(BaseCamera& camera, RenderTarget& renderTarget, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, bool useGlobalPostProcess = true, DebugDrawRenderer* debugDrawer = nullptr);
 	
-	void gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view);
-	void lightPass(const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view);
-	void deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, DebugDrawRenderer* debugDrawer);
-	void forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, int width, int height, const glm::mat4& projection, const glm::mat4& view);
-
 	void debugDrawRenderer(DebugDrawRenderer& debugDrawer) const;
 
+	// Transfert the depth of the final m_lightPassBuffer buffer to the given framebuffer.
 	void transferDepthTo(const GlHelper::Framebuffer& to, const glm::vec2& depthTextureSize) const;
 
 	//draw colliders on scene.
@@ -126,5 +110,27 @@ public:
 
 	//resize the blit quad, changing its vertices coordinates
 	void resizeBlitQuad(const glm::vec4& viewport = glm::vec4(-1,-1,2,2));
+
+private:
+	// Camera culling for point lights and spot lights
+	void updateCulling(const BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<SpotLight*>& spotLights, std::vector<PointLightRenderDatas>& pointLightRenderDatas, std::vector<SpotLightRenderDatas>& spotLightRenderDatas);
+	// Apply light culling, and populate lightRenderDatas
+	void lightCullingPass(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer = nullptr);
+	// Compute shadow maps
+	void shadowPass(const BaseCamera& camera, DebugDrawRenderer* debugDrawer = nullptr);
+	// Render the scene with lights.
+	void renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* debugDrawer = nullptr);
+
+	void gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera);
+	void lightPass(const glm::vec3& cameraPosition, const glm::vec3& cameraForward, const glm::mat4& view);
+	void deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, DebugDrawRenderer* debugDrawer);
+	void forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, const BaseCamera& camera);
+
+	// Utility function to push all light/shadow uniforms to GPU
+	void Renderer::pushPointLightUniforms(PointLightRenderDatas& pointLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
+	// Utility function to push all light/shadow uniforms to GPU
+	void Renderer::pushSpotLightUniforms(SpotLightRenderDatas& spotLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
+	// Utility function to push all light/shadow uniforms to GPU
+	void Renderer::pushDirectionalLightUniforms(DirectionalLightRenderDatas& directionalLightRenderDatas, const glm::mat4& viewToWorld, const glm::mat4& view);
 };
 

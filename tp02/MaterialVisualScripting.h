@@ -681,6 +681,12 @@ struct ReflectionTextureNode final : public CustomNode
 		outputs.push_back(std::make_shared<Output>(this, "g", FlowType::FLOAT));
 		outputs.push_back(std::make_shared<Output>(this, "b", FlowType::FLOAT));
 	}
+
+	virtual void defineParameter(std::stringstream& stream, std::vector<std::string>& usedParameterNames, CompilationErrorCheck& errorCheck) override
+	{
+		stream << "uniform sampler2D ReflectionTexture;";
+	}
+
 	void compile(CompilationErrorCheck& errorCheck) override
 	{
 		std::stringstream textureCoords;
@@ -787,6 +793,7 @@ struct MakeVec3Node final : public CustomNode
 			{
 				printDefaultValue(nodeCompileResult, input->desiredType);
 			}
+			nodeCompileResult << ", ";
 		}
 		nodeCompileResult << ")";
 

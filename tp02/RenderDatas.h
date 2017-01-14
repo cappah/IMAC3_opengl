@@ -25,6 +25,8 @@ struct RenderDatas
 	glm::mat4 VP;
 	const glm::mat4* Projection;
 	const glm::mat4* View;
+	ID currentCameraID;
+	glm::vec4 clipPlane;
 
 	//std::vector<PointLight*>* pointLights;
 	//std::vector<DirectionalLight*>* directionalLights;

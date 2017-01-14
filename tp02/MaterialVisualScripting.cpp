@@ -454,7 +454,7 @@ void Node::drawUI(NodeManager& manager)
 	ImGui::EndChild();
 	ImGui::SetCursorScreenPos(cursorPos);
 
-	ImGui::PopStyleVar();
+	ImGui::PopStyleColor();
 	ImGui::PopID();
 }
 
@@ -483,9 +483,9 @@ NodeManager::NodeManager(ShaderProgram* programPtr)
 	, m_isDraggingLink(false)
 	, m_backgroundDecal(0, 0)
 {
-	//auto newFinalNode = std::make_shared<FinalNode>();
-	//m_allNodes.push_back(newFinalNode);
-	//m_finalOutput = newFinalNode.get();
+	auto newFinalNode = std::make_shared<FinalNode>();
+	m_allNodes.push_back(newFinalNode);
+	m_finalOutput = newFinalNode.get();
 
 	// Init Mesh Visualizer
 	m_meshVisualizer.setMesh(getMeshFactory().getDefault("cube"));
@@ -568,12 +568,15 @@ Node* NodeManager::getNode(const ID& id) const
 void NodeManager::save(Json::Value& root) const
 {
 	root.clear();
+
+	root["nodesCount"] = m_allNodes.size();
 	for (auto node : m_allNodes)
 	{
 		root["nodes"] = Json::Value(Json::objectValue);
 		node->save(root["nodes"]);
 	}
 
+	root["linksCount"] = m_allLinks.size();
 	for (auto link : m_allLinks)
 	{
 		root["links"] = Json::Value(Json::objectValue);
@@ -590,7 +593,7 @@ void NodeManager::load(const Json::Value& root)
 	m_parameterNodes.clear();
 
 	// Load nodes
-	int nodeCount = root["nodes"].size();
+	int nodeCount = root["nodesCount"].asInt();
 	for (int i = 0; i < nodeCount; i++)
 	{
 		// Create
@@ -622,7 +625,7 @@ void NodeManager::load(const Json::Value& root)
 	}
 
 	// Load links
-	int linkCount = root["links"].size();
+	int linkCount = root["linksCount"].asInt();
 	for (int i = 0; i < linkCount; i++)
 	{
 		// Create

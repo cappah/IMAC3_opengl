@@ -36,6 +36,8 @@ struct PointLight{
 //light uniforms : 
 uniform PointLight pointLight;
 
+uniform vec2 Resize;
+
 
 vec3 computePointLight(PointLight light, vec3 p, vec3 n,  vec3 diffuse, vec3 specular, float specularPower)
 {
@@ -104,7 +106,7 @@ void main(void)
     float depth = texture(DepthBuffer, In.Texcoord).r;
 
     // Convert texture coordinates into screen space coordinates
-    vec2 xy = In.Texcoord * 2.0 -1.0;
+    vec2 xy = (In.Texcoord / Resize) * 2.0 -1.0;
     // Convert depth to -1,1 range and multiply the point by ScreenToWorld matrix
     vec4 wP = vec4(xy, depth * 2.0 -1.0, 1.0) * ScreenToView;
     // Divide by w

@@ -218,6 +218,9 @@ void ResourceFactory<Material>::initDefaults()
 	newMat = new MaterialBlit(*getProgramFactory().getDefault("blit"));
 	addDefaultResource("blit", newMat);
 
+	newMat = new MaterialResizedBlit(*getProgramFactory().getDefault("resizedBlit"));
+	addDefaultResource("resizedBlit", newMat);
+
 	newMat = new MaterialSimple3DDraw(*getProgramFactory().getDefault("simple3DDraw"));
 	addDefaultResource("simple3DDraw", newMat);
 }
@@ -347,7 +350,7 @@ void ResourceFactory<Mesh>::initDefaults()
 	tmpVertices.clear();
 
 	Mesh* plane = new Mesh();
-	plane->triangleIndex = { 0, 1, 2, 2, 3, 0 };
+	plane->triangleIndex = { 0, 1, 2, 0, 2, 3 };
 	plane->uvs = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
 	plane->vertices = { -0.5, 0.0, -0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, 0.5 };
 	plane->normals = { 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 };

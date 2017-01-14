@@ -357,9 +357,9 @@ void Project::edit()
 		CameraEditor& currentEditorCamera = editor.getCamera();
 
 		scene->clearReflectivePlanes();
-		scene->setupReflectivePlanes();
+		scene->setupReflectivePlanes(editor.getViewportRenderTarget());
 		if (!editor.getIsPlaying())
-			scene->setupReflectivePlanes(currentEditorCamera.getObjectID(), currentEditorCamera);
+			scene->setupReflectivePlanes(currentEditorCamera.getObjectID(), currentEditorCamera, editor.getViewportRenderTarget());
 
 		scene->computeCulling();
 		//add culling for editor camera if we use it
@@ -376,6 +376,7 @@ void Project::edit()
 			//if (editor.getIsPlaying())
 			//	scene->getRenderer().onResizeViewport( glm::vec2(Application::get().getWindowWidth(), Application::get().getWindowHeight()) );
 
+			scene->getRenderer().onResizeWindow(glm::vec2(Application::get().getWindowWidth(), Application::get().getWindowHeight()));
 			editor.onResizeWindow();
 
 			Application::get().setWindowResize(false);
@@ -388,11 +389,11 @@ void Project::edit()
 		//renderer.render(camera, entities);
 		if (editor.getIsPlaying())
 		{
-			scene->render();
+			scene->render(editor.getViewportRenderTarget());
 		}
 		else
 		{
-			scene->renderForEditor(editor.getCamera(), editor.getDebugDrawRenderer());
+			scene->renderForEditor(editor.getCamera(), editor.getViewportRenderTarget(), editor.getDebugDrawRenderer());
 			CHECK_GL_ERROR("gl error in renderer.");
 			//scene->renderPaths(currentCamera);
 			//CHECK_GL_ERROR("");
@@ -405,10 +406,10 @@ void Project::edit()
 			//scene->renderDebugPhysic(currentCamera);
 			//CHECK_GL_ERROR("");
 
-			DebugDrawer::render(currentEditorCamera);
+			DebugDrawer::render(currentEditorCamera, editor.getViewportRenderTarget());
 			DebugDrawer::clear();
 
-			editor.renderGizmo(currentEditorCamera);
+			editor.renderGizmo(currentEditorCamera, editor.getViewportRenderTarget());
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO : movethis ?

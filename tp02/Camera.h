@@ -18,6 +18,7 @@
 #include "RenderBatch.h"
 #include "PostProcess.h"
 #include "IDGenerator.h"
+#include "RenderTarget.h"
 
 class Skybox;
 class ReflectivePlane;
@@ -57,16 +58,16 @@ protected:
 
 	std::map<GLuint, std::shared_ptr<IRenderBatch>> m_renderBatches[static_cast<int>(Rendering::PipelineType::COUNT)];
 	PostProcessProxy m_postProcessProxy;
-	GlHelper::Framebuffer m_frameBuffer;
-	Texture m_texture;
-	MaterialBlit* m_material;
+	//GlHelper::Framebuffer m_frameBuffer;
+	//Texture m_texture;
+	MaterialResizedBlit* m_material;
 	Mesh* m_quadMesh;
 
 	glm::vec4 m_clearColor;
 	std::shared_ptr<Skybox> m_skybox;
 	ClearMode m_clearMode;
 
-	glm::vec2 m_viewportSize;
+	//glm::vec2 m_viewportSize;
 
 public:
 	enum CameraMode { PERSPECTIVE, ORTHOGRAPHIC };
@@ -79,16 +80,17 @@ public:
 	virtual void clearRenderBatches(Rendering::PipelineType renderPipelineType);
 	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(Rendering::PipelineType renderPipelineType) const;
 	virtual const PostProcessProxy& getPostProcessProxy() const;
-	virtual void onViewportResized(const glm::vec2& newSize);
-	void renderFrame(const Texture& texture);
-	const Texture* getFinalFrame() const;
-	const GlHelper::Framebuffer& getFrameBuffer();
+	void renderFrameOnTarget(const Texture& texture, RenderTarget& renderTarget);
+	virtual ID getCameraID() const;
+	//virtual void onViewportResized(const glm::vec2& newSize);
+	//const Texture* getFinalFrame() const;
+	//const GlHelper::Framebuffer& getFrameBuffer();
 
 	ClearMode getClearMode() const;
 	const glm::vec4& getClearColor() const;
 	std::shared_ptr<Skybox> getSkybox() const;
 	void renderSkybox() const;
-	const glm::vec2& getViewportSize() const;
+	//const glm::vec2& getViewportSize() const;
 
 	//virtual void setTranslationLocal(glm::vec3 pos) = 0;
 	//virtual void translateLocal(glm::vec3 pos) = 0;
@@ -179,6 +181,8 @@ public:
 
 	Camera();
 
+	virtual ID getCameraID() const override;
+
 	//virtual void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
 	//virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
 	//virtual const PostProcessProxy& getPostProcessProxy() const override;
@@ -252,16 +256,18 @@ private:
 	float m_cameraBoostSpeed;
 	bool m_hideCursorWhenMovingCamera;
 
-	GlHelper::Renderbuffer m_depthBuffer;
+	//GlHelper::Renderbuffer m_depthBuffer;
 
 public:
 	CameraEditor();
+
+	virtual ID getCameraID() const override;
 
 	//void computeCulling(const Octree<IRenderableComponent, AABB>& octree) override;
 	//const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(PipelineTypes renderPipelineType) const override;
 	//virtual const PostProcessProxy& getPostProcessProxy() const override;
 
-	virtual void onViewportResized(const glm::vec2& newSize) override;
+	//virtual void onViewportResized(const glm::vec2& newSize) override;
 
 	void drawUI();
 	float getCameraBaseSpeed() const;
@@ -310,13 +316,14 @@ struct ReflectionCamera : public BaseCamera, public Object
 	REFLEXION_HEADER(ReflectionCamera)
 
 private:
-	GlHelper::Renderbuffer m_stencilBuffer;
+	//GlHelper::Renderbuffer m_stencilBuffer;
 	MaterialSimple3DDraw* m_materialSimple3Ddraw;
+	RenderTarget m_renderTarget;
 
 public:
 	ReflectionCamera();
 
-	void setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera);
+	void setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera, RenderTarget& finalRenderTarget);
 
 	virtual void updateScreenSize(float screenWidth, float screenHeight) override;
 	virtual void setPerspectiveInfos(float fovy, float aspect, float camNear = 0.1f, float camFar = 100.f) override;
@@ -324,7 +331,9 @@ public:
 	virtual void setCameraMode(CameraMode cameraMode) override;
 	virtual void updateProjection() override;
 
-	void renderFrame(const Texture& _texture, const ReflectivePlane& _reflectivePlane);
+	void renderFrameOnTarget(const Texture& _texture, const ReflectivePlane& _reflectivePlane);
+
+	GLuint getFinalFrame() const;
 };
 
 REFLEXION_CPP(ReflectionCamera)

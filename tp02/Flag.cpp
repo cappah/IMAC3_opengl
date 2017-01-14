@@ -725,6 +725,11 @@ namespace Physic {
 		return 1;
 	}
 
+	Component * Flag::getAsComponent()
+	{
+		return this;
+	}
+
 	const AABB & Flag::getVisualBoundingBox() const
 	{
 		return m_mesh.getLocalAABB();

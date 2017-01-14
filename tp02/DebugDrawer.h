@@ -6,6 +6,7 @@
 
 #include "Materials.h"
 
+class RenderTarget;
 
 class DebugDrawer
 {
@@ -22,7 +23,7 @@ private:
 
 public:
 	static void drawLine(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color = glm::vec3(1,0,0));
-	static void render(BaseCamera& camera);
+	static void render(BaseCamera& camera, RenderTarget& renderTarget);
 	static void clear();
 
 // singleton implementation :

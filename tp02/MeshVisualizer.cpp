@@ -3,22 +3,23 @@
 
 
 MeshVisualizer::MeshVisualizer()
-	: m_viewportSize(400, 400)
+	//: m_viewportSize(400, 400)
+	: m_renderTarget(400, 400)
 	, m_cameraDistance(1.f)
 	, m_cameraTarget(0.f, 0.f, 0.f)
 	, m_cameraPhi(glm::pi<float>()*0.5f)
 	, m_cameraTheta(glm::pi<float>()*0.5f)
 {
-	m_camera.onViewportResized(m_viewportSize);
+	//m_camera.onViewportResized(m_viewportSize);
 
 	m_pointLights.push_back(new PointLight(10, glm::vec3(1, 1, 1), glm::vec3(3, 3, 3)));
 
-	DirectionalLight* newDirLight = new DirectionalLight(1.f, glm::vec3(1, 1, 1), glm::vec3(-1, -1, 0));
+	DirectionalLight* newDirLight = new DirectionalLight(0.1f, glm::vec3(1, 1, 1), glm::vec3(-1, -1, 0));
 	newDirLight->setCastShadows(false);
 	newDirLight->position = glm::vec3(0, 2, 0);
 	m_directionalLights.push_back(newDirLight);
 
-	newDirLight = new DirectionalLight(1.f, glm::vec3(1, 1, 1), glm::vec3(1, 1, 0));
+	newDirLight = new DirectionalLight(0.1f, glm::vec3(1, 1, 1), glm::vec3(1, 1, 0));
 	newDirLight->setCastShadows(false);
 	newDirLight->position = glm::vec3(0, 2, 0);
 	m_directionalLights.push_back(newDirLight);
@@ -77,7 +78,7 @@ void MeshVisualizer::render(Renderer& renderer)
 {
 	//TODO : refactor
 
-	renderer.render(m_camera, m_pointLights, m_directionalLights, m_spotLights, false, nullptr);
+	renderer.render(m_camera, m_renderTarget, m_pointLights, m_directionalLights, m_spotLights, false, nullptr);
 }
 
 void MeshVisualizer::rotateCamera(float x, float y)
@@ -100,14 +101,13 @@ void MeshVisualizer::drawUI()
 	availContent.x -= 8.f;
 	availContent.y -= 8.f;
 
-	if (glm::abs(availContent.x - m_viewportSize.x) > 0.1f || glm::abs(availContent.y - m_viewportSize.y) > 0.1f)
+	const glm::vec2 viewportSize = m_renderTarget.getSize();
+	if (glm::abs(availContent.x - viewportSize.x) > 0.1f || glm::abs(availContent.y - viewportSize.y) > 0.1f)
 	{
-		m_viewportSize.x = availContent.x;
-		m_viewportSize.y = availContent.y;
-		m_camera.onViewportResized(m_viewportSize);
+		m_renderTarget.setSize(glm::vec2(availContent.x, availContent.y));
 	}
 
-	ImGui::ImageButton((void*)m_camera.getFinalFrame()->glId, ImVec2(availContent.x, availContent.y) /*ImVec2(100, 100)*/, ImVec2(0, 1), ImVec2(1, 0));
+	ImGui::ImageButton((void*)m_renderTarget.getFinalFrame(), ImVec2(availContent.x, availContent.y) /*ImVec2(100, 100)*/, ImVec2(0, 1), ImVec2(1, 0));
 	m_isSelected = ImGui::IsItemActive();
 	bool isItemHovered = ImGui::IsItemHovered();
 

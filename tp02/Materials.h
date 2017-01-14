@@ -212,6 +212,7 @@ public:
 class MaterialPointLight final : public MaterialLight
 {
 private:
+	GLuint uniform_Resize;
 	GLuint uniform_ViewToWorld;
 	GLuint uniform_FarPlane;
 	GLuint uniform_lightPosition;
@@ -240,6 +241,7 @@ public:
 
 	void setExternalParameters() override
 	{
+		uniform_Resize = MaterialHelper::getUniform(m_glProgramId, "Resize");
 		uniform_ViewToWorld = MaterialHelper::getUniform(m_glProgramId, "ViewToWorld");
 		uniform_FarPlane = MaterialHelper::getUniform(m_glProgramId, "FarPlane");
 		uniform_lightPosition = MaterialHelper::getUniform(m_glProgramId, "pointLight.position");
@@ -247,6 +249,11 @@ public:
 		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "pointLight.intensity");
 
 		CHECK_GL_ERROR("error in material initialization.");
+	}
+
+	void setUniformResize(const glm::vec2& resize)
+	{
+		GlHelper::pushParameterToGPU(uniform_Resize, resize);
 	}
 
 	void setUniformViewToWorld(const glm::mat4& ViewToWorld)
@@ -276,7 +283,7 @@ public:
 class MaterialDirectionalLight final : public MaterialLight
 {
 private:
-
+	GLuint uniform_Resize;
 	GLuint uniform_ViewToLight;
 	GLuint uniform_lightDirection;
 	GLuint uniform_lightColor;
@@ -304,12 +311,18 @@ public:
 
 	void setExternalParameters() override
 	{
+		uniform_Resize = MaterialHelper::getUniform(m_glProgramId, "Resize");
 		uniform_ViewToLight = MaterialHelper::getUniform(m_glProgramId, "ViewToLightScreen");
 		uniform_lightDirection = MaterialHelper::getUniform(m_glProgramId, "directionalLight.direction");
 		uniform_lightColor = MaterialHelper::getUniform(m_glProgramId, "directionalLight.color");
 		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "directionalLight.intensity");
 
 		CHECK_GL_ERROR("error in material initialization.");
+	}
+
+	void setUniformResize(const glm::vec2& resize)
+	{
+		GlHelper::pushParameterToGPU(uniform_Resize, resize);
 	}
 
 	void setUniformViewToLight(const glm::mat4& worldToLightMat)
@@ -335,6 +348,7 @@ class MaterialSpotLight final : public MaterialLight
 {
 private:
 
+	GLuint uniform_Resize;
 	GLuint uniform_ViewToLight;
 	GLuint uniform_lightDirection;
 	GLuint uniform_lightPosition;
@@ -364,6 +378,7 @@ public:
 
 	void setExternalParameters() override
 	{
+		uniform_Resize = MaterialHelper::getUniform(m_glProgramId, "Resize");
 		uniform_ViewToLight = MaterialHelper::getUniform(m_glProgramId, "ViewToLightScreen");
 		uniform_lightDirection = MaterialHelper::getUniform(m_glProgramId, "spotLight.direction");
 		uniform_lightAngle = MaterialHelper::getUniform(m_glProgramId, "spotLight.angle");
@@ -372,6 +387,11 @@ public:
 		uniform_lightIntensity = MaterialHelper::getUniform(m_glProgramId, "spotLight.intensity");
 
 		CHECK_GL_ERROR("error in material initialization.");
+	}
+
+	void setUniformResize(const glm::vec2& resize)
+	{
+		GlHelper::pushParameterToGPU(uniform_Resize, resize);
 	}
 
 	void setUniformViewToLight(const glm::mat4& viewToLightMat)
@@ -547,6 +567,50 @@ public:
 };
 
 
+class MaterialResizedBlit final : public Material
+{
+private:
+	GLuint uniform_TextureBlit;
+	GLuint uniform_Resize;
+
+public:
+	MaterialResizedBlit()
+		: Material()
+	{}
+
+	MaterialResizedBlit(const ShaderProgram& shaderProgram)
+		: Material(shaderProgram)
+	{
+		setExternalParameters();
+	}
+
+	MaterialResizedBlit(const ShaderProgram& shaderProgram, const FileHandler::CompletePath& completePath)
+		: Material(shaderProgram, completePath)
+	{
+		setExternalParameters();
+	}
+
+	virtual ~MaterialResizedBlit()
+	{}
+
+	void setExternalParameters() override
+	{
+		uniform_TextureBlit = MaterialHelper::getUniform(m_glProgramId, "Texture");
+		uniform_Resize = MaterialHelper::getUniform(m_glProgramId, "Resize");
+
+		CHECK_GL_ERROR("error in material initialization.");
+	}
+
+	void setUniformBlitTexture(int texUnitId)
+	{
+		GlHelper::pushParameterToGPU(uniform_TextureBlit, texUnitId);
+	}
+
+	void setUniformResize(const glm::vec2& resize)
+	{
+		GlHelper::pushParameterToGPU(uniform_Resize, resize);
+	}
+};
 
 
 //Default materials :

@@ -96,8 +96,8 @@ Renderer::Renderer(LightManager* _lightManager)
 	m_SSAOPassBuffer.unbind();
 
 	////////////////////// FINALLY STORE THE VIEWPORT SIZE /////////////////////////
-	m_viewportRenderSize.x = width;
-	m_viewportRenderSize.y = height;
+	m_intermediateViewportSize.x = width;
+	m_intermediateViewportSize.y = height;
 
 	CHECK_GL_ERROR("uniforms");
 
@@ -108,15 +108,15 @@ Renderer::~Renderer()
 	delete lightManager;
 }
 
-const glm::vec2 & Renderer::getViewportRenderSize() const
+const glm::vec2 & Renderer::getIntermediateViewportSize() const
 {
-	return m_viewportRenderSize;
+	return m_intermediateViewportSize;
 }
 
 
-void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
+void Renderer::onResizeWindow(const glm::vec2& newWindowSize)
 {
-	const int width = newViewportSize.x, height = newViewportSize.y;
+	const int width = newWindowSize.x, height = newWindowSize.y;
 
 	if (width < 1 || height < 1)
 		return;
@@ -192,11 +192,11 @@ void Renderer::onResizeViewport(const glm::vec2& newViewportSize)
 	m_SSAOPassBuffer.unbind();
 
 	////////////////////// FINALLY STORE THE VIEWPORT SIZE /////////////////////////
-	m_viewportRenderSize.x = width;
-	m_viewportRenderSize.y = height;
+	m_intermediateViewportSize.x = width;
+	m_intermediateViewportSize.y = height;
 
 	////////////////////// SETUP POST PROCESS MANAGER /////////////////////////
-	m_postProcessManager.onViewportResized(m_viewportRenderSize.x, m_viewportRenderSize.y);
+	m_postProcessManager.onViewportResized(m_intermediateViewportSize.x, m_intermediateViewportSize.y);
 }
 
 
@@ -255,25 +255,13 @@ void Renderer::lightCullingPass(BaseCamera & camera, std::vector<PointLight*>& p
 		m_renderDatas.directionalLightRenderDatas.push_back(DirectionalLightRenderDatas(directional));
 }
 
-void Renderer::renderReflection(ReflectionCamera& camera, const ReflectivePlane& reflectivePlane, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
+void Renderer::renderReflection(ReflectionCamera& camera, RenderTarget& renderTarget, const ReflectivePlane& reflectivePlane, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, DebugDrawRenderer* debugDrawer)
 {
-	glClearColor(0, 0, 0, 0);
+	glEnable(GL_CLIP_DISTANCE0);
 
-	// Cull lights
-	lightCullingPass(camera, pointLights, directionalLights, spotLights, debugDrawer);
+	m_targetViewportSize = renderTarget.getSize();
+	m_texClipSize = m_targetViewportSize / m_intermediateViewportSize;
 
-	// Render dynamic shadows
-	shadowPass(camera, debugDrawer);
-
-	// Render scene
-	renderLightedScene(camera, debugDrawer);
-
-	// No post process for now for reflective camera
-	camera.renderFrame(m_renderDatas.lightPassHDRColor, reflectivePlane);
-}
-
-void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, bool useGlobalPostProcess, DebugDrawRenderer* debugDrawer)
-{
 	glClearColor(0, 0, 0, 0);
 
 	// Make sure we clear the stencil buffer
@@ -284,10 +272,86 @@ void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights,
 	glStencilMask(0x00);
 	m_lightPassBuffer.unbind();
 
+	////////////////////////////////////////////////////////////////////////
+	///////// BEGIN : Update render datas
+
 	// Clear previous light datas
 	m_renderDatas.directionalLightRenderDatas.clear();
 	m_renderDatas.pointLightRenderDatas.clear();
 	m_renderDatas.spotLightRenderDatas.clear();
+
+	const glm::vec3& cameraPosition = camera.getCameraPosition();
+	const glm::vec3& cameraForward = camera.getCameraForward();
+	const glm::mat4& projection = camera.getProjectionMatrix();
+	const glm::mat4& view = camera.getViewMatrix();
+
+	m_renderDatas.Projection = &projection;
+	m_renderDatas.View = &view;
+	m_renderDatas.VP = projection * view;
+	m_renderDatas.screenToView = glm::transpose(glm::inverse(projection));
+	m_renderDatas.currentCameraID = camera.getCameraID();
+
+	m_renderDatas.clipPlane = reflectivePlane.getClipPlane();
+
+	///////// END : Update matrices
+	////////////////////////////////////////////////////////////////////////
+
+	// Cull lights
+	lightCullingPass(camera, pointLights, directionalLights, spotLights, debugDrawer);
+
+	// Render dynamic shadows
+	shadowPass(camera, debugDrawer);
+
+	// Render scene
+	renderLightedScene(camera, debugDrawer);
+
+	glDisable(GL_CLIP_DISTANCE0);
+
+	// No post process for now for reflective camera
+	camera.renderFrameOnTarget(m_renderDatas.lightPassHDRColor, reflectivePlane);
+
+	debugDrawer->drawOutputIfNeeded("output_reflection", m_renderDatas.lightPassHDRColor.glId);
+	debugDrawer->drawOutputIfNeeded("output_reflectionInCamera", camera.getFinalFrame());
+}
+
+void Renderer::render(BaseCamera& camera, RenderTarget& renderTarget, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, bool useGlobalPostProcess, DebugDrawRenderer* debugDrawer)
+{
+	m_targetViewportSize = renderTarget.getSize();
+	m_texClipSize = m_targetViewportSize / m_intermediateViewportSize;
+
+	glClearColor(0, 0, 0, 0);
+
+	// Make sure we clear the stencil buffer
+	m_lightPassBuffer.bind();
+	glStencilMask(0xFF);
+	glClearStencil(1);
+	glClear(GL_STENCIL_BUFFER_BIT);
+	glStencilMask(0x00);
+	m_lightPassBuffer.unbind();
+
+	////////////////////////////////////////////////////////////////////////
+	///////// BEGIN : Update render datas
+
+	// Clear previous light datas
+	m_renderDatas.directionalLightRenderDatas.clear();
+	m_renderDatas.pointLightRenderDatas.clear();
+	m_renderDatas.spotLightRenderDatas.clear();
+
+	const glm::vec3& cameraPosition = camera.getCameraPosition();
+	const glm::vec3& cameraForward = camera.getCameraForward();
+	const glm::mat4& projection = camera.getProjectionMatrix();
+	const glm::mat4& view = camera.getViewMatrix();
+
+	m_renderDatas.Projection = &projection;
+	m_renderDatas.View = &view;
+	m_renderDatas.VP = projection * view;
+	m_renderDatas.screenToView = glm::transpose(glm::inverse(projection));
+	m_renderDatas.currentCameraID = camera.getCameraID();
+
+	m_renderDatas.clipPlane = glm::vec4(0,0,0,0);
+
+	///////// END : Update matrices
+	////////////////////////////////////////////////////////////////////////
 
 	// Cull lights
 	lightCullingPass(camera, pointLights, directionalLights, spotLights, debugDrawer);
@@ -301,12 +365,13 @@ void Renderer::render(BaseCamera& camera, std::vector<PointLight*>& pointLights,
 	// Render post process and final render to camera
 	if (useGlobalPostProcess && camera.getPostProcessProxy().getOperationCount() > 0)
 	{
-		m_postProcessManager.render(camera, m_renderDatas, debugDrawer);
-		m_postProcessManager.renderResultOnCamera(camera);
+		m_postProcessManager.render(camera, m_texClipSize, m_renderDatas, debugDrawer);
+		//m_postProcessManager.renderResultOnCamera(camera);
+		camera.renderFrameOnTarget(m_postProcessManager.getFinalTexture(), renderTarget);
 	}
 	else
 	{
-		camera.renderFrame(m_renderDatas.lightPassHDRColor);
+		camera.renderFrameOnTarget(m_renderDatas.lightPassHDRColor, renderTarget);
 	}
 }
 
@@ -319,21 +384,8 @@ void Renderer::renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* d
 	///////// END : Get batches
 	////////////////////////////////////////////////////////////////////////
 
-	////////////////////////////////////////////////////////////////////////
-	///////// BEGIN : Update render datas
-	const int width = m_viewportRenderSize.x;
-	const int height = m_viewportRenderSize.y;
-	const glm::vec3& cameraPosition = camera.getCameraPosition();
-	const glm::vec3& cameraForward = camera.getCameraForward();
-	const glm::mat4& projection = camera.getProjectionMatrix();
-	const glm::mat4& view = camera.getViewMatrix();
-
-	m_renderDatas.Projection = &projection;
-	m_renderDatas.View = &view;
-	m_renderDatas.VP = projection * view;
-	m_renderDatas.screenToView = glm::transpose(glm::inverse(projection));
-	///////// END : Update matrices
-	////////////////////////////////////////////////////////////////////////
+	const float width = m_targetViewportSize.x; //m_intermediateViewportSize.x;
+	const float height = m_targetViewportSize.y; //m_intermediateViewportSize.y;
 
 	// Viewport 
 	glViewport(0, 0, width, height);
@@ -344,7 +396,7 @@ void Renderer::renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* d
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN : Deferred
-	deferredPipeline(opaqueRenderBatches, camera, projection, view, cameraPosition, cameraForward, debugDrawer);
+	deferredPipeline(opaqueRenderBatches, camera, debugDrawer);
 	///////// END : Deferred
 	////////////////////////////////////////////////////////////////////////
 
@@ -365,7 +417,7 @@ void Renderer::renderLightedScene(const BaseCamera& camera, DebugDrawRenderer* d
 
 	////////////////////////////////////////////////////////////////////////
 	///////// BEGIN :  Forward 
-	forwardPipeline(transparentRenderBatches, width, height, projection, view);
+	forwardPipeline(transparentRenderBatches, camera);
 	///////// END :  Forward
 	////////////////////////////////////////////////////////////////////////
 	
@@ -390,14 +442,14 @@ void Renderer::shadowPass(const BaseCamera& camera, DebugDrawRenderer* debugDraw
 	lightManager->generateShadowMaps(camera, m_renderDatas, debugDrawer);
 }
 
-void Renderer::gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const glm::mat4& projection, const glm::mat4& view)
+void Renderer::gPass(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera)
 {
 	glEnable(GL_DEPTH_TEST);
 
 	// Render batches (meshes and flags for now)
 	for (auto& renderBatch : opaqueRenderBatches)
 	{
-		renderBatch.second->render(projection, view, m_renderDatas);
+		renderBatch.second->render(camera.getProjectionMatrix(), camera.getViewMatrix(), m_renderDatas);
 	}
 	
 	// TODO RENDERING
@@ -449,11 +501,11 @@ void Renderer::pushSpotLightUniforms(SpotLightRenderDatas& spotLightRenderDatas,
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, shadowMapTextureId);
 		m_spotLightMaterial->setUniformShadowTexture(4);
-		m_pointLightMaterial->setUniformShadowFactor(1.f);
+		m_spotLightMaterial->setUniformShadowFactor(1.f);
 	}
 	else
 	{
-		m_pointLightMaterial->setUniformShadowFactor(0.f);
+		m_spotLightMaterial->setUniformShadowFactor(0.f);
 	}
 	//resize viewport
 	//resizeBlitQuad(viewport);
@@ -481,11 +533,11 @@ void Renderer::pushDirectionalLightUniforms(DirectionalLightRenderDatas& directi
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, shadowMapTextureId);
 		m_directionalLightMaterial->setUniformShadowTexture(4);
-		m_pointLightMaterial->setUniformShadowFactor(1.f);
+		m_directionalLightMaterial->setUniformShadowFactor(1.f);
 	}
 	else
 	{
-		m_pointLightMaterial->setUniformShadowFactor(0.f);
+		m_directionalLightMaterial->setUniformShadowFactor(0.f);
 	}
 
 	const glm::vec3 directionalLightViewPosition = glm::vec3(view * glm::vec4(currentLight->position, 1.0));
@@ -526,6 +578,7 @@ void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& came
 	/////////////////////////////////////////////////////////////////////////
 	/////// BEGIN : Point light
 	m_pointLightMaterial->use();
+	m_pointLightMaterial->setUniformResize(m_texClipSize);
 
 	// send screen to world matrix : 
 	m_pointLightMaterial->setUniformScreenToView(m_renderDatas.screenToView);
@@ -563,6 +616,7 @@ void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& came
 	/////////////////////////////////////////////////////////////////////////
 	/////// BEGIN : Spot light
 	m_spotLightMaterial->use();
+	m_spotLightMaterial->setUniformResize(m_texClipSize);
 
 	// send screen to world matrix : 
 	m_spotLightMaterial->setUniformScreenToView(m_renderDatas.screenToView);
@@ -606,6 +660,7 @@ void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& came
 
 	//directionals : 
 	m_directionalLightMaterial->use();
+	m_directionalLightMaterial->setUniformResize(m_texClipSize);
 
 	// send screen to world matrix : 
 	m_directionalLightMaterial->setUniformScreenToView(m_renderDatas.screenToView);
@@ -645,13 +700,13 @@ void Renderer::lightPass( const glm::vec3& cameraPosition, const glm::vec3& came
 	CHECK_GL_ERROR("error in light pass");
 }
 
-void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, const glm::mat4& projection, const glm::mat4& view, const glm::vec3& cameraPosition, const glm::vec3& cameraForward, DebugDrawRenderer* debugDrawer)
+void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& opaqueRenderBatches, const BaseCamera& camera, DebugDrawRenderer* debugDrawer)
 {
 	////// begin G pass 
 	gBufferFBO.bind();
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	gPass(opaqueRenderBatches, projection, view);
+	gPass(opaqueRenderBatches, camera);
 	gBufferFBO.unbind();
 	////// end G pass
 
@@ -660,7 +715,7 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_SSAOPassBuffer.unbind();
-	m_postProcessManager.renderSSAO(camera, m_SSAOPassBuffer, m_ssaoTexture, m_renderDatas, debugDrawer);
+	m_postProcessManager.renderSSAO(camera, m_texClipSize, m_SSAOPassBuffer, m_ssaoTexture, m_renderDatas, debugDrawer);
 	////// end SSAO pass
 
 	///// begin light pass
@@ -668,13 +723,13 @@ void Renderer::deferredPipeline(const std::map<GLuint, std::shared_ptr<IRenderBa
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	lightPass(cameraPosition, cameraForward, view);
+	lightPass(camera.getCameraPosition(), camera.getCameraForward(), camera.getViewMatrix());
 
 	m_lightPassBuffer.unbind();
 	///// end light pass
 }
 
-void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, int width, int height, const glm::mat4& projection, const glm::mat4& view)
+void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBatch>>& transparentRenderBatches, const BaseCamera& camera)
 {
 	m_lightPassBuffer.bind();
 
@@ -686,7 +741,7 @@ void Renderer::forwardPipeline(const std::map<GLuint, std::shared_ptr<IRenderBat
 	for (auto& renderBatch : transparentRenderBatches)
 	{
 		//renderBatch.second->renderForward(projection, view, m_renderDatas);
-		renderBatch.second->render(projection, view, m_renderDatas);
+		renderBatch.second->render(camera.getProjectionMatrix(), camera.getViewMatrix(), m_renderDatas);
 	}
 	
 	//glDepthMask(GL_TRUE);
@@ -719,8 +774,8 @@ void Renderer::transferDepthTo(const GlHelper::Framebuffer & to, const glm::vec2
 
 void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities)
 {
-	const int width = m_viewportRenderSize.x;
-	const int height = m_viewportRenderSize.y;
+	const int width = m_intermediateViewportSize.x;
+	const int height = m_intermediateViewportSize.y;
 
 	glm::mat4 projection = camera.getProjectionMatrix();//glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = camera.getViewMatrix();// glm::lookAt(camera.eye, camera.o, camera.up);
@@ -788,8 +843,8 @@ void Renderer::debugDrawColliders(const BaseCamera& camera, const std::vector<En
 
 void Renderer::debugDrawLights(const BaseCamera& camera, const std::vector<PointLight*>& pointLights, const std::vector<SpotLight*>& spotLights)
 {
-	int width = m_viewportRenderSize.x;
-	int height = m_viewportRenderSize.y;
+	int width = m_intermediateViewportSize.x;
+	int height = m_intermediateViewportSize.y;
 
 	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);
@@ -952,8 +1007,8 @@ void Renderer::updateCulling(const BaseCamera& camera, std::vector<PointLight*>&
 	//m_renderDatas.pointLightCount = 0;
 	//m_renderDatas.spotLightCount = 0;
 
-	int width = m_viewportRenderSize.x;
-	int height = m_viewportRenderSize.y;
+	int width = m_intermediateViewportSize.x;
+	int height = m_intermediateViewportSize.y;
 
 	glm::mat4 projection = camera.getProjectionMatrix(); //glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
 	glm::mat4 view = camera.getViewMatrix(); //glm::lookAt(camera.eye, camera.o, camera.up);

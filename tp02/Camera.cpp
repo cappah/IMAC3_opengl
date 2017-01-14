@@ -7,6 +7,7 @@
 #include "Factories.h"
 #include "Skybox.h"
 #include "ReflectivePlane.h"
+#include "GlHelper.h"
 
 BaseCamera::BaseCamera()
 	: m_position(0, 0, -1)
@@ -21,15 +22,15 @@ BaseCamera::BaseCamera()
 
 	// Setup mesh and material
 	m_quadMesh = getMeshFactory().getDefault("quad");
-	m_material = static_cast<MaterialBlit*>(getMaterialFactory().getDefault("blit"));
-	// Setup texture
-	GlHelper::makeFloatColorTexture(m_texture, 400, 400);
-	m_texture.initGL();
-	// Setup framebuffer
-	m_frameBuffer.bind();
-	m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);
-	m_frameBuffer.checkIntegrity();
-	m_frameBuffer.unbind();
+	m_material = static_cast<MaterialResizedBlit*>(getMaterialFactory().getDefault("resizedBlit"));
+	//// Setup texture
+	//GlHelper::makeFloatColorTexture(m_texture, 400, 400);
+	//m_texture.initGL();
+	//// Setup framebuffer
+	//m_frameBuffer.bind();
+	//m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);
+	//m_frameBuffer.checkIntegrity();
+	//m_frameBuffer.unbind();
 }
 
 void BaseCamera::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
@@ -42,6 +43,8 @@ void BaseCamera::computeCulling(const Octree<IRenderableComponent, AABB>& octree
 
 	for (auto& visibleComponent : visibleComponents)
 	{
+		visibleComponent->getAsComponent()->entity()->setVisibility(true);
+
 		const int drawableCount = visibleComponent->getDrawableCount();
 		for (int i = 0; i < drawableCount; i++)
 		{
@@ -93,27 +96,13 @@ const PostProcessProxy & BaseCamera::getPostProcessProxy() const
 	return m_postProcessProxy;
 }
 
-void BaseCamera::onViewportResized(const glm::vec2& newSize)
-{
-	m_frameBuffer.bind();
-	m_frameBuffer.detachTexture(GL_COLOR_ATTACHMENT0);
-
-	m_texture.freeGL();
-	GlHelper::makeFloatColorTexture(m_texture, newSize.x, newSize.y); //TMP
-	m_texture.initGL();
-
-	m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);
-	m_frameBuffer.checkIntegrity();
-	m_frameBuffer.unbind();
-
-	m_viewportSize = newSize;
-}
-
-void BaseCamera::renderFrame(const Texture& texture)
+void BaseCamera::renderFrameOnTarget(const Texture& texture, RenderTarget& renderTarget)
 {
 	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
-	m_frameBuffer.bind();
+	//m_frameBuffer.bind();
+	renderTarget.bindFramebuffer();
+	glViewport(0, 0, renderTarget.getSize().x, renderTarget.getSize().y);
 	//glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -124,22 +113,46 @@ void BaseCamera::renderFrame(const Texture& texture)
 	glBindTexture(GL_TEXTURE_2D, texture.glId);
 	m_material->use();
 	m_material->setUniformBlitTexture(0);
+	m_material->setUniformResize(renderTarget.getSize() / glm::vec2(texture.w, texture.h));
 	m_quadMesh->draw();
 
-	m_frameBuffer.unbind();
+	//m_frameBuffer.unbind();
+	renderTarget.unbindFramebuffer();
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 }
 
-const Texture * BaseCamera::getFinalFrame() const
+ID BaseCamera::getCameraID() const
 {
-	return &m_texture;
+	return ID();
 }
 
-const GlHelper::Framebuffer & BaseCamera::getFrameBuffer()
-{
-	return m_frameBuffer;
-}
+//
+//void BaseCamera::onViewportResized(const glm::vec2& newSize)
+//{
+//	m_frameBuffer.bind();
+//	m_frameBuffer.detachTexture(GL_COLOR_ATTACHMENT0);
+//
+//	m_texture.freeGL();
+//	GlHelper::makeFloatColorTexture(m_texture, newSize.x, newSize.y); //TMP
+//	m_texture.initGL();
+//
+//	m_frameBuffer.attachTexture(&m_texture, GL_COLOR_ATTACHMENT0);
+//	m_frameBuffer.checkIntegrity();
+//	m_frameBuffer.unbind();
+//
+//	m_viewportSize = newSize;
+//}
+//
+//const Texture * BaseCamera::getFinalFrame() const
+//{
+//	return &m_texture;
+//}
+//
+//const GlHelper::Framebuffer & BaseCamera::getFrameBuffer()
+//{
+//	return m_frameBuffer;
+//}
 
 BaseCamera::ClearMode BaseCamera::getClearMode() const
 {
@@ -162,11 +175,10 @@ void BaseCamera::renderSkybox() const
 	m_skybox->render(m_projectionMatrix, m_viewMatrix);
 }
 
-const glm::vec2 & BaseCamera::getViewportSize() const
-{
-	return m_viewportSize;
-}
-
+//const glm::vec2 & BaseCamera::getViewportSize() const
+//{
+//	return m_viewportSize;
+//}
 
 const glm::mat4& BaseCamera::getViewMatrix() const
 {
@@ -254,6 +266,11 @@ Camera::Camera()
 	
 {
 	m_projectionMatrix = glm::perspective(m_fovy, m_aspect, m_zNear, m_zFar);
+}
+
+ID Camera::getCameraID() const
+{
+	return getObjectID();
 }
 
 void Camera::applyTransform(const glm::vec3 & translation, const glm::vec3 & scale, const glm::quat & rotation)
@@ -547,15 +564,19 @@ CameraEditor::CameraEditor()
 	, m_hideCursorWhenMovingCamera(true)
 	, m_cameraBaseSpeed(1.f)
 	, m_cameraBoostSpeed(1.f)
-	, m_depthBuffer(400, 400, GL_DEPTH_COMPONENT24)
+	//, m_depthBuffer(400, 400, GL_DEPTH_COMPONENT24)
 {
 	updateProjection();
 	updateTransform();
 
-	m_frameBuffer.bind();
-	m_frameBuffer.attachRenderBuffer(&m_depthBuffer, GL_DEPTH_ATTACHMENT);
-	m_frameBuffer.checkIntegrity();
-	m_frameBuffer.unbind();
+	//m_frameBuffer.bind();
+	//m_frameBuffer.attachRenderBuffer(&m_depthBuffer, GL_DEPTH_ATTACHMENT);
+	//m_frameBuffer.checkIntegrity();
+	//m_frameBuffer.unbind();
+}
+ID CameraEditor::getCameraID() const
+{
+	return getObjectID();
 }
 //
 //void CameraEditor::computeCulling(const Octree<IRenderableComponent, AABB>& octree)
@@ -600,19 +621,19 @@ CameraEditor::CameraEditor()
 //	return m_postProcessProxy;
 //}
 
-void CameraEditor::onViewportResized(const glm::vec2 & newSize)
-{
-	BaseCamera::onViewportResized(newSize);
-
-	m_frameBuffer.bind();
-	m_frameBuffer.detachRenderBuffer(GL_DEPTH_ATTACHMENT);
-	m_depthBuffer.resize(newSize.x, newSize.y);
-	m_frameBuffer.attachRenderBuffer(&m_depthBuffer, GL_DEPTH_ATTACHMENT);
-	m_frameBuffer.checkIntegrity();
-	m_frameBuffer.unbind();
-
-	m_viewportSize = newSize;
-}
+//void CameraEditor::onViewportResized(const glm::vec2 & newSize)
+//{
+//	BaseCamera::onViewportResized(newSize);
+//
+//	m_frameBuffer.bind();
+//	m_frameBuffer.detachRenderBuffer(GL_DEPTH_ATTACHMENT);
+//	m_depthBuffer.resize(newSize.x, newSize.y);
+//	m_frameBuffer.attachRenderBuffer(&m_depthBuffer, GL_DEPTH_ATTACHMENT);
+//	m_frameBuffer.checkIntegrity();
+//	m_frameBuffer.unbind();
+//
+//	m_viewportSize = newSize;
+//}
 
 void CameraEditor::drawUI()
 {
@@ -851,28 +872,30 @@ void CameraEditor::setCameraMode(CameraMode cameraMode)
 
 ReflectionCamera::ReflectionCamera()
 	: Object()
-	, m_stencilBuffer(400, 400, GL_STENCIL_INDEX8)
+	//, m_stencilBuffer(400, 400, GL_STENCIL_INDEX8)
 {
 	m_materialSimple3Ddraw = static_cast<MaterialSimple3DDraw*>(getMaterialFactory().getDefault("simple3DDraw"));
 
-	m_frameBuffer.bind();
-	m_frameBuffer.attachRenderBuffer(&m_stencilBuffer, GL_STENCIL_ATTACHMENT);
-	m_frameBuffer.checkIntegrity();
-	m_frameBuffer.unbind();
+	//m_frameBuffer.bind();
+	//m_frameBuffer.attachRenderBuffer(&m_stencilBuffer, GL_STENCIL_ATTACHMENT);
+	//m_frameBuffer.checkIntegrity();
+	//m_frameBuffer.unbind();
 }
 
-void ReflectionCamera::setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera)
+void ReflectionCamera::setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera, RenderTarget& finalRenderTarget)
 {
-	if (camera.getViewportSize() != m_viewportSize)
+	if (!glm::all(glm::lessThanEqual(glm::abs(m_renderTarget.getSize() - finalRenderTarget.getSize()), glm::epsilon<glm::vec2>()))) /*camera.getViewportSize() != m_viewportSize*/ 
 	{
-		m_viewportSize = camera.getViewportSize();
+		m_renderTarget.setSize(finalRenderTarget.getSize());
 
-		m_frameBuffer.bind();
-		m_frameBuffer.detachRenderBuffer(GL_STENCIL_ATTACHMENT);
-		m_stencilBuffer.resize(m_viewportSize.x, m_viewportSize.y);
-		m_frameBuffer.attachRenderBuffer(&m_stencilBuffer, GL_STENCIL_ATTACHMENT);
-		m_frameBuffer.checkIntegrity();
-		m_frameBuffer.unbind();
+		//m_viewportSize = camera.getViewportSize();
+
+		//m_frameBuffer.bind();
+		//m_frameBuffer.detachRenderBuffer(GL_STENCIL_ATTACHMENT);
+		//m_stencilBuffer.resize(m_viewportSize.x, m_viewportSize.y);
+		//m_frameBuffer.attachRenderBuffer(&m_stencilBuffer, GL_STENCIL_ATTACHMENT);
+		//m_frameBuffer.checkIntegrity();
+		//m_frameBuffer.unbind();
 	}
 
 	m_aspect = camera.getAspect();
@@ -885,15 +908,20 @@ void ReflectionCamera::setupFromCamera(const glm::vec3& planePosition, const glm
 
 	m_projectionMatrix = camera.getProjectionMatrix();
 
-	m_position = - glm::dot((camera.getCameraPosition() - planePosition), planeNormal) * planeNormal;
-	m_forward = glm::reflect(camera.getCameraForward(), planeNormal);
-	const glm::vec3 center = m_position + m_forward;
+	m_position = camera.getCameraPosition();// -2.f * glm::dot((camera.getCameraPosition() - planePosition), planeNormal) * planeNormal;
 
-	glm::vec3 up = glm::dot(m_forward, glm::vec3(0, 1, 0)) > 0.9f ? glm::vec3(0, -1, 0) : glm::vec3(0, 1, 0);
+	m_forward = camera.getCameraForward();
+	glm::vec3 up = glm::dot(m_forward, glm::vec3(0, 1, 0)) > glm::pi<float>() * 0.9f ? glm::vec3(0, -1, 0) : glm::vec3(0, 1, 0);
 	glm::vec3 right = glm::normalize(glm::cross(m_forward, up));
 	up = glm::normalize(glm::cross(right, m_forward));
 
-	m_viewMatrix = glm::lookAt(m_position, center, up);
+	//m_forward = glm::reflect(camera.getCameraForward(), planeNormal);
+	//up = glm::reflect(up, planeNormal);
+
+	const glm::vec3 center = m_position + m_forward;
+
+	//m_viewMatrix = glm::lookAt(m_position, center, up);
+	m_viewMatrix = GlHelper::reflectedLookAt(m_position, m_forward, up, planePosition, planeNormal);
 }
 
 void ReflectionCamera::updateScreenSize(float screenWidth, float screenHeight)
@@ -921,9 +949,11 @@ void ReflectionCamera::updateProjection()
 	assert(false && "use setupFromCamera() instead.");
 }
 
-void ReflectionCamera::renderFrame(const Texture & _texture, const ReflectivePlane & _reflectivePlane)
+void ReflectionCamera::renderFrameOnTarget(const Texture & _texture, const ReflectivePlane & _reflectivePlane)
 {
-	m_frameBuffer.bind();
+	//m_frameBuffer.bind();
+	m_renderTarget.bindFramebuffer();
+	glViewport(0, 0, m_renderTarget.getSize().x, m_renderTarget.getSize().y);
 
 	glStencilMask(0xFF);
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -934,6 +964,7 @@ void ReflectionCamera::renderFrame(const Texture & _texture, const ReflectivePla
 
 	m_materialSimple3Ddraw->use();
 	m_materialSimple3Ddraw->glUniform_MVP(getProjectionMatrix() * getViewMatrix() * _reflectivePlane.getModelMatrix());
+	//m_material->setUniformResize(renderTarget.getSize() / glm::vec2(texture.w, texture.h)); ???
 	_reflectivePlane.draw();
 
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -954,11 +985,18 @@ void ReflectionCamera::renderFrame(const Texture & _texture, const ReflectivePla
 	glBindTexture(GL_TEXTURE_2D, _texture.glId);
 	m_material->use();
 	m_material->setUniformBlitTexture(0);
+	m_material->setUniformResize(m_renderTarget.getSize() / glm::vec2(_texture.w, _texture.h));
 	m_quadMesh->draw();
 
-	m_frameBuffer.unbind();
+	//m_frameBuffer.unbind();
+	m_renderTarget.unbindFramebuffer();
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
+}
+
+GLuint ReflectionCamera::getFinalFrame() const
+{
+	return m_renderTarget.getFinalFrame();
 }
 
 //////////////////////////////////

@@ -905,6 +905,11 @@ namespace Physic {
 		return 1;
 	}
 
+	Component * ParticleEmitter::getAsComponent()
+	{
+		return this;
+	}
+
 	void ParticleEmitter::onAfterComponentAddedToScene(Scene & scene)
 	{
 		//Add this components to renderables :

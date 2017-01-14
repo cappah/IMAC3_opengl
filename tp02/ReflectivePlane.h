@@ -13,6 +13,7 @@
 struct ID;
 struct ReflectionCamera;
 struct BaseCamera;
+class RenderTarget;
 
 class ReflectivePlane : public Component, public IRenderableComponent, public IBatchableWith<MaterialReflection>
 {
@@ -47,12 +48,13 @@ public:
 	void setAABB(const AABB& aabb);
 
 	void clearCameras();
-	void addAndSetupCamera(const ID& id, const BaseCamera & camera);
+	void addAndSetupCamera(const ID& id, const BaseCamera & camera, RenderTarget& renderTarget);
 	std::unordered_map<ID, std::shared_ptr<ReflectionCamera>>::iterator getCameraIteratorBegin();
 	std::unordered_map<ID, std::shared_ptr<ReflectionCamera>>::iterator getCameraIteratorEnd();
 	void setActiveCamera(ID cameraID);
 	ReflectionCamera& getCamera(ID cameraID) const;
 	ReflectionCamera& getActiveCamera() const;
+	glm::vec4 getClipPlane() const;
 
 	// Herite from Component
 	virtual void drawInInspector(Scene& scene) override;
@@ -72,6 +74,7 @@ public:
 	virtual const IDrawable& getDrawable(int drawableIndex) const override;
 	virtual const Material& getDrawableMaterial(int drawableIndex) const override;
 	virtual const int getDrawableCount() const override;
+	virtual Component* getAsComponent() override;
 
 	// Herited from IDrawable
 	const AABB & getVisualBoundingBox() const override;

@@ -177,6 +177,11 @@ const int Billboard::getDrawableCount() const
 	return 1;
 }
 
+Component * Billboard::getAsComponent()
+{
+	return this;
+}
+
 const AABB & Billboard::getVisualBoundingBox() const
 {
 	assert(false && "To implement...");

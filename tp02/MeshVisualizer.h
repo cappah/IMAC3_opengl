@@ -7,14 +7,15 @@
 class Material;
 class SubMesh;
 class Renderer;
+class RenderTarget;
 
 class MeshVisualizer
 {
 
 private:
 
-	// For Mesh Vizualizer
-	glm::vec2 m_viewportSize;
+	RenderTarget m_renderTarget;
+	//glm::vec2 m_viewportSize;
 	SimpleCamera m_camera;
 	std::shared_ptr<SubMesh> m_visualizedMesh;
 	//Resource_ptr<Mesh> m_visualizedMesh;

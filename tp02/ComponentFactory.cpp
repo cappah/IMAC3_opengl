@@ -3,6 +3,7 @@
 #include "ComponentFactory.h"
 //forwards : 
 #include "Factories.h"
+#include "ReflectivePlane.h"
 
 ComponentFactory::ComponentFactory()
 {
@@ -24,6 +25,7 @@ ComponentFactory::ComponentFactory()
 	add(Component::ComponentType::RIGIDBODY, new Rigidbody());
 	add(Component::ComponentType::ANIMATOR, new Animator());
 	add(Component::ComponentType::CHARACTER_CONTROLLER, new CharacterController());
+	add(Component::ComponentType::REFLECTIVE_PLANE, new ReflectivePlane());
 
 	//assert(m_components.size() == Component::ComponentType::INTERNAL_COMPONENT_COUNT);
 }

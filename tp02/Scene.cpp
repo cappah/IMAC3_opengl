@@ -168,7 +168,8 @@ void Scene::addToRenderables(IRenderableComponent* renderable)
 
 void Scene::removeFromRenderables(IRenderableComponent* renderable)
 {
-	m_renderables.remove(renderable, renderable->getDrawable(0).getVisualBoundingBox());
+	bool successfullyRemoved = m_renderables.remove(renderable, renderable->getDrawable(0).getVisualBoundingBox());
+	assert(successfullyRemoved);
 }
 
 void Scene::clearReflectivePlanes()
@@ -179,22 +180,22 @@ void Scene::clearReflectivePlanes()
 	}
 }
 
-void Scene::setupReflectivePlanes()
+void Scene::setupReflectivePlanes(RenderTarget& renderTarget)
 {
 	for (auto& camera : m_cameras)
 	{
 		for (auto& reflectivePlane : m_reflectivePlanes)
 		{
-			reflectivePlane->addAndSetupCamera(camera->getObjectID(), *camera);
+			reflectivePlane->addAndSetupCamera(camera->getObjectID(), *camera, renderTarget);
 		}
 	}
 }
 
-void Scene::setupReflectivePlanes(const ID& id, const BaseCamera& camera)
+void Scene::setupReflectivePlanes(const ID& id, const BaseCamera& camera, RenderTarget& renderTarget)
 {
 	for (auto& reflectivePlane : m_reflectivePlanes)
 	{
-		reflectivePlane->addAndSetupCamera(id, camera);
+		reflectivePlane->addAndSetupCamera(id, camera, renderTarget);
 	}
 }
 
@@ -205,6 +206,17 @@ void Scene::computeCulling()
 		if(camera->getIsActive())
 			camera->computeCulling(m_renderables);
 	}
+
+	for (auto& reflectivePlane : m_reflectivePlanes)
+	{
+		if (reflectivePlane->entity()->getVisibility())
+		{
+			for (auto& it = reflectivePlane->getCameraIteratorBegin(); it != reflectivePlane->getCameraIteratorEnd(); it++)
+			{
+				it->second->computeCulling(m_renderables);
+			}
+		}
+	}
 }
 
 void Scene::computeCullingForSingleCamera(BaseCamera& camera)
@@ -212,41 +224,42 @@ void Scene::computeCullingForSingleCamera(BaseCamera& camera)
 	camera.computeCulling(m_renderables);
 }
 
-void Scene::render()
+void Scene::render(RenderTarget& renderTarget)
 {
 	// Render reflexion on reflective planes : 
 	for (auto& reflective : m_reflectivePlanes)
 	{
 		for (auto& it = reflective->getCameraIteratorBegin(); it != reflective->getCameraIteratorEnd(); it++)
 		{
-			m_renderer->renderReflection(*it->second, *reflective, m_pointLights, m_directionalLights, m_spotLights, nullptr);
+			m_renderer->renderReflection(*it->second, renderTarget, *reflective, m_pointLights, m_directionalLights, m_spotLights, nullptr);
 		}
 	}
 
 	// Render scene through cameras
 	for (auto& camera : m_cameras)
 	{
-		m_renderer->render(*camera, m_pointLights, m_directionalLights, m_spotLights, true);
+		m_renderer->render(*camera, renderTarget, m_pointLights, m_directionalLights, m_spotLights, true);
 	}
 }
 
-void Scene::renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer)
+void Scene::renderForEditor(CameraEditor& camera, RenderTarget& renderTarget, DebugDrawRenderer& debugDrawer)
 {
 	// Render reflexion on reflective planes :
 	for (auto& reflective : m_reflectivePlanes)
 	{
 		for (auto& it = reflective->getCameraIteratorBegin(); it != reflective->getCameraIteratorEnd(); it++)
 		{
-			m_renderer->renderReflection(*it->second, *reflective, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer);
+			m_renderer->renderReflection(*it->second, renderTarget, *reflective, m_pointLights, m_directionalLights, m_spotLights, &debugDrawer);
 		}
 	}
 
 	// Render scene :
-	m_renderer->render(camera, m_pointLights, m_directionalLights, m_spotLights, true, &debugDrawer); 
-	m_renderer->transferDepthTo(camera.getFrameBuffer(), m_renderer->getViewportRenderSize());
+	m_renderer->render(camera, renderTarget, m_pointLights, m_directionalLights, m_spotLights, true, &debugDrawer);
+	m_renderer->transferDepthTo(renderTarget.getFrameBuffer(), renderTarget.getSize() /*camera.getFrameBuffer(), camera.getViewportSize()*/);// m_renderer->getIntermediateViewportSize());
 
 	// Draw debug render :
-	camera.getFrameBuffer().bind();
+	//camera.getFrameBuffer().bind();
+	renderTarget.bindFramebuffer();
 
 	renderIcones(camera);
 
@@ -269,7 +282,8 @@ void Scene::renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer
 	if (m_isDebugPhysicVisible)
 		m_physicManager->debugDraw(camera.getProjectionMatrix(), camera.getViewMatrix());
 
-	camera.getFrameBuffer().unbind();
+	//camera.getFrameBuffer().unbind();
+	renderTarget.unbindFramebuffer();
 }
 
 void Scene::renderIcones(CameraEditor& camera)
@@ -609,13 +623,13 @@ BaseCamera* Scene::getMainCamera() const
 	return m_cameras.size() > 0 ? m_cameras[0] : nullptr;
 }
 
-void Scene::onViewportResized(const glm::vec2 & newSize)
-{
-	for (auto& camera : m_cameras)
-	{
-		camera->onViewportResized(newSize);
-	}
-}
+//void Scene::onViewportResized(const glm::vec2 & newSize)
+//{
+//	for (auto& camera : m_cameras)
+//	{
+//		camera->onViewportResized(newSize);
+//	}
+//}
 
 void Scene::drawUI()
 {

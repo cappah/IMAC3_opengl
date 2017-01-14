@@ -238,6 +238,7 @@
     <ClCompile Include="MeshVisualizer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="RenderTarget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -525,6 +526,12 @@
     </ClInclude>
     <ClInclude Include="MeshVisualizer.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTarget.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="IComponent.h">
+      <Filter>Interfaces</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

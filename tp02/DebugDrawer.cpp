@@ -4,6 +4,7 @@
 //forwards : 
 #include "Factories.h"
 #include "Camera.h"
+#include "RenderTarget.h"
 
 DebugDrawer::DebugDrawer() : m_maxPoint(10000), m_material(nullptr)
 {
@@ -102,11 +103,11 @@ void DebugDrawer::drawLine(const glm::vec3& from, const glm::vec3& to, const glm
 	DebugDrawer::get().drawLine_internal(from, to, color);
 }
 
-void DebugDrawer::render(BaseCamera& camera)
+void DebugDrawer::render(BaseCamera& camera, RenderTarget& renderTarget)
 {
-	camera.getFrameBuffer().bind();
+	renderTarget.bindFramebuffer();
 	DebugDrawer::get().render_internal(camera.getProjectionMatrix(), camera.getViewMatrix());
-	camera.getFrameBuffer().bind();
+	renderTarget.unbindFramebuffer();
 	CHECK_GL_ERROR("Render error into debugDrawer::render().");
 }
 

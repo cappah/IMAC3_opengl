@@ -45,6 +45,7 @@ void MaterialAggregationMesh::initParameters(GLuint programID)
 	uniform_ModelMatrix = MaterialHelper::getUniform(programID, "ModelMatrix");
 	uniform_ViewMatrix = MaterialHelper::getUniform(programID, "ViewMatrix");
 	uniform_ProjectionMatrix = MaterialHelper::getUniform(programID, "ProjectionMatrix");
+	uniform_ClipPlane = MaterialHelper::getUniform(programID, "ClipPlane");
 
 	CHECK_GL_ERROR("error in material initialization.");
 }
@@ -54,6 +55,7 @@ void MaterialAggregationMesh::pushParametersToGPU(const IDrawable& drawable, con
 	setUniformModelMatrix(drawable.getModelMatrix());
 	setUniformViewMatrix(*renderDatas.View);
 	setUniformProjectionMatrix(*renderDatas.Projection);
+	setUniformClipPlane(renderDatas.clipPlane);
 }
 
 void MaterialAggregationMesh::setUniformModelMatrix(const glm::mat4& modelMatrix) const
@@ -71,6 +73,11 @@ void MaterialAggregationMesh::setUniformProjectionMatrix(const glm::mat4& projec
 	GlHelper::pushParameterToGPU(uniform_ProjectionMatrix, projectionMatrix);
 }
 
+void MaterialAggregationMesh::setUniformClipPlane(const glm::vec4& clipPlane) const
+{
+	GlHelper::pushParameterToGPU(uniform_ClipPlane, clipPlane);
+}
+
 ///////////////////////////////////
 
 void MaterialAggregationBillboard::initParameters(GLuint programID)
@@ -82,6 +89,7 @@ void MaterialAggregationBillboard::initParameters(GLuint programID)
 	uniform_CameraRight = MaterialHelper::getUniform(programID, "CameraRight");
 	uniform_CameraUp = MaterialHelper::getUniform(programID, "CameraUp");
 	uniform_Color = MaterialHelper::getUniform(programID, "Color");
+	uniform_ClipPlane = MaterialHelper::getUniform(programID, "ClipPlane");
 
 	CHECK_GL_ERROR("error in material initialization.");
 }
@@ -106,6 +114,7 @@ void MaterialAggregationBillboard::pushParametersToGPU(const IDrawable& drawable
 	setUniformTexture(0);
 	setUniformTranslation(drawableAsBillboard->getTranslation());
 	setUniformColor(drawableAsBillboard->getColor());
+	setUniformClipPlane(renderDatas.clipPlane);
 }
 
 void MaterialAggregationBillboard::setUniformMVP(const glm::mat4& VP) const
@@ -143,6 +152,11 @@ void MaterialAggregationBillboard::setUniformColor(const glm::vec4& color) const
 	GlHelper::pushParameterToGPU(uniform_MVP, color);
 }
 
+void MaterialAggregationBillboard::setUniformClipPlane(const glm::vec4 & clipPlane) const
+{
+	GlHelper::pushParameterToGPU(uniform_ClipPlane, clipPlane);
+}
+
 ////////////////////////////////////
 
 void MaterialAggregationParticles::initParameters(GLuint programID)
@@ -151,6 +165,7 @@ void MaterialAggregationParticles::initParameters(GLuint programID)
 	m_uniformTexture = MaterialHelper::getUniform(programID, "Texture");
 	m_uniformCameraRight = MaterialHelper::getUniform(programID, "CameraRight");
 	m_uniformCameraUp = MaterialHelper::getUniform(programID, "CameraUp");
+	m_uniformClipPlane = MaterialHelper::getUniform(programID, "ClipPlane");
 
 	CHECK_GL_ERROR("error in material initialization.");
 }
@@ -171,6 +186,7 @@ void MaterialAggregationParticles::pushParametersToGPU(const IDrawable& drawable
 	setUniformCameraRight(CameraRight);
 	setUniformCameraUp(CameraUp);
 	setUniformTexture(0);
+	setUniformClipPlane(renderDatas.clipPlane);
 }
 
 void MaterialAggregationParticles::glUniform_VP(const glm::mat4& VP) const
@@ -193,6 +209,11 @@ void MaterialAggregationParticles::setUniformCameraUp(const glm::vec3& camUp) co
 	GlHelper::pushParameterToGPU(m_uniformCameraUp, camUp);
 }
 
+void MaterialAggregationParticles::setUniformClipPlane(const glm::vec4 & clipPlane) const
+{
+	GlHelper::pushParameterToGPU(m_uniformClipPlane, clipPlane);
+}
+
 ////////////////////////////////////
 
 void MaterialAggregationReflectivePlane::initParameters(GLuint programID)
@@ -207,7 +228,13 @@ void MaterialAggregationReflectivePlane::initParameters(GLuint programID)
 
 void MaterialAggregationReflectivePlane::pushParametersToGPU(const IDrawable& drawable, const RenderDatas& renderDatas, int& boundTextureCount) const
 {
+	if (!renderDatas.currentCameraID.isValid())
+		return;
+
 	const ReflectivePlane* drawableAsReflectivePlane = drawable.getAsReflectivePlaneIfPossible();
+
+	if (drawableAsReflectivePlane == nullptr)
+		return;
 
 	setUniformModelMatrix(drawableAsReflectivePlane->getModelMatrix());
 	setUniformProjectionMatrix(*renderDatas.Projection);
@@ -215,7 +242,7 @@ void MaterialAggregationReflectivePlane::pushParametersToGPU(const IDrawable& dr
 
 	// Reflective texture
 	glActiveTexture(GL_TEXTURE0 + boundTextureCount);
-	glBindTexture(GL_TEXTURE_2D, drawableAsReflectivePlane->getActiveCamera().getFinalFrame()->glId);
+	glBindTexture(GL_TEXTURE_2D, drawableAsReflectivePlane->getCamera(renderDatas.currentCameraID).getFinalFrame());
 	setUniformReflectionTexture(boundTextureCount);
 	boundTextureCount++;
 }

@@ -16,6 +16,8 @@ uniform mat4 ProjectionMatrix;
 uniform mat4 ViewMatrix;
 uniform vec2 TextureRepetition;
 
+uniform vec4 ClipPlane;
+
 layout(location = POSITION) in vec3 Position;
 layout(location = NORMAL) in vec3 Normal;
 layout(location = TEXCOORD) in vec2 TexCoord;
@@ -30,7 +32,7 @@ out block
 } Out;
 
 void main()
-{
+{    
         mat4 boneTransform = mat4(1);
         computeBoneTransform(boneTransform);
 
@@ -39,7 +41,10 @@ void main()
         mat4 normalMatrix = transpose(inverse(ViewMatrix * ModelMatrix));
 
         Out.TexCoord = TexCoord * TextureRepetition;
-        Out.Position = vec3(ViewMatrix * boneTransform * vec4(pos, 1));
+        vec4 worldPos = boneTransform * vec4(pos, 1);
+        Out.Position = vec3(ViewMatrix * worldPos);
+
+        gl_ClipDistance[0] = dot(vec4(worldPos.xyz, 1.0), ClipPlane);
 
         //calculate TBN matrix :
         vec3 T = normalize( vec3(normalMatrix * boneTransform * vec4(Tangent, 0.0)) );

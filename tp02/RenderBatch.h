@@ -107,6 +107,7 @@ inline void RenderBatch<MaterialType>::render(const glm::mat4& projection, const
 		texCount = 0;
 	}
 }
+
 //
 //template<typename MaterialType>
 //inline void RenderBatch<MaterialType>::renderForward(const glm::mat4& projection, const glm::mat4& view, const RenderDatas& renderDatas) const

@@ -62,6 +62,7 @@ private:
 	GLuint uniform_ModelMatrix;
 	GLuint uniform_ViewMatrix;
 	GLuint uniform_ProjectionMatrix;
+	GLuint uniform_ClipPlane;
 
 public:
 	virtual void initParameters(GLuint programID);
@@ -71,6 +72,7 @@ private:
 	void setUniformModelMatrix(const glm::mat4& modelMatrix) const;
 	void setUniformViewMatrix(const glm::mat4& viewMatrix) const;
 	void setUniformProjectionMatrix(const glm::mat4& projectionMatrix) const;
+	void setUniformClipPlane(const glm::vec4& clipPlane) const;
 };
 
 
@@ -84,6 +86,7 @@ private:
 	GLuint uniform_CameraRight;
 	GLuint uniform_CameraUp;
 	GLuint uniform_Color;
+	GLuint uniform_ClipPlane;
 
 public:
 	virtual void initParameters(GLuint programID);
@@ -97,6 +100,7 @@ private:
 	void setUniformCameraRight(const glm::vec3& camRight) const;
 	void setUniformCameraUp(const glm::vec3& camUp) const;
 	void setUniformColor(const glm::vec4& color) const;
+	void setUniformClipPlane(const glm::vec4& clipPlane) const;
 };
 
 
@@ -107,6 +111,7 @@ private:
 	GLuint m_uniformTexture;
 	GLuint m_uniformCameraRight;
 	GLuint m_uniformCameraUp;
+	GLuint m_uniformClipPlane;
 
 public:
 	virtual void initParameters(GLuint programID);
@@ -117,6 +122,7 @@ private:
 	void setUniformTexture(int texId) const;
 	void setUniformCameraRight(const glm::vec3& camRight) const;
 	void setUniformCameraUp(const glm::vec3& camUp) const;
+	void setUniformClipPlane(const glm::vec4& clipPlane) const;
 };
 
 ///////////////////////////////////////////////////////////////

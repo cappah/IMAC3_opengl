@@ -72,8 +72,8 @@ struct OctreeNode
 	}
 
 	void add(ItemType* item, const spatialKeyType& spatialKey, int currentDepth, int maxDepth);
-	void remove(ItemType* item, const spatialKeyType& spatialKey, int currentDepth, int maxDepth);
-	void remove(ItemType* item, int currentDepth, int maxDepth);
+	bool remove(ItemType* item, const spatialKeyType& spatialKey, int currentDepth, int maxDepth);
+	bool remove(ItemType* item, int currentDepth, int maxDepth);
 	ItemType* find(const spatialKeyType& spatialKey, int currentDepth, int maxDepth) const;
 	void findAll(const spatialKeyType& spacialKey, int currentDepth, int maxDepth, std::vector<ItemType*>& results) const;
 	//find all neightbors, in a sphere of center : "center" and radius : "radius".
@@ -249,17 +249,25 @@ void OctreeNode<ItemType, spatialKeyType>::add(ItemType* item, const spatialKeyT
 }
 
 template<typename ItemType, typename spatialKeyType>
-void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, const spatialKeyType& spatialKey, int currentDepth, int maxDepth)
+bool OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, const spatialKeyType& spatialKey, int currentDepth, int maxDepth)
 {
 	//max depth reached, we try to remove the item to the current node : 
 	if (currentDepth >= maxDepth)
 	{
-		 std::vector<ItemType*>::iterator nextIt = elements.erase(std::remove(elements.begin(), elements.end(), item), elements.end());
-		 int eraseIdx = std::distance(elements.begin(), nextIt);
-		 if(eraseIdx < spatialKeys.size())
-			spatialKeys.erase(spatialKeys.begin() + eraseIdx);
+		std::vector<ItemType*>::iterator foundIt = std::find(elements.begin(), elements.end(), item);
+		if (foundIt != elements.end())
+		{
+			std::iter_swap(foundIt, elements.end() - 1);
+			elements.erase(elements.end() - 1, elements.end());
 
-		 return;
+			int eraseIdx = std::distance(elements.begin(), foundIt);
+			assert(eraseIdx < spatialKeys.size());
+			std::iter_swap(spatialKeys.begin() + eraseIdx, spatialKeys.end() - 1);
+			spatialKeys.erase(spatialKeys.end() - 1, spatialKeys.end());
+
+			return true;
+		}
+		return false;
 	}
 
 	//max depth not reached, we test childs :
@@ -269,7 +277,7 @@ void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, const spatialK
 		{
 			if (childs[i] != nullptr)
 			{
-				childs[i]->remove(item, spatialKey, (currentDepth + 1), maxDepth);
+				bool successfullyRemoved = childs[i]->remove(item, spatialKey, (currentDepth + 1), maxDepth);
 
 				if (childs[i]->getElementCount() <= 0 && childs[i]->getActiveChildCount() <= 0) 
 				{
@@ -277,31 +285,49 @@ void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, const spatialK
 					childs[i] = nullptr;
 				}
 
-				return;
+				// We just found and remove the item no need to continue.
+				if(successfullyRemoved)
+					return true;
 			}
 		}
 	}
+
 	//none of childs contains the current spatialKey, and max depth not reached (shouldn't happend for insertion based only on position...), 
 	//we try to remove the item to the current node :
-	std::vector<ItemType*>::iterator nextIt = elements.erase(std::remove(elements.begin(), elements.end(), item), elements.end());
-	int eraseIdx = std::distance(elements.begin(), nextIt);
-	if (eraseIdx < spatialKeys.size())
-		spatialKeys.erase(spatialKeys.begin() + eraseIdx);
+	std::vector<ItemType*>::iterator foundIt = std::find(elements.begin(), elements.end(), item);
+	if (foundIt != elements.end())
+	{
+		std::iter_swap(foundIt, elements.end() - 1);
+		elements.erase(elements.end() - 1, elements.end());
+
+		int eraseIdx = std::distance(elements.begin(), foundIt);
+		assert(eraseIdx < spatialKeys.size());
+		std::iter_swap(spatialKeys.begin() + eraseIdx, spatialKeys.end() - 1);
+		spatialKeys.erase(spatialKeys.end() - 1, spatialKeys.end());
+
+		return true;
+	}
+	return false;
 }
 
 template<typename ItemType, typename spatialKeyType>
-void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, int currentDepth, int maxDepth)
+bool OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, int currentDepth, int maxDepth)
 {
 	//We search the item in the current node : 
-	auto findIt = std::find(elements.begin(), elements.end(), item);
+	std::vector<ItemType*>::iterator foundIt = std::find(elements.begin(), elements.end(), item);
 
 	//if the item is found we remove it from the container : 
-	if (findIt != elements.end()) {
-		int eraseIdx = findIt - elements.begin();
-		elements.erase(findIt);
-		spatialKeys.erase(eraseIdx);
+	if (foundIt != elements.end())
+	{
+		std::iter_swap(foundIt, elements.end() - 1);
+		elements.erase(elements.end() - 1, elements.end());
 
-		return;
+		int eraseIdx = std::distance(elements.begin(), foundIt);
+		assert(eraseIdx < spatialKeys.size());
+		std::iter_swap(spatialKeys.begin() + eraseItx, spatialKeys.end() - 1);
+		spatialKeys.erase(spatialKeys.end() - 1, spatialKeys.end());
+
+		return true;
 	}
 	//otherwise, we launch the remove call recursivly on childs :  
 	else 
@@ -312,7 +338,7 @@ void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, int currentDep
 			{
 				if (childs[i] != nullptr)
 				{
-					childs[i]->remove(item, (currentDepth + 1), maxDepth);
+					bool successfullyRemoved = childs[i]->remove(item, (currentDepth + 1), maxDepth);
 
 					if (childs[i]->getElementCount() <= 0 && childs[i]->getActiveChildCount() <= 0)	
 					{
@@ -320,10 +346,14 @@ void OctreeNode<ItemType, spatialKeyType>::remove(ItemType* item, int currentDep
 						childs[i] = nullptr;
 					}
 
-					return;
+					if(successfullyRemoved)
+						return true;
 				}
 			}
 		}
+
+		// We have test all childs without finding the item
+		return false;
 	}
 }
 
@@ -472,9 +502,9 @@ public:
 	//add an item at the given spatialKey :
 	void add(ItemType* item, const spatialKeyType& spatialKey);
 	//remove an item at the given spatialKey :
-	void remove(ItemType* item, const spatialKeyType& spatialKey);
+	bool remove(ItemType* item, const spatialKeyType& spatialKey);
 	//remove an item, searchinf the all tree :
-	void remove(ItemType* item);
+	bool remove(ItemType* item);
 
 	//find an item at the given spatialKey :
 	ItemType* find(const spatialKeyType& spatialKey) const;
@@ -519,15 +549,15 @@ void Octree<ItemType, spatialKeyType>::add(ItemType * item, const spatialKeyType
 }
  
 template<typename ItemType, typename spatialKeyType>
-void Octree<ItemType, spatialKeyType>::remove(ItemType * item, const spatialKeyType& spatialKey)
+bool Octree<ItemType, spatialKeyType>::remove(ItemType * item, const spatialKeyType& spatialKey)
 {
-	m_root->remove(item, spatialKey, 0, m_maxDepth);
+	return m_root->remove(item, spatialKey, 0, m_maxDepth);
 }
 
 template<typename ItemType, typename spatialKeyType>
-void Octree<ItemType, spatialKeyType>::remove(ItemType* item)
+bool Octree<ItemType, spatialKeyType>::remove(ItemType* item)
 {
-	m_root->remove(item, 0, m_maxDepth);
+	return m_root->remove(item, 0, m_maxDepth);
 }
 
 template<typename ItemType, typename spatialKeyType>

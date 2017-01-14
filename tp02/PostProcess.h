@@ -33,7 +33,7 @@ protected:
 	std::string m_name;
 public:
 	PostProcessOperation(const std::string& name) : m_name(name) {}
-	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) = 0;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) = 0;
 	virtual void onViewportResized(float width, float height) = 0;
 	virtual const std::string& getName() const { return m_name; }
 	//virtual const Texture* getResult() const = 0;
@@ -124,7 +124,7 @@ class PostProcessManager
 private:
 	GlHelper::Framebuffer m_finalFB;
 	Texture m_finalTexture;
-	MaterialBlit m_materialBlit;
+	MaterialResizedBlit m_materialBlit;
 
 	std::shared_ptr<PostProcessOperation> m_ssaoOperation;
 	std::vector<std::shared_ptr<PostProcessOperation>> m_operationList;
@@ -132,9 +132,10 @@ private:
 public:
 	PostProcessManager();
 	void onViewportResized(float width, float height);
-	void render(const BaseCamera& camera, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
-	void renderSSAO(const BaseCamera& camera, GlHelper::Framebuffer& ssaoFB, Texture& ssaoTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
-	void renderResultOnCamera(BaseCamera& camera);
+	void render(const BaseCamera& camera, const glm::vec2& texClipSize, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
+	void renderSSAO(const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& ssaoFB, Texture& ssaoTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
+	//void renderResultOnCamera(BaseCamera& camera);
+	GLuint getFinalTexture() const;
 	int getOperationCount() const;
 };
 
@@ -186,7 +187,7 @@ private:
 
 public:
 	BloomPostProcessOperation(const std::string& operationName);
-	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
 	virtual void onViewportResized(float width, float height) override;
 	//virtual const Texture* getResult() const override;
 };
@@ -221,7 +222,7 @@ private:
 
 public:
 	FlaresPostProcessOperation(const std::string& operationName);
-	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
 	virtual void onViewportResized(float width, float height) override;
 	//virtual const Texture* getResult() const override;
 };
@@ -254,7 +255,7 @@ private:
 
 public:
 	SSAOPostProcessOperation(const std::string& operationName);
-	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
+	virtual void render(const PostProcessOperationData& operationData, const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer) override;
 	virtual void onViewportResized(float width, float height) override;
 };
 

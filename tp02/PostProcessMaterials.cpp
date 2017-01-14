@@ -18,6 +18,7 @@ MaterialBlur::MaterialBlur(const ShaderProgram & shaderProgram, const FileHandle
 
 void MaterialBlur::setExternalParameters()
 {
+	m_uniformResize = MaterialHelper::getUniform(m_glProgramId, "Resize");
 	m_uniformPassId = MaterialHelper::getUniform(m_glProgramId, "PassId");
 	m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
 
@@ -32,6 +33,11 @@ void MaterialBlur::glUniform_passId(int passId)
 void MaterialBlur::glUniform_Texture(int textureId)
 {
 	GlHelper::pushParameterToGPU(m_uniformTexture, textureId);
+}
+
+void MaterialBlur::glUniform_Resize(const glm::vec2 & resize)
+{
+	GlHelper::pushParameterToGPU(m_uniformResize, resize);
 }
 
 ///////////////////////////////
@@ -56,6 +62,7 @@ MaterialBloom::MaterialBloom(const ShaderProgram & shaderProgram, const FileHand
 
 void MaterialBloom::setExternalParameters()
 {
+	m_uniformResize = MaterialHelper::getUniform(m_glProgramId, "Resize");
 	m_uniformExposure = MaterialHelper::getUniform(m_glProgramId, "Exposure");
 	m_uniformGamma = MaterialHelper::getUniform(m_glProgramId, "Gamma");
 	m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
@@ -84,6 +91,11 @@ void MaterialBloom::glUniform_Gamma(float gamma)
 	GlHelper::pushParameterToGPU(m_uniformGamma, gamma);
 }
 
+void MaterialBloom::glUniform_Resize(const glm::vec2 & resize)
+{
+	GlHelper::pushParameterToGPU(m_uniformResize, resize);
+}
+
 /////////////////////////////
 
 MaterialAdd::MaterialAdd()
@@ -105,6 +117,7 @@ MaterialAdd::MaterialAdd(const ShaderProgram & shaderProgram, const FileHandler:
 
 void MaterialAdd::setExternalParameters()
 {
+	m_uniformResize = MaterialHelper::getUniform(m_glProgramId, "Resize");
 	m_uniformTexture01 = MaterialHelper::getUniform(m_glProgramId, "Texture01");
 	m_uniformTexture02 = MaterialHelper::getUniform(m_glProgramId, "Texture02");
 
@@ -119,6 +132,11 @@ void MaterialAdd::glUniform_Texture01(int textureId)
 void MaterialAdd::glUniform_Texture02(int textureId)
 {
 	GlHelper::pushParameterToGPU(m_uniformTexture02, textureId);
+}
+
+void MaterialAdd::glUniform_Resize(const glm::vec2 & resize)
+{
+	GlHelper::pushParameterToGPU(m_uniformResize, resize);
 }
 
 ///////////////////////////
@@ -177,6 +195,7 @@ MaterialSSAO::MaterialSSAO(const ShaderProgram & shaderProgram, const FileHandle
 
 void MaterialSSAO::setExternalParameters()
 {
+	m_uniformResize = MaterialHelper::getUniform(m_glProgramId, "Resize");
 	m_uniformNormals = MaterialHelper::getUniform(m_glProgramId, "Normals");
 	m_uniformNoiseTexture = MaterialHelper::getUniform(m_glProgramId, "NoiseTexture");
 	m_uniformKernel = MaterialHelper::getUniform(m_glProgramId, "Kernel");
@@ -217,6 +236,11 @@ void MaterialSSAO::glUniform_ScreenToView(const glm::mat4 & screenToView) const
 	GlHelper::pushParameterToGPU(m_uniformScreenToView, screenToView);
 }
 
+void MaterialSSAO::glUniform_Resize(const glm::vec2 & resize) const
+{
+	GlHelper::pushParameterToGPU(m_uniformResize, resize);
+}
+
 MaterialSSAOBlur::MaterialSSAOBlur()
 	: Material()
 {
@@ -236,6 +260,7 @@ MaterialSSAOBlur::MaterialSSAOBlur(const ShaderProgram & shaderProgram, const Fi
 
 void MaterialSSAOBlur::setExternalParameters()
 {
+	m_uniformResize = MaterialHelper::getUniform(m_glProgramId, "Resize");
 	m_uniformTexture = MaterialHelper::getUniform(m_glProgramId, "Texture");
 
 	CHECK_GL_ERROR("error in texture initialization.");
@@ -245,4 +270,9 @@ void MaterialSSAOBlur::glUniform_Texture(int texId) const
 {
 	GlHelper::pushParameterToGPU(m_uniformTexture, texId);
 
+}
+
+void MaterialSSAOBlur::glUniform_Resize(const glm::vec2 & resize) const
+{
+	GlHelper::pushParameterToGPU(m_uniformResize, resize);
 }

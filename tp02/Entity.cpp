@@ -16,6 +16,7 @@ Entity::Entity(Scene* scene)
 	, m_isSelected(false)
 	, m_name("default_entity")
 	, m_parent(nullptr)
+	, m_isVisible(false)
 {
 	scene->getAccessor().addToScene(this);
 }
@@ -26,6 +27,7 @@ Entity::Entity(const Entity& other)
 	, m_name(other.m_name)
 	, m_scene(other.m_scene)
 	, m_parent(other.m_parent)
+	, m_isVisible(other.m_isVisible)
 {
 	m_scene->getAccessor().addToScene(this);
 
@@ -52,6 +54,7 @@ Entity& Entity::operator=(const Entity& other)
 
 	m_isSelected = other.m_isSelected;
 	m_name = other.m_name;
+	m_isVisible = other.m_isVisible;
 	m_scene = other.m_scene;
 	m_parent = other.m_parent;
 
@@ -374,6 +377,16 @@ std::string Entity::getName() const
 void Entity::setName(const std::string & name)
 {
 	m_name = name;
+}
+
+void Entity::setVisibility(bool state)
+{
+	m_isVisible = state;
+}
+
+bool Entity::getVisibility() const
+{
+	return m_isVisible;
 }
 
 void Entity::select()

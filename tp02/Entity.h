@@ -84,6 +84,7 @@ private:
 	Scene* m_scene;
 
 	std::string m_name;
+	bool m_isVisible;
 
 	std::vector<Component*> m_components;
 
@@ -133,6 +134,11 @@ public:
 	std::string getName() const;
 	//set the name of this entity
 	void setName(const std::string& name);
+
+	//set the visibility, an entity is visible is at least on of its VisibleComponent is rendered by a camera.
+	void setVisibility(bool state);
+	//get the visibility, an entity is visible is at least on of its VisibleComponent is rendered by a camera.
+	bool getVisibility() const;
 
 	//select this entity, set m_isSelected to true
 	void select();

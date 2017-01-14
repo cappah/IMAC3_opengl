@@ -147,14 +147,14 @@ public:
 	void removeFromRenderables(IRenderableComponent* renderable);
 
 	void clearReflectivePlanes();
-	void setupReflectivePlanes();
-	void setupReflectivePlanes(const ID& id, const BaseCamera& camera);
+	void setupReflectivePlanes(RenderTarget& renderTarget);
+	void setupReflectivePlanes(const ID& id, const BaseCamera& camera, RenderTarget& renderTarget);
 
 	void computeCulling();
 	void computeCullingForSingleCamera(BaseCamera& camera);
 
-	void render();
-	void renderForEditor(CameraEditor& camera, DebugDrawRenderer& debugDrawer);
+	void render(RenderTarget& renderTarget);
+	void renderForEditor(CameraEditor& camera, RenderTarget& renderTarget, DebugDrawRenderer& debugDrawer);
 	void renderIcones(CameraEditor& camera);
 	//void renderColliders(const BaseCamera& camera);
 	//void renderDebugLights(const BaseCamera& camera);
@@ -203,7 +203,7 @@ public:
 
 	BaseCamera* getMainCamera() const;
 
-	void onViewportResized(const glm::vec2& newSize);
+	//void onViewportResized(const glm::vec2& newSize);
 
 	void drawUI();
 };

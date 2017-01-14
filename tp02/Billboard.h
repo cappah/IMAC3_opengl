@@ -48,6 +48,7 @@ public:
 	virtual const IDrawable & getDrawable(int drawableIndex) const override;
 	virtual const Material & getDrawableMaterial(int drawableIndex) const override;
 	virtual const int getDrawableCount() const override;
+	virtual Component* getAsComponent() override;
 
 	// Herited from IDrawable
 	virtual const AABB & getVisualBoundingBox() const override;

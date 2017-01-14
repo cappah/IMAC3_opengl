@@ -110,7 +110,9 @@ void Mesh::init(const FileHandler::CompletePath & path, const ID& id)
 
 void Mesh::save()
 {
-	assert(false && "metadatas for meshes aren't yet implemented.");
+	//TODO : metadatas
+	//assert(false && "metadatas for meshes aren't yet implemented.");
+	PRINT_WARNING("metadatas for textures aren't yet implamented.");
 }
 
 void Mesh::resolvePointersLoading()

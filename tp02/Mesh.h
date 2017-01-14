@@ -150,7 +150,10 @@ public:
 		: m_meshPtr(mesh)
 		, m_subMeshId(id)
 		, m_castShadow(true)
-	{}
+	{
+		if (m_meshPtr != nullptr)
+			m_aabb = m_meshPtr->getLocalAABB();
+	}
 	void setModelMatrix(const glm::mat4& modelMatrix);
 	void setAABB(const AABB& aabb);
 

@@ -205,7 +205,7 @@ void ShaderProgram::makeMaterialAggregates()
 	{
 		auto aggregation = std::make_shared<MaterialAggregationReflectivePlane>();
 		aggregation->initParameters(m_programId);
-		m_perInstanceAggregations["particles"] = aggregation;
+		m_perInstanceAggregations["reflective¨Plane"] = aggregation;
 	}
 }
 
@@ -515,9 +515,13 @@ GLuint ShaderProgram::makeGLProgramForDefault(const FileHandler::CompletePath& s
 	{
 		fillShaderStream(vertexShaderStream, internalShaderFolderPath + "billboard.vert");
 	}
-	if (m_usage == Rendering::MaterialUsage::PARTICLES)
+	else if (m_usage == Rendering::MaterialUsage::PARTICLES)
 	{
 		fillShaderStream(vertexShaderStream, internalShaderFolderPath + "particles.vert");
+	}
+	else if (m_usage == Rendering::MaterialUsage::REFLECTIVE_PLANE)
+	{
+		fillShaderStream(vertexShaderStream, internalShaderFolderPath + "reflectivePlane.vert");
 	}
 
 	return makeGLProgram(vertexShaderStream.str(), fragmentShaderStream.str());
@@ -584,9 +588,13 @@ GLuint ShaderProgram::makeGLProgram()
 	{
 		fillShaderStream(vertexShaderStream, internalShaderFolderPath + "billboard.vert");
 	}
-	if (m_usage == Rendering::MaterialUsage::PARTICLES)
+	else if (m_usage == Rendering::MaterialUsage::PARTICLES)
 	{
 		fillShaderStream(vertexShaderStream, internalShaderFolderPath + "particles.vert");
+	}
+	else if (m_usage == Rendering::MaterialUsage::REFLECTIVE_PLANE)
+	{
+		fillShaderStream(vertexShaderStream, internalShaderFolderPath + "reflectivePlane.vert");
 	}
 
 	return makeGLProgram(vertexShaderStream.str(), fragmentShaderStream.str());

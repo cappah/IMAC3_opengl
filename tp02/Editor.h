@@ -134,6 +134,7 @@ public:
 	Editor();
 	const EditorStyleSheet& getStyleSheet() const;
 	DebugDrawRenderer& getDebugDrawRenderer() const;
+	RenderTarget& getViewportRenderTarget() const;
 
 	float getMenuTopOffset() const;
 	void drawMenuEntry_windows();
@@ -152,7 +153,7 @@ public:
 
 	void getCurrentDrawableSelection(std::vector<IDrawableInInspector*>& drawableSelection) const;
 
-	void renderGizmo(BaseCamera& camera);
+	void renderGizmo(BaseCamera& camera, RenderTarget& renderTarget);
 
 	// Deals with selection :
 	void onResourceSelected();

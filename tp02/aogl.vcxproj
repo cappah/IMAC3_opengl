@@ -284,6 +284,7 @@
     <ClCompile Include="RenderBatch.cpp" />
     <ClCompile Include="BatchableWith.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RenderTarget.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourcePointer.cpp" />
     <ClCompile Include="ResourceTree.cpp" />
@@ -351,6 +352,7 @@
     <ClInclude Include="IAsynchronousCommand.h" />
     <ClInclude Include="ICloneable.h" />
     <ClInclude Include="ICloner.h" />
+    <ClInclude Include="IComponent.h" />
     <ClInclude Include="IDGenerator.h" />
     <ClInclude Include="IDrawable.h" />
     <ClInclude Include="IDrawableInInspector.h" />
@@ -392,6 +394,7 @@
     <ClInclude Include="BatchableWith.h" />
     <ClInclude Include="RenderDatas.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourcePointer.h" />
     <ClInclude Include="ResourceTree.h" />

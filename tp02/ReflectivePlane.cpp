@@ -7,6 +7,7 @@
 #include "EditorGUI.h"
 #include "Camera.h"
 #include "IDGenerator.h"
+#include "RenderTarget.h"
 
 COMPONENT_IMPLEMENTATION_CPP(ReflectivePlane)
 
@@ -150,10 +151,10 @@ void ReflectivePlane::clearCameras()
 	m_reflexionCameras.clear();
 }
 
-void ReflectivePlane::addAndSetupCamera(const ID& id, const BaseCamera & camera)
+void ReflectivePlane::addAndSetupCamera(const ID& id, const BaseCamera & camera, RenderTarget& renderTarget)
 {
 	auto newReflectionCamera = std::make_shared<ReflectionCamera>();
-	newReflectionCamera->setupFromCamera(m_entity->getTranslation(), m_entity->getRotation() * glm::vec3(0, 1, 0), camera);
+	newReflectionCamera->setupFromCamera(m_entity->getTranslation(), m_entity->getRotation() * glm::vec3(0, 1, 0), camera, renderTarget);
 	m_reflexionCameras[id] = newReflectionCamera;
 }
 
@@ -182,6 +183,13 @@ ReflectionCamera& ReflectivePlane::getCamera(ID cameraID) const
 ReflectionCamera & ReflectivePlane::getActiveCamera() const
 {
 	return getCamera(m_activeCameraID);
+}
+
+glm::vec4 ReflectivePlane::getClipPlane() const
+{
+	const glm::vec3 planeNormal = glm::normalize(m_entity->getRotation() * glm::vec3(0, 1, 0));
+	const float d = -glm::dot(m_entity->getTranslation(), planeNormal);
+	return glm::vec4(planeNormal, d);
 }
 
 void ReflectivePlane::save(Json::Value & rootComponent) const
@@ -213,6 +221,11 @@ const Material & ReflectivePlane::getDrawableMaterial(int drawableIndex) const
 const int ReflectivePlane::getDrawableCount() const
 {
 	return 1;
+}
+
+Component * ReflectivePlane::getAsComponent()
+{
+	return this;
 }
 
 void ReflectivePlane::onAfterComponentAddedToScene(Scene & scene)
@@ -269,7 +282,7 @@ void ReflectivePlane::setExternalsOf(const MaterialReflection& material, const g
 	
 	// Reflective texture
 	glActiveTexture(GL_TEXTURE0 + *texId);
-	glBindTexture(GL_TEXTURE_2D, m_reflexionCameras.at(m_activeCameraID)->getFinalFrame()->glId);
+	glBindTexture(GL_TEXTURE_2D, m_reflexionCameras.at(m_activeCameraID)->getFinalFrame());
 	material.glUniform_ReflectionTexture(*texId);
 	(*texId)++;
 }

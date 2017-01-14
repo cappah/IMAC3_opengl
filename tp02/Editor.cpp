@@ -79,6 +79,11 @@ DebugDrawRenderer& Editor::getDebugDrawRenderer() const
 	return *m_debugDrawRenderer;
 }
 
+RenderTarget & Editor::getViewportRenderTarget() const
+{
+	return m_viewport->getRenderTarget();
+}
+
 float Editor::getMenuTopOffset() const
 {
 	return m_menuTopOffset;
@@ -179,22 +184,22 @@ void Editor::getCurrentDrawableSelection(std::vector<IDrawableInInspector*>& dra
 	}
 }
 
-void Editor::renderGizmo(BaseCamera& camera)
+void Editor::renderGizmo(BaseCamera& camera, RenderTarget& renderTarget)
 {
 	glDisable(GL_DEPTH_TEST);
 
-	camera.getFrameBuffer().bind();
+	renderTarget.bindFramebuffer();
 
 	if (!m_isGizmoVisible)
 		return;
 
 	int width = Application::get().getWindowWidth(), height = Application::get().getWindowHeight();
-	glm::mat4 projectionMatrix = m_camera->getProjectionMatrix(); // glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
-	glm::mat4 viewMatrix = m_camera->getViewMatrix(); // glm::lookAt(m_camera->eye, m_camera->o, m_camera->up);
+	glm::mat4 projectionMatrix = camera.getProjectionMatrix(); // glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.f);
+	glm::mat4 viewMatrix = camera.getViewMatrix(); // glm::lookAt(m_camera->eye, m_camera->o, m_camera->up);
 
 	m_gizmo->render(projectionMatrix, viewMatrix);
 
-	camera.getFrameBuffer().unbind();
+	renderTarget.unbindFramebuffer();
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -1145,17 +1150,17 @@ void Editor::renderUI(Project& project)
 	m_windowManager.update();
 
 	//We synchronize the render size of the editor viewport
-	Scene* activeScene = project.getActiveScene();
-	const glm::vec2 viewportDelta(m_viewport->getSize() - activeScene->getRenderer().getViewportRenderSize());
-	const bool isDraggingFrame = (DragAndDropManager::isDragAndDropping() && DragAndDropManager::getOperationType() == EditorDragAndDropType::EditorFrameDragAndDrop);
-	if ((std::abs(viewportDelta.x) > 2.f || std::abs(viewportDelta.y) > 2.f)
-		&& !isDraggingFrame)
-	{
-		// Resize render targets :
-		activeScene->getRenderer().onResizeViewport(m_viewport->getSize());
-		scene.onViewportResized(m_viewport->getSize());
-		m_camera->onViewportResized(m_viewport->getSize());
-	}
+	//Scene* activeScene = project.getActiveScene();
+	//const glm::vec2 viewportDelta(m_viewport->getSize() - activeScene->getRenderer().getViewportRenderSize());
+	//const bool isDraggingFrame = (DragAndDropManager::isDragAndDropping() && DragAndDropManager::getOperationType() == EditorDragAndDropType::EditorFrameDragAndDrop);
+	//if ((std::abs(viewportDelta.x) > 2.f || std::abs(viewportDelta.y) > 2.f)
+	//	&& !isDraggingFrame)
+	//{
+	//	// Resize render targets :
+	//	activeScene->getRenderer().onResizeViewport(m_viewport->getSize());
+	//	scene.onViewportResized(m_viewport->getSize());
+	//	m_camera->onViewportResized(m_viewport->getSize());
+	//}
 
 }
 

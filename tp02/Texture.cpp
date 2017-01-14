@@ -187,7 +187,8 @@ void Texture::init(const FileHandler::CompletePath& path, const ID& id)
 void Texture::save()
 {
 	// TODO : metadatas
-	assert(false && "metadatas for textures aren't yet implamented.");
+	//assert(false && "metadatas for textures aren't yet implamented.");
+	PRINT_WARNING("metadatas for textures aren't yet implamented.");
 }
 
 void Texture::resolvePointersLoading()

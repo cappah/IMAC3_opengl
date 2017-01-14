@@ -37,7 +37,7 @@ PostProcessManager::PostProcessManager()
 	m_finalFB.unbind();
 
 	////////////////////// INIT BLIT MATERIAL ////////////////////////
-	m_materialBlit.init(*getProgramFactory().getDefault("blit"));
+	m_materialBlit.init(*getProgramFactory().getDefault("resizedBlit"));
 }
 
 void PostProcessManager::onViewportResized(float width, float height)
@@ -63,7 +63,7 @@ void PostProcessManager::onViewportResized(float width, float height)
 		m_ssaoOperation->onViewportResized(width, height);
 }
 
-void PostProcessManager::render(const BaseCamera& camera, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
+void PostProcessManager::render(const BaseCamera& camera, const glm::vec2& texClipSize, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
 {
 	//auto& it = camera.getPostProcessProxy().begin();
 	//while (it != camera.getPostProcessProxy().end())
@@ -77,6 +77,7 @@ void PostProcessManager::render(const BaseCamera& camera, RenderDatas& renderDat
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_materialBlit.use();
+	m_materialBlit.setUniformResize(texClipSize);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderDatas.lightPassHDRColor.glId);
 	m_materialBlit.setUniformBlitTexture(0);
@@ -90,28 +91,33 @@ void PostProcessManager::render(const BaseCamera& camera, RenderDatas& renderDat
 		auto operationData = postProcessProxy.getOperationData(operation->getName());
 		if (operationData != nullptr)
 		{
-			operation->render(*operationData, camera, m_finalFB, m_finalTexture, renderDatas, debugDrawer);
+			operation->render(*operationData, camera, texClipSize, m_finalFB, m_finalTexture, renderDatas, debugDrawer);
 		}
 	}
 }
 
-void PostProcessManager::renderSSAO(const BaseCamera& camera, GlHelper::Framebuffer& ssaoFB, Texture& ssaoTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
+void PostProcessManager::renderSSAO(const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& ssaoFB, Texture& ssaoTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
 {
 	auto postProcessProxy = camera.getPostProcessProxy();
 	auto operationData = postProcessProxy.getOperationData("ssao");
 	if (operationData != nullptr)
 	{
-		m_ssaoOperation->render(*operationData, camera, ssaoFB, ssaoTexture, renderDatas, debugDrawer);
+		m_ssaoOperation->render(*operationData, camera, texClipSize, ssaoFB, ssaoTexture, renderDatas, debugDrawer);
 	}
 }
 
-void PostProcessManager::renderResultOnCamera(BaseCamera& camera)
+//void PostProcessManager::renderResultOnCamera(BaseCamera& camera)
+//{
+//	//assert(camera.getPostProcessProxy().getOperationCount() > 0);
+//	//auto it = camera.getPostProcessProxy().end();
+//	//it--;
+//	//const Texture* resultTexture = m_operationList[(*it)->getOperationName()]->getResult();
+//	camera.renderFrame(m_finalTexture /*resultTexture*/);
+//}
+
+GLuint PostProcessManager::getFinalTexture() const
 {
-	//assert(camera.getPostProcessProxy().getOperationCount() > 0);
-	//auto it = camera.getPostProcessProxy().end();
-	//it--;
-	//const Texture* resultTexture = m_operationList[(*it)->getOperationName()]->getResult();
-	camera.renderFrame(m_finalTexture /*resultTexture*/);
+	return m_finalTexture.glId;
 }
 
 int PostProcessManager::getOperationCount() const
@@ -264,7 +270,7 @@ BloomPostProcessOperation::BloomPostProcessOperation(const std::string& operatio
 	m_highValuesFB.unbind();
 }
 
-void BloomPostProcessOperation::render(const PostProcessOperationData& operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
+void BloomPostProcessOperation::render(const PostProcessOperationData& operationData, const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer)
 {
 	const BloomPostProcessOperationData& castedDatas = *static_cast<const BloomPostProcessOperationData*>(&operationData);
 	const int blurStepCount = castedDatas.getBlurStepCount();
@@ -279,6 +285,7 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	m_materialAdd->use();
+	m_materialAdd->glUniform_Resize(texClipSize);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderDatas.gPassHightValuesTexture.glId);
@@ -298,6 +305,7 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 	int FBIndex = 1;
 	int TexIndex = 0;
 	m_materialBlur->use();
+	m_materialBlur->glUniform_Resize(texClipSize);
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -336,6 +344,7 @@ void BloomPostProcessOperation::render(const PostProcessOperationData& operation
 	finalFB.bind();
 
 		m_materialBloom->use();
+		m_materialBloom->glUniform_Resize(texClipSize);
 		m_materialBloom->glUniform_Gamma(gamma);
 		m_materialBloom->glUniform_Exposure(exposure);
 
@@ -463,7 +472,7 @@ FlaresPostProcessOperation::FlaresPostProcessOperation(const std::string & opera
 	glBindVertexArray(0);
 }
 
-void FlaresPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera& camera, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer * debugDrawer)
+void FlaresPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& finalFB, Texture& finalTexture, RenderDatas& renderDatas, DebugDrawRenderer * debugDrawer)
 {
 	const FlaresPostProcessOperationData* operationDatas = static_cast<const FlaresPostProcessOperationData*>(&operationData);
 	const MaterialFlares& materialFlares = operationDatas->getMaterial();
@@ -635,6 +644,7 @@ void FlaresPostProcessOperation::render(const PostProcessOperationData & operati
 	finalFB.bind();
 
 		m_materialAdd->use();
+		m_materialAdd->glUniform_Resize(texClipSize);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, finalTexture.glId);
@@ -765,7 +775,7 @@ SSAOPostProcessOperation::SSAOPostProcessOperation(const std::string & operation
 	m_materialBlur.init(*getProgramFactory().getDefault("ssaoBlur"));
 }
 
-void SSAOPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera & camera, GlHelper::Framebuffer & finalFB, Texture & finalTexture, RenderDatas& renderDatas, DebugDrawRenderer * debugDrawer)
+void SSAOPostProcessOperation::render(const PostProcessOperationData & operationData, const BaseCamera & camera, const glm::vec2& texClipSize, GlHelper::Framebuffer & finalFB, Texture & finalTexture, RenderDatas& renderDatas, DebugDrawRenderer * debugDrawer)
 {
 
 	///////////////// RENDER SSAO ////////////////////
@@ -777,6 +787,8 @@ void SSAOPostProcessOperation::render(const PostProcessOperationData & operation
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	material.use();
+	material.glUniform_Resize(texClipSize);
+
 	int texCount = 0;
 	material.pushInternalsToGPU(texCount);
 	// Send Depth : 
@@ -812,6 +824,8 @@ void SSAOPostProcessOperation::render(const PostProcessOperationData & operation
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	m_materialBlur.use();
+	m_materialBlur.glUniform_Resize(texClipSize);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_ssaoTexture.glId);
 	m_materialBlur.glUniform_Texture(0);

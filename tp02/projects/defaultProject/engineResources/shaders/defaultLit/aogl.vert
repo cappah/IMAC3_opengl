@@ -22,6 +22,7 @@ uniform mat4 ViewMatrix;
 uniform vec2 TextureRepetition;
 uniform mat4 BonesTransform[MAX_BONE_COUNT];
 uniform bool UseSkeleton = false;
+uniform vec4 ClipPlane;
 
 layout(location = POSITION) in vec3 Position;
 layout(location = NORMAL) in vec3 Normal;
@@ -53,14 +54,17 @@ void main()
         mat4 normalMatrix = transpose(inverse(ViewMatrix * ModelMatrix));
 
         Out.TexCoord = TexCoord * TextureRepetition;
-        Out.Position = vec3(ViewMatrix * boneTransform * vec4(pos, 1));
+        Out.Position = vec3(0,0,0); //vec3(ViewMatrix * boneTransform * vec4(pos, 1)); // To remove ?
+
+        vec4 worldPos = ModelMatrix * boneTransform * vec4(Position,1);
+        gl_ClipDistance[0] = dot(worldPos, ClipPlane);
+
+        gl_Position = ProjectionMatrix * ViewMatrix * worldPos;
 
 	//calculate TBN matrix : 
         vec3 T = normalize( vec3(normalMatrix * boneTransform * vec4(Tangent, 0.0)) );
         vec3 N = normalize( vec3(normalMatrix * boneTransform * vec4(Normal, 0.0)) );
 	vec3 B = -cross(T, N);
 	Out.TBN = mat3(B, T, N);
-
-        gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * boneTransform * vec4(Position,1);
 	
 }

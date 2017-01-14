@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Materials.h"
 #include "ResourcePointer.h"
+#include "RenderTarget.h"
 
 class Entity;
 class Editor;
@@ -17,9 +18,8 @@ namespace MVS {
 class Viewport
 {
 private:
+	RenderTargetWithDepth m_renderTarget;
 	glm::vec2 m_position;
-	glm::vec2 m_size;
-	glm::vec2 m_renderSize;
 	bool m_isHovered;
 
 public:
@@ -30,12 +30,7 @@ public:
 
 	const glm::vec2& getSize() const
 	{
-		return m_size;
-	}
-
-	const glm::vec2& getRenderSize() const
-	{
-		return m_renderSize;
+		return m_renderTarget.getSize();
 	}
 
 	void setPosition(const glm::vec2& position)
@@ -45,12 +40,7 @@ public:
 
 	void setSize(const glm::vec2& size)
 	{
-		m_size = size;
-	}
-
-	void setRenderSize(const glm::vec2& size)
-	{
-		m_renderSize = size;
+		m_renderTarget.setSize(size);
 	}
 
 	void setIsHovered(bool state)
@@ -61,6 +51,11 @@ public:
 	bool getIsHovered() const
 	{
 		return m_isHovered;
+	}
+
+	RenderTarget& getRenderTarget()
+	{
+		return m_renderTarget;
 	}
 };
 

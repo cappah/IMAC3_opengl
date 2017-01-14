@@ -316,6 +316,11 @@ const int MeshRenderer::getDrawableCount() const
 	return getMesh()->getSubMeshCount();
 }
 
+Component * MeshRenderer::getAsComponent()
+{
+	return this;
+}
+
 void MeshRenderer::onAfterComponentAddedToScene(Scene & scene)
 {
 	//Add this components to renderables :
