@@ -314,22 +314,29 @@ void Material::init(const ShaderProgram & shaderProgram)
 
 	//assert(shaderProgram.getImplementedPipelineCount() > 0);
 	//m_pipelineType = shaderProgram.getImplementedPipeline(0);
+
+	// Set shader program id
 	m_glProgramId = shaderProgram.getProgramId(/*m_pipelineType*/);
 
+	// Init externals
+	setExternalParameters();
 
+	// Setup internal parameters
 	m_internalParameters.clear();
 	for (auto shaderParameter : shaderProgram.getInternalParameters())
 	{
 		m_internalParameters.push_back(shaderParameter->cloneShared());
 	}
+	initInternalParameters();
 	//m_glProgramName = shaderProgram.getName();
 
+	// Setup aggregations
 	m_aggregations.clear();
 	m_aggregations = shaderProgram.getAggregations();
 	m_perInstanceAggregations.clear();
 	m_perInstanceAggregations = shaderProgram.getPerInstanceAggregation();
 
-	initInternalParameters();
+	// Add pointer reference
 	m_programPtr->addMaterialRef(this);
 	//getProgramFactory().get(m_glProgramName)->addMaterialRef(this);
 	//setExternalParameters(shaderProgram.getExternalParameters());

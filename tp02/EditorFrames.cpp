@@ -213,7 +213,7 @@ ViewportEditorFrame::ViewportEditorFrame(const std::string& name, std::shared_pt
 
 void ViewportEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
 {
-	GLuint finalFrame = m_editorRef->getViewportRenderTarget().getFinalFrame();// project.getActiveScene()->getRenderer().getFinalFrame();
+	GLuint finalFrame = m_viewport.lock()->getRenderTarget().getFinalFrame(0); //m_editorRef->getViewportRenderTarget().getFinalFrame();// project.getActiveScene()->getRenderer().getFinalFrame();
 	ImGui::Image((void*)(finalFrame), ImVec2(m_size.x, m_size.y)/*ImVec2(finalFrame->w, finalFrame->h)*/, ImVec2(0, 1), ImVec2(1,0) );
 	if (ImGui::IsItemHovered())
 		m_viewport.lock()->setIsHovered(true);

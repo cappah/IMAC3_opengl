@@ -1,10 +1,11 @@
 #include "MeshVisualizer.h"
 #include "Renderer.h"
+#include "RenderTarget.h"
 
 
 MeshVisualizer::MeshVisualizer()
-	//: m_viewportSize(400, 400)
-	: m_renderTarget(400, 400)
+//: m_viewportSize(400, 400)
+	: m_renderTarget(std::make_shared<ColorAndDepthRTL>(), std::make_shared<ReflectionRTL>(), 400, 400)
 	, m_cameraDistance(1.f)
 	, m_cameraTarget(0.f, 0.f, 0.f)
 	, m_cameraPhi(glm::pi<float>()*0.5f)

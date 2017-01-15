@@ -242,7 +242,7 @@ void MaterialAggregationReflectivePlane::pushParametersToGPU(const IDrawable& dr
 
 	// Reflective texture
 	glActiveTexture(GL_TEXTURE0 + boundTextureCount);
-	glBindTexture(GL_TEXTURE_2D, drawableAsReflectivePlane->getCamera(renderDatas.currentCameraID).getFinalFrame());
+	glBindTexture(GL_TEXTURE_2D, renderDatas.currentReflectionLayer->getFinalFrame());
 	setUniformReflectionTexture(boundTextureCount);
 	boundTextureCount++;
 }

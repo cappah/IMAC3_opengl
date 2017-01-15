@@ -18,11 +18,17 @@ namespace MVS {
 class Viewport
 {
 private:
-	RenderTargetWithDepth m_renderTarget;
+	RenderTarget m_renderTarget;
 	glm::vec2 m_position;
 	bool m_isHovered;
 
 public:
+	Viewport()
+		: m_renderTarget(std::make_shared<ColorAndDepthRTL>(), std::make_shared<ReflectionRTL>())
+	{
+
+	}
+
 	const glm::vec2& getPosition() const
 	{
 		return m_position;

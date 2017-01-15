@@ -25,13 +25,13 @@ out block
 {
         vec2 TexCoord;
         vec3 Position;
+        vec4 ClipSpaceCoord;
         mat3 TBN;
-        vec2 NormalizedPos2D;
 } Out;
 
 void main()
 {
-        vec3 posWorldSpace = Translation + CameraRight * Position.x * Scale.x + CameraUp * Position.z * Scale.y;
+        vec4 posWorldSpace = vec4(Translation + CameraRight * Position.x * Scale.x + CameraUp * Position.z * Scale.y, 1.0);
 
         vec3 tangent = normalize(CameraRight);
         //calculate TBN matrix :
@@ -41,13 +41,10 @@ void main()
         Out.TBN = mat3(B, T, N);
 
         Out.TexCoord = TexCoord;// * TextureRepetition;
-        Out.Position = posWorldSpace; // passer en view space ?
-        gl_Position = MVP * vec4(posWorldSpace, 1.0);
+        Out.Position = posWorldSpace.xyz; // passer en view space ?
 
-        gl_ClipDistance[0] = dot(vec4(posWorldSpace, 1.0), ClipPlane);
+        gl_ClipDistance[0] = dot(posWorldSpace, ClipPlane);
 
-        Out.NormalizedPos2D = gl_Position.xy;
-        Out.NormalizedPos2D /= gl_Position.w;
-        Out.NormalizedPos2D += 1.0f;
-        Out.NormalizedPos2D *= 0.5f;
+        Out.ClipSpaceCoord = MVP * posWorldSpace;
+        gl_Position = Out.ClipSpaceCoord;
 }

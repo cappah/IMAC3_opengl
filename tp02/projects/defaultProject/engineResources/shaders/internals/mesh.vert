@@ -27,8 +27,8 @@ out block
 {
         vec2 TexCoord;
         vec3 Position;
+        vec4 ClipSpaceCoord;
         mat3 TBN;
-        vec2 NormalizedPos2D;
 } Out;
 
 void main()
@@ -36,15 +36,12 @@ void main()
         mat4 boneTransform = mat4(1);
         computeBoneTransform(boneTransform);
 
-        vec3 pos = Position;
-
         mat4 normalMatrix = transpose(inverse(ViewMatrix * ModelMatrix));
 
         Out.TexCoord = TexCoord * TextureRepetition;
-        vec4 worldPos = boneTransform * vec4(pos, 1);
-        Out.Position = vec3(ViewMatrix * worldPos);
 
-        gl_ClipDistance[0] = dot(vec4(worldPos.xyz, 1.0), ClipPlane);
+        vec4 worldPos = ModelMatrix * boneTransform * vec4(Position,1);
+        gl_ClipDistance[0] = dot(worldPos, ClipPlane);
 
         //calculate TBN matrix :
         vec3 T = normalize( vec3(normalMatrix * boneTransform * vec4(Tangent, 0.0)) );
@@ -52,9 +49,9 @@ void main()
         vec3 B = -cross(T, N);
         Out.TBN = mat3(B, T, N);
 
-        gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * boneTransform * vec4(Position,1);
-        Out.NormalizedPos2D = gl_Position.xy;
-        Out.NormalizedPos2D /= gl_Position.w;
-        Out.NormalizedPos2D += 1.0f;
-        Out.NormalizedPos2D *= 0.5f;
+        Out.Position = (ViewMatrix * boneTransform * vec4(Position, 1)).xyz;
+        Out.ClipSpaceCoord = ProjectionMatrix * ViewMatrix * worldPos;
+
+        gl_Position = Out.ClipSpaceCoord;
+
 }

@@ -8,7 +8,7 @@
 //uniform vec3 EmissiveColor;
 //uniform vec3 TintColor;
 
-void computeShaderParameters(inout vec3 paramDiffuse, inout vec3 paramNormals, inout float paramSpecular, inout float paramSpecularPower, inout vec3 paramEmissive)
+void computeShaderParameters(inout vec3 paramDiffuse, inout vec3 paramNormals, inout float paramSpecular, inout float paramSpecularPower, inout vec3 paramEmissive, in vec2 projectedCoord)
 {
 //    paramDiffuse = texture(Diffuse, In.TexCoord).rgb * TintColor.rgb;
 //    paramSpecular = texture(Specular, In.TexCoord).r;

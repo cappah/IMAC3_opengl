@@ -22,8 +22,8 @@ out block
 {
         vec2 TexCoord;
         vec3 Position;
+        vec4 ClipSpaceCoord;
         mat3 TBN;
-        vec2 NormalizedPos2D;
 } Out;
 
 void main()
@@ -38,14 +38,11 @@ void main()
         Out.TBN = mat3(B, T, N);
 
         Out.TexCoord = TexCoord;// * TextureRepetition;
-        vec3 posWorldSpace = Translation + CameraRight * Position.x * Size.x + CameraUp * Position.z * Size.y;
-        Out.Position = posWorldSpace; // To view space ?
+        vec4 posWorldSpace = vec4(Translation + CameraRight * Position.x * Size.x + CameraUp * Position.z * Size.y, 1.0);
+        Out.Position = posWorldSpace.xyz; // To view space ?
 
-        gl_ClipDistance[0] = dot(vec4(posWorldSpace, 1.0), ClipPlane);
+        gl_ClipDistance[0] = dot(posWorldSpace, ClipPlane);
 
-        gl_Position = VP * vec4(posWorldSpace, 1.0);
-        Out.NormalizedPos2D = gl_Position.xy;
-        Out.NormalizedPos2D /= gl_Position.w;
-        Out.NormalizedPos2D += 1.0f;
-        Out.NormalizedPos2D *= 0.5f;
+        Out.ClipSpaceCoord = VP * posWorldSpace;
+        gl_Position = Out.ClipSpaceCoord;
 }

@@ -180,22 +180,22 @@ void Scene::clearReflectivePlanes()
 	}
 }
 
-void Scene::setupReflectivePlanes(RenderTarget& renderTarget)
+void Scene::setupReflectivePlanes()
 {
 	for (auto& camera : m_cameras)
 	{
 		for (auto& reflectivePlane : m_reflectivePlanes)
 		{
-			reflectivePlane->addAndSetupCamera(camera->getObjectID(), *camera, renderTarget);
+			reflectivePlane->addAndSetupCamera(camera->getObjectID(), *camera);
 		}
 	}
 }
 
-void Scene::setupReflectivePlanes(const ID& id, const BaseCamera& camera, RenderTarget& renderTarget)
+void Scene::setupReflectivePlanes(const ID& id, const BaseCamera& camera)
 {
 	for (auto& reflectivePlane : m_reflectivePlanes)
 	{
-		reflectivePlane->addAndSetupCamera(id, camera, renderTarget);
+		reflectivePlane->addAndSetupCamera(id, camera);
 	}
 }
 
@@ -255,7 +255,8 @@ void Scene::renderForEditor(CameraEditor& camera, RenderTarget& renderTarget, De
 
 	// Render scene :
 	m_renderer->render(camera, renderTarget, m_pointLights, m_directionalLights, m_spotLights, true, &debugDrawer);
-	m_renderer->transferDepthTo(renderTarget.getFrameBuffer(), renderTarget.getSize() /*camera.getFrameBuffer(), camera.getViewportSize()*/);// m_renderer->getIntermediateViewportSize());
+	ColorAndDepthRTL* depthFrameBuffer = nullptr;
+	m_renderer->transferDepthTo(*renderTarget.getLayer(0), renderTarget.getSize() /*camera.getFrameBuffer(), camera.getViewportSize()*/);// m_renderer->getIntermediateViewportSize());
 
 	// Draw debug render :
 	//camera.getFrameBuffer().bind();

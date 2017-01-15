@@ -35,7 +35,8 @@ layout(location = BONE_WEIGHTS) in vec4 BoneWeights;
 out block
 {
 	vec2 TexCoord; 
-	vec3 Position;
+        vec3 Position;
+        vec4 ClipSpaceCoord;
 	mat3 TBN;
 } Out;
 
@@ -49,17 +50,16 @@ void main()
 		boneTransform += BonesTransform[BoneIds[3]] * BoneWeights[3];
 	}
 
-	vec3 pos = Position;
-
         mat4 normalMatrix = transpose(inverse(ViewMatrix * ModelMatrix));
 
         Out.TexCoord = TexCoord * TextureRepetition;
-        Out.Position = vec3(0,0,0); //vec3(ViewMatrix * boneTransform * vec4(pos, 1)); // To remove ?
 
         vec4 worldPos = ModelMatrix * boneTransform * vec4(Position,1);
         gl_ClipDistance[0] = dot(worldPos, ClipPlane);
 
-        gl_Position = ProjectionMatrix * ViewMatrix * worldPos;
+        Out.Position = vec3(ViewMatrix * boneTransform * vec4(Position, 1));
+        Out.ClipSpaceCoord = ProjectionMatrix * ViewMatrix * worldPos;
+        gl_Position = Out.ClipSpaceCoord;
 
 	//calculate TBN matrix : 
         vec3 T = normalize( vec3(normalMatrix * boneTransform * vec4(Tangent, 0.0)) );

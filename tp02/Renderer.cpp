@@ -292,6 +292,13 @@ void Renderer::renderReflection(ReflectionCamera& camera, RenderTarget& renderTa
 	m_renderDatas.currentCameraID = camera.getCameraID();
 
 	m_renderDatas.clipPlane = reflectivePlane.getClipPlane();
+	m_renderDatas.currentReflectionLayer = renderTarget.getLayer("Reflection");
+
+	if (m_renderDatas.currentReflectionLayer == nullptr)
+	{
+		PRINT_ERROR("You are trying to render a reflection into a render target which doesn't support reflections.");
+		return;
+	}
 
 	///////// END : Update matrices
 	////////////////////////////////////////////////////////////////////////
@@ -308,10 +315,10 @@ void Renderer::renderReflection(ReflectionCamera& camera, RenderTarget& renderTa
 	glDisable(GL_CLIP_DISTANCE0);
 
 	// No post process for now for reflective camera
-	camera.renderFrameOnTarget(m_renderDatas.lightPassHDRColor, reflectivePlane);
+	camera.renderFrameOnTarget(m_renderDatas.lightPassHDRColor, *m_renderDatas.currentReflectionLayer, reflectivePlane);
 
 	debugDrawer->drawOutputIfNeeded("output_reflection", m_renderDatas.lightPassHDRColor.glId);
-	debugDrawer->drawOutputIfNeeded("output_reflectionInCamera", camera.getFinalFrame());
+	debugDrawer->drawOutputIfNeeded("output_reflectionInCamera", m_renderDatas.currentReflectionLayer->getFinalFrame());
 }
 
 void Renderer::render(BaseCamera& camera, RenderTarget& renderTarget, std::vector<PointLight*>& pointLights, std::vector<DirectionalLight*>& directionalLights, std::vector<SpotLight*>& spotLights, bool useGlobalPostProcess, DebugDrawRenderer* debugDrawer)
@@ -349,6 +356,7 @@ void Renderer::render(BaseCamera& camera, RenderTarget& renderTarget, std::vecto
 	m_renderDatas.currentCameraID = camera.getCameraID();
 
 	m_renderDatas.clipPlane = glm::vec4(0,0,0,0);
+	m_renderDatas.currentReflectionLayer = renderTarget.getLayer("Reflection");
 
 	///////// END : Update matrices
 	////////////////////////////////////////////////////////////////////////
@@ -367,11 +375,18 @@ void Renderer::render(BaseCamera& camera, RenderTarget& renderTarget, std::vecto
 	{
 		m_postProcessManager.render(camera, m_texClipSize, m_renderDatas, debugDrawer);
 		//m_postProcessManager.renderResultOnCamera(camera);
-		camera.renderFrameOnTarget(m_postProcessManager.getFinalTexture(), renderTarget);
+		camera.renderFrameOnTarget(m_postProcessManager.getFinalTexture(), *renderTarget.getLayer(0));
 	}
 	else
 	{
-		camera.renderFrameOnTarget(m_renderDatas.lightPassHDRColor, renderTarget);
+		camera.renderFrameOnTarget(m_renderDatas.lightPassHDRColor, *renderTarget.getLayer(0));
+	}
+
+	if (debugDrawer != nullptr)
+	{
+		debugDrawer->addSeparator();
+		debugDrawer->drawOutputIfNeeded("endRender_postProcess", m_postProcessManager.getFinalTexture().glId);
+		debugDrawer->drawOutputIfNeeded("endRender_renderTarget", renderTarget.getFinalFrame());
 	}
 }
 
@@ -768,6 +783,14 @@ void Renderer::transferDepthTo(const GlHelper::Framebuffer & to, const glm::vec2
 {
 	m_lightPassBuffer.bind(GL_READ_FRAMEBUFFER);
 	to.bind(GL_DRAW_FRAMEBUFFER);
+	glBlitFramebuffer(0, 0, depthTextureSize.x, depthTextureSize.y, 0, 0, depthTextureSize.x, depthTextureSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::transferDepthTo(const RenderTargetLayer & renderTargetLayer, const glm::vec2 & depthTextureSize) const
+{
+	m_lightPassBuffer.bind(GL_READ_FRAMEBUFFER);
+	renderTargetLayer.bindFramebuffer(GL_DRAW_FRAMEBUFFER);
 	glBlitFramebuffer(0, 0, depthTextureSize.x, depthTextureSize.y, 0, 0, depthTextureSize.x, depthTextureSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

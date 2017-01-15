@@ -13,6 +13,7 @@ in block
 {
         vec2 TexCoord;
         vec3 Position;
+        vec4 ClipSpaceCoord;
         mat3 TBN;
 } In;
 

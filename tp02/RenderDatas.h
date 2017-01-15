@@ -7,6 +7,8 @@
 #include "Lights.h"
 #include "FrameBuffer.h"
 
+class RenderTargetLayer;
+
 struct RenderDatas
 {
 	Mesh quadMesh;
@@ -27,6 +29,7 @@ struct RenderDatas
 	const glm::mat4* View;
 	ID currentCameraID;
 	glm::vec4 clipPlane;
+	RenderTargetLayer* currentReflectionLayer;
 
 	//std::vector<PointLight*>* pointLights;
 	//std::vector<DirectionalLight*>* directionalLights;

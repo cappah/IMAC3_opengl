@@ -96,13 +96,13 @@ const PostProcessProxy & BaseCamera::getPostProcessProxy() const
 	return m_postProcessProxy;
 }
 
-void BaseCamera::renderFrameOnTarget(const Texture& texture, RenderTarget& renderTarget)
+void BaseCamera::renderFrameOnTarget(const Texture& texture, RenderTargetLayer& renderTargetLayer)
 {
 	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 	//m_frameBuffer.bind();
-	renderTarget.bindFramebuffer();
-	glViewport(0, 0, renderTarget.getSize().x, renderTarget.getSize().y);
+	renderTargetLayer.bindFramebuffer();
+	glViewport(0, 0, renderTargetLayer.getSize().x, renderTargetLayer.getSize().y);
 	//glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -113,11 +113,11 @@ void BaseCamera::renderFrameOnTarget(const Texture& texture, RenderTarget& rende
 	glBindTexture(GL_TEXTURE_2D, texture.glId);
 	m_material->use();
 	m_material->setUniformBlitTexture(0);
-	m_material->setUniformResize(renderTarget.getSize() / glm::vec2(texture.w, texture.h));
+	m_material->setUniformResize(renderTargetLayer.getSize() / glm::vec2(texture.w, texture.h));
 	m_quadMesh->draw();
 
 	//m_frameBuffer.unbind();
-	renderTarget.unbindFramebuffer();
+	renderTargetLayer.unbindFramebuffer();
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 }
@@ -882,21 +882,21 @@ ReflectionCamera::ReflectionCamera()
 	//m_frameBuffer.unbind();
 }
 
-void ReflectionCamera::setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera, RenderTarget& finalRenderTarget)
+void ReflectionCamera::setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera)
 {
-	if (!glm::all(glm::lessThanEqual(glm::abs(m_renderTarget.getSize() - finalRenderTarget.getSize()), glm::epsilon<glm::vec2>()))) /*camera.getViewportSize() != m_viewportSize*/ 
-	{
-		m_renderTarget.setSize(finalRenderTarget.getSize());
+	//if (!glm::all(glm::lessThanEqual(glm::abs(m_renderTarget.getSize() - finalRenderTarget.getSize()), glm::epsilon<glm::vec2>()))) /*camera.getViewportSize() != m_viewportSize*/ 
+	//{
+	//	m_renderTarget.setSize(finalRenderTarget.getSize());
 
-		//m_viewportSize = camera.getViewportSize();
+	////	m_viewportSize = camera.getViewportSize();
 
-		//m_frameBuffer.bind();
-		//m_frameBuffer.detachRenderBuffer(GL_STENCIL_ATTACHMENT);
-		//m_stencilBuffer.resize(m_viewportSize.x, m_viewportSize.y);
-		//m_frameBuffer.attachRenderBuffer(&m_stencilBuffer, GL_STENCIL_ATTACHMENT);
-		//m_frameBuffer.checkIntegrity();
-		//m_frameBuffer.unbind();
-	}
+	////	m_frameBuffer.bind();
+	////	m_frameBuffer.detachRenderBuffer(GL_STENCIL_ATTACHMENT);
+	////	m_stencilBuffer.resize(m_viewportSize.x, m_viewportSize.y);
+	////	m_frameBuffer.attachRenderBuffer(&m_stencilBuffer, GL_STENCIL_ATTACHMENT);
+	////	m_frameBuffer.checkIntegrity();
+	////	m_frameBuffer.unbind();
+	//}
 
 	m_aspect = camera.getAspect();
 	m_clearColor = camera.getClearColor();
@@ -949,11 +949,11 @@ void ReflectionCamera::updateProjection()
 	assert(false && "use setupFromCamera() instead.");
 }
 
-void ReflectionCamera::renderFrameOnTarget(const Texture & _texture, const ReflectivePlane & _reflectivePlane)
+void ReflectionCamera::renderFrameOnTarget(const Texture & _texture, RenderTargetLayer& renderTargetLayer, const ReflectivePlane & _reflectivePlane)
 {
 	//m_frameBuffer.bind();
-	m_renderTarget.bindFramebuffer();
-	glViewport(0, 0, m_renderTarget.getSize().x, m_renderTarget.getSize().y);
+	renderTargetLayer.bindFramebuffer();
+	glViewport(0, 0, renderTargetLayer.getSize().x, renderTargetLayer.getSize().y);
 
 	glStencilMask(0xFF);
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -985,19 +985,19 @@ void ReflectionCamera::renderFrameOnTarget(const Texture & _texture, const Refle
 	glBindTexture(GL_TEXTURE_2D, _texture.glId);
 	m_material->use();
 	m_material->setUniformBlitTexture(0);
-	m_material->setUniformResize(m_renderTarget.getSize() / glm::vec2(_texture.w, _texture.h));
+	m_material->setUniformResize(renderTargetLayer.getSize() / glm::vec2(_texture.w, _texture.h));
 	m_quadMesh->draw();
 
 	//m_frameBuffer.unbind();
-	m_renderTarget.unbindFramebuffer();
+	renderTargetLayer.unbindFramebuffer();
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 }
 
-GLuint ReflectionCamera::getFinalFrame() const
-{
-	return m_renderTarget.getFinalFrame();
-}
+//GLuint ReflectionCamera::getFinalFrame() const
+//{
+//	return m_renderTarget.getFinalFrame();
+//}
 
 //////////////////////////////////
 /*

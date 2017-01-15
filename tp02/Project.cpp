@@ -357,9 +357,9 @@ void Project::edit()
 		CameraEditor& currentEditorCamera = editor.getCamera();
 
 		scene->clearReflectivePlanes();
-		scene->setupReflectivePlanes(editor.getViewportRenderTarget());
+		scene->setupReflectivePlanes();
 		if (!editor.getIsPlaying())
-			scene->setupReflectivePlanes(currentEditorCamera.getObjectID(), currentEditorCamera, editor.getViewportRenderTarget());
+			scene->setupReflectivePlanes(currentEditorCamera.getObjectID(), currentEditorCamera);
 
 		scene->computeCulling();
 		//add culling for editor camera if we use it

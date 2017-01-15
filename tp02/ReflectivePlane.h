@@ -48,7 +48,7 @@ public:
 	void setAABB(const AABB& aabb);
 
 	void clearCameras();
-	void addAndSetupCamera(const ID& id, const BaseCamera & camera, RenderTarget& renderTarget);
+	void addAndSetupCamera(const ID& id, const BaseCamera & camera);
 	std::unordered_map<ID, std::shared_ptr<ReflectionCamera>>::iterator getCameraIteratorBegin();
 	std::unordered_map<ID, std::shared_ptr<ReflectionCamera>>::iterator getCameraIteratorEnd();
 	void setActiveCamera(ID cameraID);

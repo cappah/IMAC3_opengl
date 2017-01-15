@@ -95,6 +95,7 @@ public:
 
 	// Transfert the depth of the final m_lightPassBuffer buffer to the given framebuffer.
 	void transferDepthTo(const GlHelper::Framebuffer& to, const glm::vec2& depthTextureSize) const;
+	void transferDepthTo(const RenderTargetLayer & renderTargetLayer, const glm::vec2 & depthTextureSize) const;
 
 	//draw colliders on scene.
 	void debugDrawColliders(const BaseCamera& camera, const std::vector<Entity*>& entities);

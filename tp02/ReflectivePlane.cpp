@@ -151,10 +151,10 @@ void ReflectivePlane::clearCameras()
 	m_reflexionCameras.clear();
 }
 
-void ReflectivePlane::addAndSetupCamera(const ID& id, const BaseCamera & camera, RenderTarget& renderTarget)
+void ReflectivePlane::addAndSetupCamera(const ID& id, const BaseCamera & camera)
 {
 	auto newReflectionCamera = std::make_shared<ReflectionCamera>();
-	newReflectionCamera->setupFromCamera(m_entity->getTranslation(), m_entity->getRotation() * glm::vec3(0, 1, 0), camera, renderTarget);
+	newReflectionCamera->setupFromCamera(m_entity->getTranslation(), m_entity->getRotation() * glm::vec3(0, 1, 0), camera);
 	m_reflexionCameras[id] = newReflectionCamera;
 }
 
@@ -275,16 +275,17 @@ bool ReflectivePlane::castShadows() const
 
 void ReflectivePlane::setExternalsOf(const MaterialReflection& material, const glm::mat4& projection, const glm::mat4& view, int* texId) const
 {
-	assert(texId != nullptr);
+	assert(false && "deprecated");
+	//assert(texId != nullptr);
 
-	// Transform matrices
-	material.glUniform_MVP(projection * view * getModelMatrix());
-	
-	// Reflective texture
-	glActiveTexture(GL_TEXTURE0 + *texId);
-	glBindTexture(GL_TEXTURE_2D, m_reflexionCameras.at(m_activeCameraID)->getFinalFrame());
-	material.glUniform_ReflectionTexture(*texId);
-	(*texId)++;
+	//// Transform matrices
+	//material.glUniform_MVP(projection * view * getModelMatrix());
+	//
+	//// Reflective texture
+	//glActiveTexture(GL_TEXTURE0 + *texId);
+	//glBindTexture(GL_TEXTURE_2D, m_reflexionCameras.at(m_activeCameraID)->getFinalFrame());
+	//material.glUniform_ReflectionTexture(*texId);
+	//(*texId)++;
 }
 
 const ReflectivePlane * ReflectivePlane::getAsReflectivePlaneIfPossible() const

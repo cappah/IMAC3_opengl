@@ -84,6 +84,9 @@ void PostProcessManager::render(const BaseCamera& camera, const glm::vec2& texCl
 	renderDatas.quadMesh.draw();
 	m_finalFB.unbind();
 
+	if (debugDrawer != nullptr)
+		debugDrawer->drawOutputIfNeeded("tmp", m_finalTexture.glId);
+
 	// Add effects to final texture one by one.
 	for (auto operation : m_operationList)
 	{
@@ -115,9 +118,9 @@ void PostProcessManager::renderSSAO(const BaseCamera& camera, const glm::vec2& t
 //	camera.renderFrame(m_finalTexture /*resultTexture*/);
 //}
 
-GLuint PostProcessManager::getFinalTexture() const
+const Texture& PostProcessManager::getFinalTexture() const
 {
-	return m_finalTexture.glId;
+	return m_finalTexture;
 }
 
 int PostProcessManager::getOperationCount() const

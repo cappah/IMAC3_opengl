@@ -25,18 +25,13 @@ out block
 {
         vec2 TexCoord;
         vec3 Position;
+        vec4 ClipSpaceCoord;
         mat3 TBN;
-        vec2 NormalizedPos2D;
 } Out;
 
 void main()
 {
     mat4 normalMatrix = transpose(inverse(ViewMatrix * ModelMatrix));
-
-    Out.TexCoord = TexCoord * TextureRepetition;
-    Out.Position = vec3(ViewMatrix * vec4(Position, 1));
-
-    gl_ClipDistance[0] = -1; //always invisible for clipped reflections
 
     //calculate TBN matrix :
     vec3 T = normalize( vec3(normalMatrix * vec4(Tangent, 0.0)) );
@@ -44,9 +39,12 @@ void main()
     vec3 B = -cross(T, N);
     Out.TBN = mat3(B, T, N);
 
-    gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(Position,1);
-    Out.NormalizedPos2D = gl_Position.xy;
-    Out.NormalizedPos2D /= gl_Position.w;
-    Out.NormalizedPos2D += 1.0f;
-    Out.NormalizedPos2D *= 0.5f;
+    Out.TexCoord = TexCoord * TextureRepetition;
+    Out.Position = (ViewMatrix * vec4(Position, 1)).rgb;
+
+    gl_ClipDistance[0] = -1; //always invisible for clipped reflections
+
+    Out.ClipSpaceCoord = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(Position,1);
+    gl_Position = Out.ClipSpaceCoord;
+
 }

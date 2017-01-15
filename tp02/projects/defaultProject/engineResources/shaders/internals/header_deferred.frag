@@ -4,15 +4,6 @@
 #define TANGENT		3
 #define FRAG_COLOR	0
 
-// inputs :
-in block
-{
-        vec2 TexCoord;
-        vec3 Position;
-        mat3 TBN;
-        vec2 NormalizedPos2D;
-} In;
-
 // Outputs :
 
 // Write in GL_COLOR_ATTACHMENT0

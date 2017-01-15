@@ -135,7 +135,7 @@ public:
 	void render(const BaseCamera& camera, const glm::vec2& texClipSize, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
 	void renderSSAO(const BaseCamera& camera, const glm::vec2& texClipSize, GlHelper::Framebuffer& ssaoFB, Texture& ssaoTexture, RenderDatas& renderDatas, DebugDrawRenderer* debugDrawer);
 	//void renderResultOnCamera(BaseCamera& camera);
-	GLuint getFinalTexture() const;
+	const Texture& getFinalTexture() const;
 	int getOperationCount() const;
 };
 

@@ -123,13 +123,15 @@ vec3 computeDirectionalLight(sDirectionalLight light, vec3 p, vec3 n,  vec3 diff
 void main(void)
 {
     float depth = gl_FragDepth;
-    vec3 paramDiffuse;
-    vec3 paramEmissive;
-    vec3 paramNormals;
-    float paramSpecular;
-    float paramSpecularPower;
+    vec3 paramDiffuse = vec3(1,1,1);
+    vec3 paramEmissive = vec3(0,0,0);
+    vec3 paramNormals = vec3(0,0,1);
+    float paramSpecular = 0.5;
+    float paramSpecularPower = 0.5;
+    vec2 projectedCoord = vec2(0,0);
+    getProjectedCoord(projectedCoord);
 
-    computeShaderParameters(paramDiffuse, paramNormals, paramSpecular, paramSpecularPower, paramEmissive);
+    computeShaderParameters(paramDiffuse, paramNormals, paramSpecular, paramSpecularPower, paramEmissive, projectedCoord);
 
     paramNormals = normalize(paramNormals * 2.0 - 1.0);
     paramNormals = normalize(In.TBN * paramNormals);

@@ -80,7 +80,7 @@ public:
 	virtual void clearRenderBatches(Rendering::PipelineType renderPipelineType);
 	virtual const std::map<GLuint, std::shared_ptr<IRenderBatch>>& getRenderBatches(Rendering::PipelineType renderPipelineType) const;
 	virtual const PostProcessProxy& getPostProcessProxy() const;
-	void renderFrameOnTarget(const Texture& texture, RenderTarget& renderTarget);
+	void renderFrameOnTarget(const Texture& texture, RenderTargetLayer& renderTargetLayer);
 	virtual ID getCameraID() const;
 	//virtual void onViewportResized(const glm::vec2& newSize);
 	//const Texture* getFinalFrame() const;
@@ -318,12 +318,12 @@ struct ReflectionCamera : public BaseCamera, public Object
 private:
 	//GlHelper::Renderbuffer m_stencilBuffer;
 	MaterialSimple3DDraw* m_materialSimple3Ddraw;
-	RenderTarget m_renderTarget;
+	//RenderTarget m_renderTarget;
 
 public:
 	ReflectionCamera();
 
-	void setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera, RenderTarget& finalRenderTarget);
+	void setupFromCamera(const glm::vec3& planePosition, const glm::vec3& planeNormal, const BaseCamera& camera);
 
 	virtual void updateScreenSize(float screenWidth, float screenHeight) override;
 	virtual void setPerspectiveInfos(float fovy, float aspect, float camNear = 0.1f, float camFar = 100.f) override;
@@ -331,9 +331,9 @@ public:
 	virtual void setCameraMode(CameraMode cameraMode) override;
 	virtual void updateProjection() override;
 
-	void renderFrameOnTarget(const Texture& _texture, const ReflectivePlane& _reflectivePlane);
+	void renderFrameOnTarget(const Texture & _texture, RenderTargetLayer& renderTargetLayer, const ReflectivePlane & _reflectivePlane);
 
-	GLuint getFinalFrame() const;
+	//GLuint getFinalFrame() const;
 };
 
 REFLEXION_CPP(ReflectionCamera)

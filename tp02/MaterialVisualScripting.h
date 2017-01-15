@@ -267,7 +267,7 @@ public:
 		else
 			paramSpecularPowerStream << defaultSpecularPower;
 
-		nodeCompileResult << "void computeShaderParameters(inout vec3 paramDiffuse, inout vec3 paramNormals, inout float paramSpecular, inout float paramSpecularPower, inout vec3 paramEmissive)\n";
+		nodeCompileResult << "void computeShaderParameters(inout vec3 paramDiffuse, inout vec3 paramNormals, inout float paramSpecular, inout float paramSpecularPower, inout vec3 paramEmissive, in vec2 projectedCoord)\n";
 		nodeCompileResult << "{\n";
 		nodeCompileResult << "paramDiffuse = " << paramDiffuseStream.str() << ";\n";
 		nodeCompileResult << "paramSpecular = " << paramSpecularStream.str() << ";\n";
@@ -646,12 +646,12 @@ struct FragCoordsNode final : public CustomNode
 
 REGISTER_NODE("FragCoords", FragCoordsNode)
 
-struct NormalizedPos2DNode final : public CustomNode
+struct ProjectedCoordsNode final : public CustomNode
 {
-	INHERIT_FROM_NODE(NormalizedPos2DNode)
+	INHERIT_FROM_NODE(ProjectedCoordsNode)
 
-		NormalizedPos2DNode()
-		: CustomNode("NormalizedPos2D")
+		ProjectedCoordsNode()
+		: CustomNode("ProjectedCoords")
 	{
 		outputs.push_back(std::make_shared<Output>(this, "rg", FlowType::FLOAT2));
 		outputs.push_back(std::make_shared<Output>(this, "r", FlowType::FLOAT));
@@ -659,13 +659,13 @@ struct NormalizedPos2DNode final : public CustomNode
 	}
 	void compile(CompilationErrorCheck& errorCheck) override
 	{
-		outputs[0]->valueStr = "In.NormalizedPos2D.rg";
-		outputs[1]->valueStr = "In.NormalizedPos2D.r";
-		outputs[2]->valueStr = "In.NormalizedPos2D.g";
+		outputs[0]->valueStr = "projectedCoord.rg";
+		outputs[1]->valueStr = "projectedCoord.r";
+		outputs[2]->valueStr = "projectedCoord.g";
 	}
 };
 
-REGISTER_NODE("NormalizedPos2D", NormalizedPos2DNode)
+REGISTER_NODE("ProjectedCoords", ProjectedCoordsNode)
 
 struct ReflectionTextureNode final : public CustomNode
 {
@@ -693,7 +693,7 @@ struct ReflectionTextureNode final : public CustomNode
 		if (inputs[0]->link != nullptr)
 			inputs[0]->compile(textureCoords, errorCheck);
 		else
-			textureCoords << "In.NormalizedPos2D";
+			textureCoords << "projectedCoord";
 
 		std::stringstream core;
 		core << "texture(ReflectionTexture, " << textureCoords.str() << ')';

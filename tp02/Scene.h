@@ -147,8 +147,8 @@ public:
 	void removeFromRenderables(IRenderableComponent* renderable);
 
 	void clearReflectivePlanes();
-	void setupReflectivePlanes(RenderTarget& renderTarget);
-	void setupReflectivePlanes(const ID& id, const BaseCamera& camera, RenderTarget& renderTarget);
+	void setupReflectivePlanes();
+	void setupReflectivePlanes(const ID& id, const BaseCamera& camera);
 
 	void computeCulling();
 	void computeCullingForSingleCamera(BaseCamera& camera);
