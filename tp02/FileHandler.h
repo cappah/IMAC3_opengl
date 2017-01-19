@@ -30,6 +30,7 @@ enum FileType
 	SHADER_PROGRAM,
 	MATERIAL,
 	CUBE_TEXTURE,
+	ANIMATION_STATE_MACHINE,
 };
 
 class CompletePath;

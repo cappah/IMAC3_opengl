@@ -10,6 +10,7 @@
 #include "Texture.h"
 #include "SkeletalAnimation.h"
 #include "ShaderProgram.h"
+#include "AnimationStateMachine.h"
 
 #include "FileHandler.h"
 #include "ISerializable.h"
@@ -548,6 +549,10 @@ void ResourceFactory<Material>::addResourceSoft(const FileHandler::CompletePath&
 //template<>
 //void ResourceFactory<ShaderProgram>::initDefaults();
 
+//AnimationStateMachine
+template<>
+void ResourceFactory<AnimationStateMachine>::initDefaults();
+
 //Cube Texture
 template<>
 void ResourceFactory<CubeTexture>::initDefaults();
@@ -575,11 +580,10 @@ void initAllResourceFactories();
 void clearAllResourceFactories();
 
 //Access helper
+ResourceFactory<AnimationStateMachine>& getAnimationStateMachineFactory();
 ResourceFactory<ShaderProgram>& getProgramFactory();
 ResourceFactory<Mesh>& getMeshFactory();
-
 ResourceFactory<Texture>& getTextureFactory();
-
 ResourceFactory<CubeTexture>& getCubeTextureFactory();
 ResourceFactory<Material>& getMaterialFactory();
 ResourceFactory<SkeletalAnimation>& getSkeletalAnimationFactory();
@@ -597,6 +601,8 @@ ResourceType getResourceType()
 	return ResourceType::NONE;
 }
 
+template<>
+ResourceType getResourceType<AnimationStateMachine>();
 template<>
 ResourceType getResourceType<Texture>();
 template<>

@@ -65,6 +65,21 @@ float Animation::getElapsedTime() const
 	return elapsedTime;
 }
 
+float Animation::getRemainingTime() const
+{
+	return getDuration() - getElapsedTime();
+}
+
+float Animation::getElapsedTimeRatio() const
+{
+	return getElapsedTime() / (getDuration() + 0.000001);
+}
+
+float Animation::getRemainingTimeRatio() const
+{
+	return getRemainingTime() / (getDuration() + 0.000001);
+}
+
 float Animation::getDuration() const
 {
 	return m_duration;

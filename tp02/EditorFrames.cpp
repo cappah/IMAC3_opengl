@@ -1,14 +1,15 @@
 #include "Editor.h"
 #include "EditorFrames.h"
 #include "Texture.h"
-#include "Project.h" //forward
-#include "Scene.h" //forward
-#include "EditorWindows.h" //forward
-#include "EditorTools.h" //forward
+#include "Project.h"
+#include "Scene.h"
+#include "EditorWindows.h"
+#include "EditorTools.h"
 #include "Camera.h"
 #include "PostProcess.h"
 #include "EditorWindowManager.h"
 #include "MaterialVisualScripting.h"
+#include "AnimationStateMachine.h"
 
 
 SaveSceneAsEditorFrame::SaveSceneAsEditorFrame(EditorWindowManager * windowManager)
@@ -452,4 +453,18 @@ MVSEditorFrame::MVSEditorFrame(MVS::NodeManager * content)
 void MVSEditorFrame::drawContent(Project & project, EditorModal * parentWindow)
 {
 	m_content->drawUI(project.getActiveScene()->getRenderer());
+}
+
+//////////////////////////////
+
+ASMEditorFrame::ASMEditorFrame(AnimationStateMachine* content)
+	: EditorFrame("AnimationStateMachine")
+	, m_content(content)
+{
+
+}
+
+void ASMEditorFrame::drawContent(Project& project, EditorModal* parentWindow)
+{
+	m_content->drawUI();
 }

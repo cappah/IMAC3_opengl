@@ -23,5 +23,8 @@ public:
 	virtual float getDuration() const;
 	virtual bool getIsLooping() const;
 	virtual float getElapsedTime() const;
+	virtual float getRemainingTime() const;
+	virtual float getElapsedTimeRatio() const;
+	virtual float getRemainingTimeRatio() const;
 };
 

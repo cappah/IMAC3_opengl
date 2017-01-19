@@ -440,9 +440,15 @@ void clearAllResourceFactories()
 	getTextureFactory().clear();
 	getCubeTextureFactory().clear();
 	getProgramFactory().clear();
+	getAnimationStateMachineFactory().clear();
 }
 
 //access helper
+ResourceFactory<AnimationStateMachine>& getAnimationStateMachineFactory()
+{
+	return ResourceFactory<AnimationStateMachine>::instance();
+}
+
 ResourceFactory<ShaderProgram>& getProgramFactory()
 {
 	return ResourceFactory<ShaderProgram>::instance();
@@ -471,6 +477,12 @@ ResourceFactory<Material>& getMaterialFactory()
 ResourceFactory<SkeletalAnimation>& getSkeletalAnimationFactory()
 {
 	return ResourceFactory<SkeletalAnimation>::instance();
+}
+
+template<>
+ResourceType getResourceType<AnimationStateMachine>()
+{
+	return ResourceType::ANIMATION_STATE_MACHINE;
 }
 
 template<>
@@ -527,6 +539,9 @@ ResourceType getResourceTypeFromFileType(FileHandler::FileType fileType)
 		return ResourceType::MATERIAL;
 	case FileHandler::SHADER_PROGRAM:
 		return ResourceType::SHADER_PROGRAM;
+	case FileHandler::ANIMATION_STATE_MACHINE:
+		return ResourceType::ANIMATION_STATE_MACHINE;
+		break;
 	default:
 		break;
 	}
@@ -560,7 +575,11 @@ Resource* getResourceFromTypeAndCompletePath(ResourceType resourceType, const Fi
 	case MATERIAL:
 		return getResourceFactory<Material>().get(completePath);
 		break;
+	case ANIMATION_STATE_MACHINE:
+		return getResourceFactory<AnimationStateMachine>().get(completePath);
+		break;
 	default:
+		assert(false && "wrong type.");
 		break;
 	}
 }
@@ -591,7 +610,11 @@ void addResourceToFactory(const FileHandler::CompletePath& completePath)
 	case SHADER_PROGRAM:
 		getResourceFactory<ShaderProgram>().addResourceSoft(completePath);
 		break;
+	case ANIMATION_STATE_MACHINE:
+		getResourceFactory<AnimationStateMachine>().addResourceSoft(completePath);
+		break;
 	default:
+		assert(false && "wrong type.");
 		break;
 	}
 }
@@ -626,7 +649,11 @@ void renameResourceInFactory(const FileHandler::CompletePath& oldResourcePath, c
 	case MATERIAL:
 		getResourceFactory<Material>().changeResourceKey(oldResourcePath, newResourcePath);
 		break;
+	case ANIMATION_STATE_MACHINE:
+		getResourceFactory<AnimationStateMachine>().changeResourceKey(oldResourcePath, newResourcePath);
+		break;
 	default:
+		assert(false && "wrong type.");
 		break;
 	}
 }
@@ -659,7 +686,11 @@ void removeResourceFromFactory(const FileHandler::CompletePath& resourcePath)
 	case MATERIAL:
 		getResourceFactory<Material>().erase(resourcePath);
 		break;
+	case ANIMATION_STATE_MACHINE:
+		getResourceFactory<AnimationStateMachine>().erase(resourcePath);
+		break;
 	default:
+		assert(false && "wrong type.");
 		break;
 	}
 }
@@ -672,6 +703,7 @@ void removeAllResourcesFromFactories()
 	getResourceFactory<Mesh>().clear();
 	getResourceFactory<SkeletalAnimation>().clear();
 	getResourceFactory<Material>().clear();
+	getResourceFactory<AnimationStateMachine>().clear();
 }
 
 template<>
@@ -687,6 +719,7 @@ void loadResourcesInAllFactories(const Json::Value& rootResources)
 	getCubeTextureFactory().load(rootResources["cubeTextureFactory"]);
 	getMaterialFactory().load(rootResources["materialFactory"]);
 	getProgramFactory().load(rootResources["programFactory"]);
+	getProgramFactory().load(rootResources["animationStateMachineFactory"]);
 
 	resolvePointersLoadingInFactories();
 }
@@ -698,6 +731,7 @@ void saveResourcesInAllFactories(Json::Value& rootResources)
 	getCubeTextureFactory().save(rootResources);
 	getMaterialFactory().save(rootResources);
 	getProgramFactory().save(rootResources);
+	getAnimationStateMachineFactory().save(rootResources);
 }
 
 void resolvePointersLoadingInFactories()
@@ -707,4 +741,5 @@ void resolvePointersLoadingInFactories()
 	getCubeTextureFactory().resolvePointersLoading();
 	getMaterialFactory().resolvePointersLoading();
 	getProgramFactory().resolvePointersLoading();
+	getAnimationStateMachineFactory().resolvePointersLoading();
 }

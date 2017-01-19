@@ -26,8 +26,11 @@ public:
 	virtual ~Resource();
 	Resource(const FileHandler::CompletePath& completePath, bool isDefaultResource = false);
 
+	// Load the resource at the given path, given the resource an id.
 	virtual void init(const FileHandler::CompletePath& completePath, const ID& id);
+	// Second step for loading. Will load pointers.
 	virtual void resolvePointersLoading() = 0;
+	// Save the resource. The resource should not be default resource and the complete path should be valid.
 	virtual void save() = 0;
 
 	const FileHandler::CompletePath& getCompletePath() const;

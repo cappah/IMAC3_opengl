@@ -17,6 +17,7 @@ enum ResourceType
 	SKELETAL_ANIMATION,
 	MATERIAL,
 	SHADER_PROGRAM,
+	ANIMATION_STATE_MACHINE,
 };
 
 //static unsigned int s_resourceCount = 0;

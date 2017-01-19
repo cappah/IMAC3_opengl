@@ -218,6 +218,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="AnimationStateMachine.cpp" />
     <ClCompile Include="Animator.cpp" />
     <ClCompile Include="aogl.cpp">
       <ObjectFileName>$(IntDir)aogl.obj</ObjectFileName>
@@ -314,6 +315,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="AnimationStateMachine.h" />
     <ClInclude Include="Animator.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="BasicColliders.h" />

@@ -239,6 +239,9 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="RenderTarget.cpp" />
+    <ClCompile Include="AnimationStateMachine.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Link.h">
@@ -533,6 +536,9 @@
     <ClInclude Include="IComponent.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="AnimationStateMachine.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">
@@ -582,6 +588,9 @@
     </Filter>
     <Filter Include="Core\Reflexion">
       <UniqueIdentifier>{f8e77759-aca9-40c4-a884-d5e9028fd9b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{cc8972ad-e35f-4e13-b0ee-623b9fd25e4f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

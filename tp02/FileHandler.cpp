@@ -477,6 +477,10 @@ FileType getFileTypeFromExtention(const std::string& extention)
 	{
 		return FileType::CUBE_TEXTURE;
 	}
+	else if (extention == ".asm")
+	{
+		return FileType::ANIMATION_STATE_MACHINE;
+	}
 	else
 	{
 		PRINT_WARNING("L'extention : " + extention + " n'est pas prix en charge.");

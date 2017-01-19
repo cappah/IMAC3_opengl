@@ -15,6 +15,7 @@ class Viewport;
 class CameraEditor;
 class EditorWindowManager;
 class WorldPropertiesTool;
+class AnimationStateMachine;
 
 
 class SaveSceneAsEditorFrame : public EditorFrame
@@ -209,5 +210,17 @@ private:
 
 public:
 	MVSEditorFrame(MVS::NodeManager* content);
+	void drawContent(Project& project, EditorModal* parentWindow) override;
+};
+
+/////////////////////////////////////////
+
+class ASMEditorFrame : public EditorFrame
+{
+private:
+	AnimationStateMachine* m_content;
+
+public:
+	ASMEditorFrame(AnimationStateMachine* content);
 	void drawContent(Project& project, EditorModal* parentWindow) override;
 };
