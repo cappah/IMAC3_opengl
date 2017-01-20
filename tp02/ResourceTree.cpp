@@ -271,6 +271,19 @@ void ResourceTree::addNewCubeTextureTo(const std::string& textureName, ResourceF
 	folderTo.addFile<CubeTexture>(resourceCompletePath, newCubeTexture);
 }
 
+void ResourceTree::addNewAnimationStateMachineTo(const std::string & resourceName, ResourceFolder & folderTo)
+{
+	//We create and save the new resource
+	const FileHandler::CompletePath resourceCompletePath(folderTo.getPath().toString(), resourceName, ".asm");
+
+	//create new instance
+	const FileHandler::CompletePath resourceFilePath(Project::getPath().toString() + "/" + folderTo.getPath().toString(), resourceName, ".ctx");
+	AnimationStateMachine* newAnimationStateMachine = new AnimationStateMachine(resourceCompletePath);
+	newAnimationStateMachine->save(/*resourceFilePath*/);
+
+	folderTo.addFile<AnimationStateMachine>(resourceCompletePath, newAnimationStateMachine);
+}
+
 void ResourceTree::addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo)
 {
 	assert(folderTo.getSubFolder(folderName) == nullptr);
@@ -817,6 +830,13 @@ void ResourceTreeView::displayModales()
 			needOpenPopup = true;
 			popupToOpen = "AddCubeTexturePopUp";
 		}
+		else if (ImGui::Button("CubeTexture."))
+		{
+			//ImGui::EndPopup();
+			//ImGui::Ext::openStackingPopUp("AddCubeTexturePopUp");
+			needOpenPopup = true;
+			popupToOpen = "AddAnimationStateMachinePopUp";
+		}
 
 		ImGui::EndPopup();
 	}
@@ -842,6 +862,11 @@ void ResourceTreeView::displayModales()
 	if (ImGui::BeginPopup("AddCubeTexturePopUp"))
 	{
 		popUpToAddCubeTexture();
+	}
+
+	if (ImGui::BeginPopup("AddAnimationStateMachinePopUp"))
+	{
+		popUpToAddAnimationStateMachine();
 	}
 
 	//Modale to add new folder :
@@ -1064,6 +1089,31 @@ void ResourceTreeView::popUpToAddCubeTexture()
 			if (m_folderWeRightClicOn != nullptr)
 			{
 				ResourceTree::addNewCubeTextureTo(m_uiString, *m_folderWeRightClicOn);
+			}
+			m_folderWeRightClicOn = nullptr;
+			ImGui::CloseCurrentPopup();
+		}
+	}
+	else
+	{
+		ImGui::TextColored(ImVec4(255, 0, 0, 255), "A file with the same name already exists.");
+	}
+	ImGui::EndPopup();
+}
+
+void ResourceTreeView::popUpToAddAnimationStateMachine()
+{
+	m_uiString.resize(100);
+	ImGui::InputText("##fileName", &m_uiString[0], 100);
+	assert(m_folderWeRightClicOn != nullptr);
+	if (!m_folderWeRightClicOn->hasFile(ResourceFileKey(ResourceType::ANIMATION_STATE_MACHINE, m_uiString)))
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("Validate##AddFile") || ImGui::IsKeyPressed(GLFW_KEY_ENTER))
+		{
+			if (m_folderWeRightClicOn != nullptr)
+			{
+				ResourceTree::addNewAnimationStateMachineTo(m_uiString, *m_folderWeRightClicOn);
 			}
 			m_folderWeRightClicOn = nullptr;
 			ImGui::CloseCurrentPopup();

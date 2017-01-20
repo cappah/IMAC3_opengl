@@ -587,6 +587,7 @@ public :
 	//static void addNewMaterialTo(const std::string& materialName, const std::string& ShaderProgramName, ResourceFolder& folderTo); //DEPRECATED
 	static void addNewShaderProgramTo(const std::string& shaderProgramName, ResourceFolder& folderTo);
 	static void addNewCubeTextureTo(const std::string& textureName, ResourceFolder& folderTo);
+	static void addNewAnimationStateMachineTo(const std::string& textureName, ResourceFolder& folderTo);
 	static void addSubFolderTo(const std::string& folderName, ResourceFolder& folderTo);
 
 	static void moveSubFolderTo(const std::string& folderName, ResourceFolder& folderFrom, ResourceFolder& folderTo);
@@ -638,6 +639,7 @@ public:
 	void popUpToRenameFolder();
 	void popUpToAddFolder();
 	void popUpToAddCubeTexture();
+	void popUpToAddAnimationStateMachine();
 	void popUpToChooseMaterial();
 	void popUpToAddShaderProgram();
 	void popUpToAddMaterial();
