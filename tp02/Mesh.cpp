@@ -215,7 +215,7 @@ void Mesh::initGl()
 		glBufferData(GL_ARRAY_BUFFER, skeleton->getBoneDatas().size()*sizeof(VertexBoneData), &skeleton->getBoneDatas()[0], GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(BONE_IDS);
-		glVertexAttribPointer(BONE_IDS, MAX_BONE_DATA_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (void*)offsetof(VertexBoneData, ids));
+		glVertexAttribPointer(BONE_IDS, MAX_BONE_DATA_PER_VERTEX, GL_UNSIGNED_INT, GL_FALSE, sizeof(VertexBoneData), (void*)offsetof(VertexBoneData, ids));
 
 		glEnableVertexAttribArray(BONE_WEIGHTS);
 		glVertexAttribPointer(BONE_WEIGHTS, MAX_BONE_DATA_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (void*)offsetof(VertexBoneData, weights));
