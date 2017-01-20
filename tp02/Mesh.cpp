@@ -580,7 +580,7 @@ void Mesh::loadBones(unsigned int meshIndex, const aiMesh * mesh, const aiNode *
 		if (skeleton == nullptr)
 			skeleton = new Skeleton(mesh, rootNode, firstVertexId);
 		else
-			skeleton->loadBones(mesh, firstVertexId);
+			skeleton->loadBones(mesh, rootNode, firstVertexId);
 	}
 	else
 		return;
